@@ -16,6 +16,12 @@ import {
   type SendMessageInput,
 } from "@/types/chat";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUuid(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
 /**
  * Get all chats for a user with last message preview
  *
@@ -26,6 +32,10 @@ export async function getUserChats(
   userId: string,
   includeArchived = false
 ): Promise<ChatWithLastMessage[]> {
+  if (!isValidUuid(userId)) {
+    throw new Error("Geçersiz kullanıcı ID formatı");
+  }
+
   const supabase = await createSupabaseServerClient();
 
   // Fetch chats — exclude archived ones for this user

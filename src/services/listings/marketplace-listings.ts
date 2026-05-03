@@ -9,7 +9,7 @@ import {
   marketplaceListingSelect,
   type PaginatedListingsResult,
 } from "@/services/listings/listing-submission-query";
-import { mapListingRow } from "@/services/listings/mappers/listing-row.mapper";
+import { type ListingRow, mapListingRow } from "@/services/listings/mappers/listing-row.mapper";
 import { getPublicSellerProfile } from "@/services/profile/profile-records";
 import type { Listing, ListingFilters, Profile } from "@/types";
 
@@ -100,11 +100,11 @@ export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listin
   const publicClient = createSupabasePublicServerClient();
   // PostgREST complex join syntax cannot be typed statically
 
-  const { data, error } = await (publicClient
+  const { data, error } = await publicClient
     .from("listings")
     .select(marketplaceListingSelect)
     .in("id", ids)
-    .eq("status", "approved") as any);
+    .eq("status", "approved");
 
   if (error) {
     logger.db.error("Marketplace listings by IDs retrieval failed", { error, ids });
@@ -145,11 +145,11 @@ export async function getListingById(id: string): Promise<Listing | null> {
   const publicClient = createSupabasePublicServerClient();
   // PostgREST complex join syntax cannot be typed statically
 
-  const { data, error } = await (publicClient
+  const { data, error } = await publicClient
     .from("listings")
     .select(marketplaceListingSelect)
     .eq("id", id)
-    .maybeSingle() as any);
+    .maybeSingle();
 
   if (error) {
     logger.db.error("Public listing by ID retrieval failed", { error, id });
@@ -158,12 +158,15 @@ export async function getListingById(id: string): Promise<Listing | null> {
 
   if (!data) return null;
 
-  const row = data as any;
-  if (Array.isArray(row)) {
-    return row.length > 0 ? mapListingRow(row[0]) : null;
+  // Type guard to handle both single object and array responses
+  // POSTGREST LIMITATION: Complex join syntax in select strings cannot be statically typed.
+  // The result is typed as a union that includes ParserError, but this never occurs at runtime.
+  // We use a safe type assertion since we already checked for errors above.
+  if (Array.isArray(data)) {
+    return data.length > 0 ? mapListingRow(data[0] as unknown as ListingRow) : null;
   }
 
-  return mapListingRow(row);
+  return mapListingRow(data as unknown as ListingRow);
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {

@@ -1,10 +1,48 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { Listing } from "@/types";
 
 import { updateDatabaseListing } from "../listing-submission-persistence";
 
 const queueFileCleanup = vi.fn().mockResolvedValue(undefined);
 const fromMock = vi.fn();
+
+function createTestListing(overrides: Partial<Listing> = {}): Listing {
+  return {
+    id: "listing-1",
+    sellerId: "seller-1",
+    slug: "test-listing",
+    title: "Test",
+    category: "otomobil" as const,
+    brand: "BMW",
+    model: "320i",
+    year: 2020,
+    mileage: 10000,
+    fuelType: "benzin" as const,
+    transmission: "otomatik" as const,
+    price: 1000000,
+    city: "İstanbul",
+    district: "Kadıköy",
+    description: "desc",
+    whatsappPhone: "905551234567",
+    status: "pending" as const,
+    featured: false,
+    version: 1,
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-02T00:00:00Z",
+    images: [
+      {
+        id: "img-1",
+        storagePath: "keep.jpg",
+        url: "https://example.com/keep.jpg",
+        order: 0,
+        isCover: true,
+      },
+    ],
+    viewCount: 0,
+    ...overrides,
+  };
+}
 
 vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
@@ -102,31 +140,9 @@ describe("Listing Storage Cleanup", () => {
       return {};
     });
 
-    const listing = {
-      id: "listing-1",
-      sellerId: "seller-1",
-      slug: "test-listing",
-      title: "Test",
-      category: "otomobil",
-      brand: "BMW",
-      model: "320i",
-      year: 2020,
-      mileage: 10000,
-      fuelType: "benzin",
-      transmission: "otomatik",
-      price: 1000000,
-      city: "İstanbul",
-      district: "Kadıköy",
-      description: "desc",
-      whatsappPhone: "905551234567",
-      status: "pending",
-      featured: false,
-      version: 1,
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-02T00:00:00Z",
+    const listing = createTestListing({
       images: [{ storagePath: "keep.jpg", url: "y", order: 0, isCover: true }],
-      viewCount: 0,
-    } as any;
+    });
 
     await updateDatabaseListing(listing);
     expect(queueFileCleanup).toHaveBeenCalledWith("listing-images", ["old-1.jpg"]);
@@ -152,31 +168,9 @@ describe("Listing Storage Cleanup", () => {
       return {};
     });
 
-    const listing = {
-      id: "listing-1",
-      sellerId: "seller-1",
-      slug: "test-listing",
-      title: "Test",
-      category: "otomobil",
-      brand: "BMW",
-      model: "320i",
-      year: 2020,
-      mileage: 10000,
-      fuelType: "benzin",
-      transmission: "otomatik",
-      price: 1000000,
-      city: "İstanbul",
-      district: "Kadıköy",
-      description: "desc",
-      whatsappPhone: "905551234567",
-      status: "pending",
-      featured: false,
-      version: 1,
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-02T00:00:00Z",
+    const listing = createTestListing({
       images: [{ storagePath: "keep.jpg", url: "y", order: 0, isCover: true }],
-      viewCount: 0,
-    } as any;
+    });
 
     await updateDatabaseListing(listing);
     expect(queueFileCleanup).not.toHaveBeenCalled();

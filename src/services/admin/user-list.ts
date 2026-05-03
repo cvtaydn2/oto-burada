@@ -16,7 +16,10 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
     );
 
   if (query) {
-    rpc = rpc.or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,id::text.ilike.%${query}%`);
+    const sanitizedQuery = query.replace(/[%_]/g, "\\$&");
+    rpc = rpc.or(
+      `full_name.ilike.%${sanitizedQuery}%,phone.ilike.%${sanitizedQuery}%,id::text.ilike.%${sanitizedQuery}%`
+    );
   }
 
   const from = (page - 1) * limit;

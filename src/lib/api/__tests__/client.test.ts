@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Unit tests for API Client
  * Tests BUG-04: JSON Parse Error Handling
@@ -21,10 +20,10 @@ describe("ApiClient", () => {
   describe("BUG-04: JSON Parse Error Handling", () => {
     it("should handle JSON parse errors gracefully", async () => {
       // Mock fetch to return invalid JSON
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: () => Promise.reject(new Error("Unexpected token")),
-      });
+      } as unknown as Response);
 
       const result = await ApiClient.request("/api/test");
 
@@ -34,10 +33,10 @@ describe("ApiClient", () => {
     });
 
     it("should handle valid JSON responses", async () => {
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ data: { id: "123", name: "Test" } }),
-      });
+      } as unknown as Response);
 
       const result = await ApiClient.request("/api/test");
 
@@ -46,10 +45,10 @@ describe("ApiClient", () => {
     });
 
     it("should handle empty response body", async () => {
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({}),
-      });
+      } as unknown as Response);
 
       const result = await ApiClient.request("/api/test");
 
@@ -57,7 +56,7 @@ describe("ApiClient", () => {
     });
 
     it("should handle network errors", async () => {
-      (global.fetch as any).mockRejectedValue(new Error("Network error"));
+      vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
 
       const result = await ApiClient.request("/api/test");
 
@@ -66,11 +65,11 @@ describe("ApiClient", () => {
     });
 
     it("should handle 401 errors without redirect in non-browser environment", async () => {
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 401,
         json: () => Promise.resolve({ error: { message: "Unauthorized" } }),
-      });
+      } as unknown as Response);
 
       const result = await ApiClient.request("/api/test");
 
@@ -79,11 +78,11 @@ describe("ApiClient", () => {
     });
 
     it("should handle error responses with JSON parse failure", async () => {
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 500,
         json: () => Promise.reject(new Error("Invalid JSON")),
-      });
+      } as unknown as Response);
 
       const result = await ApiClient.request("/api/test");
 
@@ -100,10 +99,10 @@ describe("ApiClient", () => {
         value: "csrf_token=test-token-123",
       });
 
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ data: {} }),
-      });
+      } as unknown as Response);
 
       await ApiClient.request("/api/test");
 
@@ -123,10 +122,10 @@ describe("ApiClient", () => {
         value: "",
       });
 
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ data: {} }),
-      });
+      } as unknown as Response);
 
       await ApiClient.request("/api/test");
 

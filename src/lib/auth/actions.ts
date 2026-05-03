@@ -522,7 +522,7 @@ export async function logoutAction() {
 }
 
 export async function resendVerificationAction(
-  _state: AuthActionState = initialState,
+  state: AuthActionResponse | null,
   formData: FormData
 ): Promise<AuthActionState> {
   const email = String(formData.get("email") ?? "").trim();

@@ -420,7 +420,14 @@ export function buildListingBaseQuery(
   if (options?.listingId) query = query.eq("id", options.listingId);
   if (options?.slug) query = query.eq("slug", options.slug);
   if (options?.ids?.length) query = query.in("id", options.ids);
-  if (options?.statuses?.length) query = query.in("status", options.statuses as any);
+  if (options?.statuses?.length) {
+    const VALID_STATUSES = ["draft", "pending", "approved", "rejected", "archived"] as const;
+    const filteredStatuses = options.statuses.filter((s) => VALID_STATUSES.some((v) => v === s));
+    if (filteredStatuses.length > 0) {
+      // TypeScript can't narrow the array type through filter(), but we know only valid statuses pass the filter
+      query = query.in("status", filteredStatuses as any);
+    }
+  }
 
   // 1.1 Keyset Pagination (Cursor)
   if (options?.cursor) {
@@ -818,7 +825,7 @@ export async function getSimilarDatabaseListings(options: {
   // Query for brand match OR city match
   const { data, error }: any = await runQueryWithTransientRetry(
     async () =>
-      (await publicClient
+      await publicClient
         .from("listings")
         .select(marketplaceListingSelect)
         .eq("status", "approved")
@@ -826,7 +833,7 @@ export async function getSimilarDatabaseListings(options: {
         .or(`brand.eq.${safeBrand},city.eq.${safeCity}`)
         .order("featured", { ascending: false })
         .order("created_at", { ascending: false })
-        .range(0, limit - 1)) as any,
+        .range(0, limit - 1),
     "getSimilarDatabaseListings.query"
   );
 

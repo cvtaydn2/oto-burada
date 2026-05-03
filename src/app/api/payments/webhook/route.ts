@@ -48,7 +48,9 @@ export async function POST(req: NextRequest) {
     // Use upsert with token as unique key for idempotency
     const SAFE_HEADERS = ["content-type", "x-iyzi-event-type", "user-agent"] as const;
     const safeHeaders = Object.fromEntries(
-      [...req.headers.entries()].filter(([key]) => SAFE_HEADERS.includes(key.toLowerCase() as any))
+      [...req.headers.entries()].filter(([key]) =>
+        SAFE_HEADERS.includes(key.toLowerCase() as unknown as (typeof SAFE_HEADERS)[number])
+      )
     );
 
     // ── BUG FIX: Issue WEBHOOK-01 - Handle Missing Token in Webhook Payload ──
