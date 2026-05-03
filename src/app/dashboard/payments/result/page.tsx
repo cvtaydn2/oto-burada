@@ -23,6 +23,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 type PaymentResultStatus =
   | "failure"
   | "invalid"
+  | "partial_success"
   | "pending"
   | "success"
   | "unverified"
@@ -81,13 +82,27 @@ const PAYMENT_STATUS_MAP: Record<PaymentResultStatus, PaymentStatusInfo> = {
     colorClass: "text-amber-600",
     bgClass: "bg-amber-500",
   },
+  partial_success: {
+    title: "Ödeme Alındı",
+    description:
+      "Ödemeniz başarıldı ancak ek hizmetlerin aktivasyonu zaman alabilir. En kısa sürede aktive edilecektir.",
+    icon: Loader2,
+    colorClass: "text-amber-600",
+    bgClass: "bg-amber-500",
+  },
 };
 
 function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<PaymentResultStatus>("pending");
+  const initialStatus = searchParams.get("status");
+  const isPartialSuccess = initialStatus === "partial_success";
+  const messageParam = searchParams.get("message") || "";
+
+  const [loading, setLoading] = useState(!isPartialSuccess);
+  const [status, setStatus] = useState<PaymentResultStatus>(
+    () => (isPartialSuccess ? "partial_success" : "pending") as PaymentResultStatus
+  );
   const [paymentData, setPaymentData] = useState<{
     id: string;
     amount: number;
@@ -101,6 +116,10 @@ function PaymentResultContent() {
   const token = searchParams.get("token");
 
   useEffect(() => {
+    if (status === "partial_success") {
+      return;
+    }
+
     let cancelled = false;
     let pollTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -222,7 +241,7 @@ function PaymentResultContent() {
         clearTimeout(pollTimeout);
       }
     };
-  }, [token, router, retryNonce]);
+  }, [token, router, retryNonce, status]);
 
   const retryVerification = () => {
     if (requestInFlightRef.current) {
@@ -281,7 +300,9 @@ function PaymentResultContent() {
           <p className="mt-4 text-lg font-bold text-slate-500 leading-relaxed max-w-md mx-auto">
             {isSuccess && paymentData?.plan_name
               ? `${paymentData.plan_name} paketiniz başarıyla tanımlandı. OtoBurada'yı tercih ettiğiniz için teşekkür ederiz.`
-              : info.description}
+              : messageParam && status === "partial_success"
+                ? messageParam
+                : info.description}
           </p>
 
           {paymentData && (

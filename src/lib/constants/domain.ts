@@ -66,6 +66,8 @@ export const moderationActions = [
   "promote",
   "demote",
   "delete_user",
+  "credit_grant",
+  "doping_grant",
 ] as const;
 
 export const moderationActionLabels = {
@@ -78,9 +80,11 @@ export const moderationActionLabels = {
   edit: "Düzenleme",
   ban: "Yasakla",
   unban: "Yasağı Kaldır",
-  promote: "Admin Yap",
-  demote: "Adminlikten Çıkar",
+  promote: "Yetki Yükselt",
+  demote: "Yetki Düşür",
   delete_user: "Sil",
+  credit_grant: "Kredi Yükle",
+  doping_grant: "Doping Ver",
 } as const;
 
 export const listingSortOptions = [

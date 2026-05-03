@@ -6,6 +6,7 @@ import { requireAdminUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { uuidSchema } from "@/lib/validators/admin";
+import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
@@ -270,7 +271,7 @@ export async function deleteUser(userId: string) {
 
 export async function grantUserCredits(userId: string, credits: number, note: string) {
   const validatedUserId = uuidSchema.parse(userId);
-  await requireAdminUser();
+  const adminUser = await requireAdminUser();
 
   const admin = createSupabaseAdminClient();
 
@@ -287,6 +288,14 @@ export async function grantUserCredits(userId: string, credits: number, note: st
     return { success: false, error: rpcError.message };
   }
 
+  await createAdminModerationAction({
+    action: "credit_grant",
+    adminUserId: adminUser.id,
+    targetId: validatedUserId,
+    targetType: "user",
+    note: `${credits} kredi yüklendi${note ? `: ${note}` : ""}`,
+  });
+
   revalidatePath(`/admin/users/${userId}`);
   return { success: true };
 }
@@ -299,7 +308,7 @@ export async function grantUserDoping(
 ) {
   const validatedUserId = uuidSchema.parse(userId);
   const validatedListingId = uuidSchema.parse(listingId);
-  await requireAdminUser();
+  const adminUser = await requireAdminUser();
 
   const admin = createSupabaseAdminClient();
 
@@ -321,6 +330,14 @@ export async function grantUserDoping(
       return { success: false, error: insertError.message };
     }
   }
+
+  await createAdminModerationAction({
+    action: "doping_grant",
+    adminUserId: adminUser.id,
+    targetId: validatedListingId,
+    targetType: "listing",
+    note: `${dopingTypes.join(", ")} doping ${durationDays} gün boyunca eklendi (Kullanıcı: ${validatedUserId})`,
+  });
 
   revalidatePath(`/admin/users/${userId}`);
   return { success: true };
