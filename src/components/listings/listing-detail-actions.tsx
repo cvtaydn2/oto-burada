@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 
 interface ListingDetailActionsProps {
   listingId: string;

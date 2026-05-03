@@ -1,6 +1,6 @@
-ï»¿import { withNextCache } from "@/lib/caching/cache";
+import { withNextCache } from "@/lib/caching/cache";
 import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { getListingBySlug, getPublicListings } from "@/services/listings/catalog";
 import {
@@ -85,7 +85,7 @@ export async function getFilteredMarketplaceListings(
       metadata: {
         ...result.metadata,
         droppedFilters: droppedKeys,
-        warning: "BazÄ± filtreler desteklenmiyor ve uygulanmadÄ±.",
+        warning: "Bazý filtreler desteklenmiyor ve uygulanmadý.",
       },
     };
   }

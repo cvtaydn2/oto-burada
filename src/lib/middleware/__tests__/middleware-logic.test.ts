@@ -68,6 +68,34 @@ describe("Middleware Logic - Auth Redirects", () => {
     expect(res?.status).toBe(307);
     expect(res?.headers.get("location")).toBe("http://localhost/dashboard");
   });
+
+  it("should allow authenticated users on /reset-password", () => {
+    const req = factory("/reset-password");
+    const mockUser = { id: "1" } as unknown as User;
+    const res = handleAuthRedirects(req, mockUser, {
+      isProtectedRoute: false,
+      isAdminRoute: false,
+      isAuthRoute: true,
+      isProtectedApi: false,
+      isAdminApi: false,
+    });
+
+    expect(res).toBeNull();
+  });
+
+  it("should allow authenticated users on /verify-email", () => {
+    const req = factory("/verify-email");
+    const mockUser = { id: "1" } as unknown as User;
+    const res = handleAuthRedirects(req, mockUser, {
+      isProtectedRoute: false,
+      isAdminRoute: false,
+      isAuthRoute: true,
+      isProtectedApi: false,
+      isAdminApi: false,
+    });
+
+    expect(res).toBeNull();
+  });
 });
 
 describe("Middleware Logic - API Security", () => {

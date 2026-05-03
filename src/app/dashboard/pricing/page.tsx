@@ -69,14 +69,28 @@ export default async function PricingPage() {
 
         {approvedListings.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border bg-muted/30 p-16 text-center shadow-sm">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-background border border-border mb-6">
+            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl border border-border bg-background">
               <Zap size={32} className="text-muted-foreground/30" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Yayındaki ilan bulunamadı</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Doping satın alabilmek için en az bir onaylı ilanın olması gerekiyor. Hemen yeni bir
-              ilan oluşturun!
+            <h3 className="mb-2 text-xl font-bold text-foreground">Yayındaki ilan bulunamadı</h3>
+            <p className="mx-auto max-w-md text-sm text-muted-foreground">
+              Doping satın alabilmek için en az bir onaylı ilanın olması gerekiyor. İlanını şimdi
+              oluşturabilir veya moderasyondaki ilanlarını takip edebilirsin.
             </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a
+                href="/dashboard/listings?create=true"
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Yeni ilan oluştur
+              </a>
+              <a
+                href="/dashboard/listings"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                İlan durumunu kontrol et
+              </a>
+            </div>
           </div>
         ) : (
           <div className="space-y-16">

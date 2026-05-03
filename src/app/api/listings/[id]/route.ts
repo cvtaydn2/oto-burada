@@ -4,7 +4,7 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withUserAndCsrf } from "@/lib/api/security";
 import { validateListingEdit } from "@/lib/listings/edit-guard";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";

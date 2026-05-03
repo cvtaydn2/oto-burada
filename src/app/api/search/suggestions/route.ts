@@ -70,7 +70,7 @@ export async function GET(request: Request) {
     return apiSuccess(result);
   } catch (error) {
     // Non-critical — but capture for observability
-    const { captureServerError } = await import("@/lib/monitoring/posthog-server");
+    const { captureServerError } = await import("@/lib/monitoring/telemetry-server");
     captureServerError("Search suggestions query failed", "search", error, { query: q });
     return apiSuccess({ brands: [], models: [] });
   }

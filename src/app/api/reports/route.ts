@@ -1,6 +1,6 @@
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { sanitizeDescription } from "@/lib/sanitization/sanitize";
 import { hasSupabaseEnv } from "@/lib/supabase/env";

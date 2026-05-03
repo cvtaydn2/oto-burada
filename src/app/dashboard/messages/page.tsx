@@ -19,6 +19,7 @@ export default function MessagesPage() {
   supabaseRef.current = supabase;
 
   const [user, setUser] = useState<{ id: string } | null>(null);
+  const [isAuthResolved, setIsAuthResolved] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -45,6 +46,8 @@ export default function MessagesPage() {
         setUser(authUser ? { id: authUser.id } : null);
       } catch {
         setUser(null);
+      } finally {
+        setIsAuthResolved(true);
       }
     };
 
@@ -55,12 +58,23 @@ export default function MessagesPage() {
   const showChatList = !isMobile || !selectedChatId;
   const showChatWindow = !isMobile || selectedChatId;
 
+  if (!isAuthResolved) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Card className="p-8 text-center">
+          <MessageCircle className="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
+          <p className="text-muted-foreground">Mesajlar yükleniyor...</p>
+        </Card>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex min-h-[50vh] items-center justify-center">
         <Card className="p-8 text-center">
-          <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Lütfen giriş yapın.</p>
+          <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <p className="text-muted-foreground">Oturum bulunamadı. Lütfen yeniden giriş yapın.</p>
         </Card>
       </div>
     );

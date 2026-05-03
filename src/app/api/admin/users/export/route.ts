@@ -1,10 +1,14 @@
 import { withAdminRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: Request) {
-  const security = await withAdminRoute(request);
+  const security = await withAdminRoute(request, {
+    ipRateLimit: rateLimitProfiles.adminModerate,
+    rateLimitKey: "admin:users-export",
+  });
   if (!security.ok) return security.response;
   const adminUser = security.user!;
 
@@ -67,8 +71,10 @@ export async function GET(request: Request) {
 
     return new Response("\uFEFF" + csv, {
       headers: {
+        "Cache-Control": "no-store, max-age=0",
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="kullanicilar-${new Date().toISOString().split("T")[0]}.csv"`,
+        Pragma: "no-cache",
       },
     });
   } catch (err) {

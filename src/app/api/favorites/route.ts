@@ -1,7 +1,7 @@
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withUserAndCsrfToken } from "@/lib/api/security";
 import { requireApiUser } from "@/lib/auth/api-user";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 import { getDatabaseFavoriteIds } from "@/services/favorites/favorite-records";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";

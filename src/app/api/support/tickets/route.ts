@@ -3,7 +3,7 @@ import { z } from "zod";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
@@ -49,15 +49,23 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek formatı.", 400);
   }
 
-  const validated = ticketCreateSchema.parse(body);
+  const validated = ticketCreateSchema.safeParse(body);
+
+  if (!validated.success) {
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      validated.error.issues[0]?.message ?? "Destek talebi alanlarını kontrol et.",
+      400
+    );
+  }
 
   try {
     const ticket = await createTicket(user.id, {
-      subject: sanitizeText(validated.subject),
-      description: sanitizeDescription(validated.description),
-      category: validated.category ?? "other",
-      priority: validated.priority ?? "medium",
-      listingId: validated.listingId,
+      subject: sanitizeText(validated.data.subject),
+      description: sanitizeDescription(validated.data.description),
+      category: validated.data.category ?? "other",
+      priority: validated.data.priority ?? "medium",
+      listingId: validated.data.listingId,
     });
 
     captureServerEvent(
@@ -65,7 +73,7 @@ export async function POST(request: Request) {
       {
         userId: user.id,
         ticketId: ticket.id,
-        category: validated.category ?? "other",
+        category: validated.data.category ?? "other",
       },
       user.id
     );

@@ -17,7 +17,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { logger } from "@/lib/logging/logger";
-import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { captureClientException } from "@/lib/monitoring/telemetry-client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type PaymentResultStatus =

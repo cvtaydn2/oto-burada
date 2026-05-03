@@ -110,13 +110,13 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
       } | null;
 
       if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Bildirimler guncellenemedi.");
+        setErrorMessage(payload?.error?.message ?? "Bildirimler güncellenemedi.");
         return;
       }
 
       setItems((current) => current.map((item) => ({ ...item, read: true })));
     } catch {
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }
@@ -136,7 +136,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
       } | null;
 
       if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Bildirim guncellenemedi.");
+        setErrorMessage(payload?.error?.message ?? "Bildirim güncellenemedi.");
         return;
       }
 
@@ -144,7 +144,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
         current.map((item) => (item.id === id ? { ...item, read: true } : item))
       );
     } catch {
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }
@@ -170,7 +170,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
 
       setItems((current) => current.filter((item) => item.id !== id));
     } catch {
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }
@@ -182,7 +182,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Bildirimler</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {unreadCount} okunmamis bildirimin var
+            {unreadCount} okunmamış bildirimin var
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -195,7 +195,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                 : "bg-muted text-muted-foreground hover:bg-slate-200"
             )}
           >
-            {showUnreadOnly ? "Tumu" : "Okunmamis"}
+            {showUnreadOnly ? "Tümü" : "Okunmamış"}
           </button>
           <button
             onClick={() => void markAllAsRead()}
@@ -207,7 +207,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
             ) : (
               <Check size={16} />
             )}
-            Tumunu Oku
+            Tümünü Oku
           </button>
         </div>
       </section>
@@ -268,7 +268,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                       href={notif.href}
                       className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline"
                     >
-                      Detayi ac
+                      Detayı aç
                     </Link>
                   ) : null}
                 </div>
@@ -311,7 +311,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">Bildirim yok</h3>
             <p className="text-muted-foreground">
-              Favori, moderasyon ve rapor olaylari burada gorunecek.
+              Favori, moderasyon ve rapor olayları burada görünecek.
             </p>
           </div>
         )}

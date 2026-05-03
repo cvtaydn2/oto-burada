@@ -4,7 +4,7 @@ import { z } from "zod";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { sanitizeText } from "@/lib/sanitization/sanitize";
 import type { TicketStatus } from "@/services/support/ticket-service";
 import { updateTicketStatus } from "@/services/support/ticket-service";
@@ -30,16 +30,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return apiError(API_ERROR_CODES.BAD_REQUEST, "İstek gövdesi okunamadı.", 400);
   }
 
-  const validated = ticketUpdateSchema.parse(body);
+  const validated = ticketUpdateSchema.safeParse(body);
 
-  const sanitizedResponse = validated.adminResponse
-    ? sanitizeText(validated.adminResponse)
+  if (!validated.success) {
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Destek talebi güncelleme alanlarını kontrol et.",
+      400
+    );
+  }
+
+  const sanitizedResponse = validated.data.adminResponse
+    ? sanitizeText(validated.data.adminResponse)
     : undefined;
 
   try {
     const ticket = await updateTicketStatus(
       id,
-      validated.status ?? "in_progress",
+      validated.data.status ?? "in_progress",
       sanitizedResponse
     );
 
@@ -48,7 +56,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       {
         adminUserId: adminUser.id,
         ticketId: id,
-        status: validated.status ?? "in_progress",
+        status: validated.data.status ?? "in_progress",
       },
       adminUser.id
     );
@@ -57,7 +65,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   } catch (error) {
     logger.admin.error("Admin ticket update failed", error, {
       ticketId: id,
-      status: validated.status,
+      status: validated.data.status,
     });
     captureServerError("Admin ticket update failed", "admin", error, { ticketId: id });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -27,8 +27,8 @@ export const metadata: Metadata = {
 const freeFeatures = [
   {
     icon: <CarFront size={24} />,
-    title: "Sınırsız Ücretsiz İlan",
-    desc: "Araç türünde sınırsız ücretsiz ilan hakkı",
+    title: "Bireysel Ücretsiz İlan",
+    desc: "Bireysel kullanıcılar için hızlı ve ücretsiz araç ilanı oluşturma",
   },
   {
     icon: <Check size={24} />,
@@ -63,12 +63,12 @@ const dopingPackages = [
     period: "ay",
     popular: false,
     features: [
-      { text: "1 Aktif İlan Limiti", included: true },
-      { text: "Vitrinde 7 Gün", included: true },
-      { text: "Arama Sonuçlarında Üst Sıra", included: true },
-      { text: "Anında Mesaj Gönderme", included: false },
-      { text: "Öne Çıkan Galeri", included: false },
-      { text: "WhatsApp Direkt Bağlantı", included: false },
+      { text: "1 ilan için görünürlük artırma", included: true },
+      { text: "7 gün vitrin desteği", included: true },
+      { text: "Arama sonuçlarında üst sıra desteği", included: true },
+      { text: "Acil etiketi", included: false },
+      { text: "Öne çıkan galeri görünümü", included: false },
+      { text: "WhatsApp CTA desteği", included: false },
     ],
   },
   {
@@ -79,12 +79,12 @@ const dopingPackages = [
     period: "ay",
     popular: true,
     features: [
-      { text: "3 Aktif İlan Limiti", included: true },
-      { text: "Vitrinde 14 Gün", included: true },
-      { text: "Arama Sonuçlarında Üst Sıra", included: true },
-      { text: "Anında Mesaj Gönderme", included: true },
-      { text: "Öne Çıkan Galeri", included: true },
-      { text: "WhatsApp Direkt Bağlantı", included: true },
+      { text: "3 ilan için görünürlük artırma", included: true },
+      { text: "14 gün vitrin desteği", included: true },
+      { text: "Arama sonuçlarında üst sıra desteği", included: true },
+      { text: "Acil etiketi", included: true },
+      { text: "Öne çıkan galeri görünümü", included: true },
+      { text: "WhatsApp CTA desteği", included: true },
     ],
   },
   {
@@ -95,12 +95,12 @@ const dopingPackages = [
     period: "ay",
     popular: false,
     features: [
-      { text: "10 Aktif İlan Limiti", included: true },
-      { text: "Vitrinde 30 Gün", included: true },
-      { text: "Arama Sonuçlarında VIP Sıra", included: true },
-      { text: "Anında Mesaj Gönderme", included: true },
-      { text: "Öne Çıkan Galeri", included: true },
-      { text: "WhatsApp Direkt Bağlantı", included: true },
+      { text: "10 ilan için görünürlük artırma", included: true },
+      { text: "30 gün vitrin desteği", included: true },
+      { text: "Arama sonuçlarında premium sıra desteği", included: true },
+      { text: "Acil etiketi", included: true },
+      { text: "Öne çıkan galeri görünümü", included: true },
+      { text: "WhatsApp CTA desteği", included: true },
     ],
   },
 ];
@@ -114,11 +114,11 @@ const corporatePlans = [
     icon: <Users size={32} />,
     features: [
       { text: "10 Aktif Araç İlanı", included: true },
-      { text: "Temel Galeri Görünümü", included: true },
-      { text: "WhatsApp Desteği", included: true },
-      { text: "Aylık Performans Raporu", included: true },
-      { text: "Öncelikli Destek", included: false },
-      { text: "Kişiselleştirilmiş URL", included: false },
+      { text: "Temel galeri vitrini", included: true },
+      { text: "WhatsApp yönlendirme desteği", included: true },
+      { text: "Aylık performans özeti", included: true },
+      { text: "Öncelikli destek", included: false },
+      { text: "Kurumsal profil görünümü", included: false },
     ],
   },
   {
@@ -129,11 +129,11 @@ const corporatePlans = [
     popular: true,
     features: [
       { text: "30 Aktif Araç İlanı", included: true },
-      { text: "Gelişmiş Galeri Görünümü", included: true },
-      { text: "WhatsApp API Entegrasyonu", included: true },
-      { text: "Aylık Performans Raporu", included: true },
-      { text: "Öncelikli Destek", included: true },
-      { text: "Kişiselleştirilmiş URL", included: true },
+      { text: "Gelişmiş galeri vitrini", included: true },
+      { text: "WhatsApp yönlendirme desteği", included: true },
+      { text: "Aylık performans özeti", included: true },
+      { text: "Öncelikli destek", included: true },
+      { text: "Kurumsal profil görünümü", included: true },
     ],
   },
   {
@@ -143,11 +143,11 @@ const corporatePlans = [
     icon: <Star size={32} />,
     features: [
       { text: "Sınırsız Aktif Araç İlanı", included: true },
-      { text: "Premium Galeri Görünümü", included: true },
-      { text: "Tam Entegre WhatsApp CRM", included: true },
-      { text: "Haftalık Performans Raporu", included: true },
-      { text: "7/24 Öncelikli Destek", included: true },
-      { text: "Özel Domain & Marka", included: true },
+      { text: "Premium galeri vitrini", included: true },
+      { text: "WhatsApp yönlendirme desteği", included: true },
+      { text: "Haftalık performans özeti", included: true },
+      { text: "Öncelikli destek", included: true },
+      { text: "Kurumsal marka görünümü", included: true },
     ],
   },
 ];
@@ -157,31 +157,31 @@ const additionalFeatures = [
   {
     icon: <Zap size={40} />,
     title: "Hızlı Satış",
-    desc: "Doping paketleri ile aracınızı piyasanın 10 kat daha hızlı görünür hale getirin. Ortalama satış süresini %70 azaltın.",
+    desc: "Doping paketleri ilanınızı daha görünür hale getirir ve daha fazla alıcıya daha hızlı ulaşmanıza yardımcı olur.",
   },
   {
     icon: <TrendingUp size={40} />,
     title: "Daha Görünürlük",
-    desc: "Vitrinde öne çıkın, arama sonuçlarında üst sıralara yer alın. Milyonlarca ziyaretçi tarafından keşfedilsin.",
+    desc: "Vitrinde öne çıkın ve arama sonuçlarında daha görünür olun. Doğru alıcıya daha kısa sürede ulaşın.",
   },
   {
     icon: <Users size={40} />,
     title: "Kurumsal Güven",
-    desc: "Kurumsal galeri paketleri ile markanızı profesyonel bir görünümde sunun. Müşteri güvenini %200 artırın.",
+    desc: "Kurumsal galeri paketleri ile araç stoğunuzu daha düzenli sunun ve marka güvenini güçlendirin.",
   },
   {
     icon: <MessageCircle size={40} />,
     title: "Doğrudan İletişim",
-    desc: "Potansiyel alıcılarla WhatsApp üzerinden anında bağlantı kurun. Dönüşüm oranınızı %150 artırın.",
+    desc: "Potansiyel alıcılarla WhatsApp üzerinden hızlı bağlantı kurun ve iletişim sürtünmesini azaltın.",
   },
 ];
 
 // Trust badges
 const trustBadges = [
   { icon: <Lock size={24} />, text: "256-bit SSL Güvenlik" },
-  { icon: <ShieldCheck size={24} />, text: "TC Kimlik Doğrulama" },
+  { icon: <ShieldCheck size={24} />, text: "İlan Moderasyonu" },
   { icon: <Check size={24} />, text: "Plaka & Şasi Kontrolü" },
-  { icon: <Truck size={24} />, text: "Kargo Takibi Desteği" },
+  { icon: <Truck size={24} />, text: "WhatsApp ile Hızlı İletişim" },
 ];
 
 export default function PricingPage() {
@@ -197,7 +197,7 @@ export default function PricingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Star size={16} className="fill-current" />
-            <span>En Düşük Komisyon - En Yüksek Dönüşüm</span>
+            <span>Ücretsiz ilan · uygun fiyatlı doping</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6">
@@ -209,9 +209,7 @@ export default function PricingPage() {
 
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
             İlan verme tamamen <span className="font-semibold text-foreground">ücretsiz</span>.
-            Doping paketleri fiyatı piyasanın{" "}
-            <span className="font-semibold text-primary">1/10&apos;u</span> ile aracınızı
-            milyonlarca kişiye ulaştırın.
+            İhtiyaç duyduğunuzda uygun fiyatlı doping paketleriyle ilan görünürlüğünüzü artırın.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -296,7 +294,7 @@ export default function PricingPage() {
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
               Fiyatları piyasanın <span className="font-bold text-primary">1/10&apos;u</span> ile
-              maksimum dönüşüm. Tüm doping paketleri aylık abonelik şeklindedir.
+              maksimum dönüşüm. Dopingler ilan bazlı görünürlük artırma paketleri olarak çalışır.
             </p>
           </div>
 
@@ -472,14 +470,14 @@ export default function PricingPage() {
                 </ul>
 
                 <Link
-                  href="/dashboard/plans"
+                  href="/dashboard/pricing"
                   className={`inline-flex justify-center w-full py-3 rounded-xl font-semibold transition-all ${
                     plan.popular
                       ? "bg-primary text-primary-foreground hover:bg-primary/90"
                       : "border-2 border-border bg-background hover:border-primary hover:text-primary"
                   }`}
                 >
-                  Detayları Gör
+                  Panelde İncele
                 </Link>
               </div>
             ))}
@@ -487,10 +485,10 @@ export default function PricingPage() {
 
           <div className="mt-12 text-center">
             <Link
-              href="/dashboard/plans"
+              href="/dashboard/pricing"
               className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors"
             >
-              Tüm Kurumsal Planları İncele
+              Kurumsal planları panelde incele
               <ArrowRight size={18} />
             </Link>
           </div>

@@ -25,10 +25,10 @@ export async function PATCH(
   const notification = await markDatabaseNotificationRead(user.id, notificationId);
 
   if (!notification) {
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Guncellenecek bildirim bulunamadi.", 404);
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Güncellenecek bildirim bulunamadı.", 404);
   }
 
-  return apiSuccess({ notification }, "Bildirim okundu olarak isaretlendi.");
+  return apiSuccess({ notification }, "Bildirim okundu olarak işaretlendi.");
 }
 
 export async function DELETE(
@@ -49,7 +49,7 @@ export async function DELETE(
   const deleted = await deleteDatabaseNotification(user.id, notificationId);
 
   if (!deleted) {
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek bildirim bulunamadi.", 404);
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek bildirim bulunamadı.", 404);
   }
 
   return apiSuccess({ deleted: true }, "Bildirim silindi.");

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
 

@@ -11,7 +11,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/monitoring/telemetry-server", () => ({
   captureServerEvent: vi.fn(),
 }));
 

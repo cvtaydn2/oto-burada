@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { logger } from "@/lib/logging/logger";
-import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/telemetry-server";
 import { checkBruteForceLimit } from "@/lib/rate-limiting/distributed-rate-limit";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";

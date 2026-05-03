@@ -234,7 +234,7 @@ export type ServerAnalyticsEvent = Extract<
   | AnalyticsEvent.SERVER_AUTH_PASSWORD_RESET
 >;
 
-/** Listing Wizard adım isimleri — PostHog funnel'larında tutarlılık sağlar. */
+/** Listing Wizard adım isimleri — Telemetry funnel'larında tutarlılık sağlar. */
 export const WIZARD_STEP_NAMES = [
   "Temel Bilgiler",
   "Konum ve Detaylar",

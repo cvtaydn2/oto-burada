@@ -38,7 +38,7 @@ vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
   getRateLimitKey: vi.fn(() => "key"),
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/monitoring/telemetry-server", () => ({
   captureServerError: vi.fn(),
   trackServerEvent: vi.fn(),
 }));

@@ -71,10 +71,15 @@ export function handleAuthRedirects(
 
   // Authenticated users on auth routes -> /dashboard
   if (user && routeInfo.isAuthRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
-    redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
+    const authRouteAllowedWithSession =
+      pathname === "/reset-password" || pathname === "/verify-email";
+
+    if (!authRouteAllowedWithSession) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/dashboard";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return null;

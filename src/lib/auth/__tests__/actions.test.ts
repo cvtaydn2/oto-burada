@@ -15,7 +15,7 @@ vi.mock("@/lib/analytics/events", () => ({
   },
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/monitoring/telemetry-server", () => ({
   identifyServerUser: vi.fn(),
   trackServerEvent: vi.fn(),
 }));

@@ -1,6 +1,6 @@
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   getStoredNotificationsByUser,
@@ -50,5 +50,5 @@ export async function PATCH(request: Request) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Bildirimler güncellenemedi.", 500);
   }
 
-  return apiSuccess({ updated: true }, "Tum bildirimler okundu olarak isaretlendi.");
+  return apiSuccess({ updated: true }, "Tüm bildirimler okundu olarak işaretlendi.");
 }

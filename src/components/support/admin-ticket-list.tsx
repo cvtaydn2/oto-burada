@@ -13,6 +13,22 @@ const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: "closed", label: "Kapatıldı" },
 ];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  account: "Hesap",
+  feedback: "Geri Bildirim",
+  listing: "İlan",
+  other: "Diğer",
+  payment: "Ödeme",
+  technical: "Teknik",
+};
+
+const PRIORITY_LABELS: Record<string, string> = {
+  low: "Düşük",
+  medium: "Normal",
+  high: "Yüksek",
+  urgent: "Acil",
+};
+
 const STATUS_BADGES: Record<string, string> = {
   open: "bg-amber-50 text-amber-700 border-amber-200",
   in_progress: "bg-blue-50 text-blue-700 border-blue-200",
@@ -44,6 +60,7 @@ export function AdminTicketList({
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [reply, setReply] = useState("");
+  const [activeAction, setActiveAction] = useState<string | null>(null);
 
   const filtered = tickets
     .filter((t) => filter === "all" || t.status === filter)
@@ -55,6 +72,7 @@ export function AdminTicketList({
     );
 
   const handleStatusChange = async (ticketId: string, status: TicketStatus) => {
+    setActiveAction(`${ticketId}:${status}`);
     try {
       const res = await fetch(`/api/admin/tickets/${ticketId}`, {
         method: "PATCH",
@@ -67,13 +85,16 @@ export function AdminTicketList({
       }
       toast.success("Durum güncellendi");
       router.refresh();
-    } catch {
-      toast.error("Güncelleme başarısız");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Güncelleme başarısız");
+    } finally {
+      setActiveAction(null);
     }
   };
 
   const handleReply = async (ticketId: string) => {
     if (!reply.trim()) return;
+    setActiveAction(`${ticketId}:reply`);
     try {
       const res = await fetch(`/api/admin/tickets/${ticketId}`, {
         method: "PATCH",
@@ -88,8 +109,10 @@ export function AdminTicketList({
       setReplyingTo(null);
       setReply("");
       router.refresh();
-    } catch {
-      toast.error("Yanıt gönderilemedi");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Yanıt gönderilemedi");
+    } finally {
+      setActiveAction(null);
     }
   };
 
@@ -98,6 +121,8 @@ export function AdminTicketList({
       <div className="p-12 text-center text-slate-400 text-sm">Henüz destek talebi bulunmuyor.</div>
     );
   }
+
+  const hasFilteredResults = filtered.length > 0;
 
   return (
     <div className="space-y-4 p-6">
@@ -139,98 +164,116 @@ export function AdminTicketList({
       </div>
 
       <div className="space-y-3">
-        {filtered.map((ticket) => (
-          <div key={ticket.id} className="rounded-xl border border-slate-200 p-5 space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <span
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${STATUS_BADGES[ticket.status]}`}
-                  >
-                    {STATUS_OPTIONS.find((s) => s.value === ticket.status)?.label}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${PRIORITY_BADGES[ticket.priority]}`}
-                  >
-                    {ticket.priority === "urgent" ? "⚡ " : ""}
-                    {ticket.priority}
-                  </span>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
-                    {ticket.category}
-                  </span>
-                </div>
-                <h3 className="text-sm font-semibold text-slate-900">{ticket.subject}</h3>
-                <p className="text-xs text-slate-500 mt-1">{ticket.description}</p>
-                {ticket.adminResponse && (
-                  <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-100 p-3">
-                    <p className="text-xs font-medium text-emerald-700">
-                      Yanıtınız: {ticket.adminResponse}
+        {hasFilteredResults ? (
+          filtered.map((ticket) => {
+            const isReplying = activeAction === `${ticket.id}:reply`;
+            const isMovingToInProgress = activeAction === `${ticket.id}:in_progress`;
+            const isResolving = activeAction === `${ticket.id}:resolved`;
+            const isBusy = isReplying || isMovingToInProgress || isResolving;
+
+            return (
+              <div key={ticket.id} className="rounded-xl border border-slate-200 p-5 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${STATUS_BADGES[ticket.status]}`}
+                      >
+                        {STATUS_OPTIONS.find((s) => s.value === ticket.status)?.label}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${PRIORITY_BADGES[ticket.priority]}`}
+                      >
+                        {ticket.priority === "urgent" ? "⚡ " : ""}
+                        {PRIORITY_LABELS[ticket.priority] ?? ticket.priority}
+                      </span>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                        {CATEGORY_LABELS[ticket.category] ?? ticket.category}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-900">{ticket.subject}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{ticket.description}</p>
+                    {ticket.adminResponse && (
+                      <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-100 p-3">
+                        <p className="text-xs font-medium text-emerald-700">
+                          Yanıtınız: {ticket.adminResponse}
+                        </p>
+                      </div>
+                    )}
+                    <p className="text-[10px] text-slate-400 mt-2">
+                      {new Date(ticket.createdAt).toLocaleDateString("tr-TR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
-                )}
-                <p className="text-[10px] text-slate-400 mt-2">
-                  {new Date(ticket.createdAt).toLocaleDateString("tr-TR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </div>
-
-            {replyingTo === ticket.id ? (
-              <div className="space-y-3">
-                <textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Kullanıcıya yanıt yazın..."
-                  className="w-full min-h-[80px] rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary resize-none"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleReply(ticket.id)}
-                    className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors"
-                  >
-                    Yanıt Gönder
-                  </button>
-                  <button
-                    onClick={() => {
-                      setReplyingTo(null);
-                      setReply("");
-                    }}
-                    className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-colors"
-                  >
-                    İptal
-                  </button>
                 </div>
-              </div>
-            ) : (
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => setReplyingTo(ticket.id)}
-                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors"
-                >
-                  Yanıtla
-                </button>
-                {ticket.status !== "in_progress" && (
-                  <button
-                    onClick={() => handleStatusChange(ticket.id, "in_progress")}
-                    className="px-4 py-2 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-colors"
-                  >
-                    İncelemeye Al
-                  </button>
+
+                {replyingTo === ticket.id ? (
+                  <div className="space-y-3">
+                    <textarea
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder="Kullanıcıya yanıt yazın..."
+                      className="w-full min-h-[80px] rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleReply(ticket.id)}
+                        disabled={isBusy}
+                        className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isReplying ? "Gönderiliyor..." : "Yanıt Gönder"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setReplyingTo(null);
+                          setReply("");
+                        }}
+                        disabled={isBusy}
+                        className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        İptal
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => setReplyingTo(ticket.id)}
+                      disabled={isBusy}
+                      className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Yanıtla
+                    </button>
+                    {ticket.status !== "in_progress" && (
+                      <button
+                        onClick={() => handleStatusChange(ticket.id, "in_progress")}
+                        disabled={isBusy}
+                        className="px-4 py-2 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isMovingToInProgress ? "Güncelleniyor..." : "İncelemeye Al"}
+                      </button>
+                    )}
+                    {ticket.status !== "resolved" && (
+                      <button
+                        onClick={() => handleStatusChange(ticket.id, "resolved")}
+                        disabled={isBusy}
+                        className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isResolving ? "Güncelleniyor..." : "Çözüldü İşaretle"}
+                      </button>
+                    )}
+                  </div>
                 )}
-                {ticket.status !== "resolved" && (
-                  <button
-                    onClick={() => handleStatusChange(ticket.id, "resolved")}
-                    className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
-                  >
-                    Çözüldü İşaretle
-                  </button>
-                )}
               </div>
-            )}
+            );
+          })
+        ) : (
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+            Seçtiğiniz filtrelere uygun destek talebi bulunamadı.
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

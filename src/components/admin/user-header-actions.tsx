@@ -12,11 +12,20 @@ export function UserHeaderActions() {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const res = await fetch("/api/admin/users/export", { method: "GET" });
-      if (!res.ok) throw new Error("Export başarısız");
+      const res = await fetch("/api/admin/users/export", {
+        method: "GET",
+        cache: "no-store",
+      });
 
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "");
+        throw new Error(errorText || "Export başarısız");
+      }
+
+      const contentType = res.headers.get("content-type") || "text/csv;charset=utf-8";
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const fileBlob = blob.type ? blob : new Blob([blob], { type: contentType });
+      const url = URL.createObjectURL(fileBlob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `kullanicilar-${new Date().toISOString().split("T")[0]}.csv`;
@@ -25,8 +34,8 @@ export function UserHeaderActions() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("Kullanıcı listesi indirildi.");
-    } catch {
-      toast.error("Export sırasında bir hata oluştu.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Export sırasında bir hata oluştu.");
     } finally {
       setIsExporting(false);
     }

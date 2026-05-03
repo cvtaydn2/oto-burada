@@ -4,7 +4,7 @@ import { AlertCircle, Loader2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 import { cn } from "@/lib/utils";
 
 interface SafeWhatsAppButtonProps {

@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logger } from "@/lib/logging/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError } from "@/lib/monitoring/telemetry-server";
 
 export interface ActionResponse<T = unknown> {
   success: boolean;

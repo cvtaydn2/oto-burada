@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/monitoring/telemetry-server", () => ({
   trackServerEvent: vi.fn(),
   identifyServerUser: vi.fn(),
 }));

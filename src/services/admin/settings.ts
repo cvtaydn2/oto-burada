@@ -4,7 +4,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 import { requireAdminUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerWarning } from "@/lib/monitoring/telemetry-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 import type { PlatformSettings } from "./settings-types";

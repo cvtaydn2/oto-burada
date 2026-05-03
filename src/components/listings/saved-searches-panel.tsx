@@ -4,7 +4,7 @@ import { Bell, ChevronRight, LoaderCircle, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 import { formatDate } from "@/lib/utils";
 
 interface SavedSearchListItem {
@@ -87,7 +87,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
       } | null;
 
       if (!response.ok || !payload?.success) {
-        const message = payload?.error?.message ?? "Kayitli arama silinemedi.";
+        const message = payload?.error?.message ?? "Kayıtlı arama silinemedi.";
         captureClientEvent("saved_search_delete_failed", {
           searchId,
           responseStatus: response.status,
@@ -102,9 +102,9 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
     } catch {
       captureClientEvent("saved_search_delete_failed", {
         searchId,
-        message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.",
+        message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.",
       });
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }
@@ -116,16 +116,16 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
         <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Search size={32} />
         </div>
-        <h3 className="text-xl font-bold text-foreground">Kayitli arama yok</h3>
+        <h3 className="text-xl font-bold text-foreground">Kayıtlı arama yok</h3>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Listings sayfasinda filtrelerini ayarlayip &quot;Aramayi Kaydet&quot; butonuna
-          tikladiginda burada tekrar ulasabilecegin bir arama olusur.
+          Listings sayfasında filtrelerini ayarlayıp &quot;Aramayı Kaydet&quot; butonuna
+          tıkladığında burada tekrar ulaşabileceğin bir arama oluşur.
         </p>
         <Link
           href="/listings"
           className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          Ilanlari incele
+          İlanları incele
         </Link>
       </div>
     );
@@ -180,7 +180,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
                 ) : (
                   <Bell className="size-4" />
                 )}
-                {search.notificationsEnabled ? "Bildirimler Acik" : "Bildirimleri Ac"}
+                {search.notificationsEnabled ? "Bildirimler Açık" : "Bildirimleri Aç"}
               </button>
               <button
                 type="button"

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";

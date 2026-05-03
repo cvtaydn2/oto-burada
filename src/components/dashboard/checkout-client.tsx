@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
+import { captureClientEvent, captureClientException } from "@/lib/monitoring/telemetry-client";
 import type { PricingPlan } from "@/services/admin/plans";
 
 interface CheckoutClientProps {

@@ -2,7 +2,7 @@
 
 import { withCache } from "@/lib/caching/cache";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError } from "@/lib/monitoring/telemetry-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 

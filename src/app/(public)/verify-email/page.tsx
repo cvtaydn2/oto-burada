@@ -35,7 +35,7 @@ export default async function VerifyEmailPage() {
                 gönderdiğimiz bağlantıya tıklayarak hesabınızı aktifleştirin.
               </>
             ) : (
-              "Hesabınızı aktifleştirmek için e-posta adresinize gönderdiğimiz bağlantıya tıklamanız gerekiyor."
+              "Doğrulama bağlantısını açtığınız oturum bulunamadı. Hesabınıza giriş yaparak yeniden doğrulama isteyebilirsiniz."
             )}
           </p>
         </div>
@@ -54,7 +54,9 @@ export default async function VerifyEmailPage() {
         </div>
 
         <div className="pt-8 flex flex-col gap-4">
-          {user && !user.email_confirmed_at && <ResendVerificationButton email={user.email} />}
+          {user && !user.email_confirmed_at ? (
+            <ResendVerificationButton email={user.email} />
+          ) : null}
 
           <Link
             href="/login"
@@ -63,6 +65,15 @@ export default async function VerifyEmailPage() {
             GİRİŞ EKRANINA DÖN
             <ArrowRight size={20} />
           </Link>
+
+          {!user && (
+            <Link
+              href="/register"
+              className="h-14 w-full rounded-xl border border-border bg-background text-foreground flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest transition-all hover:bg-muted"
+            >
+              YENİ HESAP OLUŞTUR
+            </Link>
+          )}
 
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest italic">
             E-posta gelmedi mi? Gereksiz (Spam) kutusunu kontrol etmeyi unutmayın.

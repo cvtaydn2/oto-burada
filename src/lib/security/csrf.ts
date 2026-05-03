@@ -17,7 +17,6 @@ import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { getUserFacingError } from "@/config/user-messages";
-import { logger } from "@/lib/logging/logger";
 
 const CSRF_COOKIE_HASH_NAME = "__Host-oto_csrf_v2";
 const CSRF_HEADER_NAME = "x-csrf-token";
@@ -33,33 +32,11 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
   const isIyzico =
     url.pathname.startsWith("/api/payments/webhook") ||
     url.pathname.startsWith("/api/webhooks/iyzico");
-  const isPosthog = url.pathname.startsWith("/api/webhooks/posthog");
-
   if (isIyzico) {
     if (url.pathname === "/api/payments/webhook" || url.pathname === "/api/webhooks/iyzico") {
       return request.headers.has("x-iyzi-signature");
     }
     return false;
-  }
-
-  if (isPosthog) {
-    const isDev = process.env.NODE_ENV !== "production";
-    const posthogSecret = process.env.POSTHOG_WEBHOOK_SECRET;
-    const webhookSecret = request.headers.get("x-posthog-webhook-secret");
-
-    if (isDev && !posthogSecret) return true;
-    if (!posthogSecret) {
-      logger.security.error("PostHog webhook secret not configured in production");
-      return false;
-    }
-
-    if (!webhookSecret || webhookSecret.length !== posthogSecret.length) return false;
-
-    let match = true;
-    for (let i = 0; i < posthogSecret.length; i++) {
-      if (webhookSecret.charCodeAt(i) !== posthogSecret.charCodeAt(i)) match = false;
-    }
-    return match;
   }
 
   const origin = request.headers.get("origin");

@@ -18,7 +18,7 @@ import {
 // Dashboard Components
 import { QuickSystemStat } from "@/components/admin/dashboard/quick-system-stat";
 import { requireAdminUser } from "@/lib/auth/session";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError } from "@/lib/monitoring/telemetry-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";

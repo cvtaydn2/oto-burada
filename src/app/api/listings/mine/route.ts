@@ -14,7 +14,7 @@
 
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withSecurity } from "@/lib/api/security";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError } from "@/lib/monitoring/telemetry-server";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 
 const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
 import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";

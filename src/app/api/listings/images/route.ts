@@ -3,7 +3,7 @@ import sharp from "sharp";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuthAndCsrf } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   countDailyUserUploads,

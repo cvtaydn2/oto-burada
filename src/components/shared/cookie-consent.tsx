@@ -7,7 +7,7 @@ import {
   captureClientEvent,
   getCookieConsent,
   setCookieConsent,
-} from "@/lib/monitoring/posthog-client";
+} from "@/lib/monitoring/telemetry-client";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 import { useCsrfToken } from "@/components/providers/csrf-provider";
-import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
+import { captureClientEvent, captureClientException } from "@/lib/monitoring/telemetry-client";
 
 interface ListingViewTrackerProps {
   listingId: string;

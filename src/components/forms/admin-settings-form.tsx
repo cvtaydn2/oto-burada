@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { captureClientException } from "@/lib/monitoring/telemetry-client";
 import { cn } from "@/lib/utils";
 import { PlatformSettings, updateAllPlatformSettings } from "@/services/admin/settings";
 

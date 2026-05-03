@@ -1,6 +1,8 @@
+import { z } from "zod";
+
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { sanitizeText } from "@/lib/sanitization/sanitize";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
@@ -10,6 +12,11 @@ import { updateDatabaseReportStatus } from "@/services/reports/report-submission
 import type { ReportStatus } from "@/types";
 
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];
+
+const reportUpdateSchema = z.object({
+  note: z.string().trim().max(2000).optional(),
+  status: z.enum(allowedStatuses),
+});
 
 export async function PATCH(request: Request, context: { params: Promise<{ reportId: string }> }) {
   const security = await withAdminRoute(request, {
@@ -27,17 +34,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Rapor güncelleme isteği okunamadı.", 400);
   }
 
-  const status =
-    typeof body === "object" && body !== null && "status" in body ? String(body.status ?? "") : "";
-  const rawNote =
-    typeof body === "object" && body !== null && "note" in body
-      ? String(body.note ?? "").trim()
-      : "";
-  const note = rawNote ? sanitizeText(rawNote) : "";
+  const parsed = reportUpdateSchema.safeParse(body);
 
-  if (!allowedStatuses.includes(status as ReportStatus)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz rapor durumu.", 400);
+  if (!parsed.success) {
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      parsed.error.issues[0]?.message ?? "Rapor güncelleme alanlarını kontrol et.",
+      400
+    );
   }
+
+  const status = parsed.data.status;
+  const note = parsed.data.note ? sanitizeText(parsed.data.note) : "";
 
   if (note.length > 0 && note.length < 3) {
     return apiError(
@@ -48,7 +56,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
   }
 
   const { reportId } = await context.params;
-  const persistedReport = await updateDatabaseReportStatus(reportId, status as ReportStatus);
+  const persistedReport = await updateDatabaseReportStatus(reportId, status);
 
   if (!persistedReport) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Güncellenecek rapor bulunamadı.", 404);
@@ -78,7 +86,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
   });
 
   captureServerEvent(
-    "admin_report_resolved",
+    "admin_report_status_updated",
     {
       adminUserId: adminUser.id,
       reportId,

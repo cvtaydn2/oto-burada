@@ -7,7 +7,7 @@ import { mapUseCaseError, validateRequestBody } from "@/lib/api/handler-utils";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withUserAndCsrfToken } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
-import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, trackServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";

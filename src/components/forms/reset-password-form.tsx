@@ -67,7 +67,7 @@ export function ResetPasswordForm() {
             <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
                 <label
-                  htmlFor="new-password"
+                  htmlFor="password"
                   className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
                 >
                   YENİ ŞİFRE
@@ -98,7 +98,7 @@ export function ResetPasswordForm() {
 
               <div className="space-y-2 group">
                 <label
-                  htmlFor="confirm-password"
+                  htmlFor="confirm"
                   className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
                 >
                   ŞİFRE TEKRAR

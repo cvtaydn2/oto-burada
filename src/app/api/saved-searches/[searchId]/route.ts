@@ -1,6 +1,6 @@
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { savedSearchUpdateSchema } from "@/lib/validators";
@@ -49,7 +49,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ searc
       },
       user.id
     );
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Guncelleme istegi okunamadi.", 400);
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Güncelleme isteği okunamadı.", 400);
   }
 
   const parsed = savedSearchUpdateSchema.safeParse(body);
@@ -66,7 +66,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ searc
     );
     return apiError(
       API_ERROR_CODES.VALIDATION_ERROR,
-      parsed.error.issues[0]?.message ?? "Alanlari kontrol et.",
+      parsed.error.issues[0]?.message ?? "Alanları kontrol et.",
       400,
       issuesToFieldErrors(parsed.error.issues)
     );
@@ -89,7 +89,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ searc
       },
       user.id
     );
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kayitli arama guncellenemedi.", 500);
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kayıtlı arama güncellenemedi.", 500);
   }
 
   if (!savedSearch) {
@@ -103,7 +103,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ searc
       },
       user.id
     );
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Guncellenecek kayitli arama bulunamadi.", 404);
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Güncellenecek kayıtlı arama bulunamadı.", 404);
   }
 
   captureServerEvent(
@@ -116,7 +116,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ searc
     user.id
   );
 
-  return apiSuccess({ savedSearch }, "Kayitli arama guncellendi.");
+  return apiSuccess({ savedSearch }, "Kayıtlı arama güncellendi.");
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ searchId: string }> }) {
@@ -161,7 +161,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ sear
       },
       user.id
     );
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kayitli arama silinemedi.", 500);
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kayıtlı arama silinemedi.", 500);
   }
 
   if (!deleted) {
@@ -175,7 +175,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ sear
       },
       user.id
     );
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek kayitli arama bulunamadi.", 404);
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek kayıtlı arama bulunamadı.", 404);
   }
 
   captureServerEvent(
@@ -187,5 +187,5 @@ export async function DELETE(request: Request, context: { params: Promise<{ sear
     user.id
   );
 
-  return apiSuccess({ deleted: true }, "Kayitli arama silindi.");
+  return apiSuccess({ deleted: true }, "Kayıtlı arama silindi.");
 }

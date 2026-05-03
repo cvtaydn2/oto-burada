@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
-import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { captureClientException } from "@/lib/monitoring/telemetry-client";
 
 export default function GlobalError({
   error,
@@ -16,10 +16,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Capture error in Sentry
     Sentry.captureException(error);
-
-    // Capture error in PostHog
     captureClientException(error, "global-error", { digest: error.digest });
   }, [error, error.digest]);
 

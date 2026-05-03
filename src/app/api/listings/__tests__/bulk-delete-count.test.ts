@@ -15,7 +15,7 @@ vi.mock("@/lib/rate-limiting/rate-limit", () => ({
   rateLimitProfiles: { general: {} },
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/monitoring/telemetry-server", () => ({
   captureServerEvent: vi.fn(),
 }));
 

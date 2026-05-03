@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    const { captureServerError } = await import("@/lib/monitoring/posthog-server");
+    const { captureServerError } = await import("@/lib/monitoring/telemetry-server");
     captureServerError(
       "Seller review upsert failed",
       "reviews",
