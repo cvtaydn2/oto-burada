@@ -24,11 +24,11 @@ export async function validateRequestBody<T>(
 
   const result = schema.safeParse(body);
   if (!result.success) {
+    // Normalize zod field errors into expected `Record<string, string[]>` format
+    const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[]>;
     return {
       success: false,
-      response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz veri formatı.", 400, {
-        errors: result.error.flatten().fieldErrors,
-      }),
+      response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz veri formatı.", 400, fieldErrors),
     };
   }
 

@@ -7,7 +7,7 @@
     "prebuild": "npm run db:check-env",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --max-warnings 0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "playwright test",
     "test:unit": "vitest run",

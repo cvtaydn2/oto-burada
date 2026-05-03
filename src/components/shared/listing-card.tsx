@@ -42,6 +42,20 @@ const cardVariants = cva(
   }
 );
 
+const FUEL_TYPE_LABELS: Record<string, string> = {
+  benzin: "Benzin",
+  dizel: "Dizel",
+  lpg: "LPG",
+  hybrid: "Hibrit",
+  elektrik: "Elektrikli",
+};
+
+const TRANSMISSION_LABELS: Record<string, string> = {
+  manuel: "Manuel",
+  otomatik: "Otomatik",
+  yari_otomatik: "Yarı Otomatik",
+};
+
 interface ListingCardProps extends VariantProps<typeof cardVariants> {
   listing: Listing;
   priority?: boolean;
@@ -67,17 +81,31 @@ export const ListingCard = memo(function ListingCard({
 
   const isGrid = variant === "grid";
   const isList = variant === "list";
+  const transmissionLabel =
+    listing.transmission && TRANSMISSION_LABELS[listing.transmission]
+      ? TRANSMISSION_LABELS[listing.transmission]
+      : listing.transmission;
+  const fuelTypeLabel =
+    listing.fuelType && FUEL_TYPE_LABELS[listing.fuelType]
+      ? FUEL_TYPE_LABELS[listing.fuelType]
+      : listing.fuelType;
+  const titleText = `${listing.year} ${listing.brand} ${listing.model}`;
+  const cardAriaLabel = `${titleText}, ${listing.city}, ${formatPrice(listing.price)} TL`;
 
   return (
-    <div
+    <article
       className={cn(
         cardVariants({ variant, isHighlighted: badgeStates.isHighlighted && isPremiumVisible }),
         className
       )}
-      role="article"
       aria-labelledby={`listing-title-${listing.id}`}
     >
-      {/* ── Media Section ── */}
+      <Link
+        href={detailHref}
+        className="absolute inset-0 z-10 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        aria-label={cardAriaLabel}
+      />
+
       <div
         className={cn(
           "relative overflow-hidden bg-muted/20",
@@ -85,26 +113,17 @@ export const ListingCard = memo(function ListingCard({
           isList && "aspect-[16/10] sm:aspect-auto sm:w-[320px] shrink-0"
         )}
       >
-        <Link
-          href={detailHref}
-          tabIndex={-1}
-          aria-hidden="true"
-          className="block w-full h-full relative"
-        >
-          <SafeImage
-            src={coverImage ? supabaseImageUrl(coverImage.url, 640) : ""}
-            alt="" // Decorative since it's inside a link with aria-hidden, aria-labelledby on container covers it
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            priority={priority}
-            className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-110"
-          />
-          {/* Glass Overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-normal" />
-        </Link>
+        <SafeImage
+          src={coverImage ? supabaseImageUrl(coverImage.url, 640) : ""}
+          alt={`${titleText} görseli`}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority={priority}
+          className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-normal" />
 
-        {/* Floating Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
+        <div className="absolute top-4 left-4 flex flex-col gap-2 z-20 pointer-events-none">
           {badgeStates.isFeatured && isPremiumVisible && (
             <Badge
               icon={Sparkles}
@@ -122,65 +141,61 @@ export const ListingCard = memo(function ListingCard({
           {isPremiumVisible && badgeStates.hasInspection && (
             <Badge
               icon={ShieldCheck}
-              label="EKSPERTİZLİ"
-              className="bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-2xl font-black tracking-widest scale-105"
+              label="EKSPERTİZ"
+              className="bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-2xl"
             />
           )}
         </div>
 
-        {/* Favorite Button */}
         {showFavorite && (
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute top-4 right-4 z-30">
             <FavoriteButton
               listingId={listing.id}
-              className="size-11 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90 focus-ring"
+              className="size-11 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90"
             />
           </div>
         )}
 
-        {/* Price Tag Overlay (Bottom Left on Grid) */}
-        <div className="absolute bottom-4 left-4 flex items-center gap-2 z-10 pointer-events-none">
+        <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20 pointer-events-none">
           {showInsights && insights.tone === "emerald" && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-white backdrop-blur-md text-[10px] font-bold uppercase tracking-widest shadow-xl animate-in fade-in slide-in-from-left-4 duration-500">
+            <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-xl">
               <TrendingDown size={12} />
               {insights.badgeLabel}
             </div>
           )}
-          <div className="px-3 py-1.5 rounded-xl bg-black/30 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-[0.2em]">
-            {listing.images?.length || 0} FOTO
+          <div className="rounded-xl bg-black/30 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
+            {listing.images?.length || 0} foto
           </div>
         </div>
       </div>
 
-      {/* ── Content Section ── */}
       <div
         className={cn(
-          "flex flex-1 flex-col",
-          isGrid && "p-6",
+          "relative z-20 flex flex-1 flex-col",
+          isGrid && "p-5 sm:p-6",
           isList && "p-4 sm:p-8 sm:pl-10 justify-center"
         )}
       >
         <div className="space-y-4">
-          {/* Brand & Market Intelligence */}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.25em]">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-primary">
                 {listing.brand}
               </span>
               <div className="size-1 rounded-full bg-slate-300" aria-hidden="true" />
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 {listing.year}
               </span>
             </div>
             {showInsights && insights.tone !== "emerald" && (
               <div
                 className={cn(
-                  "text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border shadow-sm transition-all group-hover:scale-105",
+                  "rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wide",
                   insights.tone === "amber"
-                    ? "bg-amber-50 text-amber-700 border-amber-100"
+                    ? "border-amber-100 bg-amber-50 text-amber-700"
                     : insights.tone === "indigo"
-                      ? "bg-indigo-50 text-indigo-700 border-indigo-100"
-                      : "bg-muted/50 text-muted-foreground border-border/10"
+                      ? "border-indigo-100 bg-indigo-50 text-indigo-700"
+                      : "border-border/10 bg-muted/50 text-muted-foreground"
                 )}
               >
                 {insights.badgeLabel}
@@ -188,22 +203,18 @@ export const ListingCard = memo(function ListingCard({
             )}
           </div>
 
-          {/* Title & Description */}
-          <Link
-            href={detailHref}
-            id={`listing-title-${listing.id}`}
-            className="block group/title space-y-1 focus-ring rounded-lg"
-            aria-label={`${listing.year} ${listing.brand} ${listing.model}: ${formatPrice(listing.price)} TL`}
-          >
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors duration-300">
+          <div className="space-y-1.5">
+            <h2
+              id={`listing-title-${listing.id}`}
+              className="text-lg font-bold tracking-tight text-foreground sm:text-xl lg:text-2xl"
+            >
               {listing.model}
             </h2>
-            <p className="text-sm font-medium text-slate-400 line-clamp-1 italic group-hover/title:text-slate-500 transition-colors duration-fast">
+            <p className="line-clamp-1 text-sm font-medium text-muted-foreground">
               {listing.title}
             </p>
-          </Link>
+          </div>
 
-          {/* Pricing */}
           <div
             className="flex items-baseline gap-1.5"
             aria-label={`Fiyat: ${formatPrice(listing.price)} TL`}
@@ -211,57 +222,40 @@ export const ListingCard = memo(function ListingCard({
             <span className="text-3xl font-extrabold tracking-tighter text-foreground">
               {formatPrice(listing.price)}
             </span>
-            <span
-              className="text-xs font-bold text-primary/40 uppercase tracking-widest"
-              aria-hidden="true"
-            >
+            <span className="text-xs font-bold tracking-wider text-primary/50" aria-hidden="true">
               TL
             </span>
           </div>
 
-          {/* Key Technical Specs */}
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <Stat
-              icon={CircleGauge}
-              label={`${formatNumber(listing.mileage)} KM`}
-              sub={undefined}
-            />
-            <Stat
-              icon={Settings2}
-              label={listing.transmission === "otomatik" ? "Otomatik" : "Manuel"}
-            />
-            <Stat icon={Fuel} label={listing.fuelType === "benzin" ? "Benzin" : "Dizel"} />
+          <div className="grid grid-cols-3 gap-3 pt-1">
+            <Stat icon={CircleGauge} label={`${formatNumber(listing.mileage)} km`} />
+            <Stat icon={Settings2} label={transmissionLabel} />
+            <Stat icon={Fuel} label={fuelTypeLabel} />
           </div>
         </div>
 
-        {/* Footer / Location */}
         <div
           className={cn(
-            "mt-8 flex items-center justify-between pt-6 border-t border-slate-100",
+            "mt-6 flex items-center justify-between border-t border-slate-100 pt-5",
             isList && "sm:mt-6"
           )}
         >
-          <div className="flex items-center gap-3">
-            <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-[background-color,color] duration-normal ease-standard">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex size-8 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-[background-color,color] duration-normal ease-standard group-hover:bg-primary/5 group-hover:text-primary">
               <MapPin size={14} />
             </div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+            <span className="truncate text-xs font-bold tracking-wide text-slate-500">
               {listing.city}
             </span>
           </div>
 
-          <Link
-            href={detailHref}
-            tabIndex={-1}
-            aria-hidden="true"
-            className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-primary group-hover:gap-3 transition-[gap] duration-normal ease-expressive cursor-pointer"
-          >
-            DETAY
+          <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+            Detay
             <ChevronRight size={16} strokeWidth={3} />
-          </Link>
+          </span>
         </div>
       </div>
-    </div>
+    </article>
   );
 });
 
@@ -277,7 +271,7 @@ function Badge({
   return (
     <div
       className={cn(
-        "flex h-8 items-center gap-2 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest backdrop-blur-xl border border-white/20",
+        "flex h-8 items-center gap-2 rounded-xl border border-white/20 px-4 text-[10px] font-bold uppercase tracking-widest backdrop-blur-xl",
         className
       )}
     >
@@ -298,12 +292,12 @@ function Stat({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="size-11 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105">
+      <div className="flex size-11 items-center justify-center rounded-2xl bg-muted/30 text-slate-400 transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105 group-hover:bg-primary/5 group-hover:text-primary">
         <Icon size={16} />
       </div>
-      <div className="flex items-baseline gap-1 min-w-0">
-        <span className="text-[12px] font-bold text-slate-600 truncate">{label}</span>
-        {sub && <span className="text-[9px] font-bold text-slate-400 uppercase">{sub}</span>}
+      <div className="flex min-w-0 items-baseline gap-1">
+        <span className="truncate text-[12px] font-bold text-slate-600">{label}</span>
+        {sub && <span className="text-[9px] font-bold uppercase text-slate-400">{sub}</span>}
       </div>
     </div>
   );

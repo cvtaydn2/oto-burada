@@ -8,7 +8,7 @@ import { getLiveMarketplaceReferenceData } from "@/services/reference/live-refer
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },
   { href: "/listings", label: "Tüm İlanlar" },
-  { href: "/dashboard/listings", label: "İlan Ver" },
+  { href: "/dashboard/listings", label: "Ücretsiz İlan Ver" },
   { href: "/login", label: "Giriş Yap" },
 ];
 
@@ -27,7 +27,7 @@ export async function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-4 lg:gap-12">
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <Link href="/" className="group flex items-center gap-2.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-500/25">
                 <CarFront size={20} />
               </div>
@@ -41,10 +41,10 @@ export async function SiteFooter() {
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                 {references.brands.length}+ Marka
               </span>
-              <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                 {references.cities.length} Şehir
               </span>
-              <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                 Ücretsiz İlan
               </span>
             </div>
@@ -69,10 +69,10 @@ export async function SiteFooter() {
             </h3>
             <ul className="mt-5 space-y-3">
               {references.brands.slice(0, 6).map((brand) => (
-                <li key={brand.brand}>
+                <li key={brand.slug}>
                   <Link
-                    href={`/listings?brand=${encodeURIComponent(brand.brand)}`}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    href={`/satilik/${brand.slug}`}
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {brand.brand}
                   </Link>
@@ -106,13 +106,13 @@ export async function SiteFooter() {
             © {CURRENT_YEAR} OtoBurada. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/legal/privacy" className="hover:text-primary transition-colors">
+            <Link href="/legal/privacy" className="transition-colors hover:text-primary">
               Gizlilik Politikası
             </Link>
-            <Link href="/legal/terms" className="hover:text-primary transition-colors">
+            <Link href="/legal/terms" className="transition-colors hover:text-primary">
               Kullanım Şartları
             </Link>
-            <Link href="/contact" className="hover:text-primary transition-colors">
+            <Link href="/contact" className="transition-colors hover:text-primary">
               İletişim
             </Link>
           </div>

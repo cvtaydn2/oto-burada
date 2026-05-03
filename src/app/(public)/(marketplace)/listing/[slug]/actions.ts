@@ -1,20 +1,42 @@
 "use server";
 
+import { getCurrentUser } from "@/lib/auth/session";
 import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
+import {
+  getMarketplaceListingBySlug,
+  getStoredListingBySlug,
+} from "@/services/listings/marketplace-listings";
 
 /**
  * Generate signed URL for expert inspection document on-demand.
- * This avoids generating signed URLs during initial page render (saves 100-300ms).
- *
- * @param documentPath - The storage path of the expert inspection document
- * @returns The signed URL or null if generation failed
+ * Public users can only access approved/public listing documents.
+ * Owners/admins can access their own listing documents.
  */
-export async function generateExpertDocumentSignedUrl(
-  documentPath: string
-): Promise<string | null> {
+export async function generateExpertDocumentSignedUrl(slug: string): Promise<string | null> {
   try {
-    const signedUrl = await createExpertDocumentSignedUrl(documentPath);
-    return signedUrl;
+    const publicListing = await getMarketplaceListingBySlug(slug);
+    if (publicListing?.expertInspection?.documentPath) {
+      return await createExpertDocumentSignedUrl(publicListing.expertInspection.documentPath);
+    }
+
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return null;
+    }
+
+    const storedListing = await getStoredListingBySlug(slug, { includeBanned: true });
+    if (!storedListing?.expertInspection?.documentPath) {
+      return null;
+    }
+
+    const isAdmin = currentUser.user_metadata?.role === "admin";
+    const isOwner = currentUser.id === storedListing.sellerId;
+
+    if (!isAdmin && !isOwner) {
+      return null;
+    }
+
+    return await createExpertDocumentSignedUrl(storedListing.expertInspection.documentPath);
   } catch (error) {
     console.error("Failed to generate expert document signed URL:", error);
     return null;

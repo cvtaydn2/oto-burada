@@ -5,6 +5,7 @@ import { withSecurity } from "@/lib/api/security";
 import { getCurrentUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { recordListingView } from "@/services/listings/listing-views";
+import { getListingById } from "@/services/listings/marketplace-listings";
 
 const viewSchema = z.object({
   listingId: z.string().uuid(),
@@ -18,6 +19,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validated = viewSchema.parse(body);
 
+    const listing = await getListingById(validated.listingId);
+    if (!listing || listing.status !== "approved") {
+      return NextResponse.json({ error: "Listing not available" }, { status: 404 });
+    }
+
     const currentUser = await getCurrentUser();
     const headersList = request.headers;
     const viewerIp =
@@ -25,7 +31,6 @@ export async function POST(request: Request) {
       headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       undefined;
 
-    // Fire and forget recording
     recordListingView(validated.listingId, {
       viewerId: currentUser?.id,
       viewerIp,

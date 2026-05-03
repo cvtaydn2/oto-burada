@@ -3,6 +3,7 @@ import { AlertCircle, Car, CheckCircle2, ChevronRight, LoaderCircle } from "luci
 import { useState } from "react";
 
 import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
+import UploadProgress from "@/components/listings/upload-progress";
 import { BotProtection } from "@/components/shared/bot-protection";
 // Feature Hook
 import { useListingCreation } from "@/features/listing-creation/hooks/use-listing-creation";
@@ -253,6 +254,8 @@ export function ListingCreateForm({
           void onSubmit();
         }}
       />
+
+      <UploadProgress uploadStates={uploadStates} />
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 
-import { useAuthUser } from "@/components/shared/auth-provider";
 import { formatCurrency } from "@/lib/utils";
 import type { Profile } from "@/types";
 
@@ -32,19 +31,16 @@ export function MobileStickyActions({
   price,
   currentUserId,
 }: MobileStickyActionsProps) {
-  const { isAuthenticated } = useAuthUser();
-  const loginUrl = `/login?next=${encodeURIComponent(`/listing/${listingSlug}`)}`;
-  // If this is the seller's own listing, render nothing (no contact needed)
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
 
   if (isOwnListing) return null;
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden pointer-events-none">
+    <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-30 lg:hidden">
       <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 pointer-events-auto">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 p-3 glass rounded-[24px] shadow-2xl">
-          <div className="flex flex-col shrink-0">
+        <div className="glass mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-[24px] p-3 shadow-2xl">
+          <div className="flex shrink-0 flex-col">
             <span
-              className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider"
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70"
               aria-hidden="true"
             >
               Fiyat
@@ -60,28 +56,16 @@ export function MobileStickyActions({
             </div>
           </div>
 
-          <div className="flex flex-1 items-center gap-2 min-w-0">
-            {/* Primary contact */}
-            <div className="flex-1 min-w-0">
-              {isAuthenticated ? (
-                <ContactActions
-                  listingId={listingId}
-                  listingSlug={listingSlug}
-                  sellerId={sellerId}
-                  seller={seller}
-                  listingTitle={listingTitle}
-                  listingPrice={price}
-                  currentUserId={currentUserId}
-                />
-              ) : (
-                <a
-                  href={loginUrl}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary h-12 px-4 text-xs font-bold text-white shadow-lg active:scale-95 transition-all"
-                >
-                  İletişim İçin Giriş Yap
-                </a>
-              )}
-            </div>
+          <div className="min-w-0 flex-1">
+            <ContactActions
+              listingId={listingId}
+              listingSlug={listingSlug}
+              sellerId={sellerId}
+              seller={seller}
+              listingTitle={listingTitle}
+              listingPrice={price}
+              currentUserId={currentUserId}
+            />
           </div>
         </div>
       </div>

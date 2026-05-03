@@ -1,5 +1,4 @@
 ﻿import { withNextCache } from "@/lib/caching/cache";
-import { maskPhoneNumber } from "@/lib/listings/utils";
 import { logger } from "@/lib/logging/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
@@ -123,17 +122,10 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
 
   if (!storedListing || storedListing.status !== "approved") return null;
 
-  const maskedListing = {
-    ...storedListing,
-    whatsappPhone: maskPhoneNumber(storedListing.whatsappPhone),
-  };
-
-  // PERFORMANCE: Don't generate signed URL on server (PERF-08)
-  // Client component ExpertPdfButton handles this on-demand
-  if (!storedListing.expertInspection?.documentPath) return maskedListing;
+  if (!storedListing.expertInspection?.documentPath) return storedListing;
 
   return {
-    ...maskedListing,
+    ...storedListing,
     expertInspection: {
       ...storedListing.expertInspection,
       documentUrl: storedListing.expertInspection.documentUrl || undefined,

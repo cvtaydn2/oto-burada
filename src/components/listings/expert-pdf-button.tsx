@@ -6,30 +6,26 @@ import { useState } from "react";
 import { generateExpertDocumentSignedUrl } from "@/app/(public)/(marketplace)/listing/[slug]/actions";
 
 interface ExpertPdfButtonProps {
-  documentPath: string;
+  slug: string;
 }
 
 /**
  * Client component that generates signed URL on-demand when user clicks.
- * This defers the expensive signed URL generation until actually needed.
  */
-export function ExpertPdfButton({ documentPath }: ExpertPdfButtonProps) {
+export function ExpertPdfButton({ slug }: ExpertPdfButtonProps) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleClick = async (e: React.MouseEvent) => {
-    // If we already have a signed URL, just use it
     if (signedUrl) return;
 
-    // Prevent navigation while generating URL
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const url = await generateExpertDocumentSignedUrl(documentPath);
+      const url = await generateExpertDocumentSignedUrl(slug);
       if (url) {
         setSignedUrl(url);
-        // Open in new tab after setting state
         window.open(url, "_blank", "noopener,noreferrer");
       }
     } finally {
@@ -37,7 +33,6 @@ export function ExpertPdfButton({ documentPath }: ExpertPdfButtonProps) {
     }
   };
 
-  // If we have a signed URL, render as direct link
   if (signedUrl) {
     return (
       <a

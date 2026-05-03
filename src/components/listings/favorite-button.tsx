@@ -20,22 +20,27 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const { hydrated, isAuthenticated, isFavorite, toggleFavorite } = useFavorites();
   const active = hydrated && isFavorite(listingId);
-  // Tooltip only shown after a click attempt by a guest — not on every hover
   const [showHint, setShowHint] = useState(false);
+  const [announcement, setAnnouncement] = useState<string>("");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     if (!isAuthenticated) {
       toggleFavorite(listingId);
       setShowHint(true);
+      setAnnouncement("Favori yerel olarak kaydedildi.");
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setShowHint(false), 3000);
       return;
     }
+
     toggleFavorite(listingId);
+    setAnnouncement(active ? "Favorilerden çıkarıldı" : "Favorilere eklendi");
   };
 
-  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -62,7 +67,7 @@ export function FavoriteButton({
           aria-hidden="true"
         />
         <span className="sr-only" aria-live="polite">
-          {active ? "Favorilere eklendi" : "Favorilerden çıkarıldı"}
+          {announcement}
         </span>
       </button>
       {showGuestHint && !isAuthenticated && showHint && (
@@ -75,7 +80,7 @@ export function FavoriteButton({
             href="/login"
             className="mt-2 inline-flex items-center text-indigo-300 hover:text-white"
           >
-            <LogIn className="size-3 mr-1" />
+            <LogIn className="mr-1 size-3" />
             Giriş
           </Link>
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />

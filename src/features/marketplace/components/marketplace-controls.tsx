@@ -1,12 +1,10 @@
 "use client";
 
-import { ArrowDownUp, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
+import { ArrowDownUp } from "lucide-react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 
 import { marketplace } from "@/lib/constants/ui-strings";
 import { cn } from "@/lib/utils";
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 const MobileFilterDrawer = dynamic(() =>
@@ -61,64 +59,59 @@ export function MarketplaceControls({
     SORT_OPTIONS.find((o) => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
 
   return (
-    <div className="flex flex-wrap items-center gap-2 bg-card border border-border p-1.5 rounded-xl shadow-sm">
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-1.5 shadow-sm">
       <MobileFilterDrawer
         brands={brands}
         cities={cities}
         filters={filters}
         activeCount={activeFiltersCount}
+        resultCount={total}
         onApply={(f) => applyFilters(f, true)}
         onReset={handleReset}
       />
-
-      <Link
-        href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
-        className="flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-all active:scale-95 uppercase tracking-widest"
-      >
-        <SlidersHorizontal size={14} strokeWidth={3} />
-        Gelişmiş Filtrele
-      </Link>
 
       <div className="hidden sm:block">
         <SaveSearchButton filters={filters} resultCount={total} userId={userId} variant="compact" />
       </div>
 
-      <div className="h-8 w-px bg-border mx-1 hidden sm:block" />
+      <div className="hidden h-8 w-px bg-border sm:block" />
 
-      <div className="hidden sm:flex items-center gap-1.5 p-1 rounded-xl bg-muted/30">
+      <div className="hidden sm:flex items-center gap-1 rounded-xl bg-muted/30 p-1">
         <button
           onClick={() => setViewMode("grid")}
           className={cn(
-            "flex h-9 w-10 items-center justify-center rounded-lg transition-all",
+            "rounded-lg border px-3 py-2 text-xs font-bold transition-all",
             viewMode === "grid"
-              ? "bg-card text-foreground shadow-sm border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
+              ? "border-border/50 bg-card text-foreground shadow-sm"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          <LayoutGrid size={18} />
+          Kart
         </button>
         <button
           onClick={() => setViewMode("list")}
           className={cn(
-            "flex h-9 w-10 items-center justify-center rounded-lg transition-all",
+            "rounded-lg border px-3 py-2 text-xs font-bold transition-all",
             viewMode === "list"
-              ? "bg-card text-foreground shadow-sm border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
+              ? "border-border/50 bg-card text-foreground shadow-sm"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          <List size={18} />
+          Liste
         </button>
       </div>
 
-      <div className="relative">
+      <div className="relative ml-auto">
         <button
           onClick={() => setIsSortOpen(!isSortOpen)}
-          className="flex h-11 items-center gap-3 rounded-xl border border-border bg-card px-5 text-xs font-bold text-foreground hover:bg-muted/50 transition-all uppercase tracking-widest"
+          className="flex h-11 items-center gap-3 rounded-xl border border-border bg-card px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/50"
+          aria-haspopup="listbox"
+          aria-expanded={isSortOpen}
         >
           <ArrowDownUp size={14} strokeWidth={3} />
-          <span className="hidden sm:inline">{currentSortLabel}</span>
+          <span>{currentSortLabel}</span>
           <ChevronIcon
-            className={cn("transition-transform size-4 ml-1", isSortOpen && "rotate-180")}
+            className={cn("ml-1 size-4 transition-transform", isSortOpen && "rotate-180")}
           />
         </button>
 
@@ -134,7 +127,7 @@ export function MarketplaceControls({
                       setIsSortOpen(false);
                     }}
                     className={cn(
-                      "w-full px-4 py-3 text-left text-xs font-bold rounded-xl transition-all uppercase tracking-widest",
+                      "w-full rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all",
                       (filters.sort ?? "newest") === option.value
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted"

@@ -14,11 +14,6 @@ interface FeaturedCarouselProps {
   className?: string;
 }
 
-/**
- * Featured Carousel Component
- * Displays gallery-priority listings in a horizontal carousel.
- * Used on homepage to showcase premium doping listings.
- */
 export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -29,6 +24,7 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
 
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -42,15 +38,16 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
     if (!emblaApi) return;
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
+    setSelectedIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
 
-    // Initialize scroll state
     const initScrollState = () => {
       setCanScrollPrev(emblaApi.canScrollPrev());
       setCanScrollNext(emblaApi.canScrollNext());
+      setSelectedIndex(emblaApi.selectedScrollSnap());
     };
 
     initScrollState();
@@ -67,20 +64,18 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
 
   return (
     <div className={cn("relative", className)}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Sparkles size={20} />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Vitrin Galerisi</h2>
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Vitrin Galerisi</h2>
             <p className="text-xs text-muted-foreground">Öne çıkan premium ilanlar</p>
           </div>
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="hidden items-center gap-2 sm:flex">
           <Button
             variant="outline"
             size="icon"
@@ -104,13 +99,19 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
         </div>
       </div>
 
-      {/* Carousel */}
+      <div className="mb-3 flex items-center justify-between sm:hidden">
+        <p className="text-xs font-medium text-muted-foreground">Kaydırarak incele</p>
+        <span className="text-xs text-muted-foreground">
+          {selectedIndex + 1} / {listings.length}
+        </span>
+      </div>
+
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-4 sm:gap-5">
           {listings.map((listing, index) => (
             <div
               key={listing.id}
-              className="flex-[0_0_85%] sm:flex-[0_0_45%] lg:flex-[0_0_30%] xl:flex-[0_0_23%] min-w-0"
+              className="min-w-0 flex-[0_0_85%] sm:flex-[0_0_45%] lg:flex-[0_0_30%] xl:flex-[0_0_23%]"
             >
               <ListingCard listing={listing} priority={index < 2} />
             </div>
@@ -118,17 +119,21 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
         </div>
       </div>
 
-      {/* Mobile Navigation Dots */}
-      <div className="flex sm:hidden justify-center gap-2 mt-4">
+      <div
+        className="mt-4 flex justify-center gap-2 sm:hidden"
+        role="tablist"
+        aria-label="Vitrin galeri slaytları"
+      >
         {listings.map((_, index) => (
           <button
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
             className={cn(
-              "size-2 rounded-full transition-all",
-              emblaApi?.selectedScrollSnap() === index ? "bg-primary w-6" : "bg-muted-foreground/30"
+              "rounded-full transition-all",
+              selectedIndex === index ? "h-2 w-6 bg-primary" : "size-2 bg-muted-foreground/30"
             )}
             aria-label={`Slayt ${index + 1}`}
+            aria-current={selectedIndex === index ? "true" : undefined}
           />
         ))}
       </div>

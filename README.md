@@ -166,6 +166,52 @@ Bu hesabın seed sırasında oluşmuş olması gerekir.
 
 ## Env açıklamaları
 
+## API: Listing Create Contract
+
+The `POST /api/listings` endpoint accepts a JSON body matching the `ListingCreateInput` contract.
+Important notes:
+
+- `price` should be sent as full TL amount (example: `1500000` for 1.500.000 TL). The server stores price as kurus (integer) — internally multiplied by 100.
+- `images` must be an array of image objects with at least 3 items when creating a listing. Each image object should contain `storagePath` and `url` (returned by `/api/listings/images`). Example:
+
+```json
+{
+   "title": "2019 Honda Civic",
+   "brand": "Honda",
+   "model": "Civic",
+   "year": 2019,
+   "price": 1500000,
+   "mileage": 45000,
+   "fuelType": "benzin",
+   "transmission": "manuel",
+   "city": "İstanbul",
+   "district": "Beşiktaş",
+   "description": "Araç temiz, hasar kaydı ...",
+   "whatsappPhone": "+905xxxxxxxxx",
+   "vin": "1HGCM82633A004352",
+   "images": [
+      { "storagePath": "user-id/abcd.webp", "url": "https://.../abcd.webp" },
+      { "storagePath": "user-id/efgh.webp", "url": "https://.../efgh.webp" },
+      { "storagePath": "user-id/ijkl.webp", "url": "https://.../ijkl.webp" }
+   ]
+}
+```
+
+On success the endpoint returns a minimal listing reference:
+
+```json
+{
+   "success": true,
+   "data": {
+      "message": "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
+      "listing": { "id": "...", "slug": "...", "status": "pending" }
+   }
+}
+```
+
+Validation errors are returned in `error.details` as a mapping of field names to arrays of short messages (e.g. `{ "price": ["Fiyat en az 1 TL olmalıdır"] }`). This is safe for production and suitable for displaying field-level errors on the frontend.
+
+
 ### Zorunlu çekirdek değişkenler
 
 - `NEXT_PUBLIC_APP_URL`: Public app origin

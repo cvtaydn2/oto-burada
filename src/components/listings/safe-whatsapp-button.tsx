@@ -52,7 +52,7 @@ export function SafeWhatsAppButton({
       });
 
       // Redirect to WhatsApp
-      window.open(whatsappUrl, "_blank");
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Numara alınamadı");
     } finally {

@@ -77,11 +77,19 @@ export async function revealListingPhone(listingId: string) {
   // Fetch phone and verify status
   const { data: listing, error: fetchErr } = await admin
     .from("listings")
-    .select("whatsapp_phone, status")
+    .select(
+      `
+      whatsapp_phone,
+      status,
+      seller:profiles!listings_seller_id_fkey(is_banned)
+    `
+    )
     .eq("id", listingId)
     .single();
 
-  if (fetchErr || !listing || listing.status !== "approved") {
+  const seller = Array.isArray(listing?.seller) ? listing.seller[0] : listing?.seller;
+
+  if (fetchErr || !listing || listing.status !== "approved" || seller?.is_banned === true) {
     throw new Error("İlan bulunamadı veya iletişim bilgileri kapalı.");
   }
 

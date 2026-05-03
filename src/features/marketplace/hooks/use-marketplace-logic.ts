@@ -30,7 +30,6 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     isPending,
   } = useUnifiedFilters(initialFilters);
 
-  // Infinite Query - Only depends on filters (which are synced with URL)
   const queryKey = ["listings", filters];
 
   const fetchListings = async ({ pageParam }: { pageParam: number }) => {
@@ -41,28 +40,24 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     return json.data as typeof initialResult;
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isError, error } = useInfiniteQuery(
-    {
-      queryKey,
-      queryFn: fetchListings,
-      initialPageParam: 1,
-      getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-      // ── BUG FIX: Use placeholderData instead of initialData for proper cache invalidation
-      // initialData persists across queryKey changes; placeholderData is cleared when queryKey changes
-      placeholderData: {
-        pages: [initialResult],
-        pageParams: [1],
-      },
-      // UX FIX: Add retry logic for network failures
-      retry: 2,
-      retryDelay: 1000,
-    }
-  );
+  const query = useInfiniteQuery({
+    queryKey,
+    queryFn: fetchListings,
+    initialPageParam: filters.page ?? 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+    placeholderData: {
+      pages: [initialResult],
+      pageParams: [filters.page ?? 1],
+    },
+    retry: 2,
+    retryDelay: 1000,
+  });
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isError, error, refetch } = query;
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  // Stabilize fetchNextPage reference to prevent observer re-creation
   const fetchNextPageRef = useRef(fetchNextPage);
   useEffect(() => {
     fetchNextPageRef.current = fetchNextPage;
@@ -73,6 +68,29 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
 
   const allListings = data?.pages.flatMap((p) => p.listings) ?? initialResult.listings;
   const total = data?.pages[0]?.total ?? initialResult.total;
+  const currentPage = filters.page ?? initialResult.page ?? 1;
+  const currentLimit = filters.limit ?? initialResult.limit ?? 12;
+  const totalPages = Math.max(1, Math.ceil(total / currentLimit));
+
+  type InitialResultType = UseMarketplaceLogicProps["initialResult"];
+  type PageWithMetadata = InitialResultType & {
+    metadata?: { droppedFilters?: string[]; warning?: string };
+  };
+
+  const droppedFilters =
+    (data?.pages[0] as PageWithMetadata | undefined)?.metadata?.droppedFilters ??
+    (initialResult as PageWithMetadata).metadata?.droppedFilters;
+  const droppedWarning =
+    (data?.pages[0] as PageWithMetadata | undefined)?.metadata?.warning ??
+    (initialResult as PageWithMetadata).metadata?.warning;
+
+  const handlePageChange = (page: number) => {
+    applyFilters({ ...filters, page, limit: currentLimit }, true);
+  };
+
+  const handlePageSizeChange = (limit: number) => {
+    applyFilters({ ...filters, page: 1, limit }, true);
+  };
 
   return {
     filters,
@@ -85,13 +103,20 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     activeFiltersCount,
     allListings,
     total,
+    currentPage,
+    totalPages,
+    handlePageChange,
+    handlePageSizeChange,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage: stableFetchNextPage,
     handleFilterChange: updateFilter,
     handleReset: resetFilters,
     applyFilters,
+    refetch,
     isError,
     error,
+    droppedFilters,
+    droppedWarning,
   };
 }

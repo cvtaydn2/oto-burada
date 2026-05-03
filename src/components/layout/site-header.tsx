@@ -1,29 +1,20 @@
 import { CarFront } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 
 import { DesktopNav } from "@/components/layout/desktop-nav";
 import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import type { SearchSuggestionItem } from "@/types";
 
-// Arama önerileri ayrı Suspense boundary'de — header'ın geri kalanını bloklamaz
-async function HeaderSearch() {
-  const references = await getLiveMarketplaceReferenceData();
-  return (
-    <SearchWithSuggestions
-      placeholder="Marka, model veya kelime ara..."
-      suggestions={references.searchSuggestions}
-      className="w-full"
-    />
-  );
+interface SiteHeaderProps {
+  searchSuggestions: SearchSuggestionItem[];
 }
 
-export async function SiteHeader() {
+export async function SiteHeader({ searchSuggestions }: SiteHeaderProps) {
   return (
     <header
-      className="sticky top-0 left-0 right-0 z-50 h-[68px] border-b border-border/80 bg-background/98 backdrop-blur-sm"
+      className="sticky left-0 right-0 top-0 z-50 h-[68px] border-b border-border/80 bg-background/98 backdrop-blur-sm"
       role="banner"
     >
       <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-3 sm:px-5 lg:px-6">
@@ -31,7 +22,7 @@ export async function SiteHeader() {
           <Link
             href="/"
             prefetch={false}
-            className="flex items-center space-x-2 group shrink-0"
+            className="group shrink-0 flex items-center space-x-2"
             aria-label="OtoBurada - Ana Sayfa"
           >
             <div
@@ -48,10 +39,12 @@ export async function SiteHeader() {
           <DesktopNav />
         </div>
 
-        <div className="hidden flex-1 max-w-lg mx-8 lg:flex relative">
-          <Suspense fallback={<div className="w-full h-10 rounded-full bg-muted animate-pulse" />}>
-            <HeaderSearch />
-          </Suspense>
+        <div className="relative mx-8 hidden max-w-lg flex-1 lg:flex">
+          <SearchWithSuggestions
+            placeholder="Marka, model veya kelime ara..."
+            suggestions={searchSuggestions}
+            className="w-full"
+          />
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
@@ -59,7 +52,6 @@ export async function SiteHeader() {
             favoritesHrefGuest="/favorites"
             postListingHrefAuthenticated="/dashboard/listings"
           />
-          {/* Desktop dark mode toggle */}
           <div className="hidden md:block">
             <ThemeToggle />
           </div>

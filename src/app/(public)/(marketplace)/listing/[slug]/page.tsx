@@ -90,83 +90,59 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: ListingDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  // Try marketplace (approved) first
-  let listing = await getMarketplaceListingBySlug(slug);
-
-  // If not found in marketplace, try stored (admin/owner bypass)
-  if (!listing) {
-    listing = await getStoredListingBySlug(slug);
-  }
+  const listing = await getMarketplaceListingBySlug(slug);
 
   if (!listing) return { title: "İlan Bulunamadı" };
 
-  const metadata = buildListingDetailMetadata(listing);
-
-  // Prevent indexing of non-approved listings
-  if (listing.status !== "approved") {
-    return {
-      ...metadata,
-      robots: {
-        index: false,
-        follow: false,
-      },
-    };
-  }
-
-  return metadata;
+  return buildListingDetailMetadata(listing);
 }
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { slug } = await params;
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
-  // PERFORMANCE FIX: Fetch marketplace and stored listings in parallel
-  // This avoids sequential fallback delay (200-400ms savings)
-  const [currentUser, rawListing, storedListing] = await Promise.all([
+  const [currentUser, rawListing] = await Promise.all([
     getCurrentUser(),
     getMarketplaceListingBySlug(slug),
-    // Fetch stored listing in parallel for admin/owner bypass
-    // This is safe - we only use it if marketplace listing is not found
-    getStoredListingBySlug(slug, { includeBanned: true }),
   ]);
 
   let listing = rawListing;
 
-  // ── Admin/Owner Bypass ──────────────────────────────────────────────────
-  if (!listing && storedListing) {
-    const isAdmin = currentUser?.user_metadata?.role === "admin";
-    const isOwner = currentUser?.id === storedListing.sellerId;
+  if (!listing && currentUser) {
+    const storedListing = await getStoredListingBySlug(slug, { includeBanned: true });
 
-    if (isAdmin || isOwner) {
-      listing = storedListing;
-    } else if (storedListing.status !== "approved") {
-      return (
-        <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-          <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
-            <AlertCircle className="size-10 text-amber-600" />
-          </div>
-          <h1
-            className="mb-2 text-2xl font-bold text-foreground"
-            data-testid="listing-inactive-heading"
-          >
-            İlan Aktif Değil
-          </h1>
-          <p
-            className="mb-8 max-w-md text-muted-foreground italic"
-            data-testid="listing-inactive-message"
-          >
-            Bu ilan henüz onaylanmamış, reddedilmiş veya yayından kaldırılmış olabilir.
-          </p>
-          <Link
-            href="/listings"
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-8 font-bold text-primary-foreground hover:bg-primary/90 transition"
-          >
-            Piyasadaki Diğer İlanlar
-          </Link>
-        </main>
-      );
-    } else {
-      notFound();
+    if (storedListing) {
+      const isAdmin = currentUser.user_metadata?.role === "admin";
+      const isOwner = currentUser.id === storedListing.sellerId;
+
+      if (isAdmin || isOwner) {
+        listing = storedListing;
+      } else if (storedListing.status !== "approved") {
+        return (
+          <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+            <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
+              <AlertCircle className="size-10 text-amber-600" />
+            </div>
+            <h1
+              className="mb-2 text-2xl font-bold text-foreground"
+              data-testid="listing-inactive-heading"
+            >
+              İlan Aktif Değil
+            </h1>
+            <p
+              className="mb-8 max-w-md text-muted-foreground italic"
+              data-testid="listing-inactive-message"
+            >
+              Bu ilan henüz onaylanmamış, reddedilmiş veya yayından kaldırılmış olabilir.
+            </p>
+            <Link
+              href="/listings"
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-8 font-bold text-primary-foreground hover:bg-primary/90 transition"
+            >
+              Piyasadaki Diğer İlanlar
+            </Link>
+          </main>
+        );
+      }
     }
   }
 
@@ -495,9 +471,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                   <h2 className="text-lg font-bold text-foreground">Ekspertiz Raporu</h2>
                 </div>
-                {listing.expertInspection?.documentPath && (
-                  <ExpertPdfButton documentPath={listing.expertInspection.documentPath} />
-                )}
+                {listing.expertInspection?.documentPath && <ExpertPdfButton slug={listing.slug} />}
               </div>
               <ExpertInspectionCard expertInspection={listing.expertInspection} />
             </section>

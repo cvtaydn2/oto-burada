@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 
 import { buildAbsoluteUrl } from "@/lib/seo";
 import { safeJsonLd } from "@/lib/seo/json-ld";
+import { supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 async function getCspNonce() {
@@ -49,7 +50,9 @@ export async function ListingStructuredData({ listings, url }: ListingStructured
           value: listing.mileage,
           unitCode: "KMT",
         },
-        image: listing.images[0]?.url,
+        image: listing.images[0]?.url
+          ? buildAbsoluteUrl(supabaseImageUrl(listing.images[0].url, 1200))
+          : undefined,
         url: buildAbsoluteUrl(`/listing/${listing.slug}`),
         offers: {
           "@type": "Offer",
