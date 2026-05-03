@@ -99,7 +99,7 @@ Phase 43 involved analyzing and fixing 8 critical performance issues across data
 
 **Added package optimizations:**
 - @supabase/supabase-js
-- posthog-js
+- telemetry shim
 
 **Impact:**
 - Reduced bundle size

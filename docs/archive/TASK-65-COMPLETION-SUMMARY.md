@@ -100,7 +100,7 @@ Successfully completed **Phase 1-2** of TASK-65: Pre-Deployment Preparation and 
 - Application metrics (request rate, error rate, response time)
 - Business metrics (registrations, listings, favorites, payments)
 - Security metrics (rate limits, CSRF failures, bans)
-- Dashboard setup (Grafana, PostHog)
+- Dashboard setup (Sentry, Vercel, Supabase)
 
 **Alert Types**:
 - Error rate > 5%

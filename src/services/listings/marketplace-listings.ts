@@ -47,9 +47,6 @@ const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "galleryPriority",
 ]);
 
-/**
- * Sanitizes filters and identifies dropped keys for feedback.
- */
 function sanitizeMarketplaceFilters(filters: ListingFilters): {
   sanitized: ListingFilters;
   droppedKeys: string[];
@@ -85,7 +82,7 @@ export async function getFilteredMarketplaceListings(
       metadata: {
         ...result.metadata,
         droppedFilters: droppedKeys,
-        warning: "Bazý filtreler desteklenmiyor ve uygulanmadý.",
+        warning: "BazÄ± filtreler desteklenmiyor ve uygulanmadÄ±.",
       },
     };
   }
@@ -97,7 +94,6 @@ export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listin
   if (ids.length === 0) return [];
 
   const publicClient = createSupabasePublicServerClient();
-  // PostgREST complex join syntax cannot be typed statically
 
   const { data, error } = await publicClient
     .from("listings")
@@ -117,7 +113,7 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
   const storedListing = await withNextCache<Listing | null>(
     [`marketplace-listing:${slug}`],
     () => getListingBySlug(slug),
-    300 // 5 minutes cache (PERF-07)
+    300
   );
 
   if (!storedListing || storedListing.status !== "approved") return null;
@@ -135,7 +131,6 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
 
 export async function getListingById(id: string): Promise<Listing | null> {
   const publicClient = createSupabasePublicServerClient();
-  // PostgREST complex join syntax cannot be typed statically
 
   const { data, error } = await publicClient
     .from("listings")
@@ -150,10 +145,6 @@ export async function getListingById(id: string): Promise<Listing | null> {
 
   if (!data) return null;
 
-  // Type guard to handle both single object and array responses
-  // POSTGREST LIMITATION: Complex join syntax in select strings cannot be statically typed.
-  // The result is typed as a union that includes ParserError, but this never occurs at runtime.
-  // We use a safe type assertion since we already checked for errors above.
   if (Array.isArray(data)) {
     return data.length > 0 ? mapListingRow(data[0] as unknown as ListingRow) : null;
   }
@@ -188,6 +179,7 @@ export async function getPublicMarketplaceListings(
     `minY:${filters.minYear ?? ""}`,
     `maxY:${filters.maxYear ?? ""}`,
   ];
+
   return withNextCache(keyParts, () => getFilteredMarketplaceListings(filters), 60);
 }
 

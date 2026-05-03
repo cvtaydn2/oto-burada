@@ -1,7 +1,7 @@
 # OtoBurada — Production Runbook
 
 > Last updated: 2026-04-17  
-> Stack: Next.js 16 · Supabase · Vercel · Upstash Redis · PostHog · Resend
+> Stack: Next.js 16 · Supabase · Vercel · Upstash Redis · Sentry · Resend
 
 ---
 
@@ -152,10 +152,13 @@ Before running any migration in production:
 
 ### Required in Production
 
-| Variable                            | Description                                   |
-| ----------------------------------- | --------------------------------------------- |
-| `CRON_SECRET`                       | Cron job auth secret (`openssl rand -hex 32`) |
-| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog analytics token                       |
+| Variable                  | Description                                               |
+| ------------------------- | --------------------------------------------------------- |
+| `CRON_SECRET`             | Cron job auth secret (`openssl rand -hex 32`)             |
+| `NEXT_PUBLIC_SENTRY_DSN`  | Sentry error monitoring DSN                               |
+| `SENTRY_AUTH_TOKEN`       | Sentry build/source-map upload token                      |
+| `SENTRY_ORG`              | Sentry organization slug                                  |
+| `SENTRY_PROJECT`          | Sentry project slug                                       |
 
 ### Optional (features degrade gracefully without these)
 
@@ -225,18 +228,19 @@ Configure your uptime monitor (BetterUptime, UptimeRobot, etc.) to:
 - **Function Logs**: Vercel Dashboard → Functions → Logs
 - **Build Logs**: Vercel Dashboard → Deployments → [deployment] → Build Logs
 
-### PostHog
+### Sentry
 
-- **Error Tracking**: PostHog → Error Tracking → All Errors
-- **User Sessions**: PostHog → Session Replay
-- **Funnels**: PostHog → Insights → Funnels
+- **Error Tracking**: Sentry → Issues / Error Tracking
+- **Performance**: Sentry → Performance
+- **Releases**: Sentry → Releases
+- **Session Replay**: Kullanılmıyor. Ücretsiz plan ve veri minimizasyonu için kapalı tutulur.
 
-Key events to monitor:
-| Event | Alert threshold |
-|-------|----------------|
-| `$exception` | > 10/hour |
-| `listing_created` | < 1/day (platform health) |
-| `server_warning` | > 50/hour |
+Key signals to monitor:
+| Signal | Threshold |
+|-------|-----------|
+| Unhandled exception rate | > 10/hour |
+| Repeated payment/listing errors | > 3/hour |
+| Server warning spikes | > 50/hour |
 
 ### Supabase
 
@@ -324,7 +328,7 @@ Vercel Dashboard → Cron Jobs → [job] → Logs
 If a cron job fails:
 
 1. Check Vercel function logs for the error
-2. Check PostHog for `$exception` events from `server` distinct ID
+2. Check Sentry issues and traces for the failing route
 3. Manually trigger to verify fix: `curl -X GET ... -H "Authorization: Bearer $CRON_SECRET"`
 
 ### Adding a New Cron Job
@@ -418,7 +422,7 @@ if (!features.payments) {
 
 1. Set the env var in Vercel Project Settings → Environment Variables
 2. Redeploy (or wait for next deploy)
-3. Verify via `/api/health` or PostHog events
+3. Verify via `/api/health` or Sentry events
 
 ---
 
@@ -449,12 +453,12 @@ openssl rand -hex 32
 3. Redeploy
 4. Rate limiting will fall back to in-memory briefly during transition
 
-### PostHog Token
+### Sentry Token
 
-1. PostHog → Project Settings → API Keys → Rotate
-2. Update `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` in Vercel
+1. Sentry → Project Settings → API Keys → Rotate
+2. Update `NEXT_PUBLIC_SENTRY_DSN` in Vercel
 3. Redeploy
-4. Verify events appear in PostHog
+4. Verify events appear in Sentry
 
 ---
 

@@ -1,6 +1,8 @@
 # Ücretsiz Monitoring Kurulumu - 15 Dakika
 
-Bu rehber, ücretsiz tier'larda production monitoring'i 15 dakikada kurmayı gösterir.
+Bu rehber, ücretsiz planlarda production monitoring'i 15 dakikada kurmayı gösterir.
+Yalnızca Sentry, Vercel ve Supabase izleme yüzeyleri esas alınır.
+Ayrı product analytics aracı kullanılmaz; hata ve performans izleme için Sentry temel kaynaktır.
 
 ## ✅ Kurulum Checklist
 
@@ -439,9 +441,10 @@ vercel logs -n 10
    - [ ] Monitoring'i iyileştir (yeni metrikler ekle)
 
 3. **Gelecek:**
-   - [ ] Ücretli tier'a geçince Sentry/DataDog ekle
-   - [ ] Custom metrics dashboard oluştur
+   - [ ] Sentry proje kurallarına uygun şekilde iyileştirilmeye devam etsin
+   - [ ] Ücretsiz-plan uyumlu custom metrics dashboard oluştur
    - [ ] Automated incident response
+   - [ ] Ayrı analytics ürünü eklemeden Vercel + Supabase + Sentry üçlüsünü koru
 
 ---
 

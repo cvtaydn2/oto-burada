@@ -301,7 +301,7 @@ revalidateTag(`marketplace-listing:${listing.slug}`);
 **Status:** Fixed
 
 **Problem:**
-- Large packages not optimized: `@supabase/supabase-js`, `posthog-js`
+- Large packages not optimized: `@supabase/supabase-js`, `telemetry shim`
 - Increased bundle size
 - Slower page loads
 
@@ -310,7 +310,7 @@ revalidateTag(`marketplace-listing:${listing.slug}`);
 ```typescript
 experimental: {
   // ── PERFORMANCE FIX: Issue PERF-08 - Optimize Large Package Imports ─────
-  // Added @supabase/supabase-js and posthog-js to reduce bundle size.
+  // Added @supabase/supabase-js and telemetry shim to reduce bundle size.
   // These are large packages that benefit from tree-shaking optimization.
   optimizePackageImports: [
     "lucide-react",
@@ -319,7 +319,7 @@ experimental: {
     "clsx",
     "tailwind-merge",
     "@supabase/supabase-js",  // ✅ Added
-    "posthog-js",             // ✅ Added
+    "telemetry shim",             // ✅ Added
   ],
   scrollRestoration: true,
 },

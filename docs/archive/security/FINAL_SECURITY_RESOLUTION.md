@@ -371,7 +371,7 @@ curl -X POST /api/payments/webhook \
 - **Database**: Migration scripts ve RLS policy logs
 - **Rate Limiting**: Redis connection ve Supabase RPC status
 - **Payment Integration**: Iyzico webhook logs ve API responses
-- **Error Monitoring**: PostHog events ve structured logs
+- **Error Monitoring**: Sentry events ve structured logs
 
 ---
 

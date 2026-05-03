@@ -225,9 +225,9 @@ src/lib/
 **Action 1**: Remove `src/lib/analytics.tsx` (it's just a re-export)
 ```typescript
 // Current content:
-export { posthog } from "@/lib/monitoring/posthog-client";
+export { telemetry } from "@/lib/monitoring/telemetry-client";
 
-// This can be imported directly from monitoring/posthog-client
+// This can be imported directly from monitoring/telemetry-client
 ```
 
 **Action 2**: Consolidate utility files into directories
@@ -438,7 +438,7 @@ export function analyzeListingValue(listing: Listing): ListingValueAnalysis {
 
 1. **Issue #8 - Analytics File Cleanup** (LOW effort)
    - Delete `src/lib/analytics.tsx`
-   - Update imports to use `@/lib/monitoring/posthog-client`
+   - Update imports to use `@/lib/monitoring/telemetry-client`
    - No breaking changes
 
 2. **Issue #9 - Use Case Type Safety** (LOW effort)

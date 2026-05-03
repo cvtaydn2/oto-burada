@@ -118,7 +118,7 @@ gh workflow run security.yml
    - Supabase service role key
    - Redis (Upstash) credentials
    - Resend API key
-   - PostHog project token
+   - Sentry project token
    - Database password
    - Internal API secret
    - Cron secret

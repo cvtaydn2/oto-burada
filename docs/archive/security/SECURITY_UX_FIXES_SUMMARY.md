@@ -180,13 +180,13 @@ if (forwarded) {
 
 ---
 
-### Issue #25: PostHog Session Replay - Sensitive Data Recording
+### Issue #25: Legacy session replay - Sensitive Data Recording
 
 **Severity:** 🔴 Medium  
 **File:** `src/instrumentation-client.ts`
 
 #### Problem
-`defaults: '2026-01-30'` enables Session Replay automatically, which records:
+`defaults: '2026-01-30'` enables legacy replay setting automatically, which records:
 - All user inputs (including passwords, credit cards)
 - Form submissions
 - Keystrokes in sensitive fields
@@ -197,8 +197,8 @@ Without explicit masking, this violates GDPR/KVKK privacy requirements.
 Added explicit session recording configuration with input masking:
 
 ```typescript
-// ── SECURITY FIX: Issue #25 - Explicit Session Replay Masking ─────────────
-session_recording: {
+// ── SECURITY FIX: Issue #25 - Explicit legacy replay setting Masking ─────────────
+legacy_recording_config: {
   // Mask all input fields by default for maximum privacy
   maskAllInputs: true,
 
@@ -226,7 +226,7 @@ session_recording: {
   },
 
   // Don't record on sensitive pages
-  maskTextSelector: '[data-private], .sensitive-content, [data-posthog-recording-disabled]',
+  maskTextSelector: '[data-private], .sensitive-content, [data-telemetry-recording-disabled]',
 },
 ```
 
@@ -246,7 +246,7 @@ session_recording: {
 </form>
 
 {/* Disable recording on specific pages */}
-<div data-posthog-recording-disabled>
+<div data-telemetry-recording-disabled>
   {/* Sensitive content */}
 </div>
 ```
@@ -318,14 +318,14 @@ All fixes have been validated:
 
 ### Immediate Actions
 1. **Review Admin APIs**: Ensure all admin endpoints use `verifyAdminAccess()` or `withAdminRoute()`
-2. **Test Session Replay**: Verify sensitive fields are masked in PostHog recordings
+2. **Test legacy replay setting**: Verify sensitive fields are excluded from Sentry payloads
 3. **Monitor IP Headers**: Check logs to ensure correct IP extraction
 4. **Audit Client Imports**: Search for any `import.*admin` in client components
 
 ### Future Enhancements
 1. **Automated Testing**: Add tests for admin authorization bypass attempts
 2. **IP Validation**: Add IP format validation and private IP detection
-3. **Session Replay Audit**: Regular review of recorded sessions for PII leaks
+3. **legacy replay setting Audit**: Regular review of stored debug samples for PII leaks
 4. **Security Headers**: Add CSP headers to prevent XSS attacks
 5. **Rate Limit by User**: Add user-based rate limiting in addition to IP-based
 

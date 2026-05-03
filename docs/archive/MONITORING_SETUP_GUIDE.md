@@ -538,23 +538,23 @@ done
    - Ban operations
    - Failed login attempts
 
-### 6.2 PostHog (Optional)
+### 6.2 Sentry (Optional)
 
 #### Setup
-1. Create PostHog account (FREE tier: 1M events/month)
-2. Install PostHog SDK
+1. Create Sentry account (FREE tier: 1M events/month)
+2. Install Sentry SDK
 3. Configure event tracking
 
 #### Track Events
 ```typescript
 // In components
-import posthog from 'posthog-js';
+import telemetry from 'telemetry shim';
 
 // Track page view
-posthog.capture('$pageview');
+telemetry.capture('$pageview');
 
 // Track custom event
-posthog.capture('listing_created', {
+telemetry.capture('listing_created', {
   category: 'engagement',
   listing_id: listing.id,
 });

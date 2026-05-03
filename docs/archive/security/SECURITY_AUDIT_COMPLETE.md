@@ -290,7 +290,7 @@ INTERNAL_API_SECRET=<openssl_rand_hex_32>
 - **Database**: Migration scripts ve RLS policies
 - **Rate Limiting**: Redis connection ve Supabase RPC
 - **Payment Integration**: Iyzico logs ve webhook status
-- **Error Monitoring**: PostHog events ve server logs
+- **Error Monitoring**: Sentry events ve server logs
 
 ---
 

@@ -61,8 +61,9 @@ SUPABASE_DEMO_USER_PASSWORD=test-123456
 Notlar:
 
 - Turnstile local geliştirmede zorunlu değildir. `NEXT_PUBLIC_TURNSTILE_SITE_KEY` ve `TURNSTILE_SECRET_KEY` boş kalabilir.
-- Redis, Resend, PostHog ve Iyzico local boot için zorunlu değildir.
+- Redis, Resend, Sentry ve Iyzico local boot için zorunlu değildir.
 - Bu opsiyonel servisler tanımlı değilse uygulama degrade modda çalışır.
+- Analytics/telemetry tarafında runtime hata takibi için yalnızca Sentry kullanılır; ayrı ürün analitik servisi gerekmez.
 
 ### 3) Bağımlılıkları kur
 
@@ -237,8 +238,13 @@ Validation errors are returned in `error.details` as a mapping of field names to
 - `IYZICO_SECRET_KEY`: Ödeme secret key
 - `IYZICO_BASE_URL`: Sandbox/production base URL
 - `CRON_SECRET`: Cron endpoint koruması
-- `POSTHOG_WEBHOOK_SECRET`: PostHog webhook doğrulaması
+- `NEXT_PUBLIC_SENTRY_DSN`: İstemci ve sunucu tarafı Sentry hata takibi
+- `SENTRY_AUTH_TOKEN`: Sentry source map upload / build entegrasyonu
+- `SENTRY_ORG`: Sentry organizasyon adı
+- `SENTRY_PROJECT`: Sentry proje adı
 - `INTERNAL_API_SECRET`: Internal API çağrıları
+- `SENTRY_ORG`: Sentry organizasyon adı, build/report otomasyonlarında gerekebilir
+- `SENTRY_PROJECT`: Sentry proje adı, build/report otomasyonlarında gerekebilir
 
 ### Feature flag'ler
 
@@ -262,7 +268,7 @@ Bu genelde opsiyonel env eksikliğidir. Local geliştirmede aşağıdakiler eksi
 - Redis
 - Turnstile
 - Resend
-- PostHog
+- Sentry
 - Iyzico
 
 Çekirdek akışlar yine çalışmalıdır.

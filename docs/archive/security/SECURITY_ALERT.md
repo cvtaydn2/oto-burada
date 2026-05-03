@@ -19,7 +19,7 @@ The following credentials were found in `.env.local`:
 3. **Database Password** - Direct PostgreSQL access
 4. **Upstash Redis Token** - Rate limiting data access
 5. **Resend API Key** - Email sending capability
-6. **PostHog Project Token** - Analytics access
+6. **legacy telemetry token** - Analytics access
 7. **E2E Test Credentials** - Test user email/password
 
 ### ✅ Good News
@@ -64,9 +64,9 @@ The following credentials were found in `.env.local`:
 # Create new key
 ```
 
-#### 1.4 PostHog Token
+#### 1.4 Sentry Token
 ```bash
-# Go to: https://posthog.com/project/settings
+# Go to: https://sentry.io/settings
 # Rotate project token: phc_AA37hLB2CLZsYZXGosoZ7uSfn7f386G5wEcQo6JQ8NsQ
 ```
 
@@ -103,7 +103,7 @@ grep -q ".env.local" .gitignore && echo "✅ Protected" || echo "❌ NOT PROTECT
 # - UPSTASH_REDIS_REST_URL
 # - UPSTASH_REDIS_REST_TOKEN
 # - RESEND_API_KEY
-# - NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+# - NEXT_PUBLIC_SENTRY_DSN
 # - INTERNAL_API_SECRET
 # - CRON_SECRET
 # - IYZICO_SECRET_KEY (if using production keys)
@@ -136,7 +136,7 @@ cat .gitignore | grep ".env.local"
 - [ ] Changed Supabase Database Password
 - [ ] Rotated Upstash Redis Token
 - [ ] Revoked and recreated Resend API Key
-- [ ] Rotated PostHog Project Token
+- [ ] Rotated legacy telemetry token
 - [ ] Generated new INTERNAL_API_SECRET
 - [ ] Generated new CRON_SECRET
 - [ ] Updated .env.local with NEW credentials
@@ -185,7 +185,7 @@ If you need help rotating credentials:
 1. **Supabase:** https://supabase.com/docs/guides/platform/going-into-prod#rotate-secrets
 2. **Upstash:** https://docs.upstash.com/redis/howto/resetpassword
 3. **Resend:** https://resend.com/docs/dashboard/api-keys
-4. **PostHog:** https://posthog.com/docs/api/overview
+4. **Sentry:** https://docs.sentry.io
 
 ---
 

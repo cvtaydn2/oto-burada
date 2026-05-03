@@ -305,7 +305,7 @@ logger.system.error("Creation notification failed")
 #### Listing Creation Success Rate
 **Target:** > 99%  
 **Alert:** < 95%  
-**Dashboard:** PostHog custom event
+**Dashboard:** legacy custom event
 
 #### Webhook Processing Success Rate
 **Target:** > 99.5%  
@@ -334,7 +334,7 @@ npm run deploy:prod
 ```
 
 #### 2. Investigation
-- Check error logs in PostHog
+- Check Sentry issues, Vercel logs ve Supabase logs
 - Check Supabase logs
 - Check Vercel function logs
 - Identify failing component
