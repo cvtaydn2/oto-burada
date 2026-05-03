@@ -37,6 +37,11 @@ export async function initializePaymentCheckout(params: {
     throw new Error("Telefon numarası gereklidir");
   }
 
+  // SECURITY: Validate price is positive
+  if (!params.price || params.price <= 0) {
+    throw new Error("Geçersiz ödeme tutarı");
+  }
+
   // SECURITY: Get user's identity number from profile
   let profile: { identity_number: string | null } | null = null;
   try {
@@ -127,18 +132,47 @@ export async function initializePaymentCheckout(params: {
   if (dbError) {
     // Check for idempotency violation (P0001 or unique constraint)
     if (dbError.code === "23505") {
-      // Find existing payment with this idempotency key
+      // SECURITY FIX: Include user_id in query to prevent unauthorized access to other users' payments
       const { data: existing } = await supabase
         .from("payments")
-        .select("id, iyzico_token, status")
+        .select("id, iyzico_token, status, created_at")
         .eq("idempotency_key", params.idempotencyKey!)
+        .eq("user_id", params.userId)
         .single();
 
-      if (existing && existing.iyzico_token && existing.status === "pending") {
-        return {
-          paymentPageUrl: `REUSE_EXISTING`, // Frontend should handle this or we return the form
-          token: existing.iyzico_token,
-        };
+      if (existing) {
+        // Check if pending payment is still valid (not older than 1 hour)
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const paymentCreatedAt = new Date(existing.created_at);
+
+        if (
+          existing.iyzico_token &&
+          existing.status === "pending" &&
+          paymentCreatedAt > oneHourAgo
+        ) {
+          return {
+            paymentPageUrl: null,
+            reuseExisting: true,
+            token: existing.iyzico_token,
+          };
+        }
+
+        if (existing.status === "success") {
+          return {
+            paymentPageUrl: null,
+            alreadyPaid: true,
+            paymentId: existing.id,
+          };
+        }
+
+        // If payment failed or expired pending, allow retry
+        logger.payments.info(
+          "Found expired/failed payment with same idempotency key, allowing retry",
+          {
+            paymentId: existing.id,
+            status: existing.status,
+          }
+        );
       }
     }
     logger.db.error("Failed to create pending payment record", {

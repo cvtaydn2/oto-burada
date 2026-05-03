@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 import {
   maximumNoteLength,
@@ -14,6 +14,8 @@ import {
   trimmedRequiredString,
 } from "./shared";
 
+export const uuidSchema = z.string().uuid("Geçersiz UUID formatı");
+
 export const adminModerationActionSchema: z.ZodType<AdminModerationAction> = z.object({
   id: optionalTrimmedString,
   adminUserId: trimmedRequiredString,
@@ -26,7 +28,7 @@ export const adminModerationActionSchema: z.ZodType<AdminModerationAction> = z.o
       .string()
       .trim()
       .min(3, "Not en az 3 karakter olmalı")
-      .max(maximumNoteLength, `Not en fazla ${maximumNoteLength} karakter olabilir`)
+      .max(maximumNoteLength, "Not en fazla " + maximumNoteLength + " karakter olabilir")
       .nullable()
       .optional()
   ),

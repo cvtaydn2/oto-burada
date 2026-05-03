@@ -12,19 +12,18 @@ function isTransientQuestionFetchError(error: unknown): boolean {
   );
 }
 
-// Type guard for Supabase response
+// Type guard for Supabase response (select query result)
 function isSupabaseResponse(
   value: unknown
 ): value is { data: unknown; error: { code: string; message: string } | null } {
   return typeof value === "object" && value !== null && "data" in value && "error" in value;
 }
 
-// Type guard for Supabase single response
-function isSupabaseSingleResponse(value: unknown): value is {
-  data: unknown;
-  error: { code: string; message: string } | null;
-} {
-  return typeof value === "object" && value !== null && "data" in value && "error" in value;
+// Type guard for Supabase single response (single() result)
+function isSupabaseSingleResponse(value: unknown): value is { data: unknown; error: Error | null } {
+  if (typeof value !== "object" || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  return "data" in obj || "error" in obj;
 }
 
 /**

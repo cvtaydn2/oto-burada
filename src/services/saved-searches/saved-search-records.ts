@@ -106,14 +106,15 @@ export async function createOrUpdateDatabaseSavedSearch(
   const title = input.title?.trim() || buildSavedSearchTitle(normalizedFilters);
   const notificationsEnabled = input.notificationsEnabled ?? true;
   const existingSearches = await getStoredSavedSearchesByUser(userId);
-  const existingSearch = existingSearches.find(
-    (search) =>
-      getSavedSearchSignature(search.filters) === getSavedSearchSignature(normalizedFilters)
-  );
+  const existingSearch = existingSearches.find((search) => {
+    const existingSig = getSavedSearchSignature(search.filters).toLowerCase();
+    const newSig = getSavedSearchSignature(normalizedFilters).toLowerCase();
+    return existingSig === newSig;
+  });
   const supabase = await createSupabaseServerClient();
 
   if (existingSearch?.id) {
-    // Update existing search
+    // Update existing search (case-insensitive comparison via normalized filters)
     // RLS ensures we can only update our own searches
     const { error } = await supabase
       .from("saved_searches")

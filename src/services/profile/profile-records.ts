@@ -285,8 +285,11 @@ export async function getStoredProfileById(profileId: string) {
  * RLS policy ensures user can only read their own profile.
  *
  * SECURITY: This is the preferred method for user profile reads.
+ *
+ * @param userId - The user ID to fetch profile for
+ * @param authUser - Optional pre-fetched auth user to avoid redundant auth calls
  */
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string, authUser?: User | null) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
@@ -297,11 +300,7 @@ export async function getUserProfile(userId: string) {
     .maybeSingle<ProfileRow>();
 
   if (!error && data) {
-    // Get auth user for verification state
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return mapProfileRow(data, user);
+    return mapProfileRow(data, authUser ?? null);
   }
 
   return null;

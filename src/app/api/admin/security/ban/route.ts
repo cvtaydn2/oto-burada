@@ -9,11 +9,25 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 const banSchema = z.object({
   ip: z.string().refine((val) => {
-    // IPv4 or IPv6 validation
+    // IPv4 validation
     const ipv4Regex =
       /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-    return ipv4Regex.test(val) || ipv6Regex.test(val);
+
+    // IPv6 validation (full, compressed, and IPv4-mapped formats)
+    const ipv6FullRegex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+    const ipv6CompressedRegex =
+      /^(([0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4})?::(([0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4})?$/;
+    const ipv6MixedRegex = /^([0-9a-fA-F]{1,4}:){1,7}:$/;
+    const ipv4MappedRegex =
+      /^::ffff:((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$/;
+
+    return (
+      ipv4Regex.test(val) ||
+      ipv6FullRegex.test(val) ||
+      ipv6CompressedRegex.test(val) ||
+      ipv6MixedRegex.test(val) ||
+      ipv4MappedRegex.test(val)
+    );
   }, "Invalid IP address"),
   reason: z.string().min(5).max(500),
 });

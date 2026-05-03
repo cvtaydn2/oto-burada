@@ -104,11 +104,22 @@ export async function processOutboxQueue() {
               retry_count: retryCount,
               next_attempt_at: nextAttempt.toISOString(),
               is_poison_pill: status === "failed",
-              error_message: (err as Error).message,
+              last_error: (err as Error).message,
             })
             .eq("id", item.id);
 
           logger.system.error(`Outbox: Failed item ${item.id}. Status: ${status}`, err);
+
+          // Fallback for poison pill items (5 retries failed)
+          if (status === "failed" && item.event_type === "email_notification") {
+            const payload = item.payload as unknown as EmailNotificationPayload;
+            await attemptEmailFallback(payload.template, payload.params).catch((fallbackError) => {
+              logger.system.error("Poison pill fallback also failed", fallbackError, {
+                itemId: item.id,
+              });
+            });
+          }
+
           throw err;
         }
       })
@@ -203,8 +214,8 @@ export async function enqueueOutboxEvent(
  * Enqueues an outbox event atomically within the same transaction as the main operation.
  * This prevents event loss when the main transaction succeeds but outbox insert fails.
  *
- * Usage: Call this instead of separate RPC + enqueueOutboxEvent
- * The caller should wrap both operations in a single transaction-aware pattern.
+ * IMPROVEMENT: Adds retry logic with exponential backoff before giving up.
+ * Falls back to direct email sending for critical notification events to prevent data loss.
  *
  * @param supabase - The supabase client (should be same instance used for main operation)
  * @param mainOperation - Function that performs the main DB operation
@@ -226,22 +237,116 @@ export async function enqueueOutboxEventInTransaction<T>(
     return { data: result.data, outboxEnqueued: false };
   }
 
-  // Attempt to enqueue outbox event
-  // If this fails, we log the error but don't throw — the main operation succeeded
-  // A separate reconciliation job should detect and fix this inconsistency
-  try {
-    await enqueueOutboxEvent(supabase, eventType, payload, idempotencyKey);
-    return { data: result.data, outboxEnqueued: true };
-  } catch (outboxError) {
-    logger.system.error(
-      "Outbox: Main operation succeeded but outbox enqueue failed - data inconsistency risk. " +
-        "Reconciliation job should detect and fix this.",
-      outboxError,
-      { eventType }
+  // Attempt to enqueue outbox event with retry logic
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await enqueueOutboxEvent(supabase, eventType, payload, idempotencyKey);
+      return { data: result.data, outboxEnqueued: true };
+    } catch (outboxError) {
+      lastError = outboxError instanceof Error ? outboxError : new Error(String(outboxError));
+      const delayMs = Math.pow(2, attempt) * 100; // 200ms, 400ms, 800ms
+      if (attempt < maxRetries) {
+        logger.system.warn(
+          `Outbox enqueue failed (attempt ${attempt}/${maxRetries}), retrying in ${delayMs}ms`,
+          { eventType, error: lastError.message }
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+
+  // All retries exhausted - log critical error with full context
+  logger.system.error(
+    `Outbox: All ${maxRetries} retry attempts exhausted. Main operation succeeded but event lost.`,
+    lastError,
+    {
+      eventType,
+      payload: typeof payload === "object" ? JSON.stringify(payload).slice(0, 500) : payload,
+      idempotencyKey,
+      severity: "critical",
+    }
+  );
+
+  // For critical notification events, attempt direct fallback to prevent complete data loss
+  if (eventType === "email_notification" && payload && typeof payload === "object") {
+    const emailPayload = payload as { template?: string; params?: Record<string, unknown> };
+    await attemptEmailFallback(emailPayload.template, emailPayload.params).catch(
+      (fallbackError) => {
+        logger.system.error("Outbox fallback email also failed", fallbackError, { eventType });
+      }
     );
-    // Don't throw — return gracefully with flag
-    // The reconciliation worker should catch orphaned events
-    return { data: result.data, outboxEnqueued: false };
+  }
+
+  return { data: result.data, outboxEnqueued: false };
+}
+
+/**
+ * Fallback direct email sending when outbox fails - prevents complete notification loss
+ */
+async function attemptEmailFallback(
+  template?: string,
+  params?: Record<string, unknown>
+): Promise<void> {
+  if (!template || !params) return;
+
+  const templateHandlers: Record<string, () => Promise<void>> = {
+    listing_approved: async () => {
+      const { sendListingApprovedEmail } = await import("@/services/email/email-service");
+      await sendListingApprovedEmail({
+        toEmail: params.toEmail as string,
+        toName: params.toName as string,
+        listingTitle: params.listingTitle as string,
+        listingUrl: params.listingUrl as string,
+      });
+    },
+    listing_rejected: async () => {
+      const { sendListingRejectedEmail } = await import("@/services/email/email-service");
+      await sendListingRejectedEmail({
+        toEmail: params.toEmail as string,
+        toName: params.toName as string,
+        listingTitle: params.listingTitle as string,
+        reason: params.reason as string | undefined,
+      });
+    },
+    ticket_created: async () => {
+      const { sendTicketCreatedEmail } = await import("@/services/email/email-service");
+      await sendTicketCreatedEmail({
+        toEmail: params.toEmail as string,
+        toName: params.toName as string,
+        ticketSubject: params.ticketSubject as string,
+        ticketId: params.ticketId as string,
+        ticketUrl: params.ticketUrl as string | undefined,
+      });
+    },
+    ticket_reply: async () => {
+      const { sendTicketReplyEmail } = await import("@/services/email/email-service");
+      await sendTicketReplyEmail({
+        toEmail: params.toEmail as string,
+        toName: params.toName as string,
+        ticketSubject: params.ticketSubject as string,
+        adminResponse: params.adminResponse as string,
+        ticketId: params.ticketId as string,
+      });
+    },
+    saved_search_alert: async () => {
+      const { sendSavedSearchAlertEmail } = await import("@/services/email/email-service");
+      await sendSavedSearchAlertEmail({
+        toEmail: params.toEmail as string,
+        toName: params.toName as string,
+        searchTitle: params.searchTitle as string,
+        searchUrl: params.searchUrl as string,
+        newListings: [],
+      });
+    },
+  };
+
+  const handler = templateHandlers[template];
+  if (handler) {
+    logger.system.info(`Attempting fallback email for template: ${template}`);
+    await handler();
   }
 }
 

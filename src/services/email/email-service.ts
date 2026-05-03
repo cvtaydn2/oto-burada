@@ -21,7 +21,36 @@ function getResendClient(): Resend | null {
   return new Resend(apiKey);
 }
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "OtoBurada <onboarding@resend.dev>";
+function isValidEmailFormat(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function getFromEmail(): string {
+  const fromEmail = process.env.RESEND_FROM_EMAIL;
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (!fromEmail) {
+    const error = "RESEND_FROM_EMAIL environment variable is required";
+    if (isProduction) {
+      logger.admin.error(`CRITICAL: ${error}. Emails will not be sent.`);
+      throw new Error(error);
+    }
+    logger.admin.warn(`${error}. Using fallback for development.`);
+    return "OtoBurada <onboarding@resend.dev>";
+  }
+
+  // Validate email format for production
+  if (isProduction && !isValidEmailFormat(fromEmail)) {
+    throw new Error(
+      "RESEND_FROM_EMAIL must be a valid email address (e.g., noreply@yourdomain.com)"
+    );
+  }
+
+  return fromEmail;
+}
+
+const FROM_EMAIL = getFromEmail();
 const APP_NAME = "OtoBurada";
 
 export interface SendEmailResult {
@@ -42,6 +71,11 @@ export async function sendTicketReplyEmail(params: {
   const resend = getResendClient();
   if (!resend) {
     return { success: false, error: "Email servisi yapılandırılmamış (RESEND_API_KEY eksik)." };
+  }
+
+  if (!isValidEmailFormat(params.toEmail)) {
+    logger.admin.warn("Geçersiz alıcı email adresi", { toEmail: params.toEmail });
+    return { success: false, error: "Geçersiz email adresi." };
   }
 
   const appUrl = getRequiredAppUrl();
@@ -88,6 +122,11 @@ export async function sendTicketCreatedEmail(params: {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
 
+  if (!isValidEmailFormat(params.toEmail)) {
+    logger.admin.warn("Geçersiz alıcı email adresi", { toEmail: params.toEmail });
+    return { success: false, error: "Geçersiz email adresi." };
+  }
+
   const appUrl = getRequiredAppUrl();
 
   try {
@@ -126,6 +165,11 @@ export async function sendSavedSearchAlertEmail(params: {
   const resend = getResendClient();
   if (!resend) {
     return { success: false, error: "Email servisi yapılandırılmamış (RESEND_API_KEY eksik)." };
+  }
+
+  if (!isValidEmailFormat(params.toEmail)) {
+    logger.admin.warn("Geçersiz alıcı email adresi", { toEmail: params.toEmail });
+    return { success: false, error: "Geçersiz email adresi." };
   }
 
   const appUrl = getRequiredAppUrl();
@@ -176,6 +220,11 @@ export async function sendListingApprovedEmail(params: {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
 
+  if (!isValidEmailFormat(params.toEmail)) {
+    logger.admin.warn("Geçersiz alıcı email adresi", { toEmail: params.toEmail });
+    return { success: false, error: "Geçersiz email adresi." };
+  }
+
   const appUrl = getRequiredAppUrl();
 
   try {
@@ -215,6 +264,11 @@ export async function sendListingRejectedEmail(params: {
 }): Promise<SendEmailResult> {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
+
+  if (!isValidEmailFormat(params.toEmail)) {
+    logger.admin.warn("Geçersiz alıcı email adresi", { toEmail: params.toEmail });
+    return { success: false, error: "Geçersiz email adresi." };
+  }
 
   const appUrl = getRequiredAppUrl();
 

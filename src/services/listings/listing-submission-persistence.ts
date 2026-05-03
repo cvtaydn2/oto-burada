@@ -201,14 +201,27 @@ export async function updateDatabaseListing(listing: Listing): Promise<ListingPe
     return { error: classifyPersistenceError(rpcError) };
   }
 
-  // 4. Physical Storage Cleanup (Async Queue) - Non-blocking
+  // 4. Physical Storage Cleanup (Async Queue) - Non-blocking with proper error handling
   if (pathsToDelete.length > 0) {
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-    import("@/lib/storage/registry").then(({ queueFileCleanup }) => {
-      queueFileCleanup(bucketName, pathsToDelete).catch((err) =>
-        logger.db.error("Failed to queue orphaned images for cleanup", err)
-      );
-    });
+    const { waitUntil } = await import("@vercel/functions");
+    const { queueFileCleanup } = await import("@/lib/storage/registry");
+
+    waitUntil(
+      queueFileCleanup(bucketName, pathsToDelete)
+        .then(() => {
+          logger.db.info("Orphaned images cleanup completed", {
+            listingId: listing.id,
+            pathsCount: pathsToDelete.length,
+          });
+        })
+        .catch((err) => {
+          logger.db.error("Failed to cleanup orphaned images - scheduled for retry", err, {
+            listingId: listing.id,
+            pathsToDelete,
+          });
+        })
+    );
   }
 
   // Map result back to Domain Model

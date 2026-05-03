@@ -106,7 +106,11 @@ export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listin
     return [];
   }
 
-  return ((data as any[]) ?? []).map(mapListingRow);
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  return (data as unknown[]).map((row) => mapListingRow(row as unknown as ListingRow));
 }
 
 export async function getMarketplaceListingBySlug(slug: string): Promise<Listing | null> {

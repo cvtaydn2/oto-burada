@@ -69,10 +69,19 @@ export class ApiClient {
           res.status === 401 &&
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/login") &&
+          !window.location.pathname.startsWith("/auth") &&
           !sessionStorage.getItem(REDIRECT_FLAG_KEY)
         ) {
+          // Prevent multiple simultaneous redirects across tabs
           sessionStorage.setItem(REDIRECT_FLAG_KEY, "1");
-          window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+
+          // Also set in localStorage for cross-tab coordination
+          localStorage.setItem(REDIRECT_FLAG_KEY, Date.now().toString());
+
+          // Small delay to allow other tabs to pick up the flag
+          setTimeout(() => {
+            window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+          }, 100);
         }
 
         const errorData = json.error as

@@ -30,7 +30,9 @@ export async function generateListingDescription(specs: ListingSpecs): Promise<s
       const result = await tryGemini(specs, geminiKey);
       if (result) return result;
     } catch (e) {
-      logger.api.warn("AI: Gemini failed, trying next tier", { error: e });
+      // Log without exposing API key
+      const errorMsg = e instanceof Error ? e.message : "Unknown error";
+      logger.api.warn("AI: Gemini failed, trying next tier", { error: errorMsg.slice(0, 100) });
     }
   }
 
@@ -40,7 +42,11 @@ export async function generateListingDescription(specs: ListingSpecs): Promise<s
       const result = await tryOpenAI(specs, openaiKey);
       if (result) return result;
     } catch (e) {
-      logger.api.warn("AI: OpenAI failed, falling back to template", { error: e });
+      // Log without exposing API key
+      const errorMsg = e instanceof Error ? e.message : "Unknown error";
+      logger.api.warn("AI: OpenAI failed, falling back to template", {
+        error: errorMsg.slice(0, 100),
+      });
     }
   }
 

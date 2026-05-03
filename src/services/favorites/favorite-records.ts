@@ -30,12 +30,11 @@ export async function getDatabaseFavoriteIds(userId: string): Promise<string[]> 
   }
 
   const supabase = await getFavoritesClient();
-  const query = supabase.from("favorites").select("listing_id").eq("user_id", userId);
-  const executor =
-    "returns" in query && typeof query.returns === "function"
-      ? query.returns<FavoriteRow[]>()
-      : query;
-  const { data, error } = await executor;
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("listing_id")
+    .eq("user_id", userId)
+    .returns<FavoriteRow[]>();
 
   if (error) {
     throw new Error(`Failed to fetch favorites: ${error.message}`);

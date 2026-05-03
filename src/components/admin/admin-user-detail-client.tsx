@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trust } from "@/lib/constants/ui-strings";
 import { safeFormatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { AdminService } from "@/services/admin/admin-service";
+import { grantUserCredits, grantUserDoping, toggleUserBan } from "@/services/admin/user-actions";
 import type { UserDetailData } from "@/services/admin/user-details";
 
 import { AdminUserActionCards } from "./admin-user-action-cards";
@@ -43,33 +43,37 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
   const [isActioning, setIsActioning] = useState(false);
 
   const handleGrantCredits = async (credits: number, note: string) => {
-    const res = await AdminService.users.grantCredits(userId, credits, note);
+    setIsActioning(true);
+    const res = await grantUserCredits(userId, credits, note);
     if (res.success) {
       toast.success(`${credits} kredi başarıyla tanımlandı.`);
       router.refresh();
     } else {
-      toast.error(res.error?.message || "İşlem başarısız");
+      toast.error(res.error || "İşlem başarısız");
     }
+    setIsActioning(false);
   };
 
   const handleGrantDoping = async (listingId: string, dopingTypes: string[]) => {
-    const res = await AdminService.users.grantDoping(userId, listingId, dopingTypes);
+    setIsActioning(true);
+    const res = await grantUserDoping(userId, listingId, dopingTypes);
     if (res.success) {
       toast.success("Doping başarıyla tanımlandı.");
       router.refresh();
     } else {
-      toast.error(res.error?.message || "İşlem başarısız");
+      toast.error(res.error || "İşlem başarısız");
     }
+    setIsActioning(false);
   };
 
   const handleBanToggle = async () => {
     setIsActioning(true);
-    const res = await AdminService.users.toggleBan(userId, profile.isBanned);
-    if (res.success) {
+    try {
+      await toggleUserBan(userId, profile.isBanned);
       toast.success(profile.isBanned ? "Yasak kaldırıldı." : "Kullanıcı yasaklandı.");
       router.refresh();
-    } else {
-      toast.error(res.error?.message || "İşlem başarısız.");
+    } catch {
+      toast.error("İşlem başarısız.");
     }
     setIsActioning(false);
   };

@@ -214,12 +214,9 @@ export async function createDatabaseNotificationsBulk(
  */
 export async function markDatabaseNotificationRead(userId: string, notificationId: string) {
   const supabase = await getNotificationsClient();
-  const table = supabase.from("notifications");
-  if (!("update" in table) || typeof table.update !== "function") {
-    throw new Error("Notification update not supported");
-  }
 
-  const { error } = await table
+  const { error } = await supabase
+    .from("notifications")
     .update({
       read: true,
       updated_at: new Date().toISOString(),

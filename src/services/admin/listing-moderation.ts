@@ -202,10 +202,25 @@ export async function adminDeleteDatabaseListing(listingId: string) {
 
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      await admin.storage.from(bucketName).remove(storagePaths);
+      const { error: storageError } = await admin.storage.from(bucketName).remove(storagePaths);
+
+      if (storageError) {
+        logger.admin.error(
+          "Failed to delete listing images from storage - queueing for retry",
+          storageError,
+          { listingId, storagePaths }
+        );
+
+        // Queue orphaned files for cleanup by background job
+        const { queueFileCleanup } = await import("@/lib/storage/registry");
+        await queueFileCleanup(bucketName, storagePaths).catch((queueErr) => {
+          logger.admin.error("Failed to queue storage cleanup", queueErr, { listingId });
+        });
+      }
     }
   }
 
+  // Continue with DB cleanup even if storage failed - queue handles it
   await admin.from("listing_images").delete().eq("listing_id", listingId);
   await admin.from("favorites").delete().eq("listing_id", listingId);
   await admin.from("reports").delete().eq("listing_id", listingId);

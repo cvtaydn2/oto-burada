@@ -167,14 +167,21 @@ async function handleCallback(token: string, req: NextRequest) {
           listingId: existingPayment.listing_id,
           packageId,
         });
+        return NextResponse.redirect(new URL("/dashboard/payments?status=success", req.url));
       } catch (dopingError) {
-        // If doping fails, log but don't fail the callback
+        // If doping fails, log and notify user about partial success
         // The webhook will retry or admin can manually fix
         logger.api.error("Doping application failed in callback", {
           paymentId: existingPayment.id,
           error: dopingError instanceof Error ? dopingError.message : String(dopingError),
         });
-        // Don't rollback fulfilled_at - webhook will handle retry
+        // User paid but doping not activated - inform them
+        return NextResponse.redirect(
+          new URL(
+            "/dashboard/payments?status=partial_success&message=Doping+aktifleme+bekleniyor",
+            req.url
+          )
+        );
       }
     }
 

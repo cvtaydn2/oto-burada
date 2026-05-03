@@ -9,6 +9,7 @@ import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
 import { createTicket } from "@/services/support/ticket-service";
 
+// Import types from service - single source of truth
 const VALID_CATEGORIES: TicketCategory[] = [
   "listing",
   "account",

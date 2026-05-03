@@ -15,10 +15,10 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
 export async function expireListings(admin: ReturnType<typeof createSupabaseAdminClient>) {
-  const cutoff = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
+  const cutoff = new Date(Date.now() - SIXTY_DAYS_MS).toISOString();
 
   const { data: expiredListings, error: fetchError } = await admin
     .from("listings")
@@ -36,28 +36,43 @@ export async function expireListings(admin: ReturnType<typeof createSupabaseAdmi
     return { processed: 0, errors: 0 };
   }
 
-  // B11 FIX: OCC-safe individual updates instead of bulk update
+  // OCC-safe batch update with concurrency control
+  const CONCURRENCY_LIMIT = 10;
+  const now = new Date().toISOString();
   let archived = 0;
   let conflicts = 0;
-  const now = new Date().toISOString();
 
-  for (const listing of expiredListings) {
-    const { error: updateError } = await admin
-      .from("listings")
-      .update({
-        status: "archived",
-        updated_at: now,
-        version: (listing.version ?? 0) + 1,
+  for (let i = 0; i < expiredListings.length; i += CONCURRENCY_LIMIT) {
+    const batch = expiredListings.slice(i, i + CONCURRENCY_LIMIT);
+
+    const results = await Promise.allSettled(
+      batch.map(async (listing) => {
+        const { error: updateError } = await admin
+          .from("listings")
+          .update({
+            status: "archived",
+            updated_at: now,
+            version: (listing.version ?? 0) + 1,
+          })
+          .eq("id", listing.id)
+          .eq("version", listing.version ?? 0)
+          .eq("status", "approved");
+
+        if (updateError) {
+          throw { id: listing.id, error: updateError };
+        }
+        return listing.id;
       })
-      .eq("id", listing.id)
-      .eq("version", listing.version ?? 0)
-      .eq("status", "approved");
+    );
 
-    if (updateError) {
-      conflicts++;
-      logger.db.warn("OCC conflict skipping listing", { id: listing.id, error: updateError });
-    } else {
-      archived++;
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        archived++;
+      } else {
+        conflicts++;
+        const err = result.reason as { id: string; error: { message: string } };
+        logger.db.warn("OCC conflict skipping listing", { id: err.id, error: err.error.message });
+      }
     }
   }
 

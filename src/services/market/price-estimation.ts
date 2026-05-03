@@ -88,6 +88,13 @@ export async function estimateVehiclePrice(params: {
 /**
  * Pure function to calculate valuation based on adjustments.
  * Isolated for unit testing.
+ *
+ * Business Rules:
+ * - Low mileage (below average) = premium (up to +10%)
+ * - High mileage (above average) = penalty (up to -20%)
+ * - Tramer damage = penalty (up to -20%)
+ * - Non-original parts = penalty (up to -25%)
+ * - Net adjustment capped between -40% and +10%
  */
 export function calculateValuation(
   baseAvg: number,
@@ -98,12 +105,21 @@ export function calculateValuation(
     damageStatusJson?: Record<string, string> | null;
   }
 ) {
-  // 1. Mileage adjustment
+  // 1. Mileage adjustment (asymmetric: penalize high, reward low)
   const currentYear = new Date().getFullYear();
   const expectedMileage = (currentYear - params.year) * 15000;
   const mileageDiff = params.mileage - expectedMileage;
-  const mileageAdjustment = (mileageDiff / 10000) * 0.012;
-  const adjustedAvg = baseAvg * (1 - mileageAdjustment);
+
+  let mileageAdjustment: number;
+  if (mileageDiff > 0) {
+    // Higher than expected: penalty (up to -20%)
+    mileageAdjustment = -Math.min((mileageDiff / 10000) * 0.015, 0.2);
+  } else {
+    // Lower than expected: premium (up to +10%)
+    mileageAdjustment = Math.min(Math.abs(mileageDiff / 10000) * 0.01, 0.1);
+  }
+
+  const adjustedAvg = baseAvg * (1 + mileageAdjustment);
 
   // 2. Tramer adjustment (up to -20%)
   let tramerAdjustment = 0;
@@ -120,5 +136,10 @@ export function calculateValuation(
     damageAdjustment = Math.min(nonOriginalParts * 0.018, 0.25);
   }
 
-  return adjustedAvg * (1 - tramerAdjustment - damageAdjustment);
+  const totalAdjustment = mileageAdjustment - tramerAdjustment - damageAdjustment;
+
+  // Cap total adjustment between -40% and +10%
+  const cappedAdjustment = Math.max(-0.4, Math.min(0.1, totalAdjustment));
+
+  return adjustedAvg * (1 + cappedAdjustment);
 }

@@ -101,20 +101,40 @@ function getLocalFallbackResult(key: string, options: { limit?: number; windowMs
 
 let ratelimit: RatelimitState = null;
 let redisCircuitOpenUntil = 0;
+let redisClient: Redis | null = null;
 
 function openRedisCircuit(reason: string, error?: unknown) {
   redisCircuitOpenUntil = Date.now() + REDIS_CIRCUIT_BREAKER_MS;
   logger.api.warn(reason, { redisCircuitOpenUntil }, error);
 }
 
-function getRatelimit() {
-  if (ratelimit) return ratelimit;
+function getRedisClientSingleton(): Redis | null {
+  if (redisClient) return redisClient;
 
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  const isProduction = process.env.NODE_ENV === "production";
 
   if (!url || !token) {
+    return null;
+  }
+
+  try {
+    redisClient = Redis.fromEnv();
+    return redisClient;
+  } catch (error) {
+    logger.security.error("Failed to initialize Redis client", error);
+    return null;
+  }
+}
+
+function getRatelimit() {
+  if (ratelimit) return ratelimit;
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const redisClientInstance = getRedisClientSingleton();
+
+  if (!redisClientInstance) {
     if (isProduction) {
       logger.security.warn(
         "Upstash Redis config missing in production. Using in-memory fallback for rate limiting."
@@ -126,7 +146,7 @@ function getRatelimit() {
 
   try {
     ratelimit = new Ratelimit({
-      redis: Redis.fromEnv(),
+      redis: redisClientInstance,
       limiter: Ratelimit.slidingWindow(300, "60 s"), // 300 req/min per IP (RSC skipped in middleware)
       analytics: true,
       prefix: "@upstash/ratelimit/oto-burada",
@@ -284,13 +304,20 @@ export async function checkBruteForceLimit(
   // so we use a very high limit with a short window for 'check' OR we check the raw Redis value.
   if (mode === "check") {
     const isProd = process.env.NODE_ENV === "production";
-    const redisClient = Redis.fromEnv();
+    const client = getRedisClientSingleton();
+
+    if (!client) {
+      logger.security.warn("Redis client unavailable in check mode", { key });
+      return isProd
+        ? { success: false, limit: 0, remaining: 0, reset: Date.now() + 60_000 }
+        : { success: true, limit: 1, remaining: 1, reset: Date.now() };
+    }
 
     try {
       // We check if the ZSET for this key has more than 'limit' entries.
       // prefix is added by the Ratelimit constructor, but we need to match it here.
       const fullKey = `@upstash/ratelimit/oto-burada:${key}`;
-      const count = await redisClient.zcount(
+      const count = await client.zcount(
         fullKey,
         Date.now() - (options.windowMs ?? 15 * 60 * 1000),
         "+inf"

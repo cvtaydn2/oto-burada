@@ -167,20 +167,10 @@ export async function withSecurity(
     }
 
     if (options.requireAdmin) {
-      // Admin check: uses cached dbProfile from getAuthContext
       if (!dbProfile || dbProfile.role !== "admin") {
         return {
           ok: false,
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403),
-        };
-      }
-    } else {
-      // Lightweight JWT ban check as fallback if DB profile unavailable
-      const isBannedInJwt = (user.app_metadata as { is_banned?: boolean })?.is_banned === true;
-      if (isBannedInJwt) {
-        return {
-          ok: false,
-          response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
         };
       }
     }
