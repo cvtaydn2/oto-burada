@@ -45,6 +45,7 @@ const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "isExchange",
   "featured",
   "galleryPriority",
+  "validationError",
 ]);
 
 function sanitizeMarketplaceFilters(filters: ListingFilters): {
