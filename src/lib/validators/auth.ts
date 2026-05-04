@@ -81,21 +81,38 @@ export const corporateProfileSchema = z.object({
   ),
 });
 
+const PASSWORD_MIN_LENGTH = 8;
+
+function strongPassword(value: string): boolean {
+  const hasUpperCase = /[A-Z]/.test(value);
+  const hasLowerCase = /[a-z]/.test(value);
+  const hasNumber = /[0-9]/.test(value);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+  return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+}
+
+const passwordSchema = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, `Şifre en az ${PASSWORD_MIN_LENGTH} karakter olmalıdır`)
+  .refine(strongPassword, {
+    message: "Şifre en az 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir",
+  });
+
 export const loginSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
+  password: passwordSchema,
 });
 
 export const registerSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
+  password: passwordSchema,
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
 });
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
-    confirm: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
+    password: passwordSchema,
+    confirm: passwordSchema,
   })
   .refine((data) => data.password === data.confirm, {
     message: "Şifreler eşleşmiyor",
