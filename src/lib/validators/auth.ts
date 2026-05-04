@@ -103,11 +103,17 @@ export const loginSchema = z.object({
   password: passwordSchema,
 });
 
-export const registerSchema = z.object({
-  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: passwordSchema,
-  fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
-});
+export const registerSchema = z
+  .object({
+    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
+    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Şifreler eşleşmiyor",
+    path: ["confirmPassword"],
+  });
 
 export const resetPasswordSchema = z
   .object({

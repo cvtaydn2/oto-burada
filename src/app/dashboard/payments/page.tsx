@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
 
+import { requireUser } from "@/lib/auth/session";
+
 interface PaymentsPageProps {
   searchParams: Promise<{ status?: string; token?: string; message?: string }>;
 }
 
 export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
+  await requireUser();
+
   const { status, token, message } = await searchParams;
 
   // Redirect to the result page, forwarding query params

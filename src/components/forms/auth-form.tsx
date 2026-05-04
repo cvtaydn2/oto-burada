@@ -260,6 +260,40 @@ export function AuthForm({
                     {state.fieldErrors.password[0]}
                   </p>
                 )}
+
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="text-sm font-semibold text-foreground"
+                    >
+                      Şifre Tekrar
+                    </label>
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      name="confirmPassword"
+                      autoComplete="new-password"
+                      placeholder="Şifrenizi tekrar girin"
+                      required
+                      minLength={8}
+                      aria-invalid={!!state?.fieldErrors?.confirmPassword}
+                      aria-describedby={
+                        state?.fieldErrors?.confirmPassword ? "confirm-password-error" : ""
+                      }
+                      className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
+                    />
+                    {state?.fieldErrors?.confirmPassword && (
+                      <p
+                        id="confirm-password-error"
+                        role="alert"
+                        className="px-1 text-[11px] font-medium text-destructive"
+                      >
+                        {state.fieldErrors.confirmPassword[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {!isLogin && (
