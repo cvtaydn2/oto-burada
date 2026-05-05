@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
 interface CsrfContextType {
   token: string | null;
+  isReady: boolean;
   refresh: () => Promise<string | null>;
 }
 
@@ -16,34 +17,61 @@ export function CsrfProvider({
   children: React.ReactNode;
   initialToken?: string;
 }) {
+  const hasInitialToken = Boolean(initialToken);
   const [token, setToken] = useState<string | null>(initialToken || null);
+  const [isReady, setIsReady] = useState<boolean>(hasInitialToken);
+  const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
 
-  const refresh = async () => {
-    try {
-      // We can expose an endpoint to get a fresh token if needed,
-      // or rely on the one passed from the server.
-      // For now, we'll just allow setting it.
-      const response = await fetch("/api/auth/csrf");
-      const payload = await response.json();
-      const token = payload.data?.token;
-      if (token) {
-        setToken(token);
-        return token;
+  const refresh = useCallback(async () => {
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
+    }
+
+    const pendingPromise = (async () => {
+      try {
+        const response = await fetch("/api/auth/csrf", {
+          credentials: "same-origin",
+        });
+
+        if (!response.ok) {
+          setToken(null);
+          return null;
+        }
+
+        const payload = await response.json();
+        const nextToken = payload.data?.token;
+
+        if (nextToken) {
+          setToken(nextToken);
+          return nextToken;
+        }
+
+        setToken(null);
+        return null;
+      } catch (error) {
+        console.error("Failed to refresh CSRF token", error);
+        setToken(null);
+        return null;
+      } finally {
+        setIsReady(true);
+        refreshPromiseRef.current = null;
       }
-    } catch (error) {
-      console.error("Failed to refresh CSRF token", error);
-    }
-    return null;
-  };
+    })();
 
-  // Sync with initial token if it changes (e.g. on navigation if layout re-renders)
-  useEffect(() => {
-    if (initialToken) {
-      setTimeout(() => setToken(initialToken), 0);
-    }
-  }, [initialToken]);
+    refreshPromiseRef.current = pendingPromise;
+    return pendingPromise;
+  }, []);
 
-  return <CsrfContext.Provider value={{ token, refresh }}>{children}</CsrfContext.Provider>;
+  const value = useMemo(
+    () => ({
+      token,
+      isReady,
+      refresh,
+    }),
+    [token, isReady, refresh]
+  );
+
+  return <CsrfContext.Provider value={value}>{children}</CsrfContext.Provider>;
 }
 
 export function useCsrfToken() {

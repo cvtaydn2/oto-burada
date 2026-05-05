@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
+import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
@@ -29,15 +29,14 @@ const ticketCreateSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.ticketCreate,
     rateLimitKey: "tickets:create",
   });
 
   if (!security.ok) return security.response;
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!;
 
   let body: unknown;
   try {
@@ -92,14 +91,13 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  // Security checks: Auth + Rate limiting
-  const security = await withAuth(request, {
+  const security = await withUserRoute(request, {
     ipRateLimit: rateLimitProfiles.general,
     rateLimitKey: "tickets:list",
   });
 
   if (!security.ok) return security.response;
-  const user = security.user!; // Guaranteed by withAuth
+  const user = security.user!;
 
   try {
     const { getUserTickets } = await import("@/services/support/ticket-service");

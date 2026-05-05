@@ -34,10 +34,12 @@ export const reportSchema: z.ZodType<Report> = z.object({
 export const reportCreateSchema: z.ZodType<ReportCreateInput> = z.object({
   listingId: trimmedRequiredString,
   reason: z.enum(reportReasons),
-  description: z.preprocess(
-    emptyStringToUndefined,
-    z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional()
-  ),
+  description: z
+    .preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional()
+    )
+    .optional(),
 });
 
 export const contactFormSchema = z.object({
@@ -63,7 +65,6 @@ export const contactFormSchema = z.object({
     .trim()
     .min(10, "Mesaj en az 10 karakter olmalıdır.")
     .max(2000, "Mesaj en fazla 2000 karakter olabilir."),
-  /** Honeypot — must be empty. Bots fill this; humans don't see it. */
   _hp: z.string().max(0, "Bot detected").optional(),
   turnstileToken: z.string().optional(),
 });

@@ -115,14 +115,9 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     page: z
       .preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional())
       .optional(),
-    // ── VALIDATION FIX: Issue #14 - Enforce Limit Bounds with Default ─────
-    // Ensures limit is always between 1-100, with a default of 12 if not provided.
-    // This prevents malicious or accidental override of DEFAULT_LISTING_FILTERS.limit
-    // via spread operator in parseListingFiltersFromSearchParams.
-    limit: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce.number().int().min(1).max(100).default(12)
-    ),
+    limit: z
+      .preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).max(100).optional())
+      .optional(),
     citySlug: optionalTrimmedString,
     sellerId: optionalTrimmedString,
     cursor: optionalTrimmedString,

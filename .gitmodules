@@ -1,4 +1,4 @@
 
-[submodule "lib/ruflo"]
-	path = lib/ruflo
-	url = https://github.com/ruvnet/ruflo
+[submodule "lib/claude-code-templates"]
+	path = lib/claude-code-templates
+	url = https://github.com/davila7/claude-code-templates

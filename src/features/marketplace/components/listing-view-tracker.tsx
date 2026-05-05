@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useCsrfToken } from "@/components/providers/csrf-provider";
 import { captureClientEvent, captureClientException } from "@/lib/monitoring/telemetry-client";
@@ -26,22 +26,77 @@ export function ListingViewTracker({
   year,
   status,
 }: ListingViewTrackerProps) {
-  const { token: csrfToken } = useCsrfToken();
+  const { token: csrfToken, refresh: refreshCsrfToken } = useCsrfToken();
+  const hasTrackedViewRef = useRef(false);
+  const hasCapturedEventRef = useRef(false);
 
   useEffect(() => {
+    if (!hasCapturedEventRef.current) {
+      captureClientEvent("listing_viewed", {
+        listingId,
+        listingSlug,
+        brand,
+        model,
+        city,
+        price,
+        year,
+        status,
+      });
+      hasCapturedEventRef.current = true;
+    }
+  }, [listingId, listingSlug, brand, model, city, price, year, status]);
+
+  useEffect(() => {
+    if (hasTrackedViewRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+
     const recordView = async () => {
+      let activeToken = csrfToken;
+
+      if (!activeToken) {
+        activeToken = await refreshCsrfToken();
+      }
+
+      if (cancelled || !activeToken) {
+        captureClientException(
+          new Error("Missing CSRF token for listing view"),
+          "listing_view_csrf_unavailable",
+          {
+            listingId,
+            listingSlug,
+          }
+        );
+        return;
+      }
+
       try {
         const response = await fetch("/api/listings/view", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+            "x-csrf-token": activeToken,
           },
+          credentials: "same-origin",
           body: JSON.stringify({ listingId }),
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to record listing view: ${response.status}`);
+        if (response.ok) {
+          hasTrackedViewRef.current = true;
+          return;
+        }
+
+        if (response.status === 403) {
+          captureClientException(
+            new Error(`Listing view rejected with status ${response.status}`),
+            "listing_view_csrf_rejected",
+            {
+              listingId,
+              listingSlug,
+            }
+          );
         }
       } catch (error) {
         captureClientException(error, "listing_view_record_failed", {
@@ -53,17 +108,10 @@ export function ListingViewTracker({
 
     void recordView();
 
-    captureClientEvent("listing_viewed", {
-      listingId,
-      listingSlug,
-      brand,
-      model,
-      city,
-      price,
-      year,
-      status,
-    });
-  }, [listingId, listingSlug, brand, model, city, price, year, status, csrfToken]);
+    return () => {
+      cancelled = true;
+    };
+  }, [listingId, listingSlug, csrfToken, refreshCsrfToken]);
 
   return null;
 }

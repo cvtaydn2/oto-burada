@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf } from "@/lib/api/security";
+import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const profileUpdateSchema = z.object({
@@ -18,7 +18,7 @@ const profileUpdateSchema = z.object({
 });
 
 export async function GET(req: Request) {
-  const security = await withUserAndCsrf(req);
+  const security = await withUserRoute(req);
   if (!security.ok) return security.response;
 
   const user = security.user!;

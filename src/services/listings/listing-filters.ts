@@ -24,51 +24,109 @@ export const DEFAULT_LISTING_FILTERS: ListingFilters = {
   limit: 12,
 };
 
-export function parseListingFiltersFromSearchParams(
-  searchParams?: Record<string, string | string[] | undefined>
-): ListingFilters {
-  // ── PERFORMANCE FIX: Issue #17 - Conditional Performance Logging ─────
-  // Performance logging only in development to avoid overhead in production.
-  // In high-traffic marketplace APIs, Date.now() + logger calls add unnecessary latency.
-  const shouldLogPerf = process.env.NODE_ENV === "development";
-  const start = shouldLogPerf ? Date.now() : 0;
+const FILTER_KEYS = [
+  "query",
+  "brand",
+  "model",
+  "carTrim",
+  "city",
+  "citySlug",
+  "district",
+  "category",
+  "minPrice",
+  "maxPrice",
+  "minYear",
+  "maxYear",
+  "maxMileage",
+  "maxTramer",
+  "hasExpertReport",
+  "fuelType",
+  "transmission",
+  "sort",
+  "page",
+  "limit",
+  "sellerId",
+  "cursor",
+] as const satisfies ReadonlyArray<keyof ListingFilters>;
 
-  const normalizedSearchParams = Object.fromEntries(
+function normalizeSearchParams(searchParams?: Record<string, string | string[] | undefined>) {
+  return Object.fromEntries(
     Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
       const firstValue = Array.isArray(value) ? value[0] : value;
       return firstValue !== undefined ? [[key, firstValue]] : [];
     })
   );
+}
 
+function parseFiltersWithRecovery(normalizedSearchParams: Record<string, string>) {
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
 
-  if (!parsed.success) {
-    const errorMessages = parsed.error.issues.map((i) => i.message).join(", ");
-    logger.listings.warn("Invalid search params, using safe defaults", {
-      errors: parsed.error.issues.map((i) => ({
-        path: i.path.join("."),
-        message: i.message,
-      })),
+  if (parsed.success) {
+    return {
+      data: parsed.data,
+      droppedKeys: [] as string[],
+      errorMessages: [] as string[],
+    };
+  }
+
+  const recoveredEntries = FILTER_KEYS.flatMap((key) => {
+    const value = normalizedSearchParams[key];
+    if (value === undefined) {
+      return [];
+    }
+
+    const singleParse = listingFiltersSchema.safeParse({ [key]: value });
+    return singleParse.success ? [[key, value] as const] : [];
+  });
+
+  const recovered = listingFiltersSchema.safeParse(Object.fromEntries(recoveredEntries));
+  const droppedKeys = Array.from(
+    new Set(parsed.error.issues.flatMap((issue) => issue.path.map((segment) => String(segment))))
+  );
+
+  return {
+    data: recovered.success ? recovered.data : {},
+    droppedKeys,
+    errorMessages: parsed.error.issues.map((issue) => issue.message),
+  };
+}
+
+export function parseListingFiltersFromSearchParams(
+  searchParams?: Record<string, string | string[] | undefined>
+): ListingFilters {
+  const shouldLogPerf = process.env.NODE_ENV === "development";
+  const start = shouldLogPerf ? Date.now() : 0;
+  const normalizedSearchParams = normalizeSearchParams(searchParams);
+
+  const { data, droppedKeys, errorMessages } = parseFiltersWithRecovery(normalizedSearchParams);
+
+  if (droppedKeys.length > 0) {
+    logger.listings.warn("Invalid search params detected, dropping invalid filters", {
+      errors: errorMessages,
+      droppedKeys,
       keys: Object.keys(normalizedSearchParams),
     });
-
-    return {
-      ...DEFAULT_LISTING_FILTERS,
-      validationError: `Geçersiz filtre parametreleri: ${errorMessages}`,
-    };
   }
 
   if (shouldLogPerf) {
     logger.perf.debug("parseListingFiltersFromSearchParams execution", {
       duration: Date.now() - start,
       success: true,
+      droppedKeys,
     });
   }
 
-  // Apply defaults to parsed data
   return {
     ...DEFAULT_LISTING_FILTERS,
-    ...parsed.data,
+    ...data,
+    limit: data.limit ?? DEFAULT_LISTING_FILTERS.limit,
+    page: data.page ?? DEFAULT_LISTING_FILTERS.page,
+    sort: data.sort ?? DEFAULT_LISTING_FILTERS.sort,
+    ...(errorMessages.length > 0
+      ? {
+          validationError: `Geçersiz filtre parametreleri: ${errorMessages.join(", ")}`,
+        }
+      : {}),
   };
 }
 
@@ -88,7 +146,6 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("model", filters.model);
   append("carTrim", filters.carTrim);
   append("city", filters.city);
-  // citySlug is an internal routing field — do not serialize to search params
   append("district", filters.district);
   append("category", filters.category);
   append("minPrice", filters.minPrice);
@@ -99,11 +156,14 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("maxTramer", filters.maxTramer);
   append("fuelType", filters.fuelType);
   append("transmission", filters.transmission);
-  // Only include page when > 1 — page=1 is the default and adds URL noise
+
   if (filters.page !== undefined && filters.page > 1) {
     append("page", filters.page);
   }
-  append("limit", filters.limit);
+
+  if (filters.limit !== undefined && filters.limit !== DEFAULT_LISTING_FILTERS.limit) {
+    append("limit", filters.limit);
+  }
 
   if (filters.hasExpertReport) {
     searchParams.set("hasExpertReport", "true");

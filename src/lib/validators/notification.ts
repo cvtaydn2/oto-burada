@@ -38,15 +38,17 @@ export const savedSearchSchema: z.ZodType<SavedSearch> = z.object({
 });
 
 export const savedSearchCreateSchema: z.ZodType<SavedSearchCreateInput> = z.object({
-  title: z.preprocess(
-    emptyStringToUndefined,
-    z
-      .string()
-      .trim()
-      .min(1, requiredMessage)
-      .max(120, "Baslik en fazla 120 karakter olabilir")
-      .optional()
-  ),
+  title: z
+    .preprocess(
+      emptyStringToUndefined,
+      z
+        .string()
+        .trim()
+        .min(1, requiredMessage)
+        .max(120, "Baslik en fazla 120 karakter olabilir")
+        .optional()
+    )
+    .optional(),
   filters: listingFiltersSchema,
   notificationsEnabled: z.boolean().optional(),
 });

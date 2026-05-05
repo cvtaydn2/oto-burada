@@ -139,69 +139,72 @@ export async function updateSession(request: NextRequest) {
     !pathname.startsWith("/api/auth") &&
     !pathname.startsWith("/auth")
   ) {
-    // PERFORMANCE BUG-K07 FIX: Do not query DB on every request.
-    // Rely strictly on Environment Variables (MAINTENANCE_MODE_FORCE=true) to toggle maintenance.
-    let isMaintenanceMode = process.env.MAINTENANCE_MODE_FORCE === "true";
+    const { isMaintenanceGateActive, shouldShowMaintenanceScreen } =
+      await import("@/lib/platform/maintenance");
 
-    // Check database for maintenance mode if not forced via env
-    if (!isMaintenanceMode) {
-      try {
-        const { data } = await supabase
-          .from("platform_settings")
-          .select("value")
-          .eq("key", "general_appearance")
-          .single();
+    if (isMaintenanceGateActive()) {
+      let isMaintenanceMode = process.env.MAINTENANCE_MODE_FORCE === "true";
 
-        if (
-          data &&
-          data.value &&
-          typeof data.value === "object" &&
-          "maintenance_mode" in data.value
-        ) {
-          isMaintenanceMode = Boolean((data.value as Record<string, unknown>).maintenance_mode);
+      // Check database for maintenance mode if not forced via env
+      if (!isMaintenanceMode) {
+        try {
+          const { data } = await supabase
+            .from("platform_settings")
+            .select("value")
+            .eq("key", "general_appearance")
+            .single();
+
+          if (
+            data &&
+            data.value &&
+            typeof data.value === "object" &&
+            "maintenance_mode" in data.value
+          ) {
+            isMaintenanceMode = Boolean((data.value as Record<string, unknown>).maintenance_mode);
+          }
+        } catch (err) {
+          console.error("[maintenanceCheck] Settings fetch error:", err);
         }
-      } catch (err) {
-        console.error("[maintenanceCheck] Settings fetch error:", err);
-      }
-    }
-
-    if (isMaintenanceMode) {
-      let isAdmin = false;
-      if (user) {
-        // Fetch role from profile
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-
-        if (profileError) {
-          console.error("[maintenanceCheck] Profile fetch error:", profileError);
-        }
-
-        isAdmin = profile?.role === "admin";
-        console.log(`[maintenanceCheck] User: ${user.id}, Admin: ${isAdmin}`);
       }
 
-      if (!isAdmin && pathname !== "/login") {
-        // For API routes, return a JSON error instead of a redirect
-        if (route.isApiRoute) {
-          return applySecurityHeaders(
-            NextResponse.json(
-              {
-                error: "Site bakım modundadır. Lütfen daha sonra tekrar deneyiniz.",
-                code: "MAINTENANCE_MODE",
-              },
-              { status: 503 }
-            ),
-            nonce,
-            request
-          );
+      if (shouldShowMaintenanceScreen(isMaintenanceMode)) {
+        let isAdmin = false;
+        if (user) {
+          // Fetch role from profile
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+          if (profileError) {
+            console.error("[maintenanceCheck] Profile fetch error:", profileError);
+          }
+
+          isAdmin = profile?.role === "admin";
+          console.log(`[maintenanceCheck] User: ${user.id}, Admin: ${isAdmin}`);
         }
 
-        const url = request.nextUrl.clone();
-        url.pathname = "/maintenance";
-        return applySecurityHeaders(NextResponse.redirect(url), nonce, request);
+        if (!isAdmin && pathname !== "/login") {
+          // For API routes, return a JSON error instead of a redirect
+          if (route.isApiRoute) {
+            return applySecurityHeaders(
+              NextResponse.json(
+                {
+                  error: "Site bakım modundadır. Lütfen daha sonra tekrar deneyiniz.",
+                  code: "MAINTENANCE_MODE",
+                },
+                { status: 503 }
+              ),
+              nonce,
+              request
+            );
+          }
+
+          const url = request.nextUrl.clone();
+          url.pathname = "/maintenance";
+          return applySecurityHeaders(NextResponse.redirect(url), nonce, request);
+        }
       }
     }
   }

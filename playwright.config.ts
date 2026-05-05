@@ -1,8 +1,21 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const baseURL = process.env.BASE_URL || "http://localhost:3000";
+const webServerCommand = process.env.CI
+  ? "npm run build && npm run start"
+  : "npm run dev";
+const webServerReuseExisting = process.env.CI ? false : true;
+const maintenanceBypass =
+  process.env.PLAYWRIGHT_ENABLE_MAINTENANCE === "true"
+    ? process.env.MAINTENANCE_MODE_BYPASS
+    : process.env.MAINTENANCE_MODE_BYPASS || "true";
+const webServerEnv = {
+  ...process.env,
+  ...(maintenanceBypass !== undefined ? { MAINTENANCE_MODE_BYPASS: maintenanceBypass } : {}),
+};
+
 export default defineConfig({
   testDir: ".",
-  // API tests run separately and faster (no browser needed)
   testMatch: [
     "e2e/**/*.spec.ts",
     "tests/**/*.spec.ts",
@@ -17,11 +30,10 @@ export default defineConfig({
     ? [["github"], ["html", { open: "never" }]]
     : [["html", { open: "never" }]],
   use: {
-    baseURL: process.env.BASE_URL || "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    // Consistent locale for Turkish content assertions
     locale: "tr-TR",
     timezoneId: "Europe/Istanbul",
   },
@@ -43,20 +55,13 @@ export default defineConfig({
       use: { ...devices["iPhone 13"] },
     },
   ],
-  // In CI: use pre-built production server (faster, closer to real deployment)
-  // Locally: reuse existing dev server if running
-  webServer: process.env.CI
-    ? {
-      command: "npm run build && npm run start",
-      cwd: ".",
-      url: "http://localhost:3000",
-      timeout: 120_000,
-      reuseExistingServer: false,
-    }
-    : {
-      command: "npm run dev",
-      cwd: ".",
-      url: "http://localhost:3000",
-      reuseExistingServer: true,
-    },
+  webServer: {
+    command: webServerCommand,
+    cwd: ".",
+    url: baseURL,
+    timeout: 120_000,
+    reuseExistingServer: webServerReuseExisting,
+    env: webServerEnv,
+  },
 });
+

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { withSecurity } from "@/lib/api/security";
+import { withCsrfToken } from "@/lib/api/security";
 import { getCurrentUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { recordListingView } from "@/services/listings/listing-views";
@@ -12,7 +12,7 @@ const viewSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const security = await withSecurity(request);
+  const security = await withCsrfToken(request);
   if (!security.ok) return security.response;
 
   try {
