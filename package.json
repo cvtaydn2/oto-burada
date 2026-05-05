@@ -126,7 +126,7 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
     "tailwindcss": "^4",
-    "typescript": "^5",
+    "typescript": "^6",
     "vite": "^7.1.12",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
