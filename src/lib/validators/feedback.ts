@@ -15,16 +15,20 @@ export const reportSchema: z.ZodType<Report> = z.object({
   listingId: trimmedRequiredString,
   reporterId: trimmedRequiredString,
   reason: z.enum(reportReasons),
-  description: z.preprocess(
-    emptyStringToUndefined,
-    z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional()
-  ),
+  description: z
+    .preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional()
+    )
+    .optional(),
   status: z.enum(reportStatuses),
   createdAt: timestampSchema,
-  updatedAt: z.preprocess(
-    emptyStringToUndefined,
-    z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional()
-  ),
+  updatedAt: z
+    .preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional()
+    )
+    .optional(),
 });
 
 export const reportCreateSchema: z.ZodType<ReportCreateInput> = z.object({

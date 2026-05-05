@@ -54,6 +54,16 @@ test.describe("Dashboard (Authenticated)", () => {
     await expect(content).toBeVisible({ timeout: 8_000 });
   });
 
+  test("paketler sayfası doping görünürlüğü dili ile yükleniyor", async ({ page }) => {
+    await page.goto("/dashboard/pricing");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByText("Doping Paketleri")).toBeVisible({ timeout: 8_000 });
+
+    const visibilityCopy = page.getByText(/satın aldığınız aktif dopingler|yayındaki ilan bulunamadı/i).first();
+    await expect(visibilityCopy).toBeVisible({ timeout: 8_000 });
+  });
+
   test("ilan oluşturma sayfası yükleniyor", async ({ page }) => {
     await page.goto("/dashboard/listings/create");
     await page.waitForLoadState("domcontentloaded");

@@ -7,7 +7,6 @@ import {
   Hash,
   MapPin,
   ShieldCheck,
-  Sparkles,
   Star,
   TrendingDown,
   Zap,
@@ -24,6 +23,7 @@ import { ExpertPdfButton } from "@/components/listings/expert-pdf-button";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 // Components
 import { ListingGallery } from "@/components/listings/listing-gallery";
+import { ListingPromoBadges } from "@/components/listings/listing-promo-badges";
 import { ListingQuestions } from "@/components/listings/listing-questions";
 import { SellerReviewForm } from "@/components/listings/seller-review-form";
 import { SellerTrustBadges } from "@/components/listings/seller-trust-badges";
@@ -43,6 +43,7 @@ import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
 import { ListingSpecs } from "@/features/marketplace/components/listing-detail/listing-specs";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getListingDopingDisplayItems } from "@/lib/listings/utils";
 import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
 import { cn, formatPrice } from "@/lib/utils";
 import { getMarketValuation } from "@/services/listings/listing-price-history";
@@ -163,6 +164,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   ]);
 
   const isOwner = currentUser?.id === listing.sellerId;
+  const dopingItems = getListingDopingDisplayItems(listing);
 
   // Seller membership
   const membershipLabel = getProfileMembershipLabel(seller?.createdAt ?? null);
@@ -243,12 +245,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <span className="rounded-lg bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     {listing.year} Model
                   </span>
-                  {listing.featured && (
-                    <span className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-600">
-                      <Sparkles size={10} />
-                      Öne Çıkan
-                    </span>
-                  )}
+                  <ListingPromoBadges items={dopingItems} limit={2} size="sm" variant="soft" />
                   {listing.expertInspection?.hasInspection && (
                     <span className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
                       <ShieldCheck size={10} />

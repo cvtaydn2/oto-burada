@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import {
   addDatabaseFavorite,
@@ -8,7 +8,7 @@ import {
   removeDatabaseFavorite,
 } from "../favorite-records";
 
-vi.mock("@/lib/supabase/admin");
+vi.mock("@/lib/supabase/server");
 
 type FavoriteQueryResult = {
   data: Array<{ listing_id: string }> | null;
@@ -33,7 +33,7 @@ describe("favorite-records service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as never);
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(mockAdminClient as never);
 
     nextResolveValue = { data: [{ listing_id: "1" }, { listing_id: "2" }], error: null };
 

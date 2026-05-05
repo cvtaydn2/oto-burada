@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
+import { HomeErrorHandler } from "@/components/layout/home-error-handler";
 import { HomeHero } from "@/components/layout/home-hero";
 import {
   OrganizationStructuredData,
@@ -84,6 +85,13 @@ export default async function HomePage() {
       />
 
       <main className="w-full flex-1">
+        <HomeErrorHandler
+          results={{
+            featuredStatus: featuredResult.status,
+            galleryStatus: galleryResult.status,
+            latestStatus: latestResult.status,
+          }}
+        />
         <HomeHero
           cities={referencesData.cities.map((city) => city.city)}
           searchSuggestions={referencesData.searchSuggestions}
@@ -175,10 +183,16 @@ export default async function HomePage() {
         {featuredListings.length > 0 && (
           <section className="bg-muted/30 py-8 sm:py-10 md:py-12">
             <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
-              <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                  Vitrindeki İlanlar
-                </h2>
+              <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+                    Anasayfa Vitrini
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm font-medium text-muted-foreground">
+                    Bu alan, görünürlük satın alan ilanlar için ayrılmış premium vitrin yüzeyidir.
+                    Sponsorlu görünürlük açıkça etiketlenir.
+                  </p>
+                </div>
                 <Link
                   href="/listings"
                   prefetch={false}

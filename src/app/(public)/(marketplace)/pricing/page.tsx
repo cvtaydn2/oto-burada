@@ -16,6 +16,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
+import { DOPING_PACKAGES } from "@/lib/constants/doping";
+import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Fiyatlandırma - OtoBurada Ücretsiz İlan & Doping Paketleri",
@@ -53,57 +55,7 @@ const freeFeatures = [
   },
 ];
 
-// Mock data for doping packages
-const dopingPackages = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: 49,
-    originalPrice: 490,
-    period: "ay",
-    popular: false,
-    features: [
-      { text: "1 ilan için görünürlük artırma", included: true },
-      { text: "7 gün vitrin desteği", included: true },
-      { text: "Arama sonuçlarında üst sıra desteği", included: true },
-      { text: "Acil etiketi", included: false },
-      { text: "Öne çıkan galeri görünümü", included: false },
-      { text: "WhatsApp CTA desteği", included: false },
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: 149,
-    originalPrice: 1490,
-    period: "ay",
-    popular: true,
-    features: [
-      { text: "3 ilan için görünürlük artırma", included: true },
-      { text: "14 gün vitrin desteği", included: true },
-      { text: "Arama sonuçlarında üst sıra desteği", included: true },
-      { text: "Acil etiketi", included: true },
-      { text: "Öne çıkan galeri görünümü", included: true },
-      { text: "WhatsApp CTA desteği", included: true },
-    ],
-  },
-  {
-    id: "elite",
-    name: "Elite",
-    price: 399,
-    originalPrice: 3990,
-    period: "ay",
-    popular: false,
-    features: [
-      { text: "10 ilan için görünürlük artırma", included: true },
-      { text: "30 gün vitrin desteği", included: true },
-      { text: "Arama sonuçlarında premium sıra desteği", included: true },
-      { text: "Acil etiketi", included: true },
-      { text: "Öne çıkan galeri görünümü", included: true },
-      { text: "WhatsApp CTA desteği", included: true },
-    ],
-  },
-];
+const featuredDopingPackageIds = new Set(["anasayfa_vitrini", "ust_siradayim", "acil_acil"]);
 
 // Mock data for corporate plans
 const corporatePlans = [
@@ -293,83 +245,85 @@ export default function PricingPage() {
               Doping Paketleri
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Fiyatları piyasanın <span className="font-bold text-primary">1/10&apos;u</span> ile
-              maksimum dönüşüm. Dopingler ilan bazlı görünürlük artırma paketleri olarak çalışır.
+              Her doping tek bir ilan için çalışır. Satın aldığınız etki; hangi yüzeyde görünür, ne
+              kadar sürer ve nasıl fark yaratır kısmıyla birlikte birebir gösterilir.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
-            {dopingPackages.map((pkg) => (
-              <div
-                key={pkg.id}
-                className={`relative bg-card border-2 rounded-3xl p-6 sm:p-8 transition-all duration-300 ${
-                  pkg.popular
-                    ? "border-primary shadow-2xl shadow-primary/20 scale-105 md:scale-110"
-                    : "border-border hover:border-primary/30 hover:shadow-xl"
-                }`}
-              >
-                {pkg.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full">
-                    EN POPÜLER
-                  </div>
-                )}
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+            {DOPING_PACKAGES.map((pkg) => {
+              const isPopular = featuredDopingPackageIds.has(pkg.id);
 
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-                    {pkg.name}
-                  </h3>
-                  <div className="flex items-end justify-center gap-1">
-                    <span className="text-4xl sm:text-5xl font-bold text-primary">
-                      ₺{pkg.price}
-                    </span>
-                    <span className="text-muted-foreground mb-1">/{pkg.period}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    <span className="text-sm text-muted-foreground line-through">
-                      ₺{pkg.originalPrice}
-                    </span>
-                    <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">
-                      %{Math.round((1 - pkg.price / pkg.originalPrice) * 100)} indirim
-                    </span>
-                  </div>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {pkg.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-3">
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          feature.included
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-gray-100 text-gray-300"
-                        }`}
-                      >
-                        {feature.included ? (
-                          <Check size={14} className="stroke-[3]" />
-                        ) : (
-                          <XMark size={14} />
-                        )}
-                      </div>
-                      <span
-                        className={`text-sm ${feature.included ? "text-foreground" : "text-muted-foreground line-through"}`}
-                      >
-                        {feature.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                    pkg.popular
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border-2 border-border bg-background hover:border-primary hover:text-primary"
+              return (
+                <div
+                  key={pkg.id}
+                  className={`relative rounded-3xl border-2 bg-card p-6 transition-all duration-300 sm:p-8 ${
+                    isPopular
+                      ? "border-primary shadow-2xl shadow-primary/20"
+                      : "border-border hover:border-primary/30 hover:shadow-xl"
                   }`}
                 >
-                  Seç
-                </button>
-              </div>
-            ))}
+                  {isPopular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground">
+                      EN ÇOK TERCİH EDİLENLERDEN
+                    </div>
+                  )}
+
+                  <div className="mb-6">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h3 className="text-2xl font-bold text-foreground sm:text-3xl">{pkg.name}</h3>
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                        {pkg.durationDays > 0 ? `${pkg.durationDays} gün` : "Tek kullanım"}
+                      </span>
+                    </div>
+                    <div className="text-4xl font-bold text-primary sm:text-5xl">
+                      {formatCurrency(pkg.price)}
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      {pkg.summary}
+                    </p>
+                  </div>
+
+                  <div className="mb-6 rounded-2xl border border-border bg-muted/20 p-4">
+                    <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Nerede görünür?
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {pkg.surfaces.map((surface) => (
+                        <span
+                          key={surface}
+                          className="rounded-full border border-border bg-background px-2.5 py-1 text-[10px] font-semibold text-foreground"
+                        >
+                          {surface}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <ul className="mb-8 space-y-3">
+                    {pkg.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-3">
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                          <Check size={14} className="stroke-[3]" />
+                        </div>
+                        <span className="text-sm text-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href="/dashboard/pricing"
+                    className={`inline-flex w-full justify-center rounded-xl py-3 font-semibold transition-all ${
+                      isPopular
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "border-2 border-border bg-background hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    Panelde Satın Al
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -23,6 +23,13 @@ function classifyPersistenceError(error: { code?: string; message?: string } | n
   if (error.message?.includes("slug_unique") || error.code === "23505") {
     return "slug_collision" as const;
   }
+  if (
+    error.message?.includes("image") ||
+    error.message?.includes("upsert failed") ||
+    error.message?.includes("insert failed")
+  ) {
+    return "image_persistence_error" as const;
+  }
   return "database_error" as const;
 }
 
@@ -132,6 +139,28 @@ export async function createDatabaseListing(
         currentListing = { ...currentListing, slug: newSlug };
         continue;
       }
+
+      if (classifiedError === "image_persistence_error") {
+        const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+        const { queueFileCleanup } = await import("@/lib/storage/registry");
+        const uploadedPaths = currentListing.images.map((img) => img.storagePath).filter(Boolean);
+
+        if (uploadedPaths.length > 0) {
+          try {
+            await queueFileCleanup(bucketName, uploadedPaths);
+          } catch (cleanupError) {
+            logger.db.error(
+              "Failed to queue orphaned image cleanup after create RPC error",
+              cleanupError,
+              {
+                listingId: currentListing.id,
+                uploadedPaths,
+              }
+            );
+          }
+        }
+      }
+
       return { error: classifiedError };
     }
 

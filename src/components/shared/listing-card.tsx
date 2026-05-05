@@ -16,7 +16,11 @@ import { memo } from "react";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { SafeImage } from "@/components/shared/safe-image";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { getListingBadgeStates, getListingCoverImage } from "@/lib/listings/utils";
+import {
+  getListingBadgeStates,
+  getListingCoverImage,
+  getListingDopingDisplayItems,
+} from "@/lib/listings/utils";
 import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { type Listing } from "@/types";
@@ -76,6 +80,7 @@ export const ListingCard = memo(function ListingCard({
   const insights = getListingCardInsights(listing);
   const coverImage = getListingCoverImage(listing);
   const { isPremiumVisible } = getSellerTrustUI(listing.seller);
+  const dopingItems = getListingDopingDisplayItems(listing);
 
   const detailHref = `/listing/${listing.slug}`;
 
@@ -123,21 +128,22 @@ export const ListingCard = memo(function ListingCard({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-normal" />
 
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-20 pointer-events-none">
-          {badgeStates.isFeatured && isPremiumVisible && (
-            <Badge
-              icon={Sparkles}
-              label="VİTRİN"
-              className="bg-primary text-white shadow-lg shadow-primary/20"
-            />
-          )}
-          {badgeStates.isUrgent && isPremiumVisible && (
-            <Badge
-              icon={Zap}
-              label="ACİL"
-              className="bg-rose-600 text-white shadow-lg shadow-rose-600/20"
-            />
-          )}
+        <div className="absolute top-4 left-4 z-20 flex flex-col gap-2 pointer-events-none">
+          {isPremiumVisible &&
+            dopingItems
+              .slice(0, 2)
+              .map((item) => (
+                <Badge
+                  key={item.type}
+                  icon={item.type === "urgent" ? Zap : Sparkles}
+                  label={item.label}
+                  className={
+                    item.type === "urgent"
+                      ? "bg-rose-600 text-white shadow-lg shadow-rose-600/20"
+                      : "bg-primary text-white shadow-lg shadow-primary/20"
+                  }
+                />
+              ))}
           {isPremiumVisible && badgeStates.hasInspection && (
             <Badge
               icon={ShieldCheck}

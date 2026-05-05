@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ListingPromoBadges } from "@/components/listings/listing-promo-badges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { trust } from "@/lib/constants/ui-strings";
+import { getListingDopingDisplayItems } from "@/lib/listings/utils";
 import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { forceActionOnListing } from "@/services/admin/inventory";
 import { Listing } from "@/types";
@@ -139,14 +141,12 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                 )}
               </td>
               <td className="px-6 py-4">
-                <div className="flex gap-1.5 flex-wrap">
-                  {listing.featured && (
-                    <Badge className="bg-primary/10 text-primary border-primary/20 rounded-md font-bold text-[8px] flex items-center gap-1">
-                      <Zap size={8} className="fill-current" />
-                      VITRIN
-                    </Badge>
-                  )}
-                </div>
+                <ListingPromoBadges
+                  items={getListingDopingDisplayItems(listing)}
+                  limit={2}
+                  size="sm"
+                  variant="soft"
+                />
               </td>
               <td className="px-6 py-4 text-right">
                 <DropdownMenu>

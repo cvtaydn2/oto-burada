@@ -64,7 +64,7 @@ export function AdvancedFilterPage({
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
               <button
                 onClick={resetFilters}
-                className="flex items-center justify-center gap-2 rounded-xl border border-border/40 bg-card px-5 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-muted/50 sm:flex-1 lg:flex-none"
+                className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border/40 bg-card px-5 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-muted/50 sm:flex-1 lg:flex-none"
               >
                 <RotateCcw size={14} />
                 Sıfırla
@@ -77,7 +77,10 @@ export function AdvancedFilterPage({
             <div className="mb-8 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm font-bold text-primary lg:mb-10">
               <SlidersHorizontal size={14} />
               <span>{activeCount} aktif filtre</span>
-              <button onClick={resetFilters} className="ml-auto text-rose-500 hover:text-rose-600">
+              <button
+                onClick={resetFilters}
+                className="ml-auto min-h-8 rounded-lg px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50"
+              >
                 Tümünü Temizle
               </button>
             </div>

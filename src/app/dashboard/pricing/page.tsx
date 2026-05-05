@@ -122,7 +122,7 @@ export default async function PricingPage() {
                     <span className="text-xs font-bold text-muted-foreground">GÜVENLİ ÖDEME</span>
                   </div>
                 </div>
-                <DopingStore listingId={listing.id} />
+                <DopingStore listing={listing} />
               </div>
             ))}
           </div>

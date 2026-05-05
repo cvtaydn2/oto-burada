@@ -80,7 +80,7 @@ export function MarketplaceControls({
         <button
           onClick={() => setViewMode("grid")}
           className={cn(
-            "rounded-lg border px-3 py-2 text-xs font-bold transition-all",
+            "min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-all",
             viewMode === "grid"
               ? "border-border/50 bg-card text-foreground shadow-sm"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -91,7 +91,7 @@ export function MarketplaceControls({
         <button
           onClick={() => setViewMode("list")}
           className={cn(
-            "rounded-lg border px-3 py-2 text-xs font-bold transition-all",
+            "min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-all",
             viewMode === "list"
               ? "border-border/50 bg-card text-foreground shadow-sm"
               : "border-transparent text-muted-foreground hover:text-foreground"

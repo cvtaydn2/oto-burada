@@ -19,6 +19,7 @@ interface SearchWithSuggestionsProps {
   className?: string;
   suggestions?: SearchSuggestionItem[];
   currentFilters?: Record<string, string>;
+  formId?: string;
 }
 
 const POPULAR_SEARCHES: SearchSuggestion[] = [
@@ -33,20 +34,43 @@ export function SearchWithSuggestions({
   className = "",
   suggestions = [],
   currentFilters,
+  formId,
 }: SearchWithSuggestionsProps) {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const suggestionsId = useId();
 
+  const handleInputChange = (value: string) => {
+    setQuery(value);
+    setHighlightedIndex(0);
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+      setDebouncedQuery(value);
+    }, 300);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const filteredSuggestions = useMemo(() => {
-    if (query.length < 1) {
+    if (debouncedQuery.length < 1) {
       return [];
     }
-    const normalizedQuery = query.toLocaleLowerCase("tr-TR");
+    const normalizedQuery = debouncedQuery.toLocaleLowerCase("tr-TR");
 
     const list = Array.isArray(suggestions) ? suggestions : [];
     return list
@@ -57,11 +81,11 @@ export function SearchWithSuggestions({
         type: suggestion.type as SearchSuggestion["type"],
         value: suggestion.value,
       }));
-  }, [query, suggestions]);
+  }, [debouncedQuery, suggestions]);
 
-  const visibleSuggestions = query.length === 0 ? POPULAR_SEARCHES : filteredSuggestions;
-  const hasResults = query.length >= 1;
-  const showSuggestions = isFocused && (hasResults || query.length === 0);
+  const visibleSuggestions = debouncedQuery.length === 0 ? POPULAR_SEARCHES : filteredSuggestions;
+  const hasResults = debouncedQuery.length >= 1;
+  const showSuggestions = isFocused && (hasResults || debouncedQuery.length === 0);
   const activeOptionId =
     showSuggestions && highlightedIndex >= 0
       ? `${suggestionsId}-option-${highlightedIndex}`
@@ -80,6 +104,7 @@ export function SearchWithSuggestions({
       params.delete("page");
       router.push(`/listings?${params.toString()}`);
       setQuery("");
+      setDebouncedQuery("");
       setHighlightedIndex(-1);
       setIsFocused(false);
       inputRef.current?.blur();
@@ -122,6 +147,7 @@ export function SearchWithSuggestions({
     ],
     onEscape: () => {
       setQuery("");
+      setDebouncedQuery("");
       setHighlightedIndex(-1);
       setIsFocused(false);
       inputRef.current?.blur();
@@ -151,6 +177,7 @@ export function SearchWithSuggestions({
           id="header-search"
           name="query"
           type="search"
+          form={formId}
           role="combobox"
           value={query}
           onFocus={() => setIsFocused(true)}
@@ -158,8 +185,7 @@ export function SearchWithSuggestions({
             blurTimeoutRef.current = setTimeout(() => setIsFocused(false), 120);
           }}
           onChange={(e) => {
-            setQuery(e.target.value);
-            setHighlightedIndex(0);
+            handleInputChange(e.target.value);
           }}
           onKeyDown={(event) => {
             if (!showSuggestions || visibleSuggestions.length === 0) return;
@@ -193,8 +219,10 @@ export function SearchWithSuggestions({
         />
         {query && (
           <button
+            type="button"
             onClick={() => {
               setQuery("");
+              setDebouncedQuery("");
               setHighlightedIndex(-1);
               inputRef.current?.focus();
             }}

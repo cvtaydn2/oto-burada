@@ -17,16 +17,17 @@ import {
   Trash2,
   TrendingDown,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { ListingPromoBadges } from "@/components/listings/listing-promo-badges";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useFavorites } from "@/components/shared/favorites-provider";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { getListingDopingDisplayItems } from "@/lib/listings/utils";
 import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 
@@ -244,6 +245,7 @@ function FavoriteCard({
   const coverImage = images.find((img) => img.isCover) ?? images[0];
   const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95;
   const hasExpert = listing.expertInspection?.hasInspection;
+  const dopingItems = getListingDopingDisplayItems(listing);
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-md hover:border-border/70">
@@ -278,11 +280,7 @@ function FavoriteCard({
               <ShieldCheck size={10} /> EKSPERTİZLİ
             </span>
           )}
-          {listing.featured && (
-            <span className="flex items-center gap-1 rounded-full bg-blue-600/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
-              <Zap size={10} /> VİTRİN
-            </span>
-          )}
+          <ListingPromoBadges items={dopingItems} limit={1} size="sm" variant="glass" />
         </div>
 
         {/* Remove button */}

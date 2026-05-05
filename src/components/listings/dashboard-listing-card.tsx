@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
+import { getListingDopingDisplayItems, getListingDopingStatusTone } from "@/lib/listings/utils";
 import { cn, formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 
@@ -82,6 +83,8 @@ export function DashboardListingCard({
       )
     : 0;
 
+  const dopingItems = getListingDopingDisplayItems(listing);
+
   return (
     <div
       className={cn(
@@ -117,9 +120,16 @@ export function DashboardListingCard({
               <Rocket size={24} />
             </div>
           )}
-          {listing.featured && (
-            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-primary text-white text-[8px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-sm">
-              ÖNE ÇIKAN
+          {dopingItems[0] && (
+            <div
+              className={cn(
+                "absolute top-2 left-2 rounded-lg px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.15em] text-white shadow-lg backdrop-blur-sm",
+                getListingDopingStatusTone(dopingItems[0].expiresAt) === "expiring"
+                  ? "bg-amber-500"
+                  : "bg-primary"
+              )}
+            >
+              {dopingItems[0].label}
             </div>
           )}
         </div>
@@ -157,6 +167,21 @@ export function DashboardListingCard({
               <span>{formatNumber(listing.mileage)} KM</span>
               <span className="w-1 h-1 rounded-full bg-border" />
               <span className="truncate">{listing.city}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {dopingItems.length > 1 && (
+                <span className="hidden rounded-full border border-primary/15 bg-primary/5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-primary md:inline-flex">
+                  +{dopingItems.length - 1} aktif boost
+                </span>
+              )}
+
+              {dopingItems[0] &&
+                getListingDopingStatusTone(dopingItems[0].expiresAt) === "expiring" && (
+                  <span className="hidden rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-amber-700 md:inline-flex">
+                    Süresi bitiyor
+                  </span>
+                )}
             </div>
 
             {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
@@ -246,7 +271,7 @@ export function DashboardListingCard({
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-6">
-                  <DopingStore listingId={listing.id} />
+                  <DopingStore listing={listing} />
                 </div>
               </DialogContent>
             </Dialog>

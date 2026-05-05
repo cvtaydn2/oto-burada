@@ -70,8 +70,10 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
             <Sparkles size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Vitrin Galerisi</h2>
-            <p className="text-xs text-muted-foreground">Öne çıkan premium ilanlar</p>
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Premium Vitrin Akışı</h2>
+            <p className="text-xs text-muted-foreground">
+              Bu ilanlar satın alınan görünürlük paketleriyle burada gösterilir.
+            </p>
           </div>
         </div>
 
@@ -95,6 +97,29 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
             aria-label="Sonraki"
           >
             <ChevronRight size={18} />
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 sm:hidden">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={scrollPrev}
+            disabled={!canScrollPrev}
+            className="size-10 rounded-full"
+            aria-label="Önceki"
+          >
+            <ChevronLeft size={20} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={scrollNext}
+            disabled={!canScrollNext}
+            className="size-10 rounded-full"
+            aria-label="Sonraki"
+          >
+            <ChevronRight size={20} />
           </Button>
         </div>
       </div>

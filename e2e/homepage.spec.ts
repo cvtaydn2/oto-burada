@@ -35,6 +35,11 @@ test.describe("Ana Sayfa", () => {
     await expect(page.getByText("Yeni İlanlar")).toBeVisible();
   });
 
+  test("anasayfa vitrin alanı sponsorlu görünürlük dili ile görünür", async ({ page }) => {
+    await expect(page.getByText("Anasayfa Vitrini")).toBeVisible();
+    await expect(page.getByText(/sponsorlu görünürlük açıkça etiketlenir/i)).toBeVisible();
+  });
+
   test("footer görünür", async ({ page }) => {
     await expect(page.locator("footer").first()).toBeVisible();
   });

@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: ".",
   // API tests run separately and faster (no browser needed)
   testMatch: [
-    "e2e/**/*.spec.ts", 
+    "e2e/**/*.spec.ts",
     "tests/**/*.spec.ts",
     "tests/api/**/*.spec.ts"
   ],
@@ -47,14 +47,16 @@ export default defineConfig({
   // Locally: reuse existing dev server if running
   webServer: process.env.CI
     ? {
-        command: "npm run build && npm run start",
-        url: "http://localhost:3000",
-        timeout: 120_000,
-        reuseExistingServer: false,
-      }
+      command: "npm run build && npm run start",
+      cwd: ".",
+      url: "http://localhost:3000",
+      timeout: 120_000,
+      reuseExistingServer: false,
+    }
     : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: true,
-      },
+      command: "npm run dev",
+      cwd: ".",
+      url: "http://localhost:3000",
+      reuseExistingServer: true,
+    },
 });

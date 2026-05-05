@@ -1,6 +1,7 @@
 import { MapPin, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { getListingDopingDisplayItems } from "@/lib/listings/utils";
 import { formatPrice } from "@/lib/utils";
 import { type Listing } from "@/types";
 
@@ -10,6 +11,7 @@ interface ListingHeaderProps {
 
 export function ListingHeader({ listing }: ListingHeaderProps) {
   const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95;
+  const activeDopings = getListingDopingDisplayItems(listing);
 
   return (
     <div className="bg-card rounded-xl border border-border p-5">
@@ -21,12 +23,12 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
               {listing.brand}{" "}
               <span className="font-medium text-muted-foreground">{listing.model}</span>
             </h1>
-            {listing.featured && (
-              <Badge className="bg-amber-500 text-white text-xs font-medium">
+            {activeDopings.slice(0, 3).map((doping) => (
+              <Badge key={doping.type} className="bg-amber-500 text-white text-xs font-medium">
                 <Sparkles className="w-3 h-3 mr-1" />
-                Öne Çıkan
+                {doping.label}
               </Badge>
-            )}
+            ))}
             {isAdvantageous && (
               <Badge className="bg-emerald-500 text-white text-xs font-medium">
                 Avantajlı Fiyat

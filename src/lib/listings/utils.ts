@@ -9,8 +9,10 @@ import {
   listingStatusLabels,
   transmissionTypeLabels,
 } from "@/lib/constants/domain";
+import { DOPING_TYPE_LABELS } from "@/lib/constants/doping";
 import { formatNumber, formatPrice } from "@/lib/utils";
 import type { Listing, Profile } from "@/types";
+import type { DopingType } from "@/types/payment";
 
 // Re-export formatPrice so existing imports from listing-utils still work
 export { formatPrice };
@@ -125,6 +127,94 @@ export function getListingBadgeStates(listing: Listing) {
     isAdvantageous: (listing.marketPriceIndex ?? 1) < 0.95,
     hasInspection: !!listing.expertInspection?.hasInspection,
   };
+}
+
+export function getActiveListingDopingTypes(listing: Listing): DopingType[] {
+  const now = new Date().toISOString();
+  const activeTypes: DopingType[] = [];
+
+  if (listing.smallPhotoUntil && listing.smallPhotoUntil > now) {
+    activeTypes.push("small_photo");
+  }
+
+  if (listing.urgentUntil && listing.urgentUntil > now) {
+    activeTypes.push("urgent");
+  }
+
+  if (listing.homepageShowcaseUntil && listing.homepageShowcaseUntil > now) {
+    activeTypes.push("homepage_showcase");
+  }
+
+  if (listing.categoryShowcaseUntil && listing.categoryShowcaseUntil > now) {
+    activeTypes.push("category_showcase");
+  }
+
+  if (listing.topRankUntil && listing.topRankUntil > now) {
+    activeTypes.push("top_rank");
+  }
+
+  if (listing.detailedSearchShowcaseUntil && listing.detailedSearchShowcaseUntil > now) {
+    activeTypes.push("detailed_search_showcase");
+  }
+
+  if (
+    (listing.boldFrameUntil && listing.boldFrameUntil > now) ||
+    (listing.highlightedUntil && listing.highlightedUntil > now)
+  ) {
+    activeTypes.push("bold_frame");
+  }
+
+  if (listing.bumpedAt) {
+    const bumpedAt = new Date(listing.bumpedAt);
+    if (!isNaN(bumpedAt.getTime()) && Date.now() - bumpedAt.getTime() < 24 * 60 * 60 * 1000) {
+      activeTypes.push("bump");
+    }
+  }
+
+  return activeTypes;
+}
+
+export function getListingDopingDisplayItems(listing: Listing): Array<{
+  type: DopingType;
+  label: string;
+  expiresAt: string | null;
+}> {
+  const activeTypes = getActiveListingDopingTypes(listing);
+
+  return activeTypes.map((type) => ({
+    type,
+    label: DOPING_TYPE_LABELS[type],
+    expiresAt:
+      type === "small_photo"
+        ? (listing.smallPhotoUntil ?? null)
+        : type === "urgent"
+          ? (listing.urgentUntil ?? null)
+          : type === "homepage_showcase"
+            ? (listing.homepageShowcaseUntil ?? null)
+            : type === "category_showcase"
+              ? (listing.categoryShowcaseUntil ?? null)
+              : type === "top_rank"
+                ? (listing.topRankUntil ?? null)
+                : type === "detailed_search_showcase"
+                  ? (listing.detailedSearchShowcaseUntil ?? null)
+                  : type === "bold_frame"
+                    ? (listing.boldFrameUntil ?? listing.highlightedUntil ?? null)
+                    : (listing.bumpedAt ?? null),
+  }));
+}
+
+export function getListingDopingStatusTone(
+  expiresAt: string | null
+): "active" | "expiring" | "single_use" {
+  if (!expiresAt) return "single_use";
+
+  const expiry = new Date(expiresAt);
+  if (isNaN(expiry.getTime())) return "single_use";
+
+  const diffMs = expiry.getTime() - Date.now();
+  const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
+
+  return diffMs <= twoDaysMs ? "expiring" : "active";
 }
 
 /**

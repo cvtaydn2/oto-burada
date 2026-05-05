@@ -76,10 +76,16 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
                     placeholder="Marka, model veya şehir ara..."
                     suggestions={searchSuggestions}
                     className="max-w-none"
+                    formId="home-hero-search-form"
                   />
                 </div>
 
-                <form action="/listings" method="GET" className="flex flex-col gap-2 sm:flex-row">
+                <form
+                  id="home-hero-search-form"
+                  action="/listings"
+                  method="GET"
+                  className="flex flex-col gap-2 sm:flex-row"
+                >
                   <div className="relative w-full sm:w-56 lg:w-64 group">
                     <label htmlFor="hero-city" className="sr-only">
                       Şehir seç

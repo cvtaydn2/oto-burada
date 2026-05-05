@@ -6,6 +6,7 @@ import { updateDatabaseListing } from "../listing-submission-persistence";
 
 const queueFileCleanup = vi.fn().mockResolvedValue(undefined);
 const fromMock = vi.fn();
+const rpcMock = vi.fn();
 
 function createTestListing(overrides: Partial<Listing> = {}): Listing {
   return {
@@ -48,10 +49,13 @@ vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/lib/supabase/admin", () => ({
-  createSupabaseAdminClient: vi.fn(() => ({
-    from: fromMock,
-  })),
+vi.mock("@/lib/supabase/server", () => ({
+  createSupabaseServerClient: vi.fn(() =>
+    Promise.resolve({
+      from: fromMock,
+      rpc: rpcMock,
+    })
+  ),
 }));
 
 vi.mock("@/lib/sanitization/sanitize", () => ({
@@ -119,6 +123,11 @@ describe("Listing Storage Cleanup", () => {
   });
 
   it("should identify and queue orphaned storage images during update", async () => {
+    rpcMock.mockResolvedValue({
+      data: { id: "listing-1", brand: "BMW", model: "320i" },
+      error: null,
+    });
+
     const oldImages = [
       { storage_path: "old-1.jpg", is_cover: false, sort_order: 0, public_url: "x" },
       { storage_path: "keep.jpg", is_cover: true, sort_order: 1, public_url: "y" },
@@ -149,6 +158,11 @@ describe("Listing Storage Cleanup", () => {
   });
 
   it("should not queue cleanup when all images are still present", async () => {
+    rpcMock.mockResolvedValue({
+      data: { id: "listing-1", brand: "BMW", model: "320i" },
+      error: null,
+    });
+
     fromMock.mockImplementation((table: string) => {
       if (table === "listings") return createListingsChain();
       if (table === "listing_images") {

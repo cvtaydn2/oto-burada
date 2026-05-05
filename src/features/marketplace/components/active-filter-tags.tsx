@@ -157,7 +157,7 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
       <span>{label}</span>
       <button
         onClick={onRemove}
-        className="size-5 rounded-lg bg-muted text-muted-foreground flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
+        className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
       >
         <svg
           className="size-2.5"

@@ -19,6 +19,7 @@ import { TrustBadge } from "@/components/shared/trust-badge";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
+import { getListingDopingDisplayItems } from "@/lib/listings/utils";
 import { cn } from "@/lib/utils";
 import {
   getMarketplaceSeller,
@@ -52,7 +53,9 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
   const sellerListings = listingsResult.listings;
   const totalListingsCount = listingsResult.total;
-  const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
+  const featuredListingCount = sellerListings.filter(
+    (listing: Listing) => getListingDopingDisplayItems(listing).length > 0
+  ).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
   const trustUI = getSellerTrustUI(seller);
   const memberSinceDate = seller.createdAt ? new Date(seller.createdAt) : null;
@@ -156,7 +159,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
             { label: "Aktif İlan", value: totalListingsCount, icon: Car },
-            { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
+            { label: "Aktif Vitrin", value: featuredListingCount, icon: CheckCircle2 },
             { label: "Üyelik Yılı", value: memberSinceYear ?? "—", icon: Clock },
           ].map((stat) => (
             <div

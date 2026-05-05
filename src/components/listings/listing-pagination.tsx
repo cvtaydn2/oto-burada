@@ -33,7 +33,7 @@ export function ListingPagination({
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="size-10 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
+          className="size-11 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
         >
           <ChevronLeft size={18} />
         </button>
@@ -55,7 +55,7 @@ export function ListingPagination({
                   key={item}
                   onClick={() => onPageChange(item as number)}
                   className={cn(
-                    "size-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm",
+                    "size-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm",
                     item === currentPage
                       ? "bg-primary text-primary-foreground shadow-primary/20 scale-110 z-10"
                       : "bg-card border border-border text-muted-foreground hover:border-primary/30"
@@ -69,7 +69,7 @@ export function ListingPagination({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="size-10 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
+          className="size-11 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
         >
           <ChevronRight size={18} />
         </button>

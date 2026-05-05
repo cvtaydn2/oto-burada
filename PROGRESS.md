@@ -1,5 +1,152 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 19. Unified Doping Language Across Homepage & Listing Surfaces
+
+**Date**: 2026-05-05
+**Status**: ✅ COMPLETED
+**Scope**: Extend the unified doping vocabulary into homepage premium areas, listing cards, and dashboard listing summaries without duplicating business interpretation.
+
+### 19.1 Completed
+- Unified UI contract extended in [`src/lib/listings/utils.ts`](src/lib/listings/utils.ts):
+  - `getListingDopingDisplayItems()` added as the shared presentation-ready source for active doping labels and expiry data.
+  - `getListingDopingStatusTone()` added to normalize `active` / `expiring` / `single_use` states from one place.
+- Homepage premium language clarified:
+  - [`src/app/(public)/(marketplace)/page.tsx`](src/app/(public)/(marketplace)/page.tsx) now describes the homepage premium area as a transparent sponsored visibility surface (`Anasayfa Vitrini`).
+  - [`src/components/listings/featured-carousel.tsx`](src/components/listings/featured-carousel.tsx) now explains that the carousel is driven by purchased visibility packages.
+- Listing card badge duplication reduced:
+  - [`src/components/shared/listing-card.tsx`](src/components/shared/listing-card.tsx) now derives premium labels from shared doping display items instead of hardcoding separate featured/urgent wording.
+- Listing detail alignment preserved:
+  - [`src/components/listings/listing-header.tsx`](src/components/listings/listing-header.tsx) now consumes the same shared display items used elsewhere.
+- Dashboard summary normalization improved:
+  - [`src/components/listings/dashboard-listing-card.tsx`](src/components/listings/dashboard-listing-card.tsx) now uses the shared doping display items for the card ribbon,
+  - shows extra active boost count,
+  - and surfaces an expiry warning state when an active visibility effect is close to ending.
+- Dashboard purchase surface cleanup retained:
+  - [`src/components/dashboard/doping-store.tsx`](src/components/dashboard/doping-store.tsx) now depends only on shared display helpers instead of reinterpreting boost state separately.
+
+### 19.2 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+### 19.3 Next Step
+- Use the shared promo renderer to finish the remaining listing/promo surfaces that may still contain static badge language in future feature additions.
+
+### 19.4 Test Follow-up
+- Added focused tests for shared doping presentation logic:
+  - [`src/lib/listings/__tests__/promo-display.test.ts`](src/lib/listings/__tests__/promo-display.test.ts)
+  - [`src/components/listings/__tests__/listing-promo-badges.test.tsx`](src/components/listings/__tests__/listing-promo-badges.test.tsx)
+  - [`src/__tests__/promo-badge-deduplication.test.ts`](src/__tests__/promo-badge-deduplication.test.ts)
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ⚠️ `npm run test:unit` currently fails due to a broader existing Vitest environment/config problem (`TypeError: Cannot read properties of undefined (reading 'config')`) affecting many pre-existing suites, not just the newly added tests.
+
+## 20. Final Doping Badge Renderer Consolidation
+
+**Date**: 2026-05-05
+**Status**: ✅ COMPLETED
+**Scope**: Remove the remaining duplicated boost badge presentation and align all remaining public/admin/favorites surfaces on a single promo badge renderer.
+
+### 20.1 Completed
+- Shared renderer created in [`src/components/listings/listing-promo-badges.tsx`](src/components/listings/listing-promo-badges.tsx):
+  - reusable promo badge renderer now supports `solid`, `soft`, and `glass` variants,
+  - same badge component can be reused across image overlays, detail headers, admin tables, and favorites.
+- Listing gallery surface aligned:
+  - [`src/components/listings/listing-detail/listing-gallery-section.tsx`](src/components/listings/listing-detail/listing-gallery-section.tsx) now uses the shared promo renderer instead of custom `listing.featured` badge logic.
+- Favorites surface aligned:
+  - [`src/components/listings/favorites-page-client.tsx`](src/components/listings/favorites-page-client.tsx) now renders promo badges from shared doping display items instead of a hardcoded `VİTRİN` branch.
+- Admin inventory aligned:
+  - [`src/components/admin/inventory-table.tsx`](src/components/admin/inventory-table.tsx) now renders listing promo visibility using the shared promo renderer instead of direct `featured` checks.
+- Public listing detail aligned:
+  - [`src/app/(public)/(marketplace)/listing/[slug]/page.tsx`](src/app/(public)/(marketplace)/listing/[slug]/page.tsx) now uses shared promo badges in the hero/title block.
+- Seller statistics terminology aligned:
+  - [`src/app/(public)/(marketplace)/seller/[id]/page.tsx`](src/app/(public)/(marketplace)/seller/[id]/page.tsx) now counts active promo visibility via shared display items and renames the stat to `Aktif Vitrin`.
+
+### 20.2 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+### 20.3 Result
+- Doping/boost UI language is now substantially centralized.
+- Static `featured`-only badge branches were removed from the remaining audited surfaces.
+- Sponsored visibility is now much closer to a single-source presentation model across homepage, detail, dashboard, favorites, seller, and admin views.
+
+## 18. Doping Visibility UX & Package Duplication Cleanup
+
+**Date**: 2026-05-05
+**Status**: ✅ COMPLETED
+**Scope**: Doping/boost package surfaces, dashboard visibility clarity, and public pricing duplication cleanup.
+
+### 18.1 Completed
+- Doping package model enriched in [`src/types/payment.ts`](src/types/payment.ts) and [`src/lib/constants/doping.ts`](src/lib/constants/doping.ts):
+  - package metadata now includes `summary` and `surfaces`,
+  - shared labels added via `DOPING_TYPE_LABELS`,
+  - lookup helper added for type-based mapping.
+- Active doping derivation unified in [`src/lib/listings/utils.ts`](src/lib/listings/utils.ts):
+  - new `getActiveListingDopingTypes()` derives currently active boost types from listing state,
+  - removes repeated ad-hoc interpretation of listing boost fields.
+- Dashboard doping UX upgraded in [`src/components/dashboard/doping-store.tsx`](src/components/dashboard/doping-store.tsx):
+  - component now receives the full listing instead of only `listingId`,
+  - active purchased dopings are shown first with explicit status and expiry,
+  - every package now explains exactly where it appears in the product,
+  - active package cards are marked to reduce re-purchase ambiguity.
+- Listing-specific dashboard integrations aligned:
+  - [`src/app/dashboard/pricing/page.tsx`](src/app/dashboard/pricing/page.tsx) now passes the full listing into the doping store,
+  - [`src/components/listings/dashboard-listing-card.tsx`](src/components/listings/dashboard-listing-card.tsx) dialog now uses the same listing-aware store component.
+- Listing detail visibility made more truthful in [`src/components/listings/listing-header.tsx`](src/components/listings/listing-header.tsx):
+  - active doping labels are surfaced directly from the unified package/type mapping instead of only showing a generic featured badge.
+- Public pricing page duplication reduced in [`src/app/(public)/(marketplace)/pricing/page.tsx`](src/app/(public)/(marketplace)/pricing/page.tsx):
+  - removed disconnected mock starter/pro/elite doping bundle model,
+  - pricing page now reflects real `DOPING_PACKAGES` data,
+  - package cards explain duration, concrete benefit, and where each boost appears,
+  - CTA copy now pushes users to panel-based purchase instead of pretending public-page purchase is available.
+
+### 18.2 Key Problems Resolved
+- Package duplication between code-truth [`DOPING_PACKAGES`](src/lib/constants/doping.ts) and public pricing-page mock bundles.
+- User confusion about “satın aldığım doping nerede görünüyor?”
+- Inconsistent boost labeling across dashboard and listing detail surfaces.
+- Hidden coupling where purchase UI knew package slugs but not actual visibility surfaces.
+
+### 18.3 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+### 18.4 Next Step
+- Extend the same unified doping language into homepage showcase sections and listing cards so:
+  - homepage premium areas explain why a listing is visible there,
+  - active boost labels map one-to-one with purchased package names,
+  - E2E coverage verifies purchased doping visibility across dashboard, listing detail, and homepage.
+
+## 17. Homepage Search Flow Audit & Fix
+
+**Date**: 2026-05-05
+**Status**: ✅ COMPLETED
+**Scope**: Homepage-first audit of hero search flow, connected suggestion UX, and search form integration.
+
+### 17.1 Completed
+- Homepage entrypoints and connected layers reviewed from `src/app/(public)/(marketplace)/page.tsx` through:
+  - `src/components/layout/home-hero.tsx`
+  - `src/components/ui/search-with-suggestions.tsx`
+  - `src/services/listings/marketplace-listings.ts`
+  - `src/services/reference/reference-records.ts`
+- Hero search integration bug fixed:
+  - `src/components/ui/search-with-suggestions.tsx` now accepts a dedicated `formId` prop so the search input can participate in an external GET form.
+  - The clear action is now explicitly `type="button"` to avoid accidental form submission.
+  - Query reset now also clears debounced state after submit, escape, and clear actions to prevent stale suggestion state.
+- Homepage hero form wiring fixed:
+  - `src/components/layout/home-hero.tsx` now binds the suggestion input to the city/search submit form with `id="home-hero-search-form"`.
+  - This ensures typed homepage queries are submitted together with city selection instead of silently being excluded from the request.
+
+### 17.2 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+### 17.3 Next Step
+- Continue homepage-adjacent audit with focused verification of:
+  - suggestion-to-results transitions,
+  - empty/error states on homepage sections,
+  - homepage CTA/navigation consistency on mobile,
+  - related E2E coverage for combined city + query submissions.
+
 ## 16. Listings End-to-End UX, SEO & Security Hardening
 
 **Date**: 2026-05-03  
