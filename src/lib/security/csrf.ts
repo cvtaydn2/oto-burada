@@ -18,7 +18,8 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { getUserFacingError } from "@/config/user-messages";
 
-const CSRF_COOKIE_HASH_NAME = "__Host-oto_csrf_v2";
+const CSRF_COOKIE_HASH_NAME =
+  process.env.NODE_ENV === "production" ? "__Host-oto_csrf_v2" : "oto_csrf_v2";
 const CSRF_HEADER_NAME = "x-csrf-token";
 const TOKEN_LENGTH = 32;
 

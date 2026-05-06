@@ -57,8 +57,6 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
     onRefresh: async () => {
       // Invalidate favorites query to trigger refetch
       await queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      // Also reload the page to ensure fresh data
-      window.location.reload();
     },
   });
 

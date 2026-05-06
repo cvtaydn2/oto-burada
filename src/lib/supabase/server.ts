@@ -9,7 +9,7 @@ export async function createSupabaseServerClient(overrideUrl?: string) {
   const url = overrideUrl || defaultUrl;
   let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;
 
-  const canAccessCookies = isRequestContext();
+  const canAccessCookies = await isRequestContext();
 
   if (canAccessCookies) {
     try {

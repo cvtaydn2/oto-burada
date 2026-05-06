@@ -4,7 +4,8 @@ export const authRoutes = ["/login", "/register", "/forgot-password", "/reset-pa
 
 // API Security Config
 export const protectedApiPrefixes = [
-  "/api/listings",
+  // NOTE: /api/listings GET is intentionally public marketplace search.
+  // Auth-required listing operations are protected at route-level wrappers.
   "/api/dashboard",
   "/api/profile",
   "/api/chats",

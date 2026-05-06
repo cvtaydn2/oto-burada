@@ -207,7 +207,6 @@ export async function updateSession(request: NextRequest) {
           }
 
           isAdmin = profile?.role === "admin";
-          console.log(`[maintenanceCheck] User: ${user.id}, Admin: ${isAdmin}`);
         }
 
         if (!isAdmin && pathname !== "/login") {

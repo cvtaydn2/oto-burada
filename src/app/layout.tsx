@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
   },
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -111,7 +111,12 @@ export default async function RootLayout({
   const speedInsightsEnabled = process.env.NEXT_PUBLIC_ENABLE_VERCEL_SPEED_INSIGHTS !== "false";
 
   return (
-    <html lang="tr" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
+    <html
+      lang="tr"
+      className={`${inter.variable} ${outfit.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <meta name="csrf-token" content={csrfToken} />
         <link rel="preconnect" href="https://images.unsplash.com" />

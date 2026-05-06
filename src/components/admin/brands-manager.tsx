@@ -13,6 +13,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -51,6 +52,7 @@ interface BrandsManagerProps {
 
 export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerProps) {
   const { captureError } = useErrorCapture("brands-manager");
+  const router = useRouter();
   const [brands, setBrands] = useState(initialBrands);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [addBrandModal, setAddBrandModal] = useState(false);
@@ -85,9 +87,11 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
     setIsAdding(true);
     try {
       await updateBrand(editingBrand.id, editingBrand.name.trim());
+      setBrands((prev) =>
+        prev.map((b) => (b.id === editingBrand.id ? { ...b, name: editingBrand.name.trim() } : b))
+      );
       toast.success("Marka güncellendi");
       setEditingBrand(null);
-      window.location.reload();
     } catch (err) {
       captureError(err, "handleUpdateBrand");
       toast.error("Marka güncellenemedi");
@@ -101,9 +105,9 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
     setIsDeleting(true);
     try {
       await deleteBrand(deleteId);
+      setBrands((prev) => prev.filter((b) => b.id !== deleteId));
       toast.success("Marka silindi");
       setDeleteId(null);
-      window.location.reload();
     } catch (err) {
       captureError(err, "handleDeleteBrand");
       toast.error("Marka silinemedi (bağlı modeller olabilir)");
@@ -124,7 +128,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       toast.success(`${newBrandName} markası eklendi`);
       setNewBrandName("");
       setAddBrandModal(false);
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       captureError(err, "handleAddBrand");
       toast.error("Marka eklenemedi");

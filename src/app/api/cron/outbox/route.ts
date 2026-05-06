@@ -1,5 +1,5 @@
 import { apiSuccess } from "@/lib/api/response";
-import { withCronOrAdmin } from "@/lib/api/security";
+import { withCronRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { processCompensatingActions } from "@/services/system/compensating-processor";
 import { processComplianceVacuum } from "@/services/system/compliance-vacuum";
@@ -14,7 +14,7 @@ import { processReconciliation } from "@/services/system/reconciliation-worker";
  * Individual failures are logged but don't stop other workers from executing.
  */
 export async function GET(request: Request) {
-  const security = await withCronOrAdmin(request);
+  const security = await withCronRoute(request);
   if (!security.ok) return security.response;
 
   const results = await Promise.allSettled([

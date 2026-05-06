@@ -244,7 +244,6 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
               onSuccess={() => {
                 setEditModal(null);
                 setShowCreateForm(false);
-                window.location.reload();
               }}
               onCancel={() => {
                 setEditModal(null);

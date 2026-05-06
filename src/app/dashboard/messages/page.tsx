@@ -1,27 +1,28 @@
 "use client";
 
 import { ArrowLeft, MessageCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ChatList } from "@/components/chat/chat-list";
 import { ChatWindow } from "@/components/chat/chat-window";
+import { useAuthUser } from "@/components/shared/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useCreateChat } from "@/hooks/use-chat-queries";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useSupabase } from "@/lib/supabase/client";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
+import type { ChatWithLastMessage } from "@/types/chat";
 
 export default function MessagesPage() {
-  const supabase = useSupabase();
-  // Use ref to keep supabase instance stable across renders
-  // This prevents infinite loops in useEffect when useSupabase() returns same instance
-  const supabaseRef = useRef(supabase);
-  // eslint-disable-next-line react-hooks/refs
-  supabaseRef.current = supabase;
+  const searchParams = useSearchParams();
+  const { userId, isReady: isAuthResolved, isAuthenticated } = useAuthUser();
 
-  const [user, setUser] = useState<{ id: string } | null>(null);
-  const [isAuthResolved, setIsAuthResolved] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const createChatMutation = useCreateChat();
+  const hasHandledPrefillRef = useRef(false);
 
   // Stable callback for chat selection - prevents unnecessary re-renders of ChatList
   const handleChatSelect = useCallback((chatId: string) => {
@@ -34,25 +35,51 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    // Use ref to ensure stable supabase reference
-    const client = supabaseRef.current;
+    if (!isAuthResolved || !userId || hasHandledPrefillRef.current) {
+      return;
+    }
 
-    // Fetch user on mount
-    const fetchUser = async () => {
-      try {
-        const {
-          data: { user: authUser },
-        } = await client.auth.getUser();
-        setUser(authUser ? { id: authUser.id } : null);
-      } catch {
-        setUser(null);
-      } finally {
-        setIsAuthResolved(true);
-      }
-    };
+    const listingId = searchParams.get("new");
+    const sellerId = searchParams.get("seller");
 
-    void fetchUser();
-  }, []); // Empty deps - only run on mount
+    if (!listingId || !sellerId) {
+      hasHandledPrefillRef.current = true;
+      return;
+    }
+
+    hasHandledPrefillRef.current = true;
+
+    void createChatMutation
+      .mutateAsync({
+        listingId,
+        sellerId,
+        buyerId: userId,
+      })
+      .then((chat) => {
+        if (chat?.id) {
+          setSelectedChatId(chat.id);
+        }
+      })
+      .catch(async () => {
+        // Eğer chat zaten varsa create hatası alabiliriz.
+        // Bu durumda mevcut chat'i bulup paneli aç.
+        const existingChatResponse = await ApiClient.request<ChatWithLastMessage[]>(
+          API_ROUTES.CHATS.BASE
+        );
+
+        if (!existingChatResponse.success || !Array.isArray(existingChatResponse.data)) {
+          return;
+        }
+
+        const existingChat = existingChatResponse.data.find(
+          (chat) => chat.listingId === listingId && chat.sellerId === sellerId
+        );
+
+        if (existingChat?.id) {
+          setSelectedChatId(existingChat.id);
+        }
+      });
+  }, [isAuthResolved, userId, searchParams, createChatMutation]);
 
   // Show chat list on desktop, or when no chat selected on mobile
   const showChatList = !isMobile || !selectedChatId;
@@ -69,7 +96,7 @@ export default function MessagesPage() {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated || !userId) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Card className="p-8 text-center">
@@ -91,7 +118,7 @@ export default function MessagesPage() {
           </div>
           <div className="h-[calc(100vh-14rem)] overflow-hidden">
             <ChatList
-              userId={user.id}
+              userId={userId}
               onChatSelect={handleChatSelect}
               selectedChatId={selectedChatId || undefined}
             />
@@ -111,7 +138,7 @@ export default function MessagesPage() {
             </div>
           )}
           {selectedChatId ? (
-            <ChatWindow chatId={selectedChatId} userId={user.id} onBack={handleBack} />
+            <ChatWindow chatId={selectedChatId} userId={userId} onBack={handleBack} />
           ) : (
             <div className="flex items-center justify-center h-full text-center p-4">
               <div className="max-w-md">

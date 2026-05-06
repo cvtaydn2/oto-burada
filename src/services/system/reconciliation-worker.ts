@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const CORPORATE_PLAN_NAME_REGEX = /(kurumsal|corporate|filo)/i;
 const PAYMENT_EXPIRY_KEYS = [
@@ -12,7 +12,7 @@ const PAYMENT_EXPIRY_KEYS = [
 type SubscriptionStatus = "active" | "expired";
 
 export async function processReconciliation() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   logger.system.info("Reconciliation: Starting daily status audit...");
 
@@ -71,7 +71,7 @@ export async function processReconciliation() {
 }
 
 async function checkUserSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   logger.system.debug(`Reconciliation: Checking subscription status for user ${userId}`);
 

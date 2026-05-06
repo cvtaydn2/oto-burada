@@ -1,25 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useCsrfToken } from "@/components/providers/csrf-provider";
+import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
 import type { ChatWithLastMessage, Message, SendMessageInput } from "@/types/chat";
 
 async function fetchChats(archived = false): Promise<ChatWithLastMessage[]> {
-  const res = await fetch(`${API_ROUTES.CHATS.BASE}${archived ? "?archived=true" : ""}`);
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(json.error || "Chat listesi alınamadı.");
+  const response = await ApiClient.request<ChatWithLastMessage[]>(
+    `${API_ROUTES.CHATS.BASE}${archived ? "?archived=true" : ""}`
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message || "Chat listesi alınamadı.");
   }
-  return json.data ?? [];
+
+  return Array.isArray(response.data) ? response.data : [];
 }
 
 async function fetchMessages(chatId: string): Promise<Message[]> {
-  const res = await fetch(API_ROUTES.CHATS.MESSAGES(chatId));
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(json.error || "Mesajlar alınamadı.");
+  const response = await ApiClient.request<Message[]>(API_ROUTES.CHATS.MESSAGES(chatId));
+
+  if (!response.success) {
+    throw new Error(response.error?.message || "Mesajlar alınamadı.");
   }
-  return json.data ?? [];
+
+  return Array.isArray(response.data) ? response.data : [];
 }
 
 /**
@@ -51,17 +57,48 @@ export function useChatMessages(chatId: string, userId: string) {
  */
 export function useCreateChat() {
   const queryClient = useQueryClient();
+  const { refresh: refreshCsrfToken } = useCsrfToken();
 
   return useMutation({
     mutationFn: async (input: { listingId: string; sellerId: string; buyerId: string }) => {
-      const res = await fetch(API_ROUTES.CHATS.BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: input.listingId, sellerId: input.sellerId }),
+      const createPayload = JSON.stringify({
+        listingId: input.listingId,
+        sellerId: input.sellerId,
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Chat oluşturulamadı.");
-      return json.data;
+
+      const response = await ApiClient.request<{ id: string }>(API_ROUTES.CHATS.BASE, {
+        method: "POST",
+        body: createPayload,
+      });
+
+      if (response.success && response.data) {
+        return response.data;
+      }
+
+      const errorMessage = response.error?.message?.toLowerCase() || "";
+      const isCsrfTokenMismatch = errorMessage.includes("csrf token");
+
+      if (isCsrfTokenMismatch) {
+        const freshToken = await refreshCsrfToken();
+
+        if (freshToken) {
+          const retryResponse = await ApiClient.request<{ id: string }>(API_ROUTES.CHATS.BASE, {
+            method: "POST",
+            body: createPayload,
+            headers: {
+              "x-csrf-token": freshToken,
+            },
+          });
+
+          if (retryResponse.success && retryResponse.data) {
+            return retryResponse.data;
+          }
+
+          throw new Error(retryResponse.error?.message || "Chat oluşturulamadı.");
+        }
+      }
+
+      throw new Error(response.error?.message || "Chat oluşturulamadı.");
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -79,14 +116,16 @@ export function useSendMessage() {
 
   return useMutation({
     mutationFn: async (input: SendMessageInput) => {
-      const res = await fetch(API_ROUTES.CHATS.MESSAGES(input.chatId), {
+      const response = await ApiClient.request<Message>(API_ROUTES.CHATS.MESSAGES(input.chatId), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: input.content, messageType: input.messageType ?? "text" }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Mesaj gönderilemedi.");
-      return json.data as Message;
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || "Mesaj gönderilemedi.");
+      }
+
+      return response.data;
     },
     onMutate: async (newMessage) => {
       await queryClient.cancelQueries({
@@ -142,13 +181,18 @@ export function useMarkAsRead(chatId: string) {
 
   return useMutation({
     mutationFn: async () => {
-      const res = await fetch(API_ROUTES.CHATS.MARK_READ(chatId), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Okundu işaretlenemedi.");
-      return json.data;
+      const response = await ApiClient.request<{ success: boolean }>(
+        API_ROUTES.CHATS.MARK_READ(chatId),
+        {
+          method: "POST",
+        }
+      );
+
+      if (!response.success) {
+        throw new Error(response.error?.message || "Okundu işaretlenemedi.");
+      }
+
+      return response.data;
     },
     onSuccess: () => {
       // Update local messages cache to mark all as read
@@ -170,12 +214,18 @@ export function useDeleteMessage() {
 
   return useMutation({
     mutationFn: async ({ chatId, messageId }: { chatId: string; messageId: string }) => {
-      const res = await fetch(`${API_ROUTES.CHATS.MESSAGES(chatId)}?messageId=${messageId}`, {
-        method: "DELETE",
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Mesaj silinemedi.");
-      return json.data;
+      const response = await ApiClient.request<{ success: boolean }>(
+        `${API_ROUTES.CHATS.MESSAGES(chatId)}?messageId=${messageId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.success) {
+        throw new Error(response.error?.message || "Mesaj silinemedi.");
+      }
+
+      return response.data;
     },
     onSuccess: (_, { chatId }) => {
       queryClient.invalidateQueries({
@@ -193,14 +243,19 @@ export function useArchiveChat() {
 
   return useMutation({
     mutationFn: async ({ chatId, archive }: { chatId: string; archive: boolean }) => {
-      const res = await fetch(`${API_ROUTES.CHATS.BASE}/${chatId}/archive`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archive }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Chat arşivlenemedi.");
-      return json.data;
+      const response = await ApiClient.request<{ success: boolean }>(
+        `${API_ROUTES.CHATS.BASE}/${chatId}/archive`,
+        {
+          method: "POST",
+          body: JSON.stringify({ archive }),
+        }
+      );
+
+      if (!response.success) {
+        throw new Error(response.error?.message || "Chat arşivlenemedi.");
+      }
+
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

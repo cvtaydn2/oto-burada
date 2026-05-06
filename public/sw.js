@@ -1,5 +1,5 @@
 const CACHE_NAME = "otoburada-v1";
-const STATIC_ASSETS = ["/", "/manifest.json"];
+const STATIC_ASSETS = ["/", "/manifest.webmanifest", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -84,10 +84,18 @@ self.addEventListener("fetch", (event) => {
         }
 
         if (url.pathname === "/manifest.webmanifest" || url.pathname === "/manifest.json") {
-          return new Response("{}", {
-            status: 503,
-            headers: { "Content-Type": "application/manifest+json" },
-          });
+          return new Response(
+            JSON.stringify({
+              name: "OtoBurada",
+              short_name: "OtoBurada",
+              start_url: "/",
+              display: "standalone",
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/manifest+json" },
+            }
+          );
         }
 
         return caches.match("/");

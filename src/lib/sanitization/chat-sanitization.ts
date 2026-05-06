@@ -16,7 +16,7 @@ export const CHAT_SECURITY_PATTERNS = {
   PHONE: /(\+90|0)?\s?5\d{2}\s?\d{3}\s?\d{2}\s?\d{2}/g,
 
   // Generic URL pattern (excluding internal domains)
-  URL: /(https?:\/\/(?!otoburada\.app|localhost|vercel\.app)[^\s]+)/gi,
+  URL: /(https?:\/\/(?!otoburada\.app|otoburada\.com\.tr|www\.otoburada\.com\.tr|localhost|vercel\.app)[^\s]+)/gi,
 };
 
 /**

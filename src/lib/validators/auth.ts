@@ -100,7 +100,9 @@ const passwordSchema = z
 
 export const loginSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: passwordSchema,
+  // Login akışında mevcut hesapların legacy şifreleri de kabul edilmelidir.
+  // Güçlü şifre kuralı sadece kayıt/şifre sıfırlama aşamasında zorunlu olmalı.
+  password: z.string().min(1, "Şifre gereklidir"),
 });
 
 export const registerSchema = z

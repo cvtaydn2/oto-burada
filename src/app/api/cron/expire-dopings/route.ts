@@ -1,5 +1,5 @@
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withCronOrAdmin } from "@/lib/api/security";
+import { withCronRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -10,7 +10,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
  * This route provides an application-level fallback and audit trail.
  */
 export async function GET(request: Request) {
-  const security = await withCronOrAdmin(request);
+  const security = await withCronRoute(request);
   if (!security.ok) return security.response;
 
   const admin = createSupabaseAdminClient();

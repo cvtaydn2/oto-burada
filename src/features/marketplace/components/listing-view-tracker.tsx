@@ -29,6 +29,7 @@ export function ListingViewTracker({
   const { token: csrfToken, refresh: refreshCsrfToken } = useCsrfToken();
   const hasTrackedViewRef = useRef(false);
   const hasCapturedEventRef = useRef(false);
+  const hasAttemptedViewRef = useRef(false);
 
   useEffect(() => {
     if (!hasCapturedEventRef.current) {
@@ -47,13 +48,29 @@ export function ListingViewTracker({
   }, [listingId, listingSlug, brand, model, city, price, year, status]);
 
   useEffect(() => {
-    if (hasTrackedViewRef.current) {
+    if (hasTrackedViewRef.current || hasAttemptedViewRef.current) {
       return;
     }
+
+    // Bu guard, token refresh sonrası state değişimlerinde effect'in tekrar
+    // tetiklenip sonsuz istek döngüsüne girmesini engeller.
+    hasAttemptedViewRef.current = true;
 
     let cancelled = false;
 
     const recordView = async () => {
+      const sendView = async (token: string) => {
+        return fetch("/api/listings/view", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": token,
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ listingId }),
+        });
+      };
+
       let activeToken = csrfToken;
 
       if (!activeToken) {
@@ -73,15 +90,15 @@ export function ListingViewTracker({
       }
 
       try {
-        const response = await fetch("/api/listings/view", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-csrf-token": activeToken,
-          },
-          credentials: "same-origin",
-          body: JSON.stringify({ listingId }),
-        });
+        let response = await sendView(activeToken);
+
+        if (!response.ok && response.status === 403) {
+          const refreshedToken = await refreshCsrfToken();
+
+          if (!cancelled && refreshedToken && refreshedToken !== activeToken) {
+            response = await sendView(refreshedToken);
+          }
+        }
 
         if (response.ok) {
           hasTrackedViewRef.current = true;

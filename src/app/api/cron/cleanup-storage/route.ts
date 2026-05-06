@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { withCronOrAdmin } from "@/lib/api/security";
+import { withCronRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -10,7 +10,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
  * Prevents "Storage Hell" and ensures data consistency even if Storage API fails.
  */
 export async function GET(request: Request) {
-  const security = await withCronOrAdmin(request);
+  const security = await withCronRoute(request);
   if (!security.ok) return security.response;
 
   const admin = createSupabaseAdminClient();

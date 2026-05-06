@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Car } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,12 +33,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const {
-    data: messages,
-    isLoading,
-    error,
-    refetch,
-  } = useChatMessages(chatId, userId);
+  const { data: messages, isLoading, error, refetch } = useChatMessages(chatId, userId);
 
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead(chatId);
@@ -69,13 +65,25 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
 
   const handleArchive = async () => {
     if (!window.confirm("Bu sohbeti arşivlemek istediğinize emin misiniz?")) return;
-    await archiveMutation.mutateAsync({ chatId, archive: true });
-    if (onBack) onBack();
+
+    try {
+      await archiveMutation.mutateAsync({ chatId, archive: true });
+      if (onBack) onBack();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sohbet arşivlenemedi.";
+      toast.error(message);
+    }
   };
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!window.confirm("Bu mesajı silmek istediğinize emin misiniz?")) return;
-    await deleteMessageMutation.mutateAsync({ chatId, messageId });
+
+    try {
+      await deleteMessageMutation.mutateAsync({ chatId, messageId });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Mesaj silinemedi.";
+      toast.error(message);
+    }
   };
 
   // Auto-scroll to bottom
@@ -90,12 +98,17 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
-    await sendMessageMutation.mutateAsync({
-      chatId,
-      senderId: userId,
-      content: content.trim(),
-      messageType: "text",
-    });
+    try {
+      await sendMessageMutation.mutateAsync({
+        chatId,
+        senderId: userId,
+        content: content.trim(),
+        messageType: "text",
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Mesaj gönderilemedi.";
+      toast.error(message);
+    }
   };
 
   const handleTyping = (typing: boolean) => {

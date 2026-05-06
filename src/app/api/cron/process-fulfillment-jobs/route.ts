@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { withCronOrAdmin } from "@/lib/api/security";
+import { withCronRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { applyDopingPackage } from "@/services/payments/doping-logic";
@@ -11,7 +11,7 @@ import { applyDopingPackage } from "@/services/payments/doping-logic";
  * Uses Exponential Backoff to handle transient database or API failures.
  */
 export async function GET(request: Request) {
-  const security = await withCronOrAdmin(request);
+  const security = await withCronRoute(request);
   if (!security.ok) return security.response;
 
   const admin = createSupabaseAdminClient();

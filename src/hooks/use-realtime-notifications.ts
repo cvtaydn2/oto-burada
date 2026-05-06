@@ -61,8 +61,9 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
         }
       )
       .subscribe((status: string) => {
-        if (status !== "SUBSCRIBED") {
-          console.error("[RealtimeNotifications] Subscription failed:", status);
+        // CLOSED can happen on tab sleep/navigation/reconnect cycles.
+        if (status !== "SUBSCRIBED" && status !== "CLOSED") {
+          console.warn("[RealtimeNotifications] Subscription state:", status);
         }
       });
 

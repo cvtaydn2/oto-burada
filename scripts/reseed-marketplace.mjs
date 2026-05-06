@@ -8,10 +8,12 @@ loadLocalEnv();
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const demoPassword = process.env.SUPABASE_DEMO_USER_PASSWORD || "Demo123456!";
+const demoPassword = process.env.SUPABASE_DEMO_USER_PASSWORD;
 
-if (!supabaseUrl || !serviceRoleKey) {
-  console.error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.");
+if (!supabaseUrl || !serviceRoleKey || !demoPassword) {
+  console.error(
+    "NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and SUPABASE_DEMO_USER_PASSWORD are required."
+  );
   process.exit(1);
 }
 
@@ -55,7 +57,7 @@ const IMAGES = [
 
 async function cleanup() {
   console.log("Cleaning up existing data...");
-  
+
   // Tables to clear in order (to avoid FK issues)
   const tablesToClear = [
     "listing_images",
@@ -112,7 +114,7 @@ async function cleanup() {
     .from("profiles")
     .select("id")
     .neq("role", "admin");
-    
+
   if (profilesFetchError) throw profilesFetchError;
 
   const userIds = profiles.map(p => p.id);
@@ -176,7 +178,7 @@ async function createDemoUsers() {
       user = data.user;
       console.log(`Created user: ${u.email}`);
     }
-    
+
     // UPSERT profile
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,
@@ -200,7 +202,7 @@ function getRandom(arr) {
 
 async function createListings(users) {
   console.log("Creating 50 listings (10 per user)...");
-  
+
   const allListings = [];
   const allImages = [];
 
@@ -216,7 +218,7 @@ async function createListings(users) {
       const mileage = Math.floor(Math.random() * 150000);
       const id = crypto.randomUUID();
       const slug = `${year}-${car.brand.toLowerCase()}-${model.toLowerCase()}-${trim.toLowerCase()}-${id.slice(0, 8)}`;
-      
+
       allListings.push({
         id,
         seller_id: user.id,
@@ -242,7 +244,7 @@ async function createListings(users) {
       // Add 2-3 images per listing
       const numImages = 2 + Math.floor(Math.random() * 2);
       const shuffledImages = [...IMAGES].sort(() => 0.5 - Math.random());
-      
+
       for (let j = 0; j < numImages; j++) {
         allImages.push({
           listing_id: id,

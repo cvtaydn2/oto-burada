@@ -22,7 +22,7 @@ export interface SecurityOptions {
   requireAdmin?: boolean;
   requireCsrf?: boolean;
   requireCsrfToken?: boolean; // New: requires CSRF token header validation
-  requireCron?: boolean;
+  requireCron?: boolean; // Deprecated: Cron auth should use withCronRoute / withCronOrAdmin wrappers.
   ipRateLimit?: RateLimitConfig;
   userRateLimit?: RateLimitConfig;
   rateLimitKey?: string;
@@ -126,21 +126,8 @@ export async function withSecurity(
   // 3. Auth & Admin Checks
   let user: User | null = null;
 
-  // ── BUG FIX: Issue BUG-06 - Cron Secret Bypass Admin Check ─────────────
-  // Cron secret validation should not bypass admin checks when requireAdmin is set.
-  // This prevents unauthorized access to admin-only cron endpoints.
-  if (options.requireCron) {
-    const cronSecret = process.env.CRON_SECRET;
-    const authHeader = request.headers.get("authorization");
-
-    // If cron secret matches and admin is NOT required, allow immediately
-    if (cronSecret && authHeader === `Bearer ${cronSecret}` && !options.requireAdmin) {
-      return { ok: true };
-    }
-
-    // If admin is required, continue to admin check even if cron secret is valid
-    // This ensures cron endpoints with requireAdmin still verify admin status
-  }
+  // Cron secret validation is intentionally NOT handled here.
+  // Use explicit wrappers (withCronRoute / withCronOrAdmin) for cron authentication.
 
   if (requiresUserSession) {
     const { getAuthContext } = await import("@/lib/auth/session");
@@ -292,24 +279,88 @@ export async function withAdminRoute(
   });
 }
 
-/** withCronOrAdmin: Shared tasks (Sync, Cleanup) triggered by Vercel Cron or Admin UI */
-export async function withCronOrAdmin(
+/** withCronRoute: Strict CRON_SECRET authentication for system-only endpoints */
+export async function withCronRoute(
   request: Request,
-  options: Omit<SecurityOptions, "requireCron"> = {}
+  options: Omit<
+    SecurityOptions,
+    | "requireAuth"
+    | "requireAdmin"
+    | "requireCron"
+    | "requireCsrf"
+    | "requireCsrfToken"
+    | "requireStepUp"
+  > = {}
 ) {
-  // OR semantics:
-  // 1) Allow trusted cron calls with a valid CRON_SECRET bearer token.
-  // 2) Otherwise require an authenticated admin session.
-  // ── BUG FIX: If requireAdmin is explicitly set, always verify admin role even with valid cron secret
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
-  const isCronAuthValid = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
-  if (isCronAuthValid && !options.requireAdmin) {
-    return { ok: true } as SecurityResult;
+  if (!cronSecret) {
+    return {
+      ok: false,
+      response: apiError(
+        API_ERROR_CODES.SERVICE_UNAVAILABLE,
+        "CRON_SECRET yapılandırılmamış.",
+        503
+      ),
+    } as SecurityError;
   }
 
-  return withSecurity(request, { ...options, requireAdmin: true, requireStepUp: true });
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return {
+      ok: false,
+      response: apiError(API_ERROR_CODES.UNAUTHORIZED, "Geçersiz cron kimlik doğrulaması.", 401),
+    } as SecurityError;
+  }
+
+  // Cron kimliği doğrulandıktan sonra da canonical güvenlik zinciri çalışır
+  // (body-size ve rate-limit gibi kontroller).
+  const baseSecurity = await withSecurity(request, {
+    ...options,
+    requireAuth: false,
+    requireAdmin: false,
+    requireCsrf: false,
+    requireCsrfToken: false,
+    requireCron: false,
+    requireStepUp: false,
+  });
+
+  if (!baseSecurity.ok) {
+    return baseSecurity;
+  }
+
+  return {
+    ok: true,
+    rateLimitHeaders: baseSecurity.rateLimitHeaders,
+  } as SecurityResult;
+}
+
+/** withCronOrAdmin: Shared tasks (sync/cleanup) triggered by cron token or admin session */
+export async function withCronOrAdmin(
+  request: Request,
+  options: Omit<
+    SecurityOptions,
+    | "requireAuth"
+    | "requireAdmin"
+    | "requireCron"
+    | "requireCsrf"
+    | "requireCsrfToken"
+    | "requireStepUp"
+  > = {}
+) {
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = request.headers.get("authorization");
+
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    return withCronRoute(request, options);
+  }
+
+  // Admin fallback keeps previous behavior (admin + step-up), without cron bypass.
+  return withSecurity(request, {
+    ...options,
+    requireAdmin: true,
+    requireStepUp: true,
+  });
 }
 
 /** withAuthAndCsrf: Backward-compatible alias with 401-before-CSRF semantics */

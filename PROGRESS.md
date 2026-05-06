@@ -1,5 +1,126 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 40. Faz-24 Critical Security Hardening (Auth + Cron + Env Template)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Admin yetkilendirme, cron route access control, env template güvenlik/operasyonel doğruluk güncellemeleri.
+
+### 40.1 Uygulanan Düzeltmeler
+- Admin doğrulama JWT-only fallback kaldırıldı ve DB doğrulama zorunlu hale getirildi:
+  - [`requireAdminUser()`](src/lib/auth/session.ts:144)
+  - [`getDBProfile()`](src/lib/auth/session.ts:64)
+  - Service role varsa admin client; yoksa server client ile DB profile doğrulaması çalışır. JWT `app_metadata.role=admin` tek başına artık yetki vermez.
+- Cron bypass yüzeyi ayrıştırıldı:
+  - [`withSecurity()`](src/lib/api/security.ts:51) içinden cron bypass akışı kaldırıldı.
+  - Yeni [`withCronRoute()`](src/lib/api/security.ts:295) eklendi (yalnız `CRON_SECRET` doğrulamalı sistem route’ları için).
+  - [`withCronOrAdmin()`](src/lib/api/security.ts:345) cron ise `withCronRoute`, değilse admin+step-up yoluna düşecek şekilde netleştirildi.
+- Saf cron endpoint’leri explicit cron wrapper’a taşındı:
+  - [`src/app/api/cron/cleanup-stale-payments/route.ts`](src/app/api/cron/cleanup-stale-payments/route.ts)
+  - [`src/app/api/cron/cleanup-storage/route.ts`](src/app/api/cron/cleanup-storage/route.ts)
+  - [`src/app/api/cron/expire-dopings/route.ts`](src/app/api/cron/expire-dopings/route.ts)
+  - [`src/app/api/cron/expire-listings/route.ts`](src/app/api/cron/expire-listings/route.ts)
+  - [`src/app/api/cron/expire-reservations/route.ts`](src/app/api/cron/expire-reservations/route.ts)
+  - [`src/app/api/cron/outbox/route.ts`](src/app/api/cron/outbox/route.ts)
+  - [`src/app/api/cron/process-fulfillment-jobs/route.ts`](src/app/api/cron/process-fulfillment-jobs/route.ts)
+  - [`src/app/api/cron/sync-listing-views/route.ts`](src/app/api/cron/sync-listing-views/route.ts)
+- Env template güvenlik/operasyon düzeltmeleri:
+  - [`SUPABASE_DB_URL`](.env.local.template:20) portu `5432` → `6543` (transaction pooler)
+  - Secret üretim notları sadeleştirildi (openssl komut detayı kaldırıldı)
+  - [`RATE_LIMIT_BYPASS_IPS`](.env.local.template:69) prod’da kaldırılma uyarısı güçlendirildi.
+
+### 40.2 Güvenlik Etkisi
+- Yetkisi geri alınmış admin için stale JWT kaynaklı yetki penceresi kod seviyesinde daraltıldı; admin kararları canlı DB profile doğrulamasına bağlandı.
+- Cron secret artık genel `withSecurity` akışında sessiz bypass mekanizması değil; explicit wrapper ile amaç-bağlı kullanılıyor.
+- Yanlış endpoint yapılandırmasıyla cron token’ın beklenmedik erişim sağlaması riski azaltıldı.
+
+### 40.3 Doğrulama
+- Çalıştırıldı: `npm run lint -- <etkilenen dosyalar>`
+- Sonuç: Bu faz kapsamında lint kontrolü tetiklendi (çıktı terminal kaydında).
+
+## 39. Faz-23 Cross-Layer Static Review Hardening (App/Components/Lib/Scripts)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Static Review + Low-Risk Patches)
+**Scope**: `src/app`, `src/components`, `src/lib`, `scripts` katmanlarında statik review ile düşük riskli güvenlik/kararlılık düzeltmeleri.
+
+### 39.1 Uygulanan Düzeltmeler
+- Chat create endpoint input doğrulaması sertleştirildi:
+  - [`src/app/api/chats/route.ts`](src/app/api/chats/route.ts)
+  - `listingId/sellerId` için UUID schema eklendi, `ZodError` durumunda `400` döndürülüyor.
+- ChatWindow mutation hata yönetimi güçlendirildi:
+  - [`src/components/chat/chat-window.tsx`](src/components/chat/chat-window.tsx)
+  - `handleSendMessage`, `handleArchive`, `handleDeleteMessage` için kullanıcıya `toast.error` geri bildirimi eklendi.
+- Middleware log hijyeni iyileştirildi:
+  - [`src/lib/supabase/middleware.ts`](src/lib/supabase/middleware.ts)
+  - Maintenance kontrolündeki user/admin debug `console.log` satırı kaldırıldı.
+- Demo reseed script güvenlik sertleştirmesi:
+  - [`scripts/reseed-marketplace.mjs`](scripts/reseed-marketplace.mjs)
+  - Hardcoded demo password fallback kaldırıldı; `SUPABASE_DEMO_USER_PASSWORD` zorunlu hale getirildi (fail-fast).
+
+### 39.2 Statik Review Notları
+- Database migration katmanında `SECURITY DEFINER`, RLS policy ve grant desenleri geniş envanter olarak doğrulandı.
+- Scripts katmanında env tabanlı secret kullanımı çoğunlukla iyi; kritik düzeltme olarak hardcoded password fallback kaldırıldı.
+
+## 38. Faz-22 Services Reconciliation Context Hardening (Static Review)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Static Review + Low-Risk Patch)
+**Scope**: `src/services/system/reconciliation-worker.ts` içinde cron/sistem bağlamında kullanılan client tipinin yetki modeline hizalanması.
+
+### 38.1 Uygulanan Düzeltme
+- [`src/services/system/reconciliation-worker.ts`](src/services/system/reconciliation-worker.ts)
+  - [`processReconciliation()`](src/services/system/reconciliation-worker.ts:14): `createSupabaseServerClient()` → `createSupabaseAdminClient()`
+  - [`checkUserSubscriptionStatus()`](src/services/system/reconciliation-worker.ts:73): `createSupabaseServerClient()` → `createSupabaseAdminClient()`
+
+### 38.2 Neden Önemli
+- Reconciliation job kullanıcı oturumu olmayan cron/sistem context’inde çalışır.
+- Server client ile session/RLS bağlamı belirsizliği yaşayabilen akış, admin client ile deterministik sistem yetkisine alınmış oldu.
+
+## 37. Faz-21 Lib Request Context Hardening (Static Review)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Static Review + Low-Risk Patch)
+**Scope**: `src/lib` statik incelemesinde request-context tespitindeki yanlış-pozitif riskini azaltmak.
+
+### 37.1 Uygulanan Düzeltmeler
+- [`src/lib/next-context.ts`](src/lib/next-context.ts)
+  - [`isRequestContext()`](src/lib/next-context.ts:15) sync/heuristic yapıdan çıkarılıp async ve `next/headers` request-store erişimi ile doğrulama yapan yapıya geçirildi.
+- [`src/lib/supabase/server.ts`](src/lib/supabase/server.ts)
+  - [`createSupabaseServerClient()`](src/lib/supabase/server.ts:7) içinde request-context kontrolü `await` ile güncellendi.
+
+### 37.2 Neden Önemli
+- Önceki implementasyon request-context olmayan bazı yürütme anlarını yanlışlıkla request gibi kabul edebilirdi.
+- Bu durum cookie erişimi tarafında gereksiz deneme/uyarı üretebilir ve davranışı belirsizleştirebilirdi.
+- Yeni yaklaşım fail-safe: request-store yoksa açıkça `false` döner.
+
+## 36. Faz-20 Static Deep Review + Chat/API Hardening
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Static Review + Low-Risk Patches)
+**Scope**: Build/lint/test koşturulmadan statik kod incelemesi ile chat/listing/security akışlarında düşük riskli üretim düzeltmeleri ve dokümantasyon hizalaması.
+
+### 36.1 Uygulanan Düzeltmeler
+- Chat query/mutation istemcileri merkezi API katmanına taşındı:
+  - [`src/hooks/use-chat-queries.ts`](src/hooks/use-chat-queries.ts)
+  - Tüm chat çağrıları [`ApiClient.request()`](src/lib/api/client.ts:20) üstünden geçecek şekilde güncellendi.
+- Chat message endpoint validation status code düzeltildi:
+  - [`src/app/api/chats/[id]/messages/route.ts`](src/app/api/chats/[id]/messages/route.ts)
+  - `ZodError` durumunda `500` yerine `400` dönülüyor.
+- Listing view false-positive CSRF 403 gürültüsü azaltımı korundu:
+  - [`src/app/api/listings/view/route.ts`](src/app/api/listings/view/route.ts:14)
+
+### 36.2 Dokümantasyon Hizalaması
+- Eksik güvenlik/troubleshooting dokümanları eklendi:
+  - [`docs/SECURITY.md`](docs/SECURITY.md)
+  - [`docs/PRODUCTION_TROUBLESHOOTING.md`](docs/PRODUCTION_TROUBLESHOOTING.md)
+  - [`docs/RUNTIME_ERRORS_FIX.md`](docs/RUNTIME_ERRORS_FIX.md)
+- [`docs/INDEX.md`](docs/INDEX.md) ile başlıklar hizalandı.
+
+### 36.3 Statik Review Bulgusu (P1/P2)
+- **P1 kapatıldı**: Chat tarafında dağınık `fetch` nedeniyle CSRF/401 davranışı parçalıydı; merkezi API client’a alındı.
+- **P2 iyileştirildi**: Chat message body validation hataları artık doğru HTTP sınıfında (`400`) dönüyor.
+
 ## 35. Faz-19 Production Console Error Fix (Manifest + SW Cache)
 
 **Date**: 2026-05-06

@@ -62,14 +62,34 @@ export function getUserRole(user: Awaited<ReturnType<typeof requireUser>>): User
  * Uses React cache to ensure this only hits the DB once per request.
  */
 const getDBProfile = cache(async (userId: string) => {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return null;
-  }
-
   try {
-    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-    const adminClient = createSupabaseAdminClient();
-    const { data: profile, error } = await adminClient
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (hasServiceKey) {
+      const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+      const adminClient = createSupabaseAdminClient();
+      const { data: profile, error } = await adminClient
+        .from("profiles")
+        .select("role, is_banned")
+        .eq("id", userId)
+        .limit(1)
+        .maybeSingle<{ role: string; is_banned: boolean }>();
+
+      if (error || !profile) {
+        if (error) {
+          logger.auth.warn("[Session] DB profile check failed (admin client)", { userId, error });
+        }
+        return null;
+      }
+
+      return {
+        role: profile.role as UserRole,
+        isBanned: !!profile.is_banned,
+      };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const { data: profile, error } = await supabase
       .from("profiles")
       .select("role, is_banned")
       .eq("id", userId)
@@ -78,10 +98,11 @@ const getDBProfile = cache(async (userId: string) => {
 
     if (error || !profile) {
       if (error) {
-        logger.auth.warn("[Session] DB profile check failed", { userId, error });
+        logger.auth.warn("[Session] DB profile check failed (server client)", { userId, error });
       }
       return null;
     }
+
     return {
       role: profile.role as UserRole,
       isBanned: !!profile.is_banned,
@@ -128,58 +149,40 @@ export async function requireAdminUser() {
     redirect("/login");
   }
 
-  const isProd = process.env.NODE_ENV === "production";
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
   const isJwtAdmin = (user.app_metadata as { role?: string })?.role === "admin";
   const isVerifiedAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
 
-  // 1. If verified admin, allow access immediately
+  // DB verification is mandatory in every environment.
   if (isVerifiedAdmin) {
     return user;
   }
 
-  // 2. Handle cases where they are NOT a verified admin
-
-  // Development fallback: If no service key and not in production, trust JWT
-  if (!isProd && !hasServiceKey && isJwtAdmin) {
-    logger.auth.info(
-      "[requireAdminUser] Development fallback: Admin access granted via JWT metadata (DB check skipped due to missing service key)"
-    );
-    return user;
-  }
-
-  // 3. Deny access with specific reasons for admins vs regular users
   logger.auth.warn("[requireAdminUser] Access denied.", {
     userId: user.id,
     email: user.email,
     dbRole: dbProfile?.role,
     jwtRole: isJwtAdmin ? "admin" : "user",
     hasServiceKey,
-    isProd,
   });
 
-  // If they are an admin in JWT but failed verification
+  // JWT admin claim is never enough without DB verification.
   if (isJwtAdmin) {
-    if (!hasServiceKey) {
-      logger.auth.error(
-        "[requireAdminUser] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in production. Admin verification impossible."
-      );
-      throw new Error("Kritik Yapılandırma Hatası: Admin yetkisi doğrulanamadı.");
-    }
     if (dbProfile?.isBanned) {
       throw new Error("Hesabınız askıya alınmıştır.");
     }
+
     if (!dbProfile) {
       logger.auth.error(
-        "[requireAdminUser] Admin profile not found in DB for user with admin JWT claim",
-        { userId: user.id }
+        "[requireAdminUser] JWT admin claim could not be verified against DB profile",
+        { userId: user.id, hasServiceKey }
       );
-      throw new Error("Admin profili bulunamadı. Lütfen tekrar giriş yapın.");
+      throw new Error("Admin yetkisi doğrulanamadı. Lütfen tekrar giriş yapın.");
     }
+
     throw new Error("Bu alana erişim yetkiniz bulunmamaktadır.");
   }
 
-  // Regular users get redirected to home
   redirect("/");
 }
 

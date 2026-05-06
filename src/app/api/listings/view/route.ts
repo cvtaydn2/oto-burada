@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { withCsrfToken } from "@/lib/api/security";
+import { withSecurity } from "@/lib/api/security";
 import { getCurrentUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { recordListingView } from "@/services/listings/listing-views";
@@ -12,7 +12,11 @@ const viewSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const security = await withCsrfToken(request);
+  // Public endpoint: require same-origin check but do not require synchronizer CSRF token.
+  // This avoids false 403s from stale client token while still blocking cross-site posts.
+  const security = await withSecurity(request, {
+    requireCsrf: true,
+  });
   if (!security.ok) return security.response;
 
   try {
