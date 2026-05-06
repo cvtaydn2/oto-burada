@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
@@ -165,12 +167,12 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                   </div>
 
                   <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
-                    <label
+                    <Label
                       htmlFor={`report-note-${report.id}`}
                       className="text-xs font-medium text-muted-foreground"
                     >
                       Moderasyon notu
-                    </label>
+                    </Label>
                     <textarea
                       id={`report-note-${report.id}`}
                       value={report.id ? (notesByReportId[report.id] ?? "") : ""}
@@ -202,7 +204,7 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row lg:w-44 lg:flex-col">
-                  <button
+                  <Button
                     type="button"
                     disabled={actionBusy || report.status === "reviewing" || !report.id}
                     onClick={() => report.id && void handleStatusUpdate(report.id, "reviewing")}
@@ -214,9 +216,9 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                       <Eye className="size-4" />
                     )}
                     İncelemeye Al
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
                     disabled={actionBusy || report.status === "resolved" || !report.id}
                     onClick={() => report.id && void handleStatusUpdate(report.id, "resolved")}
@@ -228,9 +230,9 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                       <ShieldCheck className="size-4" />
                     )}
                     Çözüldü
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
                     disabled={actionBusy || report.status === "dismissed" || !report.id}
                     onClick={() => report.id && void handleStatusUpdate(report.id, "dismissed")}
@@ -242,7 +244,7 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                       <XCircle className="size-4" />
                     )}
                     Kapat
-                  </button>
+                  </Button>
                 </div>
               </div>
             </article>

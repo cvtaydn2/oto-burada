@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 import { Listing360View } from "@/components/listings/listing-360-view";
+import { Button } from "@/components/ui/button";
 import { supabaseImageUrl } from "@/lib/utils";
 import type { ListingImage } from "@/types";
 
@@ -115,20 +116,20 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
             {/* Navigation Arrows (Desktop Only) */}
             {images.length > 1 && (
               <>
-                <button
+                <Button
                   onClick={scrollPrev}
                   aria-label="Önceki"
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/90 backdrop-blur-md hidden sm:flex items-center justify-center text-foreground/90 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-card z-10"
                 >
                   <ChevronLeft size={24} />
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={scrollNext}
                   aria-label="Sonraki"
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/90 backdrop-blur-md hidden sm:flex items-center justify-center text-foreground/90 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-card z-10"
                 >
                   <ChevronRight size={24} />
-                </button>
+                </Button>
               </>
             )}
 
@@ -138,21 +139,21 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                 {currentIndex + 1} / {images.length}
               </div>
               <div className="flex items-center gap-2 pointer-events-auto">
-                <button
+                <Button
                   onClick={() => setIsLightboxOpen(true)}
                   className="px-4 py-2.5 rounded-full bg-card/90 backdrop-blur-md text-foreground text-[10px] font-bold uppercase tracking-widest italic hover:bg-card transition-all shadow-sm flex items-center gap-1.5"
                 >
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
-                </button>
+                </Button>
                 {show360Button && (
-                  <button
+                  <Button
                     onClick={() => setIs360Open(true)}
                     className="px-4 py-2.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-sm flex items-center gap-1.5"
                   >
                     <Rotate3d size={12} />
                     360° Görünüm
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -162,7 +163,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
           <div className="overflow-hidden py-2" ref={thumbRef}>
             <div className="flex gap-2 sm:gap-3">
               {images.map((image, index) => (
-                <button
+                <Button
                   key={image.id || image.url}
                   onClick={() => onThumbClick(index)}
                   className={`relative flex-[0_0_64px] sm:flex-[0_0_100px] md:flex-[0_0_120px] aspect-square rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all touch-manipulation ${
@@ -185,7 +186,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                       <Rotate3d size={14} className="text-white" />
                     </div>
                   )}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

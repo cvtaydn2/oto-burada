@@ -2,6 +2,8 @@
 
 import { RefreshCcw } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 export default function ListingsError({
   error,
   reset,
@@ -18,12 +20,12 @@ export default function ListingsError({
       <p className="mb-6 max-w-md text-sm text-muted-foreground">
         {error.message || "Listeleme sayfası yüklenirken beklenmeyen bir sorun oluştu."}
       </p>
-      <button
+      <Button
         onClick={reset}
         className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
       >
         Tekrar Dene
-      </button>
+      </Button>
     </div>
   );
 }

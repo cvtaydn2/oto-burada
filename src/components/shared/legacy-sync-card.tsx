@@ -4,6 +4,8 @@ import { ArrowRight, ClipboardList, DatabaseZap, LoaderCircle, TriangleAlert } f
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface LegacySyncCardProps {
   legacyListingsCount: number;
   legacyReportsCount: number;
@@ -132,7 +134,7 @@ export function LegacySyncCard({ legacyListingsCount, legacyReportsCount }: Lega
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button
+        <Button
           type="button"
           disabled={isSyncing}
           onClick={() => void handleSync()}
@@ -144,7 +146,7 @@ export function LegacySyncCard({ legacyListingsCount, legacyReportsCount }: Lega
             <DatabaseZap className="size-4" />
           )}
           {isSyncing ? "Senkronize ediliyor..." : "Supabase'e tasi"}
-        </button>
+        </Button>
 
         {syncState.message ? (
           <p

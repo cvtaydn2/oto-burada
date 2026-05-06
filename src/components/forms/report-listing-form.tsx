@@ -5,6 +5,8 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 
 import { useCsrfToken } from "@/components/providers/csrf-provider";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { reportReasonLabels, reportReasons } from "@/lib/constants/domain";
 
 interface ReportListingFormProps {
@@ -116,7 +118,7 @@ export function ReportListingForm({
         bildirim gönderebilirsin.
       </p>
 
-      <label className="block space-y-2 text-sm font-medium text-foreground">
+      <Label className="block space-y-2 text-sm font-medium text-foreground">
         <span>Bildirim nedeni</span>
         <select
           value={reason}
@@ -129,9 +131,9 @@ export function ReportListingForm({
             </option>
           ))}
         </select>
-      </label>
+      </Label>
 
-      <label className="block space-y-2 text-sm font-medium text-foreground">
+      <Label className="block space-y-2 text-sm font-medium text-foreground">
         <span>Açıklama (opsiyonel)</span>
         <textarea
           rows={4}
@@ -140,7 +142,7 @@ export function ReportListingForm({
           placeholder="Sorunu kısaca açıkla. Açıklama girersen en az 5 karakter olmalı."
           className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         />
-      </label>
+      </Label>
 
       {submitState.status === "error" ? (
         <p role="alert" className="text-sm text-destructive">
@@ -154,7 +156,7 @@ export function ReportListingForm({
         </p>
       ) : null}
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
         className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-background px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
@@ -165,7 +167,7 @@ export function ReportListingForm({
           <AlertTriangle className="size-4" />
         )}
         {isSubmitting ? "Rapor gönderiliyor..." : "Raporu gönder"}
-      </button>
+      </Button>
     </form>
   );
 }

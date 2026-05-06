@@ -5,6 +5,8 @@ import Image from "next/image";
 import { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
 
 import { FormSection } from "@/components/shared/design-system/FormSection";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { ListingCreateFormValues } from "@/types";
 
@@ -94,7 +96,7 @@ export function PhotosStep({
                         className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
+                        <Button
                           type="button"
                           onClick={() => toggle360(index)}
                           title={is360 ? "Normal fotoğrafa dönüştür" : "360° olarak işaretle"}
@@ -107,8 +109,8 @@ export function PhotosStep({
                         >
                           <Rotate3d size={13} />
                           {is360 ? "360° Aktif" : "360° Ekle"}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           onClick={(e) => {
                             e.preventDefault();
@@ -118,7 +120,7 @@ export function PhotosStep({
                           className="p-2 bg-white rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-colors"
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </Button>
                       </div>
                     )}
 
@@ -138,7 +140,7 @@ export function PhotosStep({
                     )}
                   </>
                 ) : (
-                  <label
+                  <Label
                     className={cn(
                       "absolute inset-0 flex flex-col items-center justify-center gap-2",
                       !isDisabled && "cursor-pointer"
@@ -191,7 +193,7 @@ export function PhotosStep({
                         }}
                       />
                     )}
-                  </label>
+                  </Label>
                 )}
               </div>
             );

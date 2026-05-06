@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   fuelTypeLabels,
   fuelTypes,
@@ -28,13 +30,13 @@ export function TechnicalFilter({
     <div className="grid grid-cols-1 gap-6 w-full">
       <div className="space-y-3">
         {!hideLabel && (
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
             Yakıt Tipi
-          </label>
+          </Label>
         )}
         <div className="flex flex-wrap gap-2">
           {fuelTypes.map((type) => (
-            <button
+            <Button
               key={type}
               onClick={() =>
                 onFuelChange(fuelType === type ? undefined : (type as ListingFilters["fuelType"]))
@@ -47,19 +49,19 @@ export function TechnicalFilter({
               )}
             >
               {fuelTypeLabels[type]}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
       <div className="space-y-3">
         {!hideLabel && (
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
             Vites
-          </label>
+          </Label>
         )}
         <div className="flex flex-wrap gap-2">
           {transmissionTypes.map((type) => (
-            <button
+            <Button
               key={type}
               onClick={() =>
                 onTransmissionChange(
@@ -74,7 +76,7 @@ export function TechnicalFilter({
               )}
             >
               {transmissionTypeLabels[type]}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

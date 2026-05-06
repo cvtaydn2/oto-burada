@@ -4,6 +4,7 @@ import { Car, Download, MousePointer, Users, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { AdminAnalyticsData } from "@/services/admin/analytics";
 
 import {
@@ -110,7 +111,7 @@ export function AdminAnalyticsClient({
         <div className="flex items-center gap-3">
           <div className="flex bg-white border border-slate-200 rounded-xl p-1">
             {["7d", "30d", "90d", "1y"].map((range) => (
-              <button
+              <Button
                 key={range}
                 onClick={() => handleTimeRangeChange(range)}
                 className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${
@@ -126,16 +127,16 @@ export function AdminAnalyticsClient({
                     : range === "90d"
                       ? "3 Ay"
                       : "1 Yıl"}
-              </button>
+              </Button>
             ))}
           </div>
-          <button
+          <Button
             onClick={handleExport}
             className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-bold uppercase tracking-widest text-white hover:bg-indigo-700 transition-all shadow-sm"
           >
             <Download size={16} />
             Export
-          </button>
+          </Button>
         </div>
       </section>
 

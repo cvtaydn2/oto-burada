@@ -6,6 +6,7 @@ import { Controller, UseFormReturn } from "react-hook-form";
 import { ChoiceGroup } from "@/components/shared/design-system/ChoiceGroup";
 import { DesignInput } from "@/components/shared/design-system/DesignInput";
 import { FormSection } from "@/components/shared/design-system/FormSection";
+import { Button } from "@/components/ui/button";
 import { maximumCarYear, minimumCarYear } from "@/lib/constants/domain";
 import { vehicleCategories, vehicleCategoryLabels } from "@/lib/constants/vehicle-categories";
 import { BrandCatalogItem, ListingCreateFormValues } from "@/types";
@@ -60,7 +61,7 @@ export function VehicleInfoStep({
                   className="uppercase tracking-wide font-bold"
                 />
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={onPlateLookup}
                 disabled={isPlateLoading || isDisabled}
@@ -72,7 +73,7 @@ export function VehicleInfoStep({
                   <Search size={16} strokeWidth={3} />
                 )}
                 Öneri Getir
-              </button>
+              </Button>
             </div>
           </div>
 

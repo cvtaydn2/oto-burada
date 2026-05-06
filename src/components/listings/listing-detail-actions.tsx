@@ -7,6 +7,7 @@ import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ShareButton } from "@/components/listings/share-button";
 import { useAuthUser } from "@/components/shared/auth-provider";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -45,14 +46,14 @@ export function ListingDetailActions({
       />
       <Dialog open={reportOpen} onOpenChange={setReportOpen}>
         <DialogTrigger asChild>
-          <button
+          <Button
             type="button"
             onClick={() => captureClientEvent("report_dialog_opened", { listingId, sellerId })}
             className="bg-card border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition flex items-center gap-2 shadow-sm"
           >
             <Flag className="size-4" />
             Bildir
-          </button>
+          </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>

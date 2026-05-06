@@ -3,6 +3,10 @@
 import { AlertCircle, CheckCircle2, LoaderCircle, Megaphone } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 export function AdminBroadcastPanel() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -60,10 +64,10 @@ export function AdminBroadcastPanel() {
 
       <form onSubmit={handleBroadcast} className="space-y-4">
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
             Duyuru Başlığı
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -75,9 +79,9 @@ export function AdminBroadcastPanel() {
         </div>
 
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
             Mesaj İçeriği
-          </label>
+          </Label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -103,7 +107,7 @@ export function AdminBroadcastPanel() {
           </div>
         )}
 
-        <button
+        <Button
           type="submit"
           disabled={isSending || !title || !message}
           className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-600/20"
@@ -119,7 +123,7 @@ export function AdminBroadcastPanel() {
               Şimdi Yayınla
             </>
           )}
-        </button>
+        </Button>
       </form>
     </section>
   );

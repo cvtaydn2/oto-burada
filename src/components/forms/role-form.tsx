@@ -150,12 +150,12 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
                     onClick={(e) => e.stopPropagation()}
                   />
                   <div className="space-y-1 cursor-pointer">
-                    <label
+                    <Label
                       htmlFor={perm.id}
                       className="text-sm font-bold text-foreground block cursor-pointer"
                     >
                       {perm.label}
-                    </label>
+                    </Label>
                     <p className="text-[10px] text-muted-foreground font-medium italic leading-tight">
                       {perm.description}
                     </p>

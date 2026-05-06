@@ -3,6 +3,7 @@
 import { MessageCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function WhatsAppSupport() {
@@ -30,13 +31,13 @@ export function WhatsAppSupport() {
           isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"
         )}
       >
-        <button
+        <Button
           onClick={() => setIsOpen(false)}
           className="absolute -top-2 -right-2 bg-gray-100 text-gray-500 rounded-full p-1 hover:bg-gray-200 transition-colors"
           aria-label="Destek balonunu kapat"
         >
           <X size={12} />
-        </button>
+        </Button>
         <div className="flex gap-3">
           <div className="size-10 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
             <MessageCircle className="text-white size-6" />
@@ -59,7 +60,7 @@ export function WhatsAppSupport() {
       </div>
 
       {/* Floating Button */}
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "size-14 rounded-full bg-emerald-500 shadow-lg flex items-center justify-center text-white hover:bg-emerald-600 transition-all hover:scale-110 active:scale-95 pointer-events-auto group relative",
@@ -73,7 +74,7 @@ export function WhatsAppSupport() {
         {!isOpen && (
           <span className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping" />
         )}
-      </button>
+      </Button>
     </div>
   );
 }

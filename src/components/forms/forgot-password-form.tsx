@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { type AuthActionState, forgotPasswordAction } from "@/lib/auth/actions";
 
 const initialState: AuthActionState = null;
@@ -85,18 +87,18 @@ export function ForgotPasswordForm() {
           ) : (
             <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
-                <label
+                <Label
                   htmlFor="forgot-email"
                   className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
                 >
                   E-POSTA ADRESİ
-                </label>
+                </Label>
                 <div className="relative">
                   <Mail
                     className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
                     size={20}
                   />
-                  <input
+                  <Input
                     id="forgot-email"
                     type="email"
                     name="email"

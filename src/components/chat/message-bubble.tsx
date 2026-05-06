@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Check, CheckCheck, Trash2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 
 interface MessageBubbleProps {
@@ -36,13 +37,13 @@ export function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) 
       </div>
 
       {isOwn && onDelete && (
-        <button
+        <Button
           onClick={() => onDelete(message.id)}
           className="absolute -left-8 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
           title="Mesajı Sil"
         >
           <Trash2 className="h-4 w-4" />
-        </button>
+        </Button>
       )}
     </div>
   );

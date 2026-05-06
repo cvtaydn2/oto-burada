@@ -5,6 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { submitOfferAction } from "@/actions/offers";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -76,11 +79,11 @@ export function OfferForm({ listingId, listingTitle, currentPrice, children }: O
 
           <div className="space-y-4 px-6 py-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium">
+              <Label className="mb-1.5 block text-sm font-medium">
                 Teklifiniz <span className="text-red-500">*</span>
-              </label>
+              </Label>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   value={offeredPrice}
                   onChange={(e) => setOfferedPrice(e.target.value)}
@@ -93,32 +96,32 @@ export function OfferForm({ listingId, listingTitle, currentPrice, children }: O
                 </span>
               </div>
               <div className="mt-1 flex gap-2 text-xs text-muted-foreground">
-                <button
+                <Button
                   type="button"
                   onClick={() => setOfferedPrice(String(Math.floor(currentPrice * 0.8)))}
                   className="hover:text-foreground underline"
                 >
                   %80
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setOfferedPrice(String(Math.floor(currentPrice * 0.9)))}
                   className="hover:text-foreground underline"
                 >
                   %90
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setOfferedPrice(String(currentPrice))}
                   className="hover:text-foreground underline"
                 >
                   %100
-                </button>
+                </Button>
               </div>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Mesaj (opsiyonel)</label>
+              <Label className="mb-1.5 block text-sm font-medium">Mesaj (opsiyonel)</Label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, 500))}
@@ -132,13 +135,13 @@ export function OfferForm({ listingId, listingTitle, currentPrice, children }: O
           </div>
 
           <SheetFooter className="p-6 pt-2">
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-70"
             >
               {isLoading ? "Gönderiliyor..." : "Teklif Gönder"}
-            </button>
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

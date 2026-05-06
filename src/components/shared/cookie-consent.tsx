@@ -3,6 +3,7 @@
 import { Cookie, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   captureClientEvent,
   getCookieConsent,
@@ -50,13 +51,13 @@ export function CookieConsent() {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             <Cookie size={20} aria-hidden="true" />
           </div>
-          <button
+          <Button
             onClick={() => handleConsent(false)}
             className="rounded-full p-1 text-muted-foreground/70 hover:bg-muted transition-colors"
             aria-label="Çerezleri reddet ve kapat"
           >
             <X size={18} aria-hidden="true" />
-          </button>
+          </Button>
         </div>
 
         <div className="mt-4">
@@ -70,12 +71,12 @@ export function CookieConsent() {
         </div>
 
         <div className="mt-5 flex items-center gap-3">
-          <button
+          <Button
             onClick={() => handleConsent(true)}
             className="flex-1 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-slate-800"
           >
             Anladım, Devam Et
-          </button>
+          </Button>
           <a
             href="/legal/privacy"
             className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"

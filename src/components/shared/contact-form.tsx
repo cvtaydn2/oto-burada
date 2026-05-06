@@ -3,6 +3,9 @@
 import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useTurnstile } from "@/hooks/use-turnstile";
 import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
@@ -91,7 +94,7 @@ export function ContactForm() {
         <p className="text-sm text-muted-foreground max-w-sm">
           Mesajınızı aldık. Ekibimiz en kısa sürede size dönüş yapacak.
         </p>
-        <button
+        <Button
           onClick={() => {
             setStatus("idle");
             setForm({ name: "", email: "", subject: SUBJECTS[0], message: "" });
@@ -99,7 +102,7 @@ export function ContactForm() {
           className="mt-2 text-xs font-bold text-primary hover:underline"
         >
           Yeni mesaj gönder
-        </button>
+        </Button>
       </div>
     );
   }
@@ -108,10 +111,10 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="contact-name" className="block text-xs font-bold text-gray-700 mb-2">
+          <Label htmlFor="contact-name" className="block text-xs font-bold text-gray-700 mb-2">
             Adınız Soyadınız *
-          </label>
-          <input
+          </Label>
+          <Input
             id="contact-name"
             type="text"
             required
@@ -122,10 +125,10 @@ export function ContactForm() {
           />
         </div>
         <div>
-          <label htmlFor="contact-email" className="block text-xs font-bold text-gray-700 mb-2">
+          <Label htmlFor="contact-email" className="block text-xs font-bold text-gray-700 mb-2">
             E-posta Adresiniz *
-          </label>
-          <input
+          </Label>
+          <Input
             id="contact-email"
             type="email"
             required
@@ -137,9 +140,9 @@ export function ContactForm() {
         </div>
       </div>
       <div>
-        <label htmlFor="contact-subject" className="block text-xs font-bold text-gray-700 mb-2">
+        <Label htmlFor="contact-subject" className="block text-xs font-bold text-gray-700 mb-2">
           Konu
-        </label>
+        </Label>
         <select
           id="contact-subject"
           value={form.subject}
@@ -152,9 +155,9 @@ export function ContactForm() {
         </select>
       </div>
       <div>
-        <label htmlFor="contact-message" className="block text-xs font-bold text-gray-700 mb-2">
+        <Label htmlFor="contact-message" className="block text-xs font-bold text-gray-700 mb-2">
           Mesajınız *
-        </label>
+        </Label>
         <textarea
           id="contact-message"
           rows={4}
@@ -179,12 +182,12 @@ export function ContactForm() {
           overflow: "hidden",
         }}
       >
-        <label htmlFor="_hp">Boş bırakın</label>
-        <input id="_hp" name="_hp" type="text" tabIndex={-1} autoComplete="off" />
+        <Label htmlFor="_hp">Boş bırakın</Label>
+        <Input id="_hp" name="_hp" type="text" tabIndex={-1} autoComplete="off" />
       </div>
       {/* Turnstile widget (invisible challenge) */}
       {isTurnstileEnabled && <div ref={containerRef} className="flex justify-center" />}
-      <button
+      <Button
         type="submit"
         disabled={status === "loading"}
         className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -198,7 +201,7 @@ export function ContactForm() {
             <Send size={18} /> Mesajı Gönder
           </>
         )}
-      </button>
+      </Button>
       {status === "error" && (
         <p
           role="alert"

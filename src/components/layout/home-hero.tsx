@@ -2,6 +2,8 @@ import { ChevronRight, MapPin, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import type { SearchSuggestionItem } from "@/types";
 
@@ -87,9 +89,9 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
                   className="flex flex-col gap-2 sm:flex-row"
                 >
                   <div className="relative w-full sm:w-56 lg:w-64 group">
-                    <label htmlFor="hero-city" className="sr-only">
+                    <Label htmlFor="hero-city" className="sr-only">
                       Şehir seç
-                    </label>
+                    </Label>
                     <MapPin
                       size={18}
                       className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
@@ -114,14 +116,14 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
                     </div>
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 text-base font-bold tracking-wide text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] sm:w-auto"
                     aria-label="Şehir seçimiyle ilanları keşfet"
                   >
                     <Search size={18} strokeWidth={2.5} />
                     İlanları Keşfet
-                  </button>
+                  </Button>
                 </form>
 
                 <div className="flex flex-wrap gap-2 pt-1">

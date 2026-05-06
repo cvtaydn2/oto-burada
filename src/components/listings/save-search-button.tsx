@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
 import type { ListingFilters } from "@/types";
@@ -107,7 +108,7 @@ export function SaveSearchButton({
   if (variant === "compact") {
     return (
       <div className="relative">
-        <button
+        <Button
           type="button"
           onClick={() => void handleSave()}
           disabled={isSaving}
@@ -121,7 +122,7 @@ export function SaveSearchButton({
           <span className="hidden md:inline">
             {isSaving ? "Kaydediliyor..." : status === "success" ? "Kaydedildi" : "Aramayı Kaydet"}
           </span>
-        </button>
+        </Button>
         {message && (
           <div
             className={cn(
@@ -140,7 +141,7 @@ export function SaveSearchButton({
 
   return (
     <div className="space-y-2">
-      <button
+      <Button
         type="button"
         onClick={() => void handleSave()}
         disabled={isSaving}
@@ -152,7 +153,7 @@ export function SaveSearchButton({
           <BellRing className="size-4" />
         )}
         {isSaving ? "Kaydediliyor..." : `Aramayı Kaydet (${resultCount})`}
-      </button>
+      </Button>
 
       {message ? (
         <p className={cn("text-xs", status === "error" ? "text-destructive" : "text-emerald-700")}>

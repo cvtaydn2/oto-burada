@@ -2,6 +2,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { AlertCircle, MousePointerClick, Smartphone, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface Listing360ViewProps {
   isOpen: boolean;
   imageUrl: string;
@@ -161,12 +163,12 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
               </div>
             </div>
             <Dialog.Close asChild>
-              <button
+              <Button
                 aria-label="Kapat"
                 className="flex size-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <X size={22} />
-              </button>
+              </Button>
             </Dialog.Close>
           </div>
 
@@ -191,12 +193,12 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
                     360° panorama dosyası şu anda kullanılamıyor.
                   </p>
                 </div>
-                <button
+                <Button
                   onClick={onClose}
                   className="mt-2 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-all"
                 >
                   Geri Dön
-                </button>
+                </Button>
               </div>
             )}
 

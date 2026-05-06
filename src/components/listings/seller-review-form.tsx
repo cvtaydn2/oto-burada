@@ -3,6 +3,8 @@
 import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface SellerReviewFormProps {
@@ -74,13 +76,13 @@ export function SellerReviewForm({
 
   if (!isOpen) {
     return (
-      <button
+      <Button
         onClick={() => setIsOpen(true)}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
       >
         <Star size={15} className="text-amber-400" />
         Satıcıyı Değerlendir
-      </button>
+      </Button>
     );
   }
 
@@ -100,7 +102,7 @@ export function SellerReviewForm({
         </p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
-            <button
+            <Button
               key={star}
               type="button"
               onClick={() => setRating(star)}
@@ -118,7 +120,7 @@ export function SellerReviewForm({
                     : "fill-slate-100 text-slate-200"
                 )}
               />
-            </button>
+            </Button>
           ))}
           {rating > 0 && (
             <span className="ml-2 text-xs font-bold text-muted-foreground">
@@ -130,12 +132,12 @@ export function SellerReviewForm({
 
       {/* Comment */}
       <div>
-        <label
+        <Label
           htmlFor="review-comment"
           className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >
           Yorum <span className="font-normal text-muted-foreground/70">(isteğe bağlı)</span>
-        </label>
+        </Label>
         <textarea
           id="review-comment"
           value={comment}
@@ -155,21 +157,21 @@ export function SellerReviewForm({
       )}
 
       <div className="flex items-center gap-3">
-        <button
+        <Button
           type="submit"
           disabled={status === "loading" || rating === 0}
           className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {status === "loading" && <Loader2 size={14} className="animate-spin" />}
           Gönder
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => setIsOpen(false)}
           className="text-sm font-medium text-muted-foreground hover:text-foreground/90 transition"
         >
           İptal
-        </button>
+        </Button>
       </div>
     </form>
   );

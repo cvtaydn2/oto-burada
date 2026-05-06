@@ -8,6 +8,9 @@ import { useCallback } from "react";
 import { SaveSearchButton } from "@/components/listings/save-search-button";
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { Panel } from "@/components/shared/design-system/Panel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { FilterFields } from "@/features/marketplace/components/filter-fields";
 import { useFilterResultCount } from "@/features/marketplace/hooks/use-filter-result-count";
 import { useUnifiedFilters } from "@/features/marketplace/hooks/use-unified-filters";
@@ -62,13 +65,13 @@ export function AdvancedFilterPage({
               </div>
             </div>
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
-              <button
+              <Button
                 onClick={resetFilters}
                 className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border/40 bg-card px-5 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-muted/50 sm:flex-1 lg:flex-none"
               >
                 <RotateCcw size={14} />
                 Sıfırla
-              </button>
+              </Button>
               <SaveSearchButton filters={filters} resultCount={resultCount} userId={userId} />
             </div>
           </div>
@@ -77,12 +80,12 @@ export function AdvancedFilterPage({
             <div className="mb-8 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm font-bold text-primary lg:mb-10">
               <SlidersHorizontal size={14} />
               <span>{activeCount} aktif filtre</span>
-              <button
+              <Button
                 onClick={resetFilters}
                 className="ml-auto min-h-8 rounded-lg px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50"
               >
                 Tümünü Temizle
-              </button>
+              </Button>
             </div>
           )}
 
@@ -140,10 +143,10 @@ export function AdvancedFilterPage({
                   onMaxChange={(v) => updateFilter("maxPrice", v)}
                 />
                 <div className="space-y-1.5">
-                  <label className="px-1 text-xs font-bold tracking-wide text-muted-foreground">
+                  <Label className="px-1 text-xs font-bold tracking-wide text-muted-foreground">
                     Maksimum KM
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     placeholder="Örn: 100.000"
                     value={filters.maxMileage ?? ""}
@@ -200,10 +203,10 @@ export function AdvancedFilterPage({
               />
               <div className="mt-5 grid grid-cols-1 items-end gap-6 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="px-1 text-xs font-bold tracking-wide text-muted-foreground">
+                  <Label className="px-1 text-xs font-bold tracking-wide text-muted-foreground">
                     Maks. Tramer Hasar Kaydı (TL)
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     placeholder="Örn: 15.000"
                     value={filters.maxTramer ?? ""}
@@ -213,7 +216,7 @@ export function AdvancedFilterPage({
                     className="h-12 w-full rounded-xl border border-border/40 bg-muted/20 px-4 py-2 text-sm outline-none transition-all placeholder:text-muted-foreground/30 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
-                <label className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/40 bg-muted/5 p-4 transition-all hover:bg-muted/10">
+                <Label className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/40 bg-muted/5 p-4 transition-all hover:bg-muted/10">
                   <input
                     type="checkbox"
                     checked={filters.hasExpertReport === true}
@@ -225,7 +228,7 @@ export function AdvancedFilterPage({
                   <span className="text-sm font-bold text-foreground/80 group-hover:text-foreground">
                     Ekspertiz raporlu ilanlar
                   </span>
-                </label>
+                </Label>
               </div>
             </Panel>
           </div>
@@ -240,7 +243,7 @@ export function AdvancedFilterPage({
                   Filtreleri uygulayarak sonuç sayfasına dönün.
                 </p>
               </div>
-              <button
+              <Button
                 onClick={handleApply}
                 disabled={isPending}
                 className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-8 text-sm font-black text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-70"
@@ -249,7 +252,7 @@ export function AdvancedFilterPage({
                 {isPending
                   ? "Uygulanıyor..."
                   : `${resultCount.toLocaleString("tr-TR")} ilanı göster`}
-              </button>
+              </Button>
             </div>
           </div>
         </main>

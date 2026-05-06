@@ -4,6 +4,7 @@ import { AlertCircle, Loader2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
+import { Button } from "@/components/ui/button";
 import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +74,7 @@ export function SafeWhatsAppButton({
 
   return (
     <div className="relative w-full">
-      <button
+      <Button
         onClick={handleAction}
         disabled={loading}
         className={cn(
@@ -98,7 +99,7 @@ export function SafeWhatsAppButton({
             </span>
           </>
         )}
-      </button>
+      </Button>
 
       {error && (
         <div

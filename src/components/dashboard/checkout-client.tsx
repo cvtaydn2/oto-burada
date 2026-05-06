@@ -7,6 +7,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { captureClientEvent, captureClientException } from "@/lib/monitoring/telemetry-client";
 import type { PricingPlan } from "@/services/admin/plans";
 
@@ -180,10 +182,10 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       {/* Identity Number for Paid Plans */}
       {plan.price > 0 && isPaymentEnabled && (
         <div className="space-y-2">
-          <label htmlFor="tc-no" className="text-sm font-bold text-slate-700">
+          <Label htmlFor="tc-no" className="text-sm font-bold text-slate-700">
             TC Kimlik Numarası <span className="text-red-500">*</span>
-          </label>
-          <input
+          </Label>
+          <Input
             id="tc-no"
             type="text"
             maxLength={11}

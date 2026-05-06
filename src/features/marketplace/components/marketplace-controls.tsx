@@ -3,6 +3,7 @@
 import { ArrowDownUp } from "lucide-react";
 import dynamic from "next/dynamic";
 
+import { Button } from "@/components/ui/button";
 import { marketplace } from "@/lib/constants/ui-strings";
 import { cn } from "@/lib/utils";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
@@ -77,7 +78,7 @@ export function MarketplaceControls({
       <div className="hidden h-8 w-px bg-border sm:block" />
 
       <div className="hidden sm:flex items-center gap-1 rounded-xl bg-muted/30 p-1">
-        <button
+        <Button
           onClick={() => setViewMode("grid")}
           className={cn(
             "min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-all",
@@ -87,8 +88,8 @@ export function MarketplaceControls({
           )}
         >
           Kart
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setViewMode("list")}
           className={cn(
             "min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-all",
@@ -98,11 +99,11 @@ export function MarketplaceControls({
           )}
         >
           Liste
-        </button>
+        </Button>
       </div>
 
       <div className="relative ml-auto">
-        <button
+        <Button
           onClick={() => setIsSortOpen(!isSortOpen)}
           className="flex h-11 items-center gap-3 rounded-xl border border-border bg-card px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/50"
           aria-haspopup="listbox"
@@ -113,7 +114,7 @@ export function MarketplaceControls({
           <ChevronIcon
             className={cn("ml-1 size-4 transition-transform", isSortOpen && "rotate-180")}
           />
-        </button>
+        </Button>
 
         {isSortOpen && (
           <>
@@ -121,7 +122,7 @@ export function MarketplaceControls({
             <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-sm animate-in fade-in zoom-in-95 duration-200">
               {SORT_OPTIONS.map((option) => (
                 <li key={option.value}>
-                  <button
+                  <Button
                     onClick={() => {
                       handleFilterChange("sort", option.value as ListingFilters["sort"]);
                       setIsSortOpen(false);
@@ -134,7 +135,7 @@ export function MarketplaceControls({
                     )}
                   >
                     {option.label}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

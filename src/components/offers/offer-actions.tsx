@@ -15,6 +15,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { formatPrice } from "@/lib/utils";
 
 interface OfferActionsProps {
@@ -132,14 +134,14 @@ export function OfferActions({ offerId, view, offeredPrice }: OfferActionsProps)
           <form onSubmit={handleCounter}>
             <div className="space-y-4 py-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium">
+                <Label className="mb-1.5 block text-sm font-medium">
                   Karşı Teklifiniz <span className="text-red-500">*</span>
-                </label>
+                </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-bold">
                     TL
                   </span>
-                  <input
+                  <Input
                     type="number"
                     value={counterPrice}
                     onChange={(e) => setCounterPrice(e.target.value)}
@@ -151,10 +153,10 @@ export function OfferActions({ offerId, view, offeredPrice }: OfferActionsProps)
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium">
+                <Label className="mb-1.5 block text-sm font-medium">
                   Mesaj{" "}
                   <span className="text-xs font-normal text-muted-foreground">(opsiyonel)</span>
-                </label>
+                </Label>
                 <textarea
                   value={counterMessage}
                   onChange={(e) => setCounterMessage(e.target.value.slice(0, 300))}

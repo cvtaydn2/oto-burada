@@ -4,6 +4,7 @@ import { Bell, ChevronRight, LoaderCircle, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 import { formatDate } from "@/lib/utils";
 
@@ -167,7 +168,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
             </div>
 
             <div className="flex w-full items-center gap-3 sm:w-auto">
-              <button
+              <Button
                 type="button"
                 onClick={() =>
                   void handleToggleNotifications(search.id, !search.notificationsEnabled)
@@ -181,8 +182,8 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
                   <Bell className="size-4" />
                 )}
                 {search.notificationsEnabled ? "Bildirimler Açık" : "Bildirimleri Aç"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => void handleDelete(search.id)}
                 disabled={toggling || deleting}
@@ -194,7 +195,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
                 ) : (
                   <Trash2 className="size-5" />
                 )}
-              </button>
+              </Button>
               <Link
                 href={search.href}
                 className="flex size-11 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"

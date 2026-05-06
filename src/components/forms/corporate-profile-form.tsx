@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useActionState } from "react";
 
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
 import { cn } from "@/lib/utils";
 
@@ -70,9 +72,9 @@ export function CorporateProfileForm({
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-bold text-foreground">
+          <Label className="block space-y-2 text-sm font-bold text-foreground">
             <span>Galerisi Adı</span>
-            <input
+            <Input
               type="text"
               name="businessName"
               placeholder="Örn: Cevat Otomotiv"
@@ -83,15 +85,15 @@ export function CorporateProfileForm({
               aria-describedby={state.error ? "profile-error" : undefined}
               className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
-          </label>
+          </Label>
 
-          <label className="block space-y-2 text-sm font-bold text-foreground">
+          <Label className="block space-y-2 text-sm font-bold text-foreground">
             <span>Mağaza URL (Slug)</span>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 text-xs font-medium">
                 /galeri/
               </span>
-              <input
+              <Input
                 type="text"
                 name="businessSlug"
                 placeholder="galeri-adiniz"
@@ -103,9 +105,9 @@ export function CorporateProfileForm({
                 className="h-12 w-full rounded-xl border border-input bg-background pl-[80px] pr-4 text-sm outline-none transition-colors focus:border-indigo-500 font-medium disabled:bg-muted/50"
               />
             </div>
-          </label>
+          </Label>
 
-          <label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
+          <Label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
             <span>Mağaza Açıklaması</span>
             <textarea
               name="businessDescription"
@@ -117,12 +119,12 @@ export function CorporateProfileForm({
               aria-describedby={state.error ? "profile-error" : undefined}
               className="w-full rounded-xl border border-input bg-background p-4 text-sm outline-none transition-colors focus:border-indigo-500 resize-none disabled:bg-muted/50"
             />
-          </label>
+          </Label>
 
-          <label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
+          <Label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
             <span>Mağaza Logosu (URL)</span>
             <div className="flex gap-3">
-              <input
+              <Input
                 type="url"
                 name="businessLogoUrl"
                 placeholder="https://..."
@@ -146,7 +148,7 @@ export function CorporateProfileForm({
                 )}
               </div>
             </div>
-          </label>
+          </Label>
         </div>
       </section>
 
@@ -166,9 +168,9 @@ export function CorporateProfileForm({
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-bold text-foreground">
+          <Label className="block space-y-2 text-sm font-bold text-foreground">
             <span>Vergi Dairesi</span>
-            <input
+            <Input
               type="text"
               name="taxOffice"
               defaultValue={values.taxOffice}
@@ -177,11 +179,11 @@ export function CorporateProfileForm({
               aria-describedby={state.error ? "profile-error" : undefined}
               className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50 aria-invalid:border-destructive"
             />
-          </label>
+          </Label>
 
-          <label className="block space-y-2 text-sm font-bold text-foreground">
+          <Label className="block space-y-2 text-sm font-bold text-foreground">
             <span>Vergi Numarası</span>
-            <input
+            <Input
               type="text"
               name="taxId"
               defaultValue={values.taxId}
@@ -190,22 +192,22 @@ export function CorporateProfileForm({
               aria-describedby={state.error ? "profile-error" : undefined}
               className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50 aria-invalid:border-destructive"
             />
-          </label>
+          </Label>
 
-          <label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
+          <Label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
             <span>Adres</span>
-            <input
+            <Input
               type="text"
               name="businessAddress"
               defaultValue={values.businessAddress}
               disabled={isReadOnly}
               className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
-          </label>
+          </Label>
 
-          <label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
+          <Label className="block space-y-2 text-sm font-bold text-foreground sm:col-span-2">
             <span>Web Sitesi</span>
-            <input
+            <Input
               type="url"
               name="websiteUrl"
               placeholder="https://..."
@@ -213,7 +215,7 @@ export function CorporateProfileForm({
               disabled={isReadOnly}
               className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
-          </label>
+          </Label>
         </div>
       </section>
 

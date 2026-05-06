@@ -185,12 +185,12 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
                         }
                       }}
                     />
-                    <label
+                    <Label
                       htmlFor={feature.id}
                       className="text-xs font-bold text-foreground/90 cursor-pointer"
                     >
                       {feature.label}
-                    </label>
+                    </Label>
                   </div>
                 );
               })}

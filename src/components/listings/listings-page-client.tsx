@@ -7,6 +7,8 @@ import { ListingPagination } from "@/components/listings/listing-pagination";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ListingCard } from "@/components/shared/listing-card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { ActiveFilterTags } from "@/features/marketplace/components/active-filter-tags";
 import { MarketplaceControls } from "@/features/marketplace/components/marketplace-controls";
 import { MarketplaceHeader } from "@/features/marketplace/components/marketplace-header";
@@ -166,7 +168,7 @@ export function ListingsPageClient({
                 (qf.type === "newest" && (filters.sort === "newest" || !filters.sort));
 
               return (
-                <button
+                <Button
                   key={qf.label}
                   onClick={() => {
                     if (qf.type === "reset") handleReset();
@@ -195,7 +197,7 @@ export function ListingsPageClient({
                 >
                   {qf.icon && <qf.icon size={14} strokeWidth={2.5} />}
                   {qf.label}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -227,7 +229,7 @@ export function ListingsPageClient({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   onClick={() => {
                     handleReset();
                     setShowDroppedFilters(false);
@@ -235,13 +237,13 @@ export function ListingsPageClient({
                   className="h-8 rounded-md bg-amber-600 px-3 text-xs font-semibold text-white"
                 >
                   Filtreleri Temizle
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setShowDroppedFilters(false)}
                   className="text-sm text-amber-700/80 underline"
                 >
                   Kapat
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -270,7 +272,7 @@ export function ListingsPageClient({
                 <p className="mb-6 max-w-sm text-center text-sm text-muted-foreground sm:mb-8">
                   {error instanceof Error ? error.message : "Bağlantı sırasında bir sorun oluştu."}
                 </p>
-                <button
+                <Button
                   onClick={() => {
                     void refetch();
                   }}
@@ -278,7 +280,7 @@ export function ListingsPageClient({
                 >
                   <RefreshCcw size={14} />
                   Tekrar Dene
-                </button>
+                </Button>
               </div>
             ) : isPending ? (
               <div className="min-h-[400px] rounded-2xl border border-border bg-card p-6 shadow-sm sm:min-h-[600px] sm:p-10">
@@ -305,12 +307,12 @@ export function ListingsPageClient({
                     </p>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <label
+                    <Label
                       htmlFor="listing-page-size"
                       className="text-xs font-semibold tracking-wide text-muted-foreground"
                     >
                       Sayfada
-                    </label>
+                    </Label>
                     <select
                       id="listing-page-size"
                       value={currentLimit}
@@ -370,12 +372,12 @@ export function ListingsPageClient({
                         </span>
                       </div>
                     ) : hasNextPage ? (
-                      <button
+                      <Button
                         onClick={() => fetchNextPage()}
                         className="h-11 rounded-full border-2 border-border bg-card px-8 text-sm font-semibold transition-colors hover:border-primary hover:text-primary"
                       >
                         Daha Fazla Göster
-                      </button>
+                      </Button>
                     ) : allListings.length > 0 ? (
                       <p className="text-sm font-medium text-muted-foreground/70">
                         Tüm ilanları görüntülediniz

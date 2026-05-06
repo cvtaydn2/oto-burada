@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Drawer } from "vaul";
 
+import { Button } from "@/components/ui/button";
 import { useNavigation } from "@/hooks/use-navigation";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
@@ -74,7 +75,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
           <li className="flex-1">
             <Drawer.Root shouldScaleBackground>
               <Drawer.Trigger asChild>
-                <button
+                <Button
                   className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground transition-all active:scale-95"
                   aria-label="Menüyü aç"
                 >
@@ -84,7 +85,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
                     <Menu className="size-5.5 stroke-2" />
                   )}
                   <span className="text-[10px] font-bold tracking-tight">Menü</span>
-                </button>
+                </Button>
               </Drawer.Trigger>
               <Drawer.Portal>
                 <Drawer.Overlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" />

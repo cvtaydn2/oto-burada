@@ -3,6 +3,8 @@
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
+
 interface CompareRemoveButtonProps {
   otherIds: string;
 }
@@ -11,7 +13,7 @@ export function CompareRemoveButton({ otherIds }: CompareRemoveButtonProps) {
   const router = useRouter();
 
   return (
-    <button
+    <Button
       type="button"
       onClick={() => {
         if (otherIds) {
@@ -24,6 +26,6 @@ export function CompareRemoveButton({ otherIds }: CompareRemoveButtonProps) {
       title="Karşılaştırmadan çıkar"
     >
       <X className="size-4" />
-    </button>
+    </Button>
   );
 }

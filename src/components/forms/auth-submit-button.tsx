@@ -3,6 +3,8 @@
 import { LoaderCircle } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
+import { Button } from "@/components/ui/button";
+
 interface AuthSubmitButtonProps {
   label: string;
   icon?: React.ReactNode;
@@ -12,7 +14,7 @@ export function AuthSubmitButton({ label, icon }: AuthSubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
       aria-live="polite"
@@ -29,6 +31,6 @@ export function AuthSubmitButton({ label, icon }: AuthSubmitButtonProps) {
           {icon}
         </>
       )}
-    </button>
+    </Button>
   );
 }

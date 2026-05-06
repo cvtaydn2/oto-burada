@@ -199,12 +199,12 @@ function InfoRow({
           {showFull && fullValue ? fullValue : value}
         </p>
         {fullValue && (
-          <button
+          <Button
             onClick={() => setShowFull(!showFull)}
             className="text-[9px] font-extrabold text-indigo-500 hover:text-indigo-700 uppercase tracking-tighter"
           >
             {showFull ? "GİZLE" : "GÖSTER"}
-          </button>
+          </Button>
         )}
       </div>
     </div>

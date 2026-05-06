@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
 
 export function UserSearch({ defaultValue = "" }: { defaultValue?: string }) {
@@ -28,7 +29,7 @@ export function UserSearch({ defaultValue = "" }: { defaultValue?: string }) {
         className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
         size={18}
       />
-      <input
+      <Input
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}

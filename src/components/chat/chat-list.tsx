@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChats } from "@/hooks/use-chat-queries";
@@ -66,7 +67,7 @@ export function ChatList({ userId, onChatSelect, selectedChatId }: ChatListProps
     <div className="space-y-4">
       {/* Tabs */}
       <div className="flex border-b">
-        <button
+        <Button
           onClick={() => setShowArchived(false)}
           className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
             !showArchived
@@ -76,8 +77,8 @@ export function ChatList({ userId, onChatSelect, selectedChatId }: ChatListProps
         >
           <Inbox className="h-4 w-4" />
           Gelen Kutusu
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setShowArchived(true)}
           className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
             showArchived
@@ -87,7 +88,7 @@ export function ChatList({ userId, onChatSelect, selectedChatId }: ChatListProps
         >
           <Archive className="h-4 w-4" />
           Arşivlenmiş
-        </button>
+        </Button>
       </div>
 
       {!chats || chats.length === 0 ? (

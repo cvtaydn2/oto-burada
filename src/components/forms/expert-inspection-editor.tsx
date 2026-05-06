@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -68,7 +69,7 @@ export function ExpertInspectionEditor({ form, isDisabled = false }: ExpertInspe
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={() =>
               !isDisabled &&
@@ -85,8 +86,8 @@ export function ExpertInspectionEditor({ form, isDisabled = false }: ExpertInspe
             } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             YOK
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() =>
               !isDisabled &&
@@ -103,7 +104,7 @@ export function ExpertInspectionEditor({ form, isDisabled = false }: ExpertInspe
             } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             VAR
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -199,7 +200,7 @@ export function ExpertInspectionEditor({ form, isDisabled = false }: ExpertInspe
                   </Label>
                   <div className="flex bg-background rounded-lg border border-border/60 p-0.5">
                     {expertInspectionStatusLabels.map((s) => (
-                      <button
+                      <Button
                         key={s.status}
                         type="button"
                         onClick={() =>
@@ -237,7 +238,7 @@ export function ExpertInspectionEditor({ form, isDisabled = false }: ExpertInspe
                             <HelpCircle size={10} />
                           ))}
                         {s.label}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>

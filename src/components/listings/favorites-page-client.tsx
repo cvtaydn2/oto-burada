@@ -26,6 +26,7 @@ import { ListingPromoBadges } from "@/components/listings/listing-promo-badges";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useFavorites } from "@/components/shared/favorites-provider";
+import { Button } from "@/components/ui/button";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { getListingDopingDisplayItems } from "@/lib/listings/utils";
 import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
@@ -282,7 +283,7 @@ function FavoriteCard({
         </div>
 
         {/* Remove button */}
-        <button
+        <Button
           type="button"
           onClick={(e) => {
             e.preventDefault();
@@ -292,7 +293,7 @@ function FavoriteCard({
           className="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur transition hover:bg-red-50 hover:text-red-500"
         >
           <Trash2 size={14} />
-        </button>
+        </Button>
 
         {/* Photo count */}
         <div className="absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-bold text-white backdrop-blur">

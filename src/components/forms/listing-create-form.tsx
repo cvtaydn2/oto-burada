@@ -6,6 +6,7 @@ import { useState } from "react";
 import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
 import UploadProgress from "@/components/listings/upload-progress";
 import { BotProtection } from "@/components/shared/bot-protection";
+import { Button } from "@/components/ui/button";
 // Feature Hook
 import { useListingCreation } from "@/features/listing-creation/hooks/use-listing-creation";
 import { type BrandCatalogItem, type CityOption, type Listing } from "@/types";
@@ -157,16 +158,16 @@ export function ListingCreateForm({
                   {(submitState.code === "CONFLICT" ||
                     submitState.code === "RATE_LIMITED" ||
                     submitState.code === "TURNSTILE_REQUIRED") && (
-                      <div className="flex justify-end px-2">
-                        <button
-                          type="button"
-                          onClick={() => router.refresh()}
-                          className="text-xs font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors underline decoration-2 underline-offset-4"
-                        >
-                          Sayfayı Yenile
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex justify-end px-2">
+                      <Button
+                        type="button"
+                        onClick={() => router.refresh()}
+                        className="text-xs font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors underline decoration-2 underline-offset-4"
+                      >
+                        Sayfayı Yenile
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -202,17 +203,17 @@ export function ListingCreateForm({
               </div>
 
               <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-slate-100 pt-10">
-                <button
+                <Button
                   type="button"
                   onClick={handlePrevStep}
                   disabled={currentStep === 0}
                   className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-200 bg-white px-8 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:opacity-50 disabled:grayscale uppercase tracking-widest"
                 >
                   Geri Dön
-                </button>
+                </Button>
 
                 {currentStep === totalSteps - 1 ? (
-                  <button
+                  <Button
                     type="submit"
                     onClick={() => {
                       submitIntentRef.current = true;
@@ -231,16 +232,16 @@ export function ListingCreateForm({
                         Tüm Bilgileri Kaydet
                       </>
                     )}
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     type="button"
                     onClick={handleNextStep}
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-10 text-sm font-bold text-white shadow-sm shadow-slate-900/20 transition-all hover:bg-slate-800 uppercase tracking-widest group"
                   >
                     Sonraki Adım
                     <ChevronRight className="size-5 transition-transform group-hover:translate-x-1" />
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>

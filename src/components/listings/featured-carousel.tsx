@@ -150,7 +150,7 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
         aria-label="Vitrin galeri slaytları"
       >
         {listings.map((_, index) => (
-          <button
+          <Button
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
             className={cn(

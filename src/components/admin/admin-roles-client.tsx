@@ -87,13 +87,13 @@ function Modal({
               {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
             </div>
           </div>
-          <button
+          <Button
             onClick={onClose}
             className="size-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
             aria-label="Kapat"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
         <div className="p-6">{children}</div>
       </div>
@@ -264,14 +264,14 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     onClick={() => setViewTarget(role)}
                     className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
                   >
                     <Eye size={14} />
                     Detay
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setEditTarget(role)}
                     disabled={role.is_system}
                     title={role.is_system ? "Sistem rolleri düzenlenemez" : "Düzenle"}
@@ -279,8 +279,8 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                   >
                     <Edit3 size={14} />
                     Düzenle
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setDeleteTarget(role)}
                     disabled={role.is_system}
                     title={role.is_system ? "Sistem rolleri silinemez" : "Sil"}
@@ -288,7 +288,7 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                   >
                     <Trash2 size={14} />
                     Sil
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

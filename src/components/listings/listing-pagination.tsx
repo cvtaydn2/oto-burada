@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ListingPaginationProps {
@@ -30,13 +31,13 @@ export function ListingPagination({
         / <span className="text-foreground">{totalListings}</span> İLAN
       </p>
       <div className="flex items-center gap-2">
-        <button
+        <Button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
           className="size-11 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
         >
           <ChevronLeft size={18} />
-        </button>
+        </Button>
         <div className="flex items-center gap-1.5 mx-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
@@ -51,7 +52,7 @@ export function ListingPagination({
                   ...
                 </span>
               ) : (
-                <button
+                <Button
                   key={item}
                   onClick={() => onPageChange(item as number)}
                   className={cn(
@@ -62,17 +63,17 @@ export function ListingPagination({
                   )}
                 >
                   {item}
-                </button>
+                </Button>
               )
             )}
         </div>
-        <button
+        <Button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
           className="size-11 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
         >
           <ChevronRight size={18} />
-        </button>
+        </Button>
       </div>
     </div>
   );

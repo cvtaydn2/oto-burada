@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { useFavorites } from "@/components/shared/favorites-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {
@@ -49,7 +50,7 @@ export function FavoriteButton({
 
   return (
     <div className="relative">
-      <button
+      <Button
         type="button"
         aria-label={active ? "Favorilerden çıkar" : "Favorilere ekle"}
         aria-pressed={active}
@@ -69,7 +70,7 @@ export function FavoriteButton({
         <span className="sr-only" aria-live="polite">
           {announcement}
         </span>
-      </button>
+      </Button>
       {showGuestHint && !isAuthenticated && showHint && (
         <div
           role="tooltip"

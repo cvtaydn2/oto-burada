@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface RangeSliderProps {
@@ -119,7 +120,7 @@ export function RangeSlider({
         />
 
         {/* Min thumb */}
-        <input
+        <Input
           type="range"
           min={min}
           max={max}
@@ -140,7 +141,7 @@ export function RangeSlider({
         />
 
         {/* Max thumb */}
-        <input
+        <Input
           type="range"
           min={min}
           max={max}

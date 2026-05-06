@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Maximize2, Play, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ListingImage } from "@/types";
 
@@ -100,20 +101,20 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
         {/* Navigation Arrows */}
         {hasMultiple && (
           <>
-            <button
+            <Button
               onClick={goToPrevious}
               className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-sm rounded-full p-3 hover:bg-card transition-all"
               aria-label="Önceki"
             >
               <ChevronLeft size={20} />
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={goToNext}
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-sm rounded-full p-3 hover:bg-card transition-all"
               aria-label="Sonraki"
             >
               <ChevronRight size={20} />
-            </button>
+            </Button>
           </>
         )}
       </div>
@@ -123,7 +124,7 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
         <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {images.map((img, idx) => (
-              <button
+              <Button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
@@ -150,7 +151,7 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
                     sizes="64px"
                   />
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -158,12 +159,12 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
 
       {/* Fullscreen Toggle */}
       {(hasVideo || has360) && (
-        <button
+        <Button
           onClick={() => setIsFullscreen(!isFullscreen)}
           className="absolute top-4 right-4 bg-black/60 text-white p-2 rounded-lg hover:bg-black/80 transition-all"
         >
           {isFullscreen ? <X size={18} /> : <Maximize2 size={18} />}
-        </button>
+        </Button>
       )}
     </div>
   );

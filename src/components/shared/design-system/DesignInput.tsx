@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface DesignInputProps extends React.InputHTMLAttributes<
@@ -56,12 +57,12 @@ export const DesignInput = React.forwardRef<
       <div className={cn("space-y-1.5", hideLabel && "space-y-0")}>
         {!hideLabel && (
           <div className="flex items-center justify-between mb-0.5">
-            <label
+            <Label
               htmlFor={id}
               className="block text-sm font-bold text-foreground uppercase tracking-wider"
             >
               {label} {required && <span className="text-destructive">*</span>}
-            </label>
+            </Label>
             {labelExtra && <div className="flex items-center">{labelExtra}</div>}
             {!labelExtra && showCounter && maxLength !== undefined && (
               <span

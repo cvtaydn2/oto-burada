@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 interface PriceAlertSettings {
   emailNotifications: boolean;
@@ -83,7 +84,7 @@ export function FavoritesPriceAlerts() {
                 { value: "10", label: "%10 ve Üzeri" },
                 { value: "any", label: "Herhangi Bir Değişim" },
               ].map((option) => (
-                <label
+                <Label
                   key={option.value}
                   className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-card/50 transition-colors"
                 >
@@ -99,7 +100,7 @@ export function FavoritesPriceAlerts() {
                     <div className="h-5 w-5 rounded-full border-2 border-border peer-checked:border-blue-500 peer-checked:bg-blue-500 after:absolute after:left-1.5 after:top-1.5 after:h-2 after:w-2 after:rounded-full after:bg-card peer-checked:after:bg-card" />
                   </div>
                   <span className="text-sm font-medium text-foreground/90">{option.label}</span>
-                </label>
+                </Label>
               ))}
             </div>
           </div>

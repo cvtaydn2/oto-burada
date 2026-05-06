@@ -3,6 +3,7 @@
 import { LucideIcon } from "lucide-react";
 import { BarChart3, PieChart, TrendingDown, TrendingUp } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -88,7 +89,7 @@ export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: 
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={() => onChartTypeChange("bar")}
             className={cn(
               "p-2 rounded-lg transition-all",
@@ -98,8 +99,8 @@ export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: 
             )}
           >
             <BarChart3 size={18} />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onChartTypeChange("line")}
             className={cn(
               "p-2 rounded-lg transition-all",
@@ -109,7 +110,7 @@ export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: 
             )}
           >
             <PieChart size={18} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -220,9 +221,9 @@ export function AcquisitionPanel({
         ))}
       </div>
 
-      <button className="w-full mt-6 bg-white border border-slate-200 text-slate-600 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
+      <Button className="w-full mt-6 bg-white border border-slate-200 text-slate-600 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
         Detaylı Dağılım
-      </button>
+      </Button>
     </div>
   );
 }

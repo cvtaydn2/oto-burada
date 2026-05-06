@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -55,7 +56,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenu.Trigger asChild>
-        <button
+        <Button
           type="button"
           className="relative flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30 outline-none"
           aria-label="Bildirimler"
@@ -66,7 +67,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </button>
+        </Button>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
@@ -81,13 +82,13 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
           <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 mb-1">
             <h3 className="text-sm font-bold text-foreground">Bildirimler</h3>
             {unreadCount > 0 && (
-              <button
+              <Button
                 onClick={() => markAllReadMutation.mutate()}
                 className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
                 disabled={markAllReadMutation.isPending}
               >
                 Hepsini oku
-              </button>
+              </Button>
             )}
           </div>
 

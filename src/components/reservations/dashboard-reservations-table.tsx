@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -133,12 +134,12 @@ function ReservationTableRow({
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-2">
           {canConfirm && (
-            <button
+            <Button
               onClick={handleConfirm}
               className="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
             >
               Onayla
-            </button>
+            </Button>
           )}
           <Link
             href={`/listing/${listingSlug}`}
@@ -149,9 +150,9 @@ function ReservationTableRow({
           {canCancel && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className="text-xs text-red-600 hover:text-red-700 underline">
+                <Button className="text-xs text-red-600 hover:text-red-700 underline">
                   {copy.cancelButton}
-                </button>
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -162,12 +163,12 @@ function ReservationTableRow({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                  <button
+                  <Button
                     onClick={handleCancel}
                     className="h-10 px-4 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700"
                   >
                     {copy.cancelButton}
-                  </button>
+                  </Button>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

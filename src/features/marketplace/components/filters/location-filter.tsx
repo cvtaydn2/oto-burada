@@ -1,5 +1,6 @@
 "use client";
 
+import { Label } from "@/components/ui/label";
 import type { CityOption } from "@/types";
 
 import { FilterSelect } from "./filter-select";
@@ -35,9 +36,9 @@ export function LocationFilter({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div className="space-y-1.5">
         {!hideLabel && (
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
             Şehir
-          </label>
+          </Label>
         )}
         <FilterSelect
           value={city || "all"}
@@ -48,9 +49,9 @@ export function LocationFilter({
       </div>
       <div className="space-y-1.5">
         {!hideLabel && (
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
             İlçe
-          </label>
+          </Label>
         )}
         <FilterSelect
           value={district || "all"}

@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 import {
   addBrand,
@@ -203,7 +204,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                   </div>
                 </td>
                 <td className="px-6 py-5">
-                  <button
+                  <Button
                     onClick={() => setSelectedBrandForModels(brand)}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 hover:text-blue-600 transition-all group/btn shadow-sm"
                   >
@@ -215,7 +216,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                       size={12}
                       className="text-slate-300 group-hover/btn:text-blue-400"
                     />
-                  </button>
+                  </Button>
                 </td>
                 <td className="px-6 py-5">
                   {brand.is_active ? (
@@ -326,9 +327,9 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Marka Adı
-                </label>
+                </Label>
                 <Input
                   value={newBrandName}
                   onChange={(e) => setNewBrandName(e.target.value)}
@@ -375,9 +376,9 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Model Adı
-                </label>
+                </Label>
                 <Input
                   value={newModelName}
                   onChange={(e) => setNewModelName(e.target.value)}
@@ -441,9 +442,9 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Marka Adı
-                </label>
+                </Label>
                 <Input
                   value={editingBrand.name}
                   onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })}

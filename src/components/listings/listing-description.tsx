@@ -3,6 +3,8 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface ListingDescriptionProps {
   description: string;
 }
@@ -13,7 +15,7 @@ export function ListingDescription({ description }: ListingDescriptionProps) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <button
+      <Button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex w-full items-center justify-between text-left"
       >
@@ -24,7 +26,7 @@ export function ListingDescription({ description }: ListingDescriptionProps) {
           ) : (
             <ChevronDown className="w-5 h-5 text-muted-foreground/70" />
           ))}
-      </button>
+      </Button>
       <div
         className={`mt-3 text-sm text-muted-foreground leading-relaxed ${!isExpanded && !isLong ? "" : isExpanded ? "" : "line-clamp-3"}`}
       >

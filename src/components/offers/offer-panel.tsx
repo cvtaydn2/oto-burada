@@ -6,6 +6,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { submitOfferAction } from "@/actions/offers";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -102,21 +105,21 @@ export function OfferPanel({
   }
 
   const triggerButton = compact ? (
-    <button className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 border border-primary/20 text-primary h-12 px-4 text-sm font-bold transition-all hover:bg-primary/15 active:scale-95">
+    <Button className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 border border-primary/20 text-primary h-12 px-4 text-sm font-bold transition-all hover:bg-primary/15 active:scale-95">
       <Tag className="size-4" />
       Teklif Ver
-    </button>
+    </Button>
   ) : (
-    <button className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary h-12 px-4 text-sm font-bold transition-all hover:bg-primary/10 active:scale-95">
+    <Button className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary h-12 px-4 text-sm font-bold transition-all hover:bg-primary/10 active:scale-95">
       <Tag className="size-4" />
       Fiyat Teklifi Ver
-    </button>
+    </Button>
   );
 
   // Guest: redirect to login
   if (isGuest) {
     return (
-      <button
+      <Button
         onClick={() => router.push(`/login?next=${encodeURIComponent(`/listing/${listingSlug}`)}`)}
         className={
           compact
@@ -126,7 +129,7 @@ export function OfferPanel({
       >
         <Tag className="size-4" />
         {compact ? "Teklif Ver" : "Fiyat Teklifi Ver"}
-      </button>
+      </Button>
     );
   }
 
@@ -154,14 +157,14 @@ export function OfferPanel({
           <div className="flex-1 overflow-y-auto space-y-5 px-6 py-5">
             {/* Price input */}
             <div>
-              <label className="mb-2 block text-sm font-semibold text-foreground">
+              <Label className="mb-2 block text-sm font-semibold text-foreground">
                 Teklifiniz <span className="text-red-500">*</span>
-              </label>
+              </Label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
                   TL
                 </span>
-                <input
+                <Input
                   type="number"
                   value={offeredPrice}
                   onChange={(e) => setOfferedPrice(e.target.value)}
@@ -198,7 +201,7 @@ export function OfferPanel({
                   const val = Math.floor(currentPrice * ratio);
                   const isSelected = parsedPrice === val;
                   return (
-                    <button
+                    <Button
                       key={label}
                       type="button"
                       onClick={() => handleQuickSelect(ratio)}
@@ -210,7 +213,7 @@ export function OfferPanel({
                     >
                       <div className="text-xs font-bold">{label}</div>
                       <div className="text-[10px] font-mono mt-0.5">{(val / 1000).toFixed(0)}K</div>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -218,9 +221,9 @@ export function OfferPanel({
 
             {/* Message */}
             <div>
-              <label className="mb-2 block text-sm font-semibold text-foreground">
+              <Label className="mb-2 block text-sm font-semibold text-foreground">
                 Mesaj <span className="text-xs font-normal text-muted-foreground">(opsiyonel)</span>
-              </label>
+              </Label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, 500))}
@@ -245,13 +248,13 @@ export function OfferPanel({
 
           {/* Footer */}
           <SheetFooter className="p-6 pt-4 border-t border-border">
-            <button
+            <Button
               type="submit"
               disabled={isLoading || !isValidPrice}
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Gönderiliyor..." : "Teklifi Gönder"}
-            </button>
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

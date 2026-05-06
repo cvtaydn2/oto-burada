@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface PaginationProps {
@@ -49,7 +50,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
       const isActive = pageNum === currentPage;
 
       return (
-        <button
+        <Button
           key={pageNum}
           onClick={() => onPageChange(pageNum)}
           className={cn(
@@ -60,30 +61,30 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
           )}
         >
           {pageNum}
-        </button>
+        </Button>
       );
     });
   };
 
   return (
     <nav className={cn("flex items-center justify-center gap-2", className)}>
-      <button
+      <Button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
       >
         <ChevronLeft size={18} />
-      </button>
+      </Button>
 
       <div className="flex items-center gap-1.5">{renderPageNumbers()}</div>
 
-      <button
+      <Button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
       >
         <ChevronRight size={18} />
-      </button>
+      </Button>
     </nav>
   );
 }

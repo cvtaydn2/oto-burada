@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface ChoiceGroupProps<T extends string> {
@@ -36,19 +38,19 @@ export function ChoiceGroup<T extends string>({
   return (
     <div className={cn("space-y-1.5", className)} role="radiogroup" aria-labelledby={`${id}-label`}>
       {label && (
-        <label
+        <Label
           id={`${id}-label`}
           className="block text-sm font-bold text-foreground uppercase tracking-wider mb-0.5"
         >
           {label} {required && <span className="text-destructive">*</span>}
-        </label>
+        </Label>
       )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const isActive = value === option;
           const optionId = `${id}-${option}`;
           return (
-            <button
+            <Button
               key={option}
               id={optionId}
               type="button"
@@ -65,7 +67,7 @@ export function ChoiceGroup<T extends string>({
               )}
             >
               {labels?.[option] ?? option}
-            </button>
+            </Button>
           );
         })}
       </div>

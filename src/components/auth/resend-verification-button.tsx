@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { resendVerificationAction } from "@/lib/auth/actions";
 
 interface ResendVerificationButtonProps {
@@ -15,7 +16,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
       className="h-14 w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-50 italic"
@@ -28,7 +29,7 @@ function SubmitButton() {
           <RefreshCw size={18} />
         </>
       )}
-    </button>
+    </Button>
   );
 }
 

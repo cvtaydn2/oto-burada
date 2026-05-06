@@ -1,6 +1,8 @@
 import { Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 // Common emojis for quick selection
@@ -201,7 +203,7 @@ export function EmojiPicker({ onSelect, onClose, className }: EmojiPickerProps) 
     >
       {/* Header */}
       <div className="border-b border-border p-3">
-        <input
+        <Input
           type="text"
           placeholder="Emoji ara..."
           value={search}
@@ -215,14 +217,14 @@ export function EmojiPicker({ onSelect, onClose, className }: EmojiPickerProps) 
       <div className="max-h-64 overflow-y-auto p-2">
         <div className="grid grid-cols-8 gap-1">
           {filteredEmojis.map((emoji, index) => (
-            <button
+            <Button
               key={`${emoji}-${index}`}
               onClick={() => handleEmojiClick(emoji)}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-lg transition-all hover:bg-muted/50 active:scale-90"
               title={emoji}
             >
               {emoji}
-            </button>
+            </Button>
           ))}
           {filteredEmojis.length === 0 && (
             <div className="col-span-8 flex flex-col items-center justify-center py-8 text-center">

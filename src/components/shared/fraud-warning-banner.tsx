@@ -3,6 +3,7 @@
 import { ExternalLink, Info, ShieldAlert, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface FraudWarningBannerProps {
@@ -64,13 +65,13 @@ export function FraudWarningBanner({ className }: FraudWarningBannerProps) {
           </div>
         </div>
 
-        <button
+        <Button
           onClick={handleDismiss}
           className="absolute right-3 top-3 rounded-lg p-1 text-amber-400 hover:bg-amber-100 hover:text-amber-600 transition-colors"
           aria-label="Kapat"
         >
           <X size={16} />
-        </button>
+        </Button>
       </div>
     </div>
   );

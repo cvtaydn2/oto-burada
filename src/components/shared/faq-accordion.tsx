@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface FaqItem {
@@ -21,7 +22,7 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
     <div className="divide-y divide-slate-50">
       {items.map((item, i) => (
         <div key={i}>
-          <button
+          <Button
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
             className="flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors"
           >
@@ -33,7 +34,7 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
                 openIndex === i && "rotate-180 text-blue-500"
               )}
             />
-          </button>
+          </Button>
           {openIndex === i && (
             <div className="px-6 pb-5 text-sm text-muted-foreground font-medium animate-in slide-in-from-top-1 duration-200">
               {item.a}

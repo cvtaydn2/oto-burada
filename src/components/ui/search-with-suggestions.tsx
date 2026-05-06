@@ -4,6 +4,8 @@ import { ArrowRight, History, Search, TrendingUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
@@ -172,7 +174,7 @@ export function SearchWithSuggestions({
         >
           <Search size={18} strokeWidth={2.5} />
         </span>
-        <input
+        <Input
           ref={inputRef}
           id="header-search"
           name="query"
@@ -218,7 +220,7 @@ export function SearchWithSuggestions({
           )}
         />
         {query && (
-          <button
+          <Button
             type="button"
             onClick={() => {
               setQuery("");
@@ -230,7 +232,7 @@ export function SearchWithSuggestions({
             aria-label="Temizle"
           >
             <X size={16} />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -250,7 +252,7 @@ export function SearchWithSuggestions({
               </div>
               <div className="grid grid-cols-1 gap-1 px-2 sm:grid-cols-2">
                 {POPULAR_SEARCHES.map((s, i) => (
-                  <button
+                  <Button
                     key={i}
                     id={`${suggestionsId}-option-${i}`}
                     role="option"
@@ -269,7 +271,7 @@ export function SearchWithSuggestions({
                     <span className="text-sm font-bold text-foreground/80 group-hover:text-foreground">
                       {s.label}
                     </span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -282,7 +284,7 @@ export function SearchWithSuggestions({
               </div>
               <div className="space-y-1 px-2">
                 {filteredSuggestions.map((s, i) => (
-                  <button
+                  <Button
                     key={i}
                     id={`${suggestionsId}-option-${i}`}
                     role="option"
@@ -308,7 +310,7 @@ export function SearchWithSuggestions({
                       size={14}
                       className="ml-auto text-muted-foreground/20 transition-all group-hover:translate-x-1 group-hover:text-primary"
                     />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

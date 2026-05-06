@@ -79,7 +79,7 @@ export function AdminUserActionCards({
         <div className="space-y-6">
           <div className="grid grid-cols-4 gap-4">
             {[20, 50, 100, 250].map((val) => (
-              <button
+              <Button
                 key={val}
                 onClick={() => setCredits(val)}
                 className={cn(
@@ -90,7 +90,7 @@ export function AdminUserActionCards({
                 )}
               >
                 {val}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="space-y-2">
@@ -157,7 +157,7 @@ export function AdminUserActionCards({
 
           <div className="flex gap-2">
             {(["featured", "urgent", "highlighted"] as const).map((type) => (
-              <button
+              <Button
                 key={type}
                 onClick={() => toggleDopingType(type)}
                 className={cn(
@@ -168,7 +168,7 @@ export function AdminUserActionCards({
                 )}
               >
                 {DOPING_LABELS[type]}
-              </button>
+              </Button>
             ))}
           </div>
 

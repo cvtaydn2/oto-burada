@@ -7,6 +7,8 @@ import { useState } from "react";
 
 import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
 
@@ -110,31 +112,31 @@ export function ProfileForm({
           </div>
 
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+            <Label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
               <span>Ad Soyad</span>
-              <input
+              <Input
                 type="text"
                 name="fullName"
                 defaultValue={values.fullName}
                 required
                 className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
               />
-            </label>
+            </Label>
 
             <div className="space-y-2 text-sm font-medium text-foreground">
               <div className="flex items-center justify-between">
                 <Label htmlFor="phone">Telefon</Label>
                 {!isVerifiedLocally && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setIsVerifyDialogOpen(true)}
                     className="text-xs font-bold text-primary hover:underline"
                   >
                     E-posta Doğrula
-                  </button>
+                  </Button>
                 )}
               </div>
-              <input
+              <Input
                 id="phone"
                 type="tel"
                 name="phone"
@@ -146,7 +148,7 @@ export function ProfileForm({
               />
             </div>
 
-            <label className="block space-y-2 text-sm font-medium text-foreground">
+            <Label className="block space-y-2 text-sm font-medium text-foreground">
               <span>Şehir</span>
               <select
                 name="city"
@@ -163,7 +165,7 @@ export function ProfileForm({
                   </option>
                 ))}
               </select>
-            </label>
+            </Label>
           </div>
         </section>
 
@@ -183,16 +185,16 @@ export function ProfileForm({
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
-            <label className="block space-y-2 text-sm font-medium text-foreground">
+            <Label className="block space-y-2 text-sm font-medium text-foreground">
               <span>Avatar URL (opsiyonel)</span>
-              <input
+              <Input
                 type="url"
                 name="avatarUrl"
                 defaultValue={values.avatarUrl}
                 placeholder="https://..."
                 className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
               />
-            </label>
+            </Label>
 
             <div className="rounded-xl border border-border bg-muted/20 p-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-primary">

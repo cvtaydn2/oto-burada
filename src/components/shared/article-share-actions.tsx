@@ -3,6 +3,8 @@
 import { Globe, Link as LinkIcon, Share2 } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface ArticleShareActionsProps {
   title: string;
 }
@@ -41,18 +43,18 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
 
   return (
     <div className="flex gap-3">
-      <button
+      <Button
         type="button"
         onClick={handleShare}
         className={BUTTON_CLASSNAME}
         aria-label="İçeriği paylaş"
       >
         <Globe size={18} />
-      </button>
-      <button type="button" onClick={handleShare} className={BUTTON_CLASSNAME} aria-label="Paylaş">
+      </Button>
+      <Button type="button" onClick={handleShare} className={BUTTON_CLASSNAME} aria-label="Paylaş">
         <Share2 size={18} />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={handleCopy}
         className={BUTTON_CLASSNAME}
@@ -60,7 +62,7 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
         title={copied ? "Kopyalandı" : "Bağlantıyı kopyala"}
       >
         <LinkIcon size={18} />
-      </button>
+      </Button>
     </div>
   );
 }

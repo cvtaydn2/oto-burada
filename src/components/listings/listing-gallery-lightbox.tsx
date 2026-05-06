@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, GripVertical, X } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { SafeImage } from "@/components/shared/safe-image";
+import { Button } from "@/components/ui/button";
 import { supabaseImageUrl } from "@/lib/utils";
 import type { ListingImage } from "@/types";
 
@@ -120,12 +121,12 @@ export function ListingGalleryLightbox({
               </span>
             </div>
             <Dialog.Close asChild>
-              <button
+              <Button
                 aria-label="Kapat"
                 className="flex size-12 items-center justify-center rounded-full bg-white/10 text-white shadow-sm transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <X size={24} />
-              </button>
+              </Button>
             </Dialog.Close>
           </div>
 
@@ -170,7 +171,7 @@ export function ListingGalleryLightbox({
             {images.length > 1 && (
               <>
                 {/* Previous Button */}
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     onPrev();
@@ -179,10 +180,10 @@ export function ListingGalleryLightbox({
                   className="absolute left-4 sm:left-6 z-10 size-12 sm:size-16 flex items-center justify-center rounded-full bg-white/5 text-white transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   <ChevronLeft className="size-7 sm:size-8" />
-                </button>
+                </Button>
 
                 {/* Next Button */}
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     onNext();
@@ -191,7 +192,7 @@ export function ListingGalleryLightbox({
                   className="absolute right-4 sm:right-6 z-10 size-12 sm:size-16 flex items-center justify-center rounded-full bg-white/5 text-white transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   <ChevronRight className="size-7 sm:size-8" />
-                </button>
+                </Button>
               </>
             )}
 
@@ -208,7 +209,7 @@ export function ListingGalleryLightbox({
             {/* Dot navigation */}
             <div className="flex justify-center gap-2 overflow-x-auto max-w-full no-scrollbar px-4">
               {images.map((_, index) => (
-                <button
+                <Button
                   key={index}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -223,7 +224,7 @@ export function ListingGalleryLightbox({
                       index === currentIndex ? "w-6 sm:w-8 bg-primary" : "w-2 sm:w-1.5 bg-white/40"
                     } group-hover:bg-white/60 group-focus-visible:ring-2 group-focus-visible:ring-white`}
                   />
-                </button>
+                </Button>
               ))}
             </div>
 

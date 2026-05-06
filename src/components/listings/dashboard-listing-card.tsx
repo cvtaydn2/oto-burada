@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { DopingStore } from "@/components/dashboard/doping-store";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -216,7 +217,7 @@ export function DashboardListingCard({
                 <ArrowUpCircle className="size-4" />
               </div>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={() => onBump(listing.id)}
                 disabled={isBumping}
@@ -228,10 +229,10 @@ export function DashboardListingCard({
                 ) : (
                   <ArrowUpCircle className="size-4" />
                 )}
-              </button>
+              </Button>
             ))}
 
-          <button
+          <Button
             type="button"
             onClick={() => onArchive(listing.id)}
             disabled={isArchiving}
@@ -250,18 +251,18 @@ export function DashboardListingCard({
             ) : (
               <Archive className="size-4" />
             )}
-          </button>
+          </Button>
 
           {isApproved && (
             <Dialog>
               <DialogTrigger asChild>
-                <button
+                <Button
                   type="button"
                   className="flex items-center justify-center size-11 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
                   title="Doping Al"
                 >
                   <Zap className="size-4" />
-                </button>
+                </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl">
                 <DialogHeader>

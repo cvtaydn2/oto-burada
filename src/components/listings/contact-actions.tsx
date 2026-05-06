@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
@@ -148,13 +149,13 @@ export function ContactActions({
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <button
+          <Button
             disabled={isLogging && !isRevealed}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#25D366] bg-[#25D366] px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#1fb355] active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <MessageCircle className="size-5" />
             {isRevealed ? "WhatsApp ile İletişime Geç" : "WhatsApp ile Yaz"}
-          </button>
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-md rounded-3xl border border-border bg-card">
           <AlertDialogHeader className="space-y-3 text-left">
@@ -204,7 +205,7 @@ export function ContactActions({
                 <MessageCircle className="size-4" />
               </a>
             ) : (
-              <button
+              <Button
                 type="button"
                 disabled={isLogging}
                 onClick={() => {
@@ -222,14 +223,14 @@ export function ContactActions({
                   "Numarayı Gör"
                 )}
                 {!isLogging && <MessageCircle className="size-4" />}
-              </button>
+              </Button>
             )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {!isOwnListing && currentUserId && (
-        <button
+        <Button
           onClick={() => {
             router.push(`/dashboard/messages?new=${listingId}&seller=${sellerId}`);
             captureClientEvent("contact_chat_clicked", { listingId, sellerId });
@@ -238,7 +239,7 @@ export function ContactActions({
         >
           <MessageSquare className="size-5" />
           Mesaj Gönder
-        </button>
+        </Button>
       )}
 
       {isTrusted && !isRevealed && (
@@ -252,7 +253,7 @@ export function ContactActions({
 
       <div className="relative">
         {!isRevealed ? (
-          <button
+          <Button
             onClick={handleReveal}
             disabled={isLogging}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground transition-all hover:bg-muted active:scale-95 disabled:opacity-70"
@@ -265,7 +266,7 @@ export function ContactActions({
                 Numarayı Göster
               </>
             )}
-          </button>
+          </Button>
         ) : (
           <a
             href={`tel:${revealedPhone}`}

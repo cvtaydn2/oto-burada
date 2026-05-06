@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
+import { Button } from "@/components/ui/button";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -186,7 +187,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={() => setShowUnreadOnly((current) => !current)}
             className={cn(
               "px-4 py-2 rounded-xl text-sm font-medium transition-all",
@@ -196,8 +197,8 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
             )}
           >
             {showUnreadOnly ? "Tümü" : "Okunmamış"}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => void markAllAsRead()}
             disabled={activeAction === "mark-all" || unreadCount === 0}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-all disabled:cursor-not-allowed disabled:opacity-60"
@@ -208,7 +209,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
               <Check size={16} />
             )}
             Tümünü Oku
-          </button>
+          </Button>
         </div>
       </section>
 
@@ -274,7 +275,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                 </div>
                 <div className="flex items-start gap-2">
                   {!notif.read ? (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => void markSingleAsRead(notif.id)}
                       disabled={isReading || isDeleting}
@@ -286,9 +287,9 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                       ) : (
                         <Check size={16} />
                       )}
-                    </button>
+                    </Button>
                   ) : null}
-                  <button
+                  <Button
                     onClick={() => void deleteNotification(notif.id)}
                     disabled={isReading || isDeleting}
                     className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-red-500 hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
@@ -299,7 +300,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                     ) : (
                       <Trash2 size={16} />
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             );

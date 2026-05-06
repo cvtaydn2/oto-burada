@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { Ticket, TicketStatus } from "@/services/support/ticket-service";
 
 const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
@@ -127,7 +129,7 @@ export function AdminTicketList({
   return (
     <div className="space-y-4 p-6">
       {/* Arama */}
-      <input
+      <Input
         type="text"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
@@ -135,7 +137,7 @@ export function AdminTicketList({
         className="w-full h-10 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-50 transition-all"
       />
       <div className="flex gap-2 flex-wrap">
-        <button
+        <Button
           onClick={() => setFilter("all")}
           className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${
             filter === "all"
@@ -144,11 +146,11 @@ export function AdminTicketList({
           }`}
         >
           Tümü ({tickets.length})
-        </button>
+        </Button>
         {STATUS_OPTIONS.map((s) => {
           const count = tickets.filter((t) => t.status === s.value).length;
           return (
-            <button
+            <Button
               key={s.value}
               onClick={() => setFilter(s.value)}
               className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${
@@ -158,7 +160,7 @@ export function AdminTicketList({
               }`}
             >
               {s.label} ({count})
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -218,14 +220,14 @@ export function AdminTicketList({
                       className="w-full min-h-[80px] rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary resize-none"
                     />
                     <div className="flex gap-2">
-                      <button
+                      <Button
                         onClick={() => handleReply(ticket.id)}
                         disabled={isBusy}
                         className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isReplying ? "Gönderiliyor..." : "Yanıt Gönder"}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => {
                           setReplyingTo(null);
                           setReply("");
@@ -234,35 +236,35 @@ export function AdminTicketList({
                         className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         İptal
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex gap-2 flex-wrap">
-                    <button
+                    <Button
                       onClick={() => setReplyingTo(ticket.id)}
                       disabled={isBusy}
                       className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Yanıtla
-                    </button>
+                    </Button>
                     {ticket.status !== "in_progress" && (
-                      <button
+                      <Button
                         onClick={() => handleStatusChange(ticket.id, "in_progress")}
                         disabled={isBusy}
                         className="px-4 py-2 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isMovingToInProgress ? "Güncelleniyor..." : "İncelemeye Al"}
-                      </button>
+                      </Button>
                     )}
                     {ticket.status !== "resolved" && (
-                      <button
+                      <Button
                         onClick={() => handleStatusChange(ticket.id, "resolved")}
                         disabled={isBusy}
                         className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isResolving ? "Güncelleniyor..." : "Çözüldü İşaretle"}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}

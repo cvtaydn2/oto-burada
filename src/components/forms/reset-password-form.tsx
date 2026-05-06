@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { updatePasswordAction } from "@/lib/auth/actions";
 
 const initialState = null;
@@ -66,18 +69,18 @@ export function ResetPasswordForm() {
           ) : (
             <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
-                <label
+                <Label
                   htmlFor="password"
                   className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
                 >
                   YENİ ŞİFRE
-                </label>
+                </Label>
                 <div className="relative">
                   <Lock
                     className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
                     size={20}
                   />
-                  <input
+                  <Input
                     id="password"
                     name="password"
                     type="password"
@@ -97,18 +100,18 @@ export function ResetPasswordForm() {
               </div>
 
               <div className="space-y-2 group">
-                <label
+                <Label
                   htmlFor="confirm"
                   className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
                 >
                   ŞİFRE TEKRAR
-                </label>
+                </Label>
                 <div className="relative">
                   <Lock
                     className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
                     size={20}
                   />
-                  <input
+                  <Input
                     id="confirm"
                     name="confirm"
                     type="password"
@@ -163,7 +166,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
       className="h-16 w-full rounded-xl bg-slate-900 text-white flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest hover:bg-black transition-all shadow-sm shadow-slate-900/20 italic disabled:opacity-60 disabled:cursor-not-allowed"
@@ -176,6 +179,6 @@ function SubmitButton() {
           <ShieldCheck size={20} />
         </>
       )}
-    </button>
+    </Button>
   );
 }

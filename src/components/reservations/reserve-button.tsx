@@ -5,6 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { createReservationAction } from "@/actions/reservations";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -50,7 +53,7 @@ export function ReserveButton({ listingId, className }: ReserveButtonProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
+        <Button
           className={cn(
             "relative flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary h-12 px-4 text-sm font-bold transition-all hover:bg-primary/10 active:scale-95",
             className
@@ -61,7 +64,7 @@ export function ReserveButton({ listingId, className }: ReserveButtonProps) {
           <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase">
             {copy.reserveButtonBadge}
           </span>
-        </button>
+        </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col gap-0 p-0 sm:max-w-md">
         <form onSubmit={handleSubmit}>
@@ -79,7 +82,7 @@ export function ReserveButton({ listingId, className }: ReserveButtonProps) {
             <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{copy.depositAmount}</span>
-                <input
+                <Input
                   type="number"
                   name="amountDeposit"
                   min="1000"
@@ -96,9 +99,9 @@ export function ReserveButton({ listingId, className }: ReserveButtonProps) {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 Not (opsiyonel)
-              </label>
+              </Label>
               <textarea
                 name="notes"
                 value={notes}
@@ -112,13 +115,13 @@ export function ReserveButton({ listingId, className }: ReserveButtonProps) {
           </div>
 
           <SheetFooter className="p-6 pt-2">
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-70"
             >
               {isLoading ? "İşleniyor..." : "Ödemeye Geç"}
-            </button>
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

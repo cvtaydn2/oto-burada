@@ -4,6 +4,8 @@ import { ArrowRight, Filter, History, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { moderationActionLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -125,7 +127,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
             {filters.map((filter) => {
               const isActive = activeFilter === filter.value;
               return (
-                <button
+                <Button
                   key={filter.value}
                   type="button"
                   onClick={() => setActiveFilter(filter.value)}
@@ -137,7 +139,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   )}
                 >
                   {filter.label}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -148,7 +150,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
             {actionFilters.map((filter) => {
               const isActive = activeActionFilter === filter.value;
               return (
-                <button
+                <Button
                   key={filter.value}
                   type="button"
                   onClick={() => setActiveActionFilter(filter.value)}
@@ -160,7 +162,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   )}
                 >
                   {filter.label}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -168,7 +170,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
 
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-          <input
+          <Input
             id="admin-action-search"
             type="search"
             value={query}

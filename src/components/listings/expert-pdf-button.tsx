@@ -4,6 +4,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { generateExpertDocumentSignedUrl } from "@/app/(public)/(marketplace)/listing/[slug]/actions";
+import { Button } from "@/components/ui/button";
 
 interface ExpertPdfButtonProps {
   slug: string;
@@ -48,7 +49,7 @@ export function ExpertPdfButton({ slug }: ExpertPdfButtonProps) {
   }
 
   return (
-    <button
+    <Button
       onClick={handleClick}
       disabled={isLoading}
       className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary-foreground transition hover:opacity-90 disabled:opacity-70"
@@ -64,6 +65,6 @@ export function ExpertPdfButton({ slug }: ExpertPdfButtonProps) {
           PDF Raporu
         </>
       )}
-    </button>
+    </Button>
   );
 }

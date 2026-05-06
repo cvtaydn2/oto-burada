@@ -3,6 +3,8 @@
 import { Share2 } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface ShareButtonProps {
   title: string;
   price: number;
@@ -33,7 +35,7 @@ export function ShareButton({ title, price, className }: ShareButtonProps) {
   };
 
   return (
-    <button
+    <Button
       onClick={handleShare}
       className={
         className ||
@@ -42,6 +44,6 @@ export function ShareButton({ title, price, className }: ShareButtonProps) {
     >
       <Share2 size={18} aria-hidden="true" />
       <span aria-live="polite">{copied ? "Kopyalandı!" : "Paylaş"}</span>
-    </button>
+    </Button>
   );
 }

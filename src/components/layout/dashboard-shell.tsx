@@ -72,12 +72,12 @@ export function DashboardShell({
                 </Link>
               )}
               <form action={logoutAction}>
-                <button
+                <Button
                   type="submit"
                   className="inline-flex h-9 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted/30 hover:text-red-500 hover:border-red-100"
                 >
                   Çıkış
-                </button>
+                </Button>
               </form>
             </div>
           </div>

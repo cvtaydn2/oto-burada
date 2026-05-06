@@ -80,12 +80,12 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={onClose}
           className="size-10 rounded-xl hover:bg-white hover:border-slate-200 border border-transparent flex items-center justify-center text-slate-400 transition-all"
         >
           <X size={20} />
-        </button>
+        </Button>
       </div>
 
       <div className="p-6 border-b border-slate-100 pb-8">
@@ -143,12 +143,12 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
                   <p className="text-[9px] text-slate-400 font-bold italic">/{model.slug}</p>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={() => handleDeleteModel(model.id)}
                 className="size-8 rounded-lg hover:bg-rose-50 hover:text-rose-600 text-slate-300 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
               >
                 <Trash2 size={14} />
-              </button>
+              </Button>
             </div>
           ))
         )}

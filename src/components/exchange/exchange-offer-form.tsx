@@ -5,6 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { submitExchangeOfferAction } from "@/actions/exchange";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -92,10 +95,10 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
 
           <div className="space-y-4 px-6 py-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium">
+              <Label className="mb-1.5 block text-sm font-medium">
                 Aracınızın Açıklaması <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={form.targetCarDesc}
                 onChange={(e) => setForm({ ...form, targetCarDesc: e.target.value })}
@@ -107,8 +110,8 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Marka</label>
-                <input
+                <Label className="mb-1.5 block text-sm font-medium">Marka</Label>
+                <Input
                   type="text"
                   value={form.targetBrand}
                   onChange={(e) => setForm({ ...form, targetBrand: e.target.value })}
@@ -117,8 +120,8 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Model</label>
-                <input
+                <Label className="mb-1.5 block text-sm font-medium">Model</Label>
+                <Input
                   type="text"
                   value={form.targetModel}
                   onChange={(e) => setForm({ ...form, targetModel: e.target.value })}
@@ -130,8 +133,8 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Yıl</label>
-                <input
+                <Label className="mb-1.5 block text-sm font-medium">Yıl</Label>
+                <Input
                   type="number"
                   value={form.targetYear}
                   onChange={(e) => setForm({ ...form, targetYear: e.target.value })}
@@ -140,8 +143,8 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Km</label>
-                <input
+                <Label className="mb-1.5 block text-sm font-medium">Km</Label>
+                <Input
                   type="number"
                   value={form.targetMileage}
                   onChange={(e) => setForm({ ...form, targetMileage: e.target.value })}
@@ -150,8 +153,8 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Fiyat (TL)</label>
-                <input
+                <Label className="mb-1.5 block text-sm font-medium">Fiyat (TL)</Label>
+                <Input
                   type="number"
                   value={form.targetPrice}
                   onChange={(e) => setForm({ ...form, targetPrice: e.target.value })}
@@ -162,7 +165,7 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Not (opsiyonel)</label>
+              <Label className="mb-1.5 block text-sm font-medium">Not (opsiyonel)</Label>
               <textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -174,13 +177,13 @@ export function ExchangeOfferForm({ listingId, listingTitle, children }: Exchang
           </div>
 
           <SheetFooter className="p-6 pt-2">
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-70"
             >
               {isLoading ? "Gönderiliyor..." : "Teklif Gönder"}
-            </button>
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

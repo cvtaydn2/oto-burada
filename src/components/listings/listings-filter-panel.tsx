@@ -3,6 +3,8 @@
 import { Gauge, MapPin, Search, Settings2, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { FilterFields } from "@/features/marketplace/components/filter-fields";
 import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
@@ -44,7 +46,7 @@ function FilterSection({
 
   return (
     <div className="border-b border-border/50 last:border-0">
-      <button
+      <Button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
@@ -77,7 +79,7 @@ function FilterSection({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </span>
-      </button>
+      </Button>
       {isOpen && <div className="pb-4 space-y-3">{children}</div>}
     </div>
   );
@@ -132,13 +134,13 @@ export function ListingsFilterPanel({
           </div>
         </div>
         {activeFiltersCount > 0 && (
-          <button
+          <Button
             type="button"
             onClick={onReset}
             className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 transition-colors"
           >
             TEMİZLE
-          </button>
+          </Button>
         )}
       </div>
 
@@ -150,7 +152,7 @@ export function ListingsFilterPanel({
           defaultOpen={false}
           activeCount={filters.query ? 1 : 0}
         >
-          <input
+          <Input
             value={filters.query ?? ""}
             onChange={(e) => onFilterChange("query", e.target.value || undefined)}
             placeholder="Kelime ile ara..."
@@ -241,7 +243,7 @@ export function ListingsFilterPanel({
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
                 Maksimum KM
               </span>
-              <input
+              <Input
                 type="number"
                 placeholder="Örn: 150.000"
                 value={filters.maxMileage ?? ""}

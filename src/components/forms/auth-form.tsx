@@ -6,6 +6,8 @@ import { useActionState, useEffect, useState } from "react";
 
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 import { BotProtection } from "@/components/shared/bot-protection";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { AuthActionState } from "@/lib/auth/actions";
 
 interface AuthFormProps {
@@ -154,13 +156,13 @@ export function AuthForm({
               <div className="space-y-2">
                 {!isLogin && (
                   <>
-                    <label
+                    <Label
                       htmlFor="fullName"
                       className="text-xs font-medium text-muted-foreground ml-1"
                     >
                       Ad Soyad
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       id="fullName"
                       type="text"
                       name="fullName"
@@ -193,10 +195,10 @@ export function AuthForm({
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="email" className="text-xs font-medium text-muted-foreground ml-1">
+                <Label htmlFor="email" className="text-xs font-medium text-muted-foreground ml-1">
                   E-posta Adresi
-                </label>
-                <input
+                </Label>
+                <Input
                   id="email"
                   type="email"
                   name="email"
@@ -221,9 +223,9 @@ export function AuthForm({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <label htmlFor="password" className="text-xs font-medium text-muted-foreground">
+                  <Label htmlFor="password" className="text-xs font-medium text-muted-foreground">
                     Şifre
-                  </label>
+                  </Label>
                   {isLogin && (
                     <Link
                       href="/forgot-password"
@@ -233,7 +235,7 @@ export function AuthForm({
                     </Link>
                   )}
                 </div>
-                <input
+                <Input
                   id="password"
                   type="password"
                   name="password"
@@ -263,13 +265,13 @@ export function AuthForm({
 
                 {!isLogin && (
                   <div className="space-y-2">
-                    <label
+                    <Label
                       htmlFor="confirmPassword"
                       className="text-sm font-semibold text-foreground"
                     >
                       Şifre Tekrar
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       id="confirmPassword"
                       type="password"
                       name="confirmPassword"

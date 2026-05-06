@@ -3,6 +3,7 @@
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/constants/domain";
 import { cn } from "@/lib/utils";
 
@@ -108,7 +109,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
               </div>
             </div>
 
-            <button
+            <Button
               onClick={() => setIsExpanded(!isExpanded)}
               aria-expanded={isExpanded}
               aria-controls="damage-details"
@@ -123,7 +124,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
                   className="group-hover:translate-y-0.5 transition-transform"
                 />
               )}
-            </button>
+            </Button>
           </div>
 
           {/* Graphical Map */}

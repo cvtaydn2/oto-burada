@@ -5,6 +5,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { submitReviewAction } from "@/actions/reviews";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -73,10 +75,10 @@ export function ReviewForm({ sellerId, listingId, children }: ReviewFormProps) {
 
           <div className="space-y-6 px-6 py-4">
             <div>
-              <label className="mb-2 block text-sm font-medium">Puanınız</label>
+              <Label className="mb-2 block text-sm font-medium">Puanınız</Label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
+                  <Button
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
@@ -93,7 +95,7 @@ export function ReviewForm({ sellerId, listingId, children }: ReviewFormProps) {
                           : "fill-slate-100 text-slate-200"
                       )}
                     />
-                  </button>
+                  </Button>
                 ))}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -112,7 +114,7 @@ export function ReviewForm({ sellerId, listingId, children }: ReviewFormProps) {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium">Yorum (opsiyonel)</label>
+              <Label className="mb-2 block text-sm font-medium">Yorum (opsiyonel)</Label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value.slice(0, 500))}
@@ -126,13 +128,13 @@ export function ReviewForm({ sellerId, listingId, children }: ReviewFormProps) {
           </div>
 
           <SheetFooter className="p-6 pt-2">
-            <button
+            <Button
               type="submit"
               disabled={isLoading || rating === 0}
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-70"
             >
               {isLoading ? "Gönderiliyor..." : "Yorum Gönder"}
-            </button>
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

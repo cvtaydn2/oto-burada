@@ -3,6 +3,7 @@
 import { Check, ChevronDown, Info, RotateCcw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   carPartDamageStatuses,
   carPartDamageStatusLabels,
@@ -84,14 +85,14 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
         </div>
 
         {affectedPartsCount > 0 && !isDisabled && (
-          <button
+          <Button
             type="button"
             onClick={clearAll}
             className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground/70 transition-colors hover:text-red-500"
           >
             <RotateCcw size={12} />
             TÜMÜNÜ SIFIRLA
-          </button>
+          </Button>
         )}
       </div>
 
@@ -300,19 +301,19 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                   <span className="text-sm font-bold uppercase tracking-wide text-foreground">
                     {carPartLabels[activePart as keyof typeof carPartLabels]}
                   </span>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setActivePart(null)}
                     className="text-xs font-bold text-muted-foreground/70 hover:text-muted-foreground"
                   >
                     KAPAT
-                  </button>
+                  </Button>
                 </div>
                 <div className="grid gap-2">
                   {carPartDamageStatuses
                     .filter((s) => s !== "bilinmiyor")
                     .map((status) => (
-                      <button
+                      <Button
                         key={status}
                         type="button"
                         onClick={() => handleStatusChange(activePart, status)}
@@ -337,7 +338,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                           {carPartDamageStatusLabels[status]}
                         </div>
                         {getStatus(activePart) === status && <Check size={16} />}
-                      </button>
+                      </Button>
                     ))}
                 </div>
               </div>
@@ -384,13 +385,13 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                       </span>
                     </div>
                     {!isDisabled && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleStatusChange(part, "orijinal")}
                         className="text-muted-foreground/70 hover:text-red-500"
                       >
                         <RotateCcw size={14} />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
@@ -405,7 +406,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                   .filter((p) => !value[p])
                   .slice(0, 4)
                   .map((part) => (
-                    <button
+                    <Button
                       key={part}
                       type="button"
                       onClick={() => setActivePart(part)}
@@ -416,7 +417,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                         {carPartLabels[part]}
                       </span>
                       <ChevronDown size={14} className="text-muted-foreground/70" />
-                    </button>
+                    </Button>
                   ))}
             </div>
 

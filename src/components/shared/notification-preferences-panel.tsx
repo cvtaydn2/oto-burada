@@ -3,6 +3,8 @@
 import { Bell, CheckCircle2, LoaderCircle, Mail } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import type { NotificationPreferences } from "@/services/notifications/notification-preferences";
 
 interface NotificationPreferencesPanelProps {
@@ -19,12 +21,12 @@ interface ToggleRowProps {
 
 function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRowProps) {
   return (
-    <label className="flex items-center justify-between gap-4 py-3 cursor-pointer group">
+    <Label className="flex items-center justify-between gap-4 py-3 cursor-pointer group">
       <div className="min-w-0">
         <p className="text-sm font-semibold text-foreground group-hover:text-foreground">{label}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
       </div>
-      <button
+      <Button
         type="button"
         role="switch"
         aria-checked={checked}
@@ -40,8 +42,8 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
             checked ? "translate-x-6" : "translate-x-1"
           }`}
         />
-      </button>
-    </label>
+      </Button>
+    </Label>
   );
 }
 
@@ -175,7 +177,7 @@ export function NotificationPreferencesPanel({
             Kaydedildi
           </div>
         )}
-        <button
+        <Button
           onClick={() => void handleSave()}
           disabled={saving}
           aria-busy={saving}
@@ -183,7 +185,7 @@ export function NotificationPreferencesPanel({
         >
           {saving && <LoaderCircle size={15} className="animate-spin" />}
           Tercihleri Kaydet
-        </button>
+        </Button>
       </div>
     </section>
   );

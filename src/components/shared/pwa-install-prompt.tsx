@@ -3,6 +3,7 @@
 import { Download, Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { FEATURES } from "@/lib/features";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -92,13 +93,13 @@ export function PWAInstallPrompt() {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-500">
       <div className="bg-card/95 backdrop-blur-xl border border-border shadow-sm rounded-2xl p-4 overflow-hidden">
-        <button
+        <Button
           onClick={handleDismiss}
           aria-label="Kapat"
           className="absolute top-2 right-2 p-1 text-muted-foreground hover:bg-muted rounded-full transition-colors"
         >
           <X size={14} />
-        </button>
+        </Button>
 
         <div className="flex items-center gap-3">
           <div className="size-11 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
@@ -124,13 +125,13 @@ export function PWAInstallPrompt() {
               <span>butonuna basıp &quot;Ana Ekrana Ekle&quot;yi seçin.</span>
             </div>
           ) : (
-            <button
+            <Button
               onClick={handleInstallClick}
               disabled={!deferredPrompt}
               className="w-full h-9 bg-primary text-primary-foreground rounded-lg font-bold text-xs hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               Uygulamayı Kur
-            </button>
+            </Button>
           )}
         </div>
       </div>

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Input } from "@/components/ui/input";
+
 interface SupportResponse {
   message?: string;
   error?: {
@@ -133,7 +135,7 @@ export function TicketForm() {
 
       <div className="space-y-2">
         <Label htmlFor="subject">Başlık</Label>
-        <input
+        <Input
           id="subject"
           type="text"
           value={subject}
