@@ -1,4 +1,4 @@
-﻿import { CURRENT_YEAR } from "../datetime/date-utils";
+import { CURRENT_YEAR } from "../datetime/date-utils";
 
 export const userRoles = ["user", "admin"] as const;
 
@@ -37,18 +37,18 @@ export const notificationTypes = [
 
 export const reportReasonLabels = {
   fake_listing: "Sahte ilan",
-  wrong_info: "YanlÄ±ÅŸ bilgi",
+  wrong_info: "Yanlış bilgi",
   spam: "Spam veya tekrar",
-  price_manipulation: "Fiyat manipÃ¼lasyonu",
-  invalid_verification: "GeÃ§ersiz kimlik/ilan",
-  other: "DiÄŸer",
+  price_manipulation: "Fiyat manipülasyonu",
+  invalid_verification: "Geçersiz kimlik/ilan",
+  other: "Diğer",
 } as const;
 
 export const reportStatusLabels = {
   open: "Yeni",
-  reviewing: "Ä°nceleniyor",
-  resolved: "Ã‡Ã¶zÃ¼ldÃ¼",
-  dismissed: "KapatÄ±ldÄ±",
+  reviewing: "İnceleniyor",
+  resolved: "Çözüldü",
+  dismissed: "Kapatıldı",
 } as const;
 
 export const moderationTargetTypes = ["listing", "report", "user"] as const;
@@ -129,9 +129,9 @@ export const carPartDamageStatuses = [
 
 export const carPartDamageStatusLabels: Record<(typeof carPartDamageStatuses)[number], string> = {
   orijinal: "Orijinal",
-  boyali: "BoyalÄ±",
-  lokal_boyali: "Lokal BoyalÄ±",
-  degisen: "DeÄŸiÅŸen",
+  boyali: "Boyalı",
+  lokal_boyali: "Lokal Boyalı",
+  degisen: "Değişen",
   bilinmiyor: "Bilinmiyor",
 };
 
@@ -155,15 +155,15 @@ export const carPartLabels: Record<(typeof carParts)[number], string> = {
   kaput: "Kaput",
   tavan: "Tavan",
   bagaj: "Bagaj",
-  sol_on_camurluk: "Sol Ã–n Ã‡amurluk",
-  sol_on_kapi: "Sol Ã–n KapÄ±",
-  sol_arka_kapi: "Sol Arka KapÄ±",
-  sol_arka_camurluk: "Sol Arka Ã‡amurluk",
-  sag_on_camurluk: "SaÄŸ Ã–n Ã‡amurluk",
-  sag_on_kapi: "SaÄŸ Ã–n KapÄ±",
-  sag_arka_kapi: "SaÄŸ Arka KapÄ±",
-  sag_arka_camurluk: "SaÄŸ Arka Ã‡amurluk",
-  on_tampon: "Ã–n Tampon",
+  sol_on_camurluk: "Sol Ön Çamurluk",
+  sol_on_kapi: "Sol Ön Kapı",
+  sol_arka_kapi: "Sol Arka Kapı",
+  sol_arka_camurluk: "Sol Arka Çamurluk",
+  sag_on_camurluk: "Sağ Ön Çamurluk",
+  sag_on_kapi: "Sağ Ön Kapı",
+  sag_arka_kapi: "Sağ Arka Kapı",
+  sag_arka_camurluk: "Sağ Arka Çamurluk",
+  on_tampon: "Ön Tampon",
   arka_tampon: "Arka Tampon",
 };
 
@@ -178,22 +178,22 @@ export const fuelTypeLabels: Record<(typeof fuelTypes)[number], string> = {
 export const transmissionTypeLabels: Record<(typeof transmissionTypes)[number], string> = {
   manuel: "Manuel",
   otomatik: "Otomatik",
-  yari_otomatik: "YarÄ± Otomatik",
+  yari_otomatik: "Yarı Otomatik",
 };
 
 export const listingStatusLabels: Record<(typeof listingStatuses)[number], string> = {
   draft: "Taslak",
   pending: "Onay Bekliyor",
-  pending_ai_review: "AI Ä°ncelemesinde",
-  approved: "YayÄ±nda",
+  pending_ai_review: "AI İncelemesinde",
+  approved: "Yayında",
   rejected: "Reddedildi",
-  flagged: "BayraklandÄ±",
-  archived: "ArÅŸivlendi",
+  flagged: "Bayraklandı",
+  archived: "Arşivlendi",
 };
 
 export const userRoleLabels: Record<(typeof userRoles)[number], string> = {
-  user: "KullanÄ±cÄ±",
-  admin: "YÃ¶netici",
+  user: "Kullanıcı",
+  admin: "Yönetici",
 };
 
 export const userTypeLabels = {

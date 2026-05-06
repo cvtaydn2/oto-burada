@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Drawer } from "vaul";
 
-import { Button } from "@/components/ui/button";
 import { useNavigation } from "@/hooks/use-navigation";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
@@ -20,8 +19,8 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
   const pathname = usePathname();
   const { bottomNavItems, isReady } = useNavigation();
 
-  // FAB sadece içerik keşif sayfalarında gösterilir.
-  const FAB_ALLOWED_PATHS = ["/", "/listings", "/favorites", "/compare"];
+  // FAB sadece içerik keşif sayfalarında gösterilir (çakışmaları önlemek için ana sayfa hariç tutulmuştur).
+  const FAB_ALLOWED_PATHS = ["/listings", "/favorites", "/compare"];
   const isListingDetailPage = pathname.startsWith("/listing/");
   const showFAB =
     FAB_ALLOWED_PATHS.some((p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/"))) &&
@@ -75,8 +74,8 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
           <li className="flex-1">
             <Drawer.Root shouldScaleBackground>
               <Drawer.Trigger asChild>
-                <Button
-                  className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground transition-all active:scale-95"
+                <button
+                  className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground hover:text-foreground transition-all active:scale-95"
                   aria-label="Menüyü aç"
                 >
                   {!isReady ? (
@@ -85,7 +84,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
                     <Menu className="size-5.5 stroke-2" />
                   )}
                   <span className="text-[10px] font-bold tracking-tight">Menü</span>
-                </Button>
+                </button>
               </Drawer.Trigger>
               <Drawer.Portal>
                 <Drawer.Overlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" />

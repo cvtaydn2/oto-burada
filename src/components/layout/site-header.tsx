@@ -17,7 +17,7 @@ export async function SiteHeader({ searchSuggestions }: SiteHeaderProps) {
       className="sticky left-0 right-0 top-0 z-50 h-[68px] border-b border-border/80 bg-background/98 backdrop-blur-sm"
       role="banner"
     >
-      <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-3 sm:px-5 lg:px-6">
+      <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-4 sm:px-5 lg:px-6">
         <div className="flex items-center gap-8">
           <Link
             href="/"

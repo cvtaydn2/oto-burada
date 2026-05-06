@@ -17,6 +17,7 @@ interface SearchSuggestion {
 }
 
 interface SearchWithSuggestionsProps {
+  id?: string;
   placeholder?: string;
   className?: string;
   suggestions?: SearchSuggestionItem[];
@@ -32,6 +33,7 @@ const POPULAR_SEARCHES: SearchSuggestion[] = [
 ];
 
 export function SearchWithSuggestions({
+  id,
   placeholder = "Marka, model veya şehir ara...",
   className = "",
   suggestions = [],
@@ -47,6 +49,8 @@ export function SearchWithSuggestions({
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const suggestionsId = useId();
+  const defaultInputId = useId();
+  const inputId = id || defaultInputId;
 
   const handleInputChange = (value: string) => {
     setQuery(value);
@@ -176,7 +180,7 @@ export function SearchWithSuggestions({
         </span>
         <Input
           ref={inputRef}
-          id="header-search"
+          id={inputId}
           name="query"
           type="search"
           form={formId}

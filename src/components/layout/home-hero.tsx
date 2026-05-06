@@ -53,7 +53,7 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
             </div>
 
             <div className="animate-in space-y-4 duration-700 delay-150 fill-mode-both fade-in slide-in-from-bottom-4">
-              <h1 className="text-3xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl">
+              <h1 className="text-3xl font-extrabold leading-[1.25] sm:leading-[1.15] tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl">
                 Arabanı{" "}
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Kolayca
@@ -73,8 +73,9 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
 
             <div className="animate-in rounded-2xl border border-border bg-card/95 p-3 shadow-2xl backdrop-blur-xl duration-700 delay-300 fill-mode-both fade-in slide-in-from-bottom-4">
               <div className="space-y-3">
-                <div className="relative rounded-xl border border-transparent bg-muted/30 p-1">
+                <div className="relative rounded-xl border border-border/80 bg-muted/70 p-1">
                   <SearchWithSuggestions
+                    id="hero-search-input"
                     placeholder="Marka, model veya şehir ara..."
                     suggestions={searchSuggestions}
                     className="max-w-none"
@@ -99,7 +100,7 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
                     <select
                       id="hero-city"
                       name="city"
-                      className="h-14 w-full appearance-none rounded-xl border border-transparent bg-muted/50 pl-12 pr-10 text-base font-medium text-foreground outline-none transition-all focus:border-border focus:bg-background"
+                      className="h-14 w-full appearance-none rounded-xl border border-border/80 bg-muted/70 pl-12 pr-10 text-base font-medium text-foreground outline-none transition-all focus:border-primary/20 focus:bg-background"
                     >
                       <option value="">Tüm Şehirler</option>
                       {cities.map((city) => (

@@ -1,12 +1,10 @@
 import * as React from "react";
 
-import { Input } from "@/components/ui/input";
-
 import { cn } from "./utils";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
-    <Input
+    <input
       type={type}
       data-slot="input"
       className={cn(

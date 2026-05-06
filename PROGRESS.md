@@ -1,5 +1,22 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 44. UI Component Polish & Mobile Navigation UX Stabilization
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Resolve mobile Floating Action Button (FAB) collision with the search submit button on the homepage, and fix ESLint unused import warnings.
+
+### 44.1 Applied Fixes
+- **Mobile Navigation FAB Polish ([mobile-nav.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/components/layout/mobile-nav.tsx)):** Removed the home page (`"/"`) from `FAB_ALLOWED_PATHS`. This prevents the Floating Action Button (FAB) with the `+` icon from displaying on the homepage, completely avoiding its visual collision and overlapping with the home hero search submit button ("İlanları Keşfet" with its magnifying glass icon) which previously caused a confusing merged icon.
+- **ESLint Warning Cleanliness:** Removed the unused `Button` import in [mobile-nav.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/components/layout/mobile-nav.tsx) to ensure zero ESLint errors or warnings across the codebase.
+
+### 44.2 Validation
+- **Visual Inspection:** Navigated using the browser subagent to `http://localhost:3000/` and verified that the home page layout is perfectly clean and the confusing icon clashing is resolved.
+- **Linter & Typecheck:** Both `npm run lint` and `npm run typecheck` run successfully with **0 errors and 0 warnings**.
+
+### 44.3 Next Step
+- Ready for full production launch.
+
 ## 43. Jules (CTO) Commit Integration
 
 **Date**: 2026-05-07
@@ -1193,3 +1210,28 @@ Ek teknik metrikler:
 - **Issue**: Webhook logs without tokens caused upsert failures
 - **Fix**: Conditional logic - upsert if token exists, insert otherwise
 - **Impact**: Eliminated log pollution and database errors
+
+---
+
+## 5. RECENT STABILIZATION & CODE QUALITY POLISH (Phase 63.4)
+
+**Date**: 2026-05-07  
+**Status**: ✅ COMPLETED  
+**Scope**: Final polish, resolving ESLint warnings, fixing compile-time circular imports, and verifying build integrity.
+
+### 5.1 COMPILATION & CIRCULAR IMPORT RESOLUTIONS
+- **File**: `src/components/ui/input.tsx`
+- **Issue**: Turbopack compile-time error: "the name `Input` is defined multiple times" caused by circular self-import of `Input` and uppercase `<Input />` usage within its own definition.
+- **Fix**: Removed circular self-import of `Input` and updated uppercase JSX `<Input />` return to lowercase standard `<input />`.
+- **Impact**: Resolved Turbopack compile-time error and infinite recursion on `Input` rendering.
+
+### 5.2 ESLINT COMPLIANCE
+- **Files**: `src/features/marketplace/components/filters/range-filter.tsx`, `src/features/marketplace/components/filters/trust-filter.tsx`
+- **Issue**: ESLint warnings: "Expected an assignment or function call and instead saw an expression" caused by `("use client");` being parsed as an unused expression due to being on line 3 below imports.
+- **Fix**: Moved `"use client";` to the absolute top of the files (line 1) as a valid directive.
+- **Impact**: Achieved **zero warnings/errors** in `npm run lint`.
+
+### 5.3 PRODUCTION BUILD INTEGRITY
+- **Verification**: Ran `npm run typecheck` and `npm run build`.
+- **Status**: Successful, error-free production build with **0 warnings** and **0 typecheck errors**.
+
