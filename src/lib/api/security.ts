@@ -144,7 +144,9 @@ export async function withSecurity(
 
   if (requiresUserSession) {
     const { getAuthContext } = await import("@/lib/auth/session");
-    const { user: authUser, dbProfile } = await getAuthContext();
+    const authContext = await getAuthContext();
+    const authUser = authContext?.user ?? null;
+    const dbProfile = authContext?.dbProfile;
     user = authUser;
 
     if (!user) {

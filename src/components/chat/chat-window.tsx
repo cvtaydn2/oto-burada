@@ -32,7 +32,12 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages, isLoading, error } = useChatMessages(chatId, userId);
+  const {
+    data: messages,
+    isLoading,
+    error,
+    refetch,
+  } = useChatMessages(chatId, userId);
 
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead(chatId);
@@ -123,7 +128,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <Car className="h-12 w-12 text-muted-foreground mb-4" />
         <p className="text-muted-foreground">Mesajlar yüklenemedi.</p>
-        <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+        <Button variant="outline" className="mt-4" onClick={() => void refetch()}>
           Yeniden Dene
         </Button>
       </div>

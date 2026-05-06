@@ -28,12 +28,17 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const route = classifyRoute(pathname);
 
-  // Pre-generate CSRF token for the layout to pick up via headers
+  // Pre-generate CSRF token only when visitor does not already have a CSRF cookie.
+  // This prevents unnecessary token rotation on every request.
   let csrfToken: string | undefined;
   if (!route.isStaticAsset) {
-    const { generateCsrfToken } = await import("@/lib/security/csrf");
-    csrfToken = generateCsrfToken();
-    requestHeaders.set("x-csrf-token", csrfToken);
+    const { CSRF_COOKIE_HASH_NAME_CLIENT, generateCsrfToken } = await import("@/lib/security/csrf");
+    const hasCsrfCookie = request.cookies.has(CSRF_COOKIE_HASH_NAME_CLIENT);
+
+    if (!hasCsrfCookie) {
+      csrfToken = generateCsrfToken();
+      requestHeaders.set("x-csrf-token", csrfToken);
+    }
   }
 
   // 1. PERFORMANCE: Skip heavy processing for static assets

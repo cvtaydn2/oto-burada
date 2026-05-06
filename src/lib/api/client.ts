@@ -39,7 +39,7 @@ export class ApiClient {
       });
 
       // Update CSRF token if a new one is provided in the response headers (Rotation)
-      const newToken = res.headers.get("x-csrf-token");
+      const newToken = typeof res.headers?.get === "function" ? res.headers.get("x-csrf-token") : null;
       if (newToken && typeof document !== "undefined") {
         const meta = document.querySelector('meta[name="csrf-token"]');
         if (meta) {

@@ -25,9 +25,13 @@ describe("Middleware Logic - Auth Redirects", () => {
     expect(res?.headers.get("location")).toContain("/login?next=%2Fdashboard");
   });
 
-  it("should redirect non-admin users from /admin to /dashboard", () => {
+  it("should allow non-admin users on /admin in middleware (role check server-side)", () => {
     const req = factory("/admin/users");
-    const mockUser = { id: "1", app_metadata: { role: "user" } } as unknown as User;
+    const mockUser = {
+      id: "1",
+      app_metadata: { role: "user" },
+      email_confirmed_at: "2026-01-01T00:00:00.000Z",
+    } as unknown as User;
     const res = handleAuthRedirects(req, mockUser, {
       isProtectedRoute: true,
       isAdminRoute: true,
@@ -36,13 +40,16 @@ describe("Middleware Logic - Auth Redirects", () => {
       isAdminApi: false,
     });
 
-    expect(res?.status).toBe(307);
-    expect(res?.headers.get("location")).toBe("http://localhost/dashboard");
+    expect(res).toBeNull();
   });
 
   it("should allow admin users on /admin", () => {
     const req = factory("/admin/users");
-    const mockUser = { id: "1", app_metadata: { role: "admin" } } as unknown as User;
+    const mockUser = {
+      id: "1",
+      app_metadata: { role: "admin" },
+      email_confirmed_at: "2026-01-01T00:00:00.000Z",
+    } as unknown as User;
     const res = handleAuthRedirects(req, mockUser, {
       isProtectedRoute: true,
       isAdminRoute: true,

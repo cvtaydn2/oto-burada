@@ -255,6 +255,7 @@ export async function registerAction(
     email: String(formData.get("email") ?? ""),
     fullName: String(formData.get("fullName") ?? ""),
     password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
   };
 
   // 3. Email-scoped rate limit: prevents spam registrations for the same account

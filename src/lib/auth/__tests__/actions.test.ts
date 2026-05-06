@@ -36,6 +36,10 @@ vi.mock("@/lib/logging/logger", () => ({
   logger: {
     auth: {
       error: mockAuthError,
+      warn: vi.fn(),
+    },
+    security: {
+      warn: vi.fn(),
     },
   },
 }));
@@ -48,6 +52,10 @@ vi.mock("@/lib/rate-limiting/rate-limit", () => ({
 
 vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
   checkRateLimit: mockCheckRateLimit,
+}));
+
+vi.mock("@/lib/rate-limiting/distributed-rate-limit", () => ({
+  checkBruteForceLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 describe("auth actions", () => {

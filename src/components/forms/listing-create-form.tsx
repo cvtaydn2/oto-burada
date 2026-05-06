@@ -1,5 +1,6 @@
 "use client";
 import { AlertCircle, Car, CheckCircle2, ChevronRight, LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
@@ -54,6 +55,7 @@ export function ListingCreateForm({
     submitIntentRef,
   } = useListingCreation({ brands, cities, initialListing, initialValues, isEmailVerified });
 
+  const router = useRouter();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const isBotProtectionEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
@@ -155,16 +157,16 @@ export function ListingCreateForm({
                   {(submitState.code === "CONFLICT" ||
                     submitState.code === "RATE_LIMITED" ||
                     submitState.code === "TURNSTILE_REQUIRED") && (
-                    <div className="flex justify-end px-2">
-                      <button
-                        type="button"
-                        onClick={() => window.location.reload()}
-                        className="text-xs font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors underline decoration-2 underline-offset-4"
-                      >
-                        Sayfayı Yenile
-                      </button>
-                    </div>
-                  )}
+                      <div className="flex justify-end px-2">
+                        <button
+                          type="button"
+                          onClick={() => router.refresh()}
+                          className="text-xs font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors underline decoration-2 underline-offset-4"
+                        >
+                          Sayfayı Yenile
+                        </button>
+                      </div>
+                    )}
                 </div>
               )}
 

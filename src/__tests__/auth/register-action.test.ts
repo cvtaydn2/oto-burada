@@ -22,7 +22,11 @@ vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
 }));
 
 vi.mock("@/lib/rate-limiting/rate-limit", () => ({
-  rateLimitProfiles: { auth: {} },
+  rateLimitProfiles: { auth: {}, forgotPassword: {} },
+}));
+
+vi.mock("@/lib/rate-limiting/distributed-rate-limit", () => ({
+  checkBruteForceLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock("@/lib/security/turnstile", () => ({
@@ -78,7 +82,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Ahmet Yılmaz",
     });
 
@@ -101,7 +106,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Fatma Kaya",
     });
 
@@ -123,7 +129,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Ali Demir",
     });
 
@@ -138,7 +145,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "existing@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Mevcut Kullanıcı",
     });
 
@@ -154,7 +162,8 @@ describe("registerAction — success path", () => {
   it("returns validation error when fullName is too short", async () => {
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Al",
     });
 
@@ -175,7 +184,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Test Kullanıcı",
     });
 

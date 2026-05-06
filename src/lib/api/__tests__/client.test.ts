@@ -92,15 +92,12 @@ describe("ApiClient", () => {
   });
 
   describe("CSRF Token Injection", () => {
-    it("should inject CSRF token from cookie", async () => {
-      // Mock document.cookie
-      Object.defineProperty(document, "cookie", {
-        writable: true,
-        value: "csrf_token=test-token-123",
-      });
+    it("should inject CSRF token from meta tag", async () => {
+      document.head.innerHTML = '<meta name="csrf-token" content="test-token-123" />';
 
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
+        headers: { get: () => null },
         json: () => Promise.resolve({ data: {} }),
       } as unknown as Response);
 
@@ -117,13 +114,11 @@ describe("ApiClient", () => {
     });
 
     it("should work without CSRF token", async () => {
-      Object.defineProperty(document, "cookie", {
-        writable: true,
-        value: "",
-      });
+      document.head.innerHTML = "";
 
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
+        headers: { get: () => null },
         json: () => Promise.resolve({ data: {} }),
       } as unknown as Response);
 

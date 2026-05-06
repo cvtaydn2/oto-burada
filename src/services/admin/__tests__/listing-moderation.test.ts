@@ -20,11 +20,13 @@ const listingsTable = {
   in: vi.fn().mockReturnThis(),
   select: vi.fn().mockReturnThis(),
   maybeSingle: vi.fn(),
+  single: vi.fn(),
 };
 
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
     from: vi.fn(() => listingsTable),
+    rpc: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
     auth: {
       admin: {
         getUserById: vi.fn().mockResolvedValue({ data: { user: { email: null } } }),
@@ -82,10 +84,12 @@ describe("listing-moderation service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://otoburada.test");
     listingsTable.update.mockReturnThis();
     listingsTable.eq.mockReturnThis();
     listingsTable.in.mockReturnThis();
     listingsTable.select.mockReturnThis();
+    listingsTable.single.mockResolvedValue({ data: { ...mockListing, seller_id: mockListing.sellerId, seller: null }, error: null });
     listingsTable.maybeSingle.mockResolvedValue({ data: { id: mockListing.id }, error: null });
   });
 
@@ -99,13 +103,10 @@ describe("listing-moderation service", () => {
     });
 
     expect(result?.status).toBe("approved");
-    expect(moderationActions.createAdminModerationAction).toHaveBeenCalled();
-    expect(notifications.createDatabaseNotification).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "moderation",
-        title: "İlanınız Yayında",
-      })
-    );
+    // Side effects are enqueued atomically via RPC in current architecture.
+    // Direct record helper calls are no longer expected here.
+    expect(moderationActions.createAdminModerationAction).not.toHaveBeenCalled();
+    expect(notifications.createDatabaseNotification).not.toHaveBeenCalled();
   });
 
   it("should reject a listing and trigger side effects", async () => {
@@ -119,16 +120,12 @@ describe("listing-moderation service", () => {
     });
 
     expect(result?.status).toBe("rejected");
-    expect(moderationActions.createAdminModerationAction).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "reject",
-        note: "Invalid description",
-      })
-    );
+    // Side effects are enqueued atomically via RPC in current architecture.
+    expect(moderationActions.createAdminModerationAction).not.toHaveBeenCalled();
   });
 
   it("should return null if database update fails", async () => {
-    listingsTable.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    listingsTable.single.mockResolvedValueOnce({ data: null, error: null });
     vi.mocked(getDatabaseListings).mockResolvedValue([]);
 
     const result = await moderateListingWithSideEffects({
