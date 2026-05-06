@@ -1,5 +1,6 @@
 ﻿"use server";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const QUESTIONS_QUERY_TIMEOUT_MS = 2500;
@@ -70,7 +71,11 @@ export async function getListingQuestions(listingId: string) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
       return [];
     }
-    console.error("Error fetching listing questions:", result.error);
+    logger.listings.warn("Error fetching listing questions", {
+      code: result.error.code,
+      message: result.error.message,
+      listingId,
+    });
     return [];
   }
 
@@ -118,7 +123,11 @@ export async function getOwnerListingQuestions(listingId: string) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
       return [];
     }
-    console.error("Error fetching owner listing questions:", result.error);
+    logger.listings.warn("Error fetching owner listing questions", {
+      code: result.error.code,
+      message: result.error.message,
+      listingId,
+    });
     return [];
   }
 
@@ -155,7 +164,10 @@ export async function askQuestion(listingId: string, question: string) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
       throw new Error("listing_questions table is not available in this environment");
     }
-    console.error("Error asking question:", result.error);
+    logger.listings.error("Error asking question", result.error, {
+      listingId,
+      userId: user.id,
+    });
     throw result.error;
   }
 
@@ -187,7 +199,9 @@ export async function answerQuestion(questionId: string, answer: string) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
       throw new Error("listing_questions table is not available in this environment");
     }
-    console.error("Error answering question:", result.error);
+    logger.listings.error("Error answering question", result.error, {
+      questionId,
+    });
     throw result.error;
   }
 

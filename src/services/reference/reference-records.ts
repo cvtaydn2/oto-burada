@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import type { BrandCatalogItem, CityOption, SearchSuggestionItem } from "@/types";
@@ -78,12 +79,12 @@ async function fetchLiveMarketplaceReferenceData(): Promise<MarketplaceReference
   ]);
 
   if (brandsError || modelsError || trimsError || citiesError || districtsError) {
-    console.error("[fetchLiveMarketplaceReferenceData] Supabase fetch failed:", {
-      brandsError,
-      modelsError,
-      trimsError,
-      citiesError,
-      districtsError,
+    logger.api.warn("fetchLiveMarketplaceReferenceData Supabase fetch failed", {
+      brandsError: brandsError?.message,
+      modelsError: modelsError?.message,
+      trimsError: trimsError?.message,
+      citiesError: citiesError?.message,
+      districtsError: districtsError?.message,
     });
   }
 

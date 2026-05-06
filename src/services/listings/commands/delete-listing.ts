@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logging/logger";
+
 import { deleteListing as deleteFromDb } from "../listing-submission-persistence";
 import { getStoredListingById } from "../queries/get-listings";
 
@@ -39,7 +41,11 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
       const { queueFileCleanup } = await import("@/lib/storage/registry");
       queueFileCleanup(bucketName, storagePaths).catch((err) => {
-        console.error("[deleteDatabaseListing] Storage cleanup failed:", err);
+        logger.storage.error("deleteDatabaseListing storage cleanup failed", err, {
+          listingId,
+          bucketName,
+          storagePaths,
+        });
       });
     }
   }
