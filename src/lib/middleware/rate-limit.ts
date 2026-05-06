@@ -25,13 +25,8 @@ export async function rateLimitMiddleware(request: NextRequest) {
     return null;
   }
 
-  // Skip for Next.js RSC (React Server Component) prefetch requests.
-  // These are internal navigation requests triggered by <Link> hover/prefetch,
-  // not real user requests. Counting them inflates the rate limit unfairly.
-  const isRscRequest = request.headers.has("rsc") || request.nextUrl.searchParams.has("_rsc");
-  if (isRscRequest) {
-    return null;
-  }
+  // RSC prefetch requests are still network traffic and can be abused.
+  // Do not skip them from global edge rate limiting.
 
   const rawIp =
     request.headers.get("x-real-ip") ||

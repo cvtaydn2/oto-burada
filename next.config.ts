@@ -22,7 +22,9 @@ const nextConfig: NextConfig = {
     // TODO: Set to false when upgrading to Vercel Pro for automatic image optimization
     // FREE TIER: Prevents Vercel 1000 image optimization quota exhaustion.
     // In production, we keep it true to save quota. In preview/local, we can leave it false if needed.
-    unoptimized: process.env.VERCEL_ENV !== "production" && process.env.NEXT_PUBLIC_FORCE_OPTIMIZED_IMAGES !== "true",
+    // Keep optimization enabled by default across prod/preview.
+    // Allow explicit opt-out only when FORCE flag is not set.
+    unoptimized: process.env.NEXT_PUBLIC_FORCE_OPTIMIZED_IMAGES === "false",
     remotePatterns: [
       // Only add Supabase pattern when the env var is configured
       ...(supabaseHostname

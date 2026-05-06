@@ -31,22 +31,13 @@ export function getSecurityHeaders(nonce: string) {
   ];
   const styleSrc = ["'self'", "https://fonts.googleapis.com", "https://unpkg.com"];
 
-  if (isProduction) {
-    // Only use nonces in production for maximum security on scripts
-    scriptSrc.push(`'nonce-${nonce}'`);
-    // Harden style CSP in production: nonce-based inline style allowance.
-    styleSrc.push(`'nonce-${nonce}'`);
-  }
+  // Nonce-first CSP in both production and development
+  scriptSrc.push(`'nonce-${nonce}'`);
+  styleSrc.push(`'nonce-${nonce}'`);
 
-  // ── PERFORMANCE FIX: Issue PERF-04 - Strict CSP in Development ─────────────
-  // Development should also use strict CSP to catch XSS issues early.
-  // Only add unsafe-eval for HMR (Hot Module Replacement) in development.
-  // unsafe-inline is never needed with nonce-based CSP.
   if (!isProduction) {
-    // HMR and dev-tools require unsafe-eval and unsafe-inline
+    // Keep only what Next.js HMR needs in development
     scriptSrc.push("'unsafe-eval'");
-    scriptSrc.push("'unsafe-inline'");
-    styleSrc.push("'unsafe-inline'");
   }
 
   const csp = [

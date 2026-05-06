@@ -210,7 +210,7 @@ export async function performAsyncModeration(listingId: string, listingSnapshot?
     if (!listing) return;
 
     // 2. Fetch similar listings for market analysis (filtered for accuracy)
-    const [existingListings, sellerProfile, approvedCountResult] = await Promise.all([
+    const [existingListings, sellerProfile] = await Promise.all([
       getCachedFraudComparisonListings({
         brand: listing.brand,
         listingId,
@@ -219,14 +219,10 @@ export async function performAsyncModeration(listingId: string, listingSnapshot?
       }),
       admin
         .from("profiles")
-        .select("trust_score, is_verified")
+        .select("trust_score, is_verified, listings!left(id)")
         .eq("id", listing.sellerId)
+        .eq("listings.status", "approved")
         .maybeSingle(),
-      admin
-        .from("listings")
-        .select("id", { count: "exact", head: true })
-        .eq("seller_id", listing.sellerId)
-        .eq("status", "approved"),
     ]);
 
     // 3. Compute score — explicit map to match calculateFraudScore input shape
@@ -265,10 +261,14 @@ export async function performAsyncModeration(listingId: string, listingSnapshot?
         status: item.status ?? undefined,
       }));
 
+    const approvedListingsCount = Array.isArray(sellerProfile.data?.listings)
+      ? sellerProfile.data.listings.length
+      : 0;
+
     const sellerStats = {
       trustScore: sellerProfile.data?.trust_score ?? 0,
       isVerified: sellerProfile.data?.is_verified ?? false,
-      approvedListingsCount: approvedCountResult.count ?? 0,
+      approvedListingsCount,
     };
 
     const assessment = calculateFraudScore(fraudInput, comparisonListings, sellerStats);

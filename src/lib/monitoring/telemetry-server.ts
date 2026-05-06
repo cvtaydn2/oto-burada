@@ -3,10 +3,39 @@ import * as Sentry from "@sentry/nextjs";
 import { logger } from "@/lib/logging/logger";
 
 const isSentryEnabled = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
+const isTest = process.env.NODE_ENV === "test";
+
+type TelemetryTestEvent = {
+  type: "capture" | "identify" | "exception" | "event" | "server_event";
+  name: string;
+  distinctId?: string;
+  properties?: Record<string, unknown>;
+};
+
+const telemetryTestSink: TelemetryTestEvent[] = [];
+
+function pushTelemetryTestEvent(event: TelemetryTestEvent) {
+  if (isTest) telemetryTestSink.push(event);
+}
+
+export function getTelemetryTestEvents() {
+  return [...telemetryTestSink];
+}
+
+export function clearTelemetryTestEvents() {
+  telemetryTestSink.length = 0;
+}
 
 export function getTelemetryServer() {
   return {
     capture: (event: string, distinctId?: string, props?: Record<string, unknown>) => {
+      pushTelemetryTestEvent({
+        type: "capture",
+        name: event,
+        distinctId,
+        properties: props,
+      });
+
       if (process.env.NODE_ENV === "development") {
         logger.system.info(`[Server Event] ${event} (${distinctId || "anon"})`, props);
       }
@@ -15,6 +44,8 @@ export function getTelemetryServer() {
       if (isSentryEnabled) {
         Sentry.setUser({ id: distinctId, ...props });
       }
+
+      pushTelemetryTestEvent({ type: "identify", name: "identify", distinctId, properties: props });
 
       if (process.env.NODE_ENV === "development") {
         logger.system.info(`[Server Identify] ${distinctId}`, props);
@@ -34,6 +65,13 @@ export function getTelemetryServer() {
           tags: { source: "server-telemetry" },
         });
       }
+
+      pushTelemetryTestEvent({
+        type: "exception",
+        name: err.message,
+        distinctId,
+        properties: options?.properties,
+      });
 
       logger.system.error(
         `[Server Exception] ${err.message} (${distinctId || "anon"})`,
@@ -108,9 +146,12 @@ export function trackServerEvent(
   distinctId?: string,
   ...args: unknown[]
 ) {
+  const props = typeof propertiesOrId === "object" ? propertiesOrId : {};
+  const id = typeof propertiesOrId === "string" ? propertiesOrId : distinctId || "unknown";
+
+  pushTelemetryTestEvent({ type: "event", name: eventName, distinctId: id, properties: props });
+
   if (process.env.NODE_ENV === "development") {
-    const props = typeof propertiesOrId === "object" ? propertiesOrId : {};
-    const id = typeof propertiesOrId === "string" ? propertiesOrId : distinctId || "unknown";
     logger.system.info(`[Event] ${eventName} (User: ${id})`, { ...props, extraArgs: args });
   }
 }
@@ -121,6 +162,13 @@ export function captureServerEvent(
   distinctId?: string,
   ...args: unknown[]
 ) {
+  pushTelemetryTestEvent({
+    type: "server_event",
+    name: eventName,
+    distinctId,
+    properties: { ...properties, extraArgs: args },
+  });
+
   if (process.env.NODE_ENV === "development") {
     logger.system.info(`[Server Event] ${eventName} (${distinctId || "anon"})`, {
       ...properties,

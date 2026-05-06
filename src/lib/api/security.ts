@@ -243,6 +243,7 @@ export async function withUserAndCsrf(
   });
 }
 
+/** @deprecated Use withUserAndCsrf for canonical mutation wrapper semantics. */
 /** withUserAndCsrfToken: Authenticated + CSRF check (Mutations - Token required) */
 export async function withUserAndCsrfToken(
   request: Request,

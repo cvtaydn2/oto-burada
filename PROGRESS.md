@@ -1,5 +1,76 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 42. Faz-26 Medium Priority Quality/Security/Performance Pass
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Targeted P2/P3 fixes + backlog notes)
+**Scope**: Validator DRY, listing API cache stratejisi, session request-safety, log sanitization, rate-limit yüzeyi, config ve wrapper sadeleştirme.
+
+### 42.1 Uygulanan Düzeltmeler
+- Listing validator DRY refactor:
+  - [`getListingCreateFormSchema()`](src/lib/validators/listing/create.ts:19) artık [`listingCreateSchema`](src/lib/validators/listing/create.ts:10) üzerinden `extend` kullanıyor.
+- Turnstile token zorunluluğu:
+  - [`turnstileToken`](src/lib/validators/listing/create.ts:14) `optional` yerine zorunlu + `min(1)`.
+- Listings GET cache stratejisi sadeleştirme:
+  - [`src/app/api/listings/route.ts`](src/app/api/listings/route.ts) içinde route-level `revalidate` kaldırıldı; CDN `Cache-Control` tek kaynak bırakıldı.
+- Session request-safety güçlendirme:
+  - [`getCurrentUser()`](src/lib/auth/session.ts:38) önce AsyncLocalStorage context’i kullanır, fallback olarak resolve eder.
+- Log sanitization sertleştirme:
+  - [`sanitizeLogString()`](src/lib/logging/logger.ts:60) kontrol karakterleri + backslash/quote sanitize edecek şekilde genişletildi.
+- Next image optimization davranışı netleştirildi:
+  - [`images.unoptimized`](next.config.ts:25) yalnız explicit flag ile devre dışı kalacak şekilde güncellendi.
+- Edge rate-limit bypass azaltımı:
+  - [`rateLimitMiddleware()`](src/lib/middleware/rate-limit.ts:15) içinde RSC prefetch skip kaldırıldı.
+- Wrapper sadeleştirme/deprecation notu:
+  - [`withUserAndCsrfToken()`](src/lib/api/security.ts:247) deprecated notu eklendi (canonical wrapper: `withUserAndCsrf`).
+
+### 42.2 Backlog / Bilinçli Erteleme
+- `listings.brand/model` normalizasyonu (FK + denormalized cache alanları) yüksek etkili şema dönüşümü olduğu için migration planına alınmalı, tek fazda uygulanmadı.
+- Daha küçük düşük öncelik notları (`features runtime flags`, `instrumentation env docs`, `csrf middleware docs`) ayrı bakım fazına bırakıldı.
+
+### 42.3 Doğrulama
+- Çalıştırıldı: `npm run lint -- src/lib/validators/listing/create.ts src/app/api/listings/route.ts src/lib/logging/logger.ts src/lib/auth/session.ts next.config.ts src/lib/middleware/rate-limit.ts src/lib/api/security.ts`
+- Sonuç: ✅ başarılı
+- Çalıştırıldı: `npm run typecheck`
+- Sonuç: ✅ başarılı
+
+## 41. Faz-25 High Priority Performance/Security Hardening
+
+## 41. Faz-25 High Priority Performance/Security Hardening
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Listing moderation performansı, Redis/Turnstile dayanıklılığı, development CSP sertleştirme, telemetry test gözlemlenebilirliği ve kritik listings index seti.
+
+### 41.1 Uygulanan Düzeltmeler
+- Moderation sorgu sayısı düşürüldü ve satıcı istatistiği tek profile sorgusunda birleştirildi:
+  - [`performAsyncModeration()`](src/services/listings/listing-submission-moderation.ts:202)
+  - `profiles + approved listings` verisi tek sorguda çekilerek ayrı `approved count` query kaldırıldı.
+- Redis yokluğunda production runtime crash kaldırıldı (degrade mode):
+  - [`getRedisConfig()`](src/lib/redis/client.ts:5)
+  - `throw` kaldırıldı, kritik log ile uygulama in-memory fallback stratejileriyle çalışmaya devam eder.
+- Turnstile replay protection için Redis arızasında in-memory fallback eklendi:
+  - [`verifyTurnstileToken()`](src/lib/security/turnstile.ts:51)
+  - [`checkAndSetInMemoryToken()`](src/lib/security/turnstile.ts:26)
+  - Redis unavailable/exception durumlarında kısa TTL (60s) ile token dedup devam eder.
+- Development CSP nonce-first hale getirildi:
+  - [`getSecurityHeaders()`](src/lib/middleware/headers.ts:22)
+  - Dev ortamında `unsafe-inline` kaldırıldı; sadece HMR için `unsafe-eval` bırakıldı.
+- Test doğrulanabilir server telemetry sink eklendi:
+  - [`getTelemetryTestEvents()`](src/lib/monitoring/telemetry-server.ts:21)
+  - [`clearTelemetryTestEvents()`](src/lib/monitoring/telemetry-server.ts:25)
+  - [`trackServerEvent()`](src/lib/monitoring/telemetry-server.ts:124) ve [`captureServerEvent()`](src/lib/monitoring/telemetry-server.ts:140) testte in-memory event kaydı yapar.
+- Listings için kritik composite/partial index migration eklendi:
+  - [`0140_listings_critical_composite_indexes.sql`](database/migrations/0140_listings_critical_composite_indexes.sql)
+
+### 41.2 Doğrulama
+- Çalıştırıldı: [`npm run lint -- src/services/listings/listing-submission-moderation.ts src/lib/security/turnstile.ts src/lib/redis/client.ts src/lib/middleware/headers.ts src/lib/monitoring/telemetry-server.ts`](package.json)
+- Sonuç: ✅ başarılı
+- Çalıştırıldı: [`npm run typecheck`](package.json)
+- Sonuç: ✅ başarılı
+
+## 40. Faz-24 Critical Security Hardening (Auth + Cron + Env Template)
+
 ## 40. Faz-24 Critical Security Hardening (Auth + Cron + Env Template)
 
 **Date**: 2026-05-06

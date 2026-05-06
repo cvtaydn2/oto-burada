@@ -39,7 +39,8 @@ import { createDatabaseNotification } from "@/services/notifications/notificatio
 // Enable Next.js ISR (Incremental Static Regeneration) for public marketplace listings.
 // This reduces database load and improves response times for high-traffic pages.
 // - revalidate: 30 seconds - Fresh data while reducing DB queries
-export const revalidate = 30; // Cache public listings for 30 seconds
+// CDN cache headers are the single source of truth for this route.
+// Avoid ISR revalidation invocation overhead for high-traffic marketplace API.
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

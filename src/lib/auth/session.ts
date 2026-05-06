@@ -8,7 +8,7 @@ import type { UserRole } from "@/types";
 
 import { getSessionContext } from "./session-context";
 
-export const getCurrentUser = cache(async () => {
+async function resolveCurrentUser() {
   if (!hasSupabaseEnv()) {
     return null;
   }
@@ -33,6 +33,12 @@ export const getCurrentUser = cache(async () => {
     logger.auth.error("[Session] Failed to get current user", error);
     return null;
   }
+}
+
+export const getCurrentUser = cache(async () => {
+  const context = getSessionContext();
+  if (context) return context.user;
+  return resolveCurrentUser();
 });
 
 export async function requireUser() {
