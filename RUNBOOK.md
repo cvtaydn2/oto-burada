@@ -18,6 +18,7 @@
 9. [Feature Flags](#feature-flags)
 10. [Secrets Rotation](#secrets-rotation)
 11. [Quality Gates (Current)](#quality-gates-current)
+12. [RLS Runtime Audit Backlog](#rls-runtime-audit-backlog)
 
 ---
 
@@ -288,6 +289,17 @@ Aşağıdaki paketler stabil/tekrarlanabilir olarak doğrulanır:
 - Middleware kuralı: public sayfaları gereksiz `no-cache` ile bozma; cache-sensitive akışları daralt.
 
 ---
+
+## RLS Runtime Audit Backlog
+
+MCP yetkisi olmadan statik analiz tamamlandı; canlı doğrulama için aşağıdaki adımlar beklemede:
+
+- Supabase MCP auth doğrulaması (`list_projects` başarılı olmalı)
+- Security advisors çalıştırma (project bazlı)
+- Policy runtime smoke SQL:
+  - anon/authenticated rol bazlı SELECT/INSERT/UPDATE izin matrisi
+  - `public.public_profiles` view davranışı (`security_invoker`) teyidi
+- Fark varsa migration patch + hedefli test + build
 
 ## Rollback Procedures
 

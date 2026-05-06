@@ -1,5 +1,30 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 35. Faz-19 Production Console Error Fix (Manifest + SW Cache)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Canlı console’da görülen `manifest` parse hatası ve `ERR_CACHE_READ_FAILURE` semptomlarını PWA manifest yolu ve service worker cache katmanı üzerinden düzeltme.
+
+### 35.1 Uygulanan Düzeltmeler
+- Manifest yolu gerçek dosya ile hizalandı:
+  - [`src/app/layout.tsx`](src/app/layout.tsx) içindeki `manifest` değeri `"/manifest.webmanifest"` → `"/manifest.json"`.
+- Service worker statik asset listesi hizalandı:
+  - [`public/sw.js`](public/sw.js) içinde `STATIC_ASSETS` artık `"/manifest.json"` kullanıyor.
+- SW cache interception güvenli hale getirildi:
+  - [`public/sw.js`](public/sw.js) içinde `/_next/image` ve cross-origin istekler SW cache katmanından bypass ediliyor.
+  - Böylece Next image optimizer (`/_next/image?url=...`) üzerinde cache/read yarışından gelen `ERR_CACHE_READ_FAILURE` riski azaltıldı.
+- Offline fallback sertleştirildi:
+  - [`public/sw.js`](public/sw.js) içinde manifest istekleri için kontrollü JSON fallback eklendi.
+
+### 35.2 Doğrulama
+- Çalıştırıldı: [`npm run lint -- src/app/layout.tsx src/hooks/use-service-worker.ts`](package.json:10)
+- Sonuç: ✅ başarılı.
+
+### 35.3 Operasyon Notu (Canlı sonrası)
+- Tarayıcıda eski SW/cache kalıntısını temizlemek için kullanıcı tarafında 1 kez hard refresh + SW unregister/cache clear önerilir.
+- `vercel.live` COEP blok uyarısı üçüncü taraf feedback script izolasyonundan gelir; bu patch kapsamı dışında ve kritik akış kırığı değil.
+
 ## 34. Faz-18 Supabase Live DB Deep Audit (Security/Performance/Data)
 
 **Date**: 2026-05-06

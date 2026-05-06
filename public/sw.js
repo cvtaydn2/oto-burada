@@ -1,8 +1,5 @@
 const CACHE_NAME = "otoburada-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/manifest.webmanifest",
-];
+const STATIC_ASSETS = ["/", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -32,6 +29,11 @@ self.addEventListener("fetch", (event) => {
 
   // Skip non-GET requests (HEAD, POST, etc.) for caching
   if (request.method !== "GET") {
+    return;
+  }
+
+  // Let Next.js image optimizer and cross-origin requests bypass SW cache layer
+  if (url.pathname.startsWith("/_next/image") || url.origin !== self.location.origin) {
     return;
   }
 
@@ -73,12 +75,21 @@ self.addEventListener("fetch", (event) => {
     fetch(request).catch(() => {
       return caches.match(request).then((cached) => {
         if (cached) return cached;
+
         if (url.pathname.startsWith("/api/")) {
           return new Response(JSON.stringify({ error: "Offline" }), {
             status: 503,
             headers: { "Content-Type": "application/json" },
           });
         }
+
+        if (url.pathname === "/manifest.webmanifest" || url.pathname === "/manifest.json") {
+          return new Response("{}", {
+            status: 503,
+            headers: { "Content-Type": "application/manifest+json" },
+          });
+        }
+
         return caches.match("/");
       });
     })
