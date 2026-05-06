@@ -38,8 +38,18 @@ export async function POST(req: Request) {
 
   const { ids } = validation.data;
 
-  // Process deletions (deleteDatabaseListing handles ownership and image cleanup)
-  const results = await Promise.all(ids.map((id) => deleteDatabaseListing(id, user.id)));
+  // Process deletions with bounded concurrency to prevent burst load.
+  const CONCURRENCY = 5;
+  const results: Awaited<ReturnType<typeof deleteDatabaseListing>>[] = [];
+
+  for (let i = 0; i < ids.length; i += CONCURRENCY) {
+    const batch = ids.slice(i, i + CONCURRENCY);
+    const settled = await Promise.allSettled(batch.map((id) => deleteDatabaseListing(id, user.id)));
+
+    for (const item of settled) {
+      results.push(item.status === "fulfilled" ? item.value : null);
+    }
+  }
 
   // Count only genuine successes — null means not found/not archived,
   // { error } means a conflict or DB failure (truthy but not a success).
