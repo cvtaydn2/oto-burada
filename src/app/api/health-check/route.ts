@@ -36,6 +36,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const allowPrivilegedChecks = !!cronSecret && authHeader === `Bearer ${cronSecret}`;
+
   const response: HealthCheckResponse = {
     status: "healthy",
     timestamp: new Date().toISOString(),
@@ -145,7 +147,15 @@ export async function GET(request: Request) {
   try {
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS;
 
-    if (bucketName) {
+    if (!allowPrivilegedChecks) {
+      response.checks.storage = {
+        status: "degraded",
+        message: "Storage check skipped (requires internal auth)",
+      };
+      if (response.status === "healthy") {
+        response.status = "degraded";
+      }
+    } else if (bucketName) {
       const supabase = createSupabaseAdminClient();
       const { error } = await supabase.storage.getBucket(bucketName);
 
@@ -181,7 +191,15 @@ export async function GET(request: Request) {
 
   // 5. Critical Tables Check
   try {
-    if (hasSupabaseEnv()) {
+    if (!allowPrivilegedChecks) {
+      response.checks.database_tables = {
+        status: "degraded",
+        message: "Critical tables check skipped (requires internal auth)",
+      };
+      if (response.status === "healthy") {
+        response.status = "degraded";
+      }
+    } else if (hasSupabaseEnv()) {
       const supabase = createSupabaseAdminClient();
       const criticalTables = ["profiles", "listings", "favorites"];
       const tableChecks: string[] = [];
@@ -221,7 +239,15 @@ export async function GET(request: Request) {
 
   // 6. Migrations Check
   try {
-    if (hasSupabaseEnv()) {
+    if (!allowPrivilegedChecks) {
+      response.checks.migrations = {
+        status: "degraded",
+        message: "Migrations check skipped (requires internal auth)",
+      };
+      if (response.status === "healthy") {
+        response.status = "degraded";
+      }
+    } else if (hasSupabaseEnv()) {
       const supabase = createSupabaseAdminClient();
       const { count, error } = await supabase
         .from("_migrations")

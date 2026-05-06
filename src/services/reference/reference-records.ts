@@ -210,7 +210,9 @@ export async function getLiveMarketplaceReferenceData() {
 export async function getAdminBrands(query?: string) {
   if (!hasSupabaseAdminEnv()) return [];
   const admin = createSupabaseAdminClient();
-  let rpc = admin.from("brands").select("*");
+  let rpc = admin
+    .from("brands")
+    .select("id, name, slug, image_url, is_active, sort_order, created_at, updated_at");
 
   if (query) {
     rpc = rpc.ilike("name", `%${query}%`);
@@ -226,7 +228,7 @@ export async function getAdminModelsByBrand(brandId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("models")
-    .select("*")
+    .select("id, brand_id, name, slug, is_active, sort_order, created_at, updated_at")
     .eq("brand_id", brandId)
     .order("name", { ascending: true });
 

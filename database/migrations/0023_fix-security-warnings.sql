@@ -17,7 +17,7 @@ STABLE
 SECURITY DEFINER
 SET search_path = ''
 AS $$
-  SELECT coalesce((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin', false);
+  SELECT coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false);
 $$;
 
 -- set_updated_at

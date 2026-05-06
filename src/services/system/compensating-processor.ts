@@ -133,17 +133,29 @@ async function handleRevertCreditsAction(
 
   const admin = createSupabaseAdminClient();
 
-  // Option 1: Update wallet balance if wallet table exists
-  const { error: walletError } = await admin
+  // Option 1: Update wallet balance directly if wallet row exists
+  const { data: wallet, error: walletReadError } = await admin
     .from("wallets")
-    .update({
-      balance: admin.rpc("add_balance", { p_amount: amount }).then(({ data }) => data),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId);
+    .select("balance")
+    .eq("user_id", userId)
+    .maybeSingle<{ balance: number }>();
 
-  // If wallet table doesn't have the RPC, fallback to direct update
-  if (walletError) {
+  let walletError = walletReadError;
+
+  if (!walletReadError && wallet && typeof wallet.balance === "number") {
+    const { error: walletUpdateError } = await admin
+      .from("wallets")
+      .update({
+        balance: wallet.balance + amount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+
+    walletError = walletUpdateError;
+  }
+
+  // If wallet update path cannot be used, fallback to credits RPC
+  if (walletError || !wallet) {
     const { error: directError } = await admin.rpc("add_user_credits", {
       p_user_id: userId,
       p_amount: amount,

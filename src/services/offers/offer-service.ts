@@ -47,7 +47,7 @@ export async function verifyOfferOwnership(
   try {
     const { data, error: offerError } = await supabase
       .from("offers")
-      .select("*")
+      .select("id, listing_id, buyer_id, status, expires_at")
       .eq("id", offerId)
       .single();
 

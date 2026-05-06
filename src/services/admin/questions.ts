@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -26,7 +27,7 @@ export async function getPendingQuestions(limit = 50) {
     .limit(limit);
 
   if (error) {
-    console.error("Error fetching pending questions:", error);
+    logger.admin.error("Error fetching pending questions", error, { limit });
     throw error;
   }
 
@@ -58,7 +59,7 @@ export async function getAllQuestions(limit = 50, offset = 0) {
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error("Error fetching all questions:", error);
+    logger.admin.error("Error fetching all questions", error, { limit, offset });
     throw error;
   }
 
@@ -96,7 +97,7 @@ export async function moderateQuestion(
     .single();
 
   if (error) {
-    console.error("Error moderating question:", error);
+    logger.admin.error("Error moderating question", error, { questionId, status });
     throw error;
   }
 
@@ -112,7 +113,7 @@ export async function deleteQuestion(questionId: string) {
   const { error } = await supabase.from("listing_questions").delete().eq("id", questionId);
 
   if (error) {
-    console.error("Error deleting question:", error);
+    logger.admin.error("Error deleting question", error, { questionId });
     throw error;
   }
 

@@ -30,7 +30,10 @@ export const getPlatformSettings = unstable_cache(
 
       // Table may not exist yet — return defaults gracefully
       if (error) {
-        console.error(`[CRITICAL] platform_settings error: ${error.code} - ${error.message}`);
+        logger.settings.error("platform_settings query failed", {
+          code: error.code,
+          message: error.message,
+        });
         logger.settings.warn("platform_settings table not available, using defaults", {
           message: error.message,
           code: error.code,
