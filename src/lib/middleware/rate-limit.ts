@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { getUserFacingError } from "@/config/user-messages";
 import { getNormalizedIp } from "@/lib/api/ip-utils";
+import { logger } from "@/lib/logging/logger";
 import {
   checkGlobalRateLimit,
   type RateLimitResult,
@@ -51,27 +52,19 @@ export async function rateLimitMiddleware(request: NextRequest) {
   // We perform two checks:
   // 1. IP-only check (to prevent IP-based spam)
   // 2. User-only check (to prevent user-based spam across IPs)
-  const { getSupabaseProjectRef } = await import("@/lib/supabase/env");
-  const projectRef = getSupabaseProjectRef();
-  let userId: string | null = null;
+  // SECURITY: Do not parse unverified JWT payload from cookies in edge middleware.
+  // User-scoped throttling is handled at route-level authenticated wrappers.
+  // Keep global edge limiter IP-based to avoid trust-boundary violations.
+  const userId: string | null = null;
 
-  if (projectRef) {
-    const cookieName = `sb-${projectRef}-auth-token`;
-    const authCookie = request.cookies.get(cookieName)?.value;
-    if (authCookie) {
-      try {
-        const token = JSON.parse(authCookie).access_token;
-        if (token) {
-          const payload = token.split(".")[1];
-          if (payload) {
-            const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-            userId = decoded.sub;
-          }
-        }
-      } catch {
-        // Silently ignore malformed cookies
-      }
-    }
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"));
+
+  if (hasAuthCookie) {
+    logger.security.debug("Skipping unverified JWT parsing in edge rate limiter", {
+      pathname,
+    });
   }
 
   // 1. Check IP-based limit (Global volumetric protection)

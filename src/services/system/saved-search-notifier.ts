@@ -14,13 +14,17 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import type { SavedSearchAlertListing } from "@/services/email/email-templates";
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
-import { getFilteredDatabaseListings } from "@/services/listings/listing-submissions";
+import { getPublicFilteredDatabaseListings } from "@/services/listings/listing-submissions";
 import { normalizeSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
 import { enqueueOutboxEvent } from "@/services/system/outbox-processor";
 import type { ListingFilters } from "@/types";
 
 // How far back to look for new listings (24 hours)
 const LOOKBACK_HOURS = 24;
+const FILTER_RESULT_CACHE = new Map<
+  string,
+  Awaited<ReturnType<typeof getPublicFilteredDatabaseListings>>
+>();
 
 export interface SavedSearchNotificationResult {
   success: boolean;
@@ -112,13 +116,19 @@ export async function triggerSavedSearchNotifications(): Promise<SavedSearchNoti
     try {
       const filters = normalizeSavedSearchFilters((savedSearch.filters ?? {}) as ListingFilters);
 
-      // Query new listings matching this search, created in the last 24h
-      const result = await getFilteredDatabaseListings({
-        ...filters,
-        limit: 10,
-        page: 1,
-        sort: "newest",
-      });
+      // PERF: cache repeated filter lookups during single cron run
+      const filterCacheKey = JSON.stringify({ ...filters, limit: 10, page: 1, sort: "newest" });
+      let result = FILTER_RESULT_CACHE.get(filterCacheKey);
+
+      if (!result) {
+        result = await getPublicFilteredDatabaseListings({
+          ...filters,
+          limit: 10,
+          page: 1,
+          sort: "newest",
+        });
+        FILTER_RESULT_CACHE.set(filterCacheKey, result);
+      }
 
       // Filter to only listings created after lookback date
       const newListings = result.listings.filter((l) => l.createdAt >= lookbackDate);

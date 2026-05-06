@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { API_ERROR_CODES, apiError } from "@/lib/api/response";
 import { withUserAndCsrfToken } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { markChatMessagesAsRead } from "@/services/chat/chat-logic";
+
+function mapChatReadRouteError(error: unknown, fallbackMessage: string) {
+  const message = error instanceof Error ? error.message : fallbackMessage;
+
+  if (message.includes("erişim izniniz yok") || message.includes("bulunamadı")) {
+    return apiError(API_ERROR_CODES.FORBIDDEN, "Bu kaynağa erişim yetkiniz yok.", 403);
+  }
+
+  return apiError(API_ERROR_CODES.INTERNAL_ERROR, fallbackMessage, 500);
+}
 
 async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>, userId: string) {
   try {
@@ -10,8 +22,10 @@ async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>,
     const result = await markChatMessagesAsRead(chatId, userId);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Mesajlar okundu işaretlenemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    logger.messages.error("[API:CHAT_READ] Failed to mark chat as read", error, {
+      userId,
+    });
+    return mapChatReadRouteError(error, "Mesajlar okundu işaretlenemedi.");
   }
 }
 

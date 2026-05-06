@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
+import { API_ERROR_CODES, apiError } from "@/lib/api/response";
 import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import { CSRF_COOKIE_HASH_NAME_CLIENT } from "@/lib/security/csrf";
 import { createNewChat, getUserChats } from "@/services/chat/chat-logic";
+
+const createChatSchema = z.object({
+  listingId: z.string().uuid(),
+  sellerId: z.string().uuid(),
+});
+
+function mapChatRouteError(error: unknown, fallbackMessage: string) {
+  const message = error instanceof Error ? error.message : fallbackMessage;
+
+  if (message.includes("erişim izniniz yok") || message.includes("bulunamadı")) {
+    return apiError(API_ERROR_CODES.FORBIDDEN, "Bu kaynağa erişim yetkiniz yok.", 403);
+  }
+
+  if (message.includes("Çok fazla mesaj")) {
+    return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla istek gönderdiniz.", 429);
+  }
+
+  if (message.includes("Geçersiz")) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek.", 400);
+  }
+
+  return apiError(API_ERROR_CODES.INTERNAL_ERROR, fallbackMessage, 500);
+}
 
 export async function GET(req: NextRequest) {
   // SECURITY: Apply authentication and rate limiting for read operations
@@ -23,9 +50,8 @@ export async function GET(req: NextRequest) {
     const result = await getUserChats(user.id, archived);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
-    console.error("[API:CHATS:GET] Error:", error);
-    const message = error instanceof Error ? error.message : "Chat listesi alınamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    logger.messages.error("[API:CHATS:GET] Failed to fetch chat list", error, { userId: user.id });
+    return mapChatRouteError(error, "Chat listesi alınamadı.");
   }
 }
 
@@ -37,6 +63,13 @@ export async function POST(req: NextRequest) {
   });
 
   if (!security.ok) {
+    logger.auth.warn("[API:CHATS:POST] Security check failed", {
+      hasCsrfHeader: Boolean(req.headers.get("x-csrf-token")),
+      hasOrigin: Boolean(req.headers.get("origin")),
+      hasReferer: Boolean(req.headers.get("referer")),
+      hasCsrfCookie: Boolean(req.cookies.get(CSRF_COOKIE_HASH_NAME_CLIENT)?.value),
+      pathname: req.nextUrl.pathname,
+    });
     return security.response;
   }
 
@@ -44,11 +77,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { listingId, sellerId } = body;
-
-    if (!listingId || !sellerId) {
-      return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
-    }
+    const { listingId, sellerId } = createChatSchema.parse(body);
 
     // SECURITY: Prevent users from creating chats with themselves
     if (sellerId === user.id) {
@@ -66,8 +95,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
-    console.error("[API:CHATS:POST] Error:", error);
-    const message = error instanceof Error ? error.message : "Chat oluşturulamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    }
+
+    logger.messages.error("[API:CHATS:POST] Failed to create chat", error, { userId: user.id });
+    return mapChatRouteError(error, "Chat oluşturulamadı.");
   }
 }

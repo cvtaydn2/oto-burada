@@ -13,8 +13,7 @@ export async function getPendingQuestions(limit = 50) {
       `
       *,
       profiles:user_id (
-        full_name,
-        email
+        full_name
       ),
       listings:listing_id (
         title,
@@ -46,8 +45,7 @@ export async function getAllQuestions(limit = 50, offset = 0) {
       `
       *,
       profiles:user_id (
-        full_name,
-        email
+        full_name
       ),
       listings:listing_id (
         title,

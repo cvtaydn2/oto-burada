@@ -29,19 +29,13 @@ export function getSecurityHeaders(nonce: string) {
     "https://*.vercel.live",
     "https://challenges.cloudflare.com",
   ];
-  const styleSrc = [
-    "'self'",
-    "https://fonts.googleapis.com",
-    "https://unpkg.com",
-    "'unsafe-inline'",
-  ];
+  const styleSrc = ["'self'", "https://fonts.googleapis.com", "https://unpkg.com"];
 
   if (isProduction) {
     // Only use nonces in production for maximum security on scripts
     scriptSrc.push(`'nonce-${nonce}'`);
-    // We intentionally DO NOT add nonce to styleSrc.
-    // Adding nonce to styleSrc causes modern browsers to ignore 'unsafe-inline',
-    // which breaks Next.js App Router, Radix UI, and inline React styles.
+    // Harden style CSP in production: nonce-based inline style allowance.
+    styleSrc.push(`'nonce-${nonce}'`);
   }
 
   // ── PERFORMANCE FIX: Issue PERF-04 - Strict CSP in Development ─────────────
@@ -52,7 +46,7 @@ export function getSecurityHeaders(nonce: string) {
     // HMR and dev-tools require unsafe-eval and unsafe-inline
     scriptSrc.push("'unsafe-eval'");
     scriptSrc.push("'unsafe-inline'");
-    // Note: In dev, we omit the nonce from style-src so that 'unsafe-inline' is NOT ignored by the browser.
+    styleSrc.push("'unsafe-inline'");
   }
 
   const csp = [

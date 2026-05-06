@@ -16,10 +16,19 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
     );
 
   if (query) {
-    const sanitizedQuery = query.replace(/[%_]/g, "\\$&");
-    rpc = rpc.or(
-      `full_name.ilike.%${sanitizedQuery}%,phone.ilike.%${sanitizedQuery}%,id::text.ilike.%${sanitizedQuery}%`
-    );
+    const sanitizedQuery = query
+      .normalize("NFKC")
+      .replace(/[^\p{L}\p{N}\s._-]/gu, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 80)
+      .replace(/[%_]/g, "\\$&");
+
+    if (sanitizedQuery.length > 0) {
+      rpc = rpc.or(
+        `full_name.ilike.%${sanitizedQuery}%,phone.ilike.%${sanitizedQuery}%,id::text.ilike.%${sanitizedQuery}%`
+      );
+    }
   }
 
   const from = (page - 1) * limit;

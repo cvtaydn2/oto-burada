@@ -1,5 +1,6 @@
 import sharp from "sharp";
 
+import { createRequestSizeErrorMessage, REQUEST_SIZE_LIMITS } from "@/lib/api/request-size";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuthAndCsrf } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
@@ -56,19 +57,24 @@ export async function POST(request: Request) {
 
   const user = security.user!;
 
-  // ── 0. Guard against Vercel Payload Limit (4.5MB) ──────────────────────
-  // request.formData() will crash the process if the stream is too large.
+  // ── 0. Guard against payload bombs / oversized multipart bodies ─────────
+  // request.formData() can be expensive. We fail-closed when content-length
+  // is missing on multipart requests to avoid unbounded memory usage.
   const contentLength = request.headers.get("content-length");
-  const MAX_PAYLOAD_SIZE = UPLOAD_POLICY.IMAGES.MAX_FILE_SIZE_BYTES;
+  const contentTypeHeader = request.headers.get("content-type") || "";
+  const isMultipart = contentTypeHeader.toLowerCase().startsWith("multipart/form-data");
+
+  // Use centralized hard limit (6MB) for image uploads
+  const MAX_PAYLOAD_SIZE = REQUEST_SIZE_LIMITS.image;
+
+  if (isMultipart && !contentLength) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, createRequestSizeErrorMessage("image"), 413);
+  }
+
   if (contentLength) {
     const parsedLength = parseInt(contentLength, 10);
-    // ── BUG FIX: Handle NaN from invalid content-length header ──
     if (Number.isNaN(parsedLength) || parsedLength > MAX_PAYLOAD_SIZE) {
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        `Toplam dosya boyutu ${MAX_PAYLOAD_SIZE / (1024 * 1024)}MB'dan küçük olmalıdır.`,
-        413
-      );
+      return apiError(API_ERROR_CODES.BAD_REQUEST, createRequestSizeErrorMessage("image"), 413);
     }
   }
 

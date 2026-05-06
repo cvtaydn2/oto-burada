@@ -26,7 +26,7 @@ export interface QuestionWithDetails {
   created_at: string;
   profiles: {
     full_name: string;
-    email: string;
+    email?: string;
   };
   listings: {
     title: string;
@@ -103,7 +103,7 @@ export function QuestionsModeration({ questions }: QuestionsModerationProps) {
                   {q.profiles?.full_name || "Bilinmeyen Kullanıcı"}
                 </span>
                 <span className="text-[11px] text-muted-foreground font-medium truncate">
-                  {q.profiles?.email}
+                  {q.profiles?.email ?? "E-posta gizli"}
                 </span>
               </div>
             </div>

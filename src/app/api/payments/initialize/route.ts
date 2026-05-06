@@ -4,6 +4,7 @@ import { getClientIp } from "@/lib/api/ip";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withUserAndCsrf } from "@/lib/api/security";
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
+import { logger } from "@/lib/logging/logger";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { initiatePaymentSchema } from "@/lib/validators/payment";
@@ -119,8 +120,14 @@ export async function POST(req: NextRequest) {
 
     return apiSuccess(result);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Ödeme başlatılamadı.";
-    console.error("[PaymentInitialize] Error:", error);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, message, 500);
+    logger.payments.error("Payment initialize failed", error, {
+      userId: user.id,
+    });
+
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Ödeme başlatılamadı. Lütfen kısa süre sonra tekrar deneyin.",
+      500
+    );
   }
 }

@@ -1,3 +1,4 @@
+import { API_ERROR_CODES, apiError } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
         },
         adminUser.id
       );
-      return new Response("Export başarısız", { status: 500 });
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Export başarısız.", 500);
     }
 
     captureServerEvent(
@@ -88,6 +89,6 @@ export async function GET(request: Request) {
       },
       adminUser.id
     );
-    return new Response("Sunucu hatası", { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Sunucu hatası.", 500);
   }
 }

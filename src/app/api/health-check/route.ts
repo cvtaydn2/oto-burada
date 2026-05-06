@@ -28,15 +28,15 @@ interface HealthCheckResponse {
  * Güvenlik: CRON_SECRET ile korunur (opsiyonel)
  */
 export async function GET(request: Request) {
-  // Cron secret kontrolü (opsiyonel)
+  // SECURITY HARDENING: fail-closed — always require CRON_SECRET for this endpoint.
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const allowPrivilegedChecks = !!cronSecret && authHeader === `Bearer ${cronSecret}`;
+  const allowPrivilegedChecks = true;
 
   const response: HealthCheckResponse = {
     status: "healthy",

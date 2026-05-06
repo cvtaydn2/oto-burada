@@ -9,6 +9,15 @@ import { Listing } from "@/types";
 import { moderateListingWithSideEffects } from "./listing-moderation";
 import { createAdminModerationAction } from "./moderation-actions";
 
+function sanitizeAdminSearchTerm(query: string): string {
+  return query
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{N}\s._-]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
+
 export async function getAdminInventory(filters?: {
   status?: string;
   query?: string;
@@ -40,9 +49,15 @@ export async function getAdminInventory(filters?: {
   }
 
   if (filters?.query) {
-    query = query.or(
-      `title.ilike.%${filters.query}%,brand.ilike.%${filters.query}%,model.ilike.%${filters.query}%,vin.ilike.%${filters.query}%`
-    );
+    const sanitizedQuery = sanitizeAdminSearchTerm(filters.query);
+
+    if (sanitizedQuery.length > 0) {
+      // SECURITY: prevent PostgREST filter-shape injection by strict input sanitization.
+      // We intentionally allow only a constrained character set and fixed expression format.
+      query = query.or(
+        `title.ilike.%${sanitizedQuery}%,brand.ilike.%${sanitizedQuery}%,model.ilike.%${sanitizedQuery}%,vin.ilike.%${sanitizedQuery}%`
+      );
+    }
   }
 
   const { data, count, error } = await query.range(from, to);
