@@ -12,6 +12,8 @@ import Link from "next/link";
 import { ContactForm } from "@/components/shared/contact-form";
 import { FEATURES } from "@/lib/features";
 
+export const revalidate = 300;
+
 export const metadata = {
   title: "İletişim | OtoBurada",
   description: "OtoBurada ile iletişime geçin. Soru, öneri veya işbirliği için ekibimize ulaşın.",

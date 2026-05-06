@@ -1,5 +1,44 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 24. Faz-6 Dokümantasyon Senkronizasyonu — Release Readiness
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Mevcut kalite kapıları, performans öncelikleri ve operasyonel gerçeklikle runbook/progress senkronizasyonu.
+
+### 24.1 Güncellenen Dokümantasyon
+- [`RUNBOOK.md`](RUNBOOK.md) güncellendi:
+  - `Last updated` tarihi güncellendi.
+  - TOC’ye [`Quality Gates (Current)`](RUNBOOK.md) eklendi.
+  - Aktif kalite kapıları ve hedefli test seti açıkça belgelendi.
+  - Vercel Insight odaklı performans guard (TTFB/FCP/LCP + kritik rotalar) eklendi.
+- [`PROGRESS.md`](PROGRESS.md) güncellendi:
+  - Faz-5 hedefli test gate sonucu işlendi.
+  - Faz-6 kapanış kaydı eklendi.
+
+### 24.2 Release Readiness Durumu
+- Build: [`npm run build`](package.json:8) ✅
+- Lint: kritik dosya seti ✅
+- Hedefli test gate: `10` dosya / `56` test ✅
+- Güvenlik/Fonksiyon/Performans fazları tamamlandı; dokümanlar mevcut operasyonel davranışla hizalı.
+
+## 23. Faz-5 Test Güvenilirliği — İlk Gate Sonucu
+
+**Date**: 2026-05-06
+**Status**: 🟡 IN PROGRESS
+**Scope**: Hedefli test kümelerinde güvenilirlik/tekrarlanabilirlik ve uyarı temizliği.
+
+### 23.1 Hedefli Test Gate (Çalıştırıldı)
+- Komut: [`npx vitest run src/lib/api/__tests__/client.test.ts src/lib/middleware/__tests__/middleware-logic.test.ts src/features/marketplace/hooks/__tests__/use-unified-filters.test.tsx src/features/marketplace/components/__tests__/listing-view-tracker.test.tsx src/components/listings/__tests__/contact-actions.test.tsx`](package.json)
+- Sonuç: ✅ `5` dosya / `23` test geçti.
+
+### 23.2 Açık Kalan Güvenilirlik Notu
+- [`use-unified-filters.test.tsx`](src/features/marketplace/hooks/__tests__/use-unified-filters.test.tsx) geçiyor ancak React `act(...)` uyarıları üretiyor.
+- Bu uyarılar flaky riski oluşturabilir; Faz-5 içinde temizlenecek.
+
+### 23.3 Next Step
+- `act` uyarılarını sıfırlayıp aynı hedefli test kapısını yeniden çalıştır.
+
 ## 22. No-Rework Development Protocol (Tekrarı Önleme Standardı)
 
 **Date**: 2026-05-06
@@ -150,8 +189,31 @@
 - ✅ [`ContactActions()`](src/components/listings/contact-actions.tsx:43) için WhatsApp-first/owner/blocking senaryoları testle doğrulandı:
   - [`src/components/listings/__tests__/contact-actions.test.tsx`](src/components/listings/__tests__/contact-actions.test.tsx)
 
-### 21.13 Next Step
-- Faz-4'e geç: performans + mobil UX + erişilebilirlik sertleştirmesi (aynı no-rework protokolüyle, hedefli test/doğrulama adımlarıyla).
+### 21.13 Faz-4 Başlangıç (Vercel Insight Odaklı)
+- Vercel Speed Insights (Desktop, Production, Last 7 Days) okundu:
+  - RES: `69`
+  - FCP: `3.54s` (poor)
+  - LCP: `3.63s` (needs improvement)
+  - INP: `64ms` (good)
+  - CLS: `0.22` (needs improvement)
+  - TTFB: `3.07s` (poor)
+- En problemli rotalar gözlemi:
+  - `/` (FCP ~4.03s, LCP ~4.58s)
+  - `/contact` (FCP ~4.71s, LCP ~4.95s)
+  - `/maintenance` (FCP/LCP ~3.32s)
+
+### 21.14 Faz-4 Patch-1 (Uygulandı)
+- Middleware cache davranışı iyileştirildi:
+  - [`src/lib/supabase/middleware.ts`](src/lib/supabase/middleware.ts)
+  - Tüm route’lara zorla `Cache-Control: private, no-cache` yazma kaldırıldı.
+  - Bu header artık yalnız auth/session/API gibi cache-sensitive akışlarda set ediliyor.
+- Maintenance ayarı DB sorgusu mikro-cache’e alındı:
+  - aynı dosyada 60sn in-memory TTL ile her istekte DB hit azaltıldı.
+- Build doğrulaması başarılı:
+  - [`npm run build`](package.json:8) ✅
+
+### 21.15 Next Step
+- Faz-4 Patch-2: `/` ve `/contact` için LCP/FCP azaltıcı hero/üst görünüm yüklerini düşürme (kritik görüntü + üst fold sadeleştirme) ve ardından hedefli ölçüm.
 
 ## 19. Unified Doping Language Across Homepage & Listing Surfaces
 

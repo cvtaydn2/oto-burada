@@ -17,15 +17,6 @@ export function useUnifiedFilters(initialFilters: ListingFilters) {
   const [filters, setFilters] = useState<ListingFilters>(initialFilters);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  if (filters !== initialFilters) {
-    const hasSameValues = JSON.stringify(filters) === JSON.stringify(initialFilters);
-    if (!hasSameValues) {
-      queueMicrotask(() => {
-        setFilters(initialFilters);
-      });
-    }
-  }
-
   const applyFilters = useCallback(
     (newFilters: ListingFilters, immediate = false) => {
       const fn = () => {

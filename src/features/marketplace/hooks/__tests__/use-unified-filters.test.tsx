@@ -8,79 +8,87 @@ import { useUnifiedFilters } from "../use-unified-filters";
 const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
-    useRouter: () => ({
-        push: pushMock,
-    }),
+  useRouter: () => ({
+    push: pushMock,
+  }),
 }));
 
 describe("useUnifiedFilters", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.useFakeTimers();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("brand değişince model ve carTrim alanlarını sıfırlar", () => {
+    const { result } = renderHook(() =>
+      useUnifiedFilters({
+        brand: "BMW",
+        model: "320i",
+        carTrim: "M Sport",
+        page: 2,
+        limit: 20,
+      })
+    );
+
+    act(() => {
+      result.current.updateFilter("brand", "Audi");
     });
 
-    afterEach(() => {
-        vi.useRealTimers();
+    act(() => {
+      vi.runOnlyPendingTimers();
     });
 
-    it("brand değişince model ve carTrim alanlarını sıfırlar", () => {
-        const { result } = renderHook(() =>
-            useUnifiedFilters({
-                brand: "BMW",
-                model: "320i",
-                carTrim: "M Sport",
-                page: 2,
-                limit: 20,
-            })
-        );
+    expect(result.current.filters.brand).toBe("Audi");
+    expect(result.current.filters.model).toBeUndefined();
+    expect(result.current.filters.carTrim).toBeUndefined();
+    expect(result.current.filters.page).toBe(1);
+  });
 
-        act(() => {
-            result.current.updateFilter("brand", "Audi");
-        });
+  it("immediate=true olduğunda debounce beklemeden push eder", () => {
+    const { result } = renderHook(() =>
+      useUnifiedFilters({
+        brand: "BMW",
+        page: 1,
+        limit: 20,
+      })
+    );
 
-        act(() => {
-            vi.runAllTimers();
-        });
-
-        expect(result.current.filters.brand).toBe("Audi");
-        expect(result.current.filters.model).toBeUndefined();
-        expect(result.current.filters.carTrim).toBeUndefined();
-        expect(result.current.filters.page).toBe(1);
+    act(() => {
+      result.current.updateFilter("brand", "Audi", true);
     });
 
-    it("immediate=true olduğunda debounce beklemeden push eder", () => {
-        const { result } = renderHook(() =>
-            useUnifiedFilters({
-                brand: "BMW",
-                page: 1,
-                limit: 20,
-            })
-        );
-
-        act(() => {
-            result.current.updateFilter("brand", "Audi", true);
-        });
-
-        expect(pushMock).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.runOnlyPendingTimers();
     });
 
-    it("resetFilters default filtreleri uygular", () => {
-        const { result } = renderHook(() =>
-            useUnifiedFilters({
-                brand: "BMW",
-                model: "320i",
-                page: 3,
-                limit: 50,
-            })
-        );
+    expect(pushMock).toHaveBeenCalledTimes(1);
+  });
 
-        act(() => {
-            result.current.resetFilters();
-        });
+  it("resetFilters default filtreleri uygular", () => {
+    const { result } = renderHook(() =>
+      useUnifiedFilters({
+        brand: "BMW",
+        model: "320i",
+        page: 3,
+        limit: 50,
+      })
+    );
 
-        expect(result.current.filters.brand).toBeUndefined();
-        expect(result.current.filters.model).toBeUndefined();
-        expect(result.current.filters.page).toBe(1);
-        expect(result.current.filters.limit).toBe(DEFAULT_LISTING_FILTERS.limit);
+    act(() => {
+      result.current.resetFilters();
     });
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(result.current.filters.brand).toBeUndefined();
+    expect(result.current.filters.model).toBeUndefined();
+    expect(result.current.filters.page).toBe(1);
+    expect(result.current.filters.limit).toBe(DEFAULT_LISTING_FILTERS.limit);
+  });
 });

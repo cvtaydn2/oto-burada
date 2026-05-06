@@ -46,7 +46,9 @@ export default async function HomePage() {
   const [featuredResult, galleryResult, latestResult, references] = await Promise.allSettled([
     getPublicMarketplaceListings({ limit: 4, featured: true, sort: "newest" }),
     getPublicMarketplaceListings({ limit: 8, galleryPriority: 1, sort: "newest" }),
-    getPublicMarketplaceListings({ limit: 20, sort: "newest" }),
+    // PERF: Homepage renders only 8 "latest" cards after de-duplication.
+    // Lowering source query size reduces DB payload and TTFB without UX loss.
+    getPublicMarketplaceListings({ limit: 12, sort: "newest" }),
     getLiveMarketplaceReferenceData(),
   ]);
 

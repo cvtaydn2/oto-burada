@@ -150,8 +150,19 @@ export async function updateSession(request: NextRequest) {
     if (isMaintenanceGateActive()) {
       let isMaintenanceMode = process.env.MAINTENANCE_MODE_FORCE === "true";
 
-      // Check database for maintenance mode if not forced via env
-      if (!isMaintenanceMode) {
+      // PERF: cache maintenance flag in-memory for a short TTL to avoid DB hit on every request.
+      const maintenanceCache = (
+        globalThis as typeof globalThis & {
+          __maintenanceModeCache?: { value: boolean; expiresAt: number };
+        }
+      ).__maintenanceModeCache;
+
+      if (!isMaintenanceMode && maintenanceCache && maintenanceCache.expiresAt > Date.now()) {
+        isMaintenanceMode = maintenanceCache.value;
+      }
+
+      // Check database for maintenance mode if not forced via env and no valid cache.
+      if (!isMaintenanceMode && (!maintenanceCache || maintenanceCache.expiresAt <= Date.now())) {
         try {
           const { data } = await supabase
             .from("platform_settings")
@@ -167,6 +178,15 @@ export async function updateSession(request: NextRequest) {
           ) {
             isMaintenanceMode = Boolean((data.value as Record<string, unknown>).maintenance_mode);
           }
+
+          (
+            globalThis as typeof globalThis & {
+              __maintenanceModeCache?: { value: boolean; expiresAt: number };
+            }
+          ).__maintenanceModeCache = {
+            value: isMaintenanceMode,
+            expiresAt: Date.now() + 60_000,
+          };
         } catch (err) {
           console.error("[maintenanceCheck] Settings fetch error:", err);
         }
@@ -239,8 +259,12 @@ export async function updateSession(request: NextRequest) {
     await applyCsrfCookieToResponse(response, csrfToken);
   }
 
-  // Ensure no caching for authenticated/dynamic views
-  response.headers.set("Cache-Control", "private, max-age=0, no-cache");
+  // Ensure no caching only for authenticated/dynamic views.
+  // Public routes should remain cacheable to keep TTFB/FCP/LCP healthy.
+  const isCacheSensitiveRoute = route.needsAuth || route.isAuthRoute || route.isApiRoute;
+  if (user || hasSessionCookie || isCacheSensitiveRoute) {
+    response.headers.set("Cache-Control", "private, max-age=0, no-cache");
+  }
 
   return response;
 }

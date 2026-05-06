@@ -1,6 +1,6 @@
 # OtoBurada — Production Runbook
 
-> Last updated: 2026-04-17  
+> Last updated: 2026-05-06
 > Stack: Next.js 16 · Supabase · Vercel · Upstash Redis · Sentry · Resend
 
 ---
@@ -17,6 +17,7 @@
 8. [Incident Response](#incident-response)
 9. [Feature Flags](#feature-flags)
 10. [Secrets Rotation](#secrets-rotation)
+11. [Quality Gates (Current)](#quality-gates-current)
 
 ---
 
@@ -254,6 +255,37 @@ Key signals to monitor:
   ```
 - **Active Connections**: Supabase Dashboard → Database → Connections
 - **RLS Policy Performance**: Check `EXPLAIN ANALYZE` on slow queries
+
+---
+
+## Quality Gates (Current)
+
+### Required before merge to `main`
+
+- [`npm run lint`](package.json:10)
+- [`npm run typecheck`](package.json:11)
+- [`npm run build`](package.json:8)
+
+### Hedefli test kapısı (aktif çalışma seti)
+
+Aşağıdaki paketler stabil/tekrarlanabilir olarak doğrulanır:
+
+- [`src/lib/api/__tests__/client.test.ts`](src/lib/api/__tests__/client.test.ts)
+- [`src/lib/middleware/__tests__/middleware-logic.test.ts`](src/lib/middleware/__tests__/middleware-logic.test.ts)
+- [`src/lib/auth/__tests__/actions.test.ts`](src/lib/auth/__tests__/actions.test.ts)
+- [`src/__tests__/auth/register-action.test.ts`](src/__tests__/auth/register-action.test.ts)
+- [`src/services/admin/__tests__/listing-moderation.test.ts`](src/services/admin/__tests__/listing-moderation.test.ts)
+- [`src/features/marketplace/hooks/__tests__/use-unified-filters.test.tsx`](src/features/marketplace/hooks/__tests__/use-unified-filters.test.tsx)
+- [`src/features/marketplace/components/__tests__/listing-view-tracker.test.tsx`](src/features/marketplace/components/__tests__/listing-view-tracker.test.tsx)
+- [`src/components/listings/__tests__/contact-actions.test.tsx`](src/components/listings/__tests__/contact-actions.test.tsx)
+- [`src/__tests__/security/api-security-audit.test.ts`](src/__tests__/security/api-security-audit.test.ts)
+- [`src/__tests__/services/listing-filters-recovery.test.ts`](src/__tests__/services/listing-filters-recovery.test.ts)
+
+### Performance guard (Vercel Insight odaklı)
+
+- Öncelik metrikleri: `TTFB`, `FCP`, `LCP`
+- Kritik rotalar: [`/`](src/app/(public)/(marketplace)/page.tsx), [`/contact`](src/app/(public)/contact/page.tsx), [`/maintenance`](src/app/maintenance/page.tsx)
+- Middleware kuralı: public sayfaları gereksiz `no-cache` ile bozma; cache-sensitive akışları daralt.
 
 ---
 
