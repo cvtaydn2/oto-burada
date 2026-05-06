@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 
 export interface PriceHistoryPoint {
   price: number;
@@ -7,13 +8,22 @@ export interface PriceHistoryPoint {
 }
 
 export async function getListingPriceHistory(listingId: string): Promise<PriceHistoryPoint[]> {
-  // Admin client kullan — RLS politikası sadece owner/admin'e izin veriyor
-  // ama fiyat geçmişi public listing detail sayfasında herkese gösterilmeli
-  if (!hasSupabaseAdminEnv()) return [];
+  if (!hasSupabaseEnv()) return [];
 
-  const admin = createSupabaseAdminClient();
+  const supabase = createSupabasePublicServerClient();
 
-  const { data, error } = await admin
+  const { data: listing, error: listingError } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("id", listingId)
+    .eq("status", "approved")
+    .maybeSingle();
+
+  if (listingError || !listing) {
+    return [];
+  }
+
+  const { data, error } = await supabase
     .from("listing_price_history")
     .select("price, created_at")
     .eq("listing_id", listingId)
