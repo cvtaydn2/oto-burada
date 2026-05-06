@@ -7,11 +7,18 @@ interface ArticleShareActionsProps {
   title: string;
 }
 
+const BUTTON_CLASSNAME =
+  "size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm";
+
+function getCurrentUrl() {
+  return window.location.href;
+}
+
 export function ArticleShareActions({ title }: ArticleShareActionsProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard.writeText(getCurrentUrl());
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };
@@ -25,7 +32,7 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
     try {
       await navigator.share({
         title,
-        url: window.location.href,
+        url: getCurrentUrl(),
       });
     } catch {
       // User cancelled native share dialog.
@@ -37,23 +44,18 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
       <button
         type="button"
         onClick={handleShare}
-        className="size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+        className={BUTTON_CLASSNAME}
         aria-label="İçeriği paylaş"
       >
         <Globe size={18} />
       </button>
-      <button
-        type="button"
-        onClick={handleShare}
-        className="size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-        aria-label="Paylaş"
-      >
+      <button type="button" onClick={handleShare} className={BUTTON_CLASSNAME} aria-label="Paylaş">
         <Share2 size={18} />
       </button>
       <button
         type="button"
         onClick={handleCopy}
-        className="size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+        className={BUTTON_CLASSNAME}
         aria-label="Bağlantıyı kopyala"
         title={copied ? "Kopyalandı" : "Bağlantıyı kopyala"}
       >

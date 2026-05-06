@@ -15,6 +15,8 @@ export default defineConfig(({ mode }) => {
       include: ["src/**/*.int.test.ts"],
       setupFiles: ["./src/test/setup.int.ts"],
       testTimeout: 30000,
+      maxWorkers: 1,
+      minWorkers: 1,
     },
   };
 });

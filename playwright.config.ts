@@ -21,10 +21,10 @@ export default defineConfig({
     "tests/**/*.spec.ts",
     "tests/api/**/*.spec.ts"
   ],
-  fullyParallel: true,
+  fullyParallel: process.env.CI ? true : false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 4,
+  workers: process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : process.env.CI ? 2 : 2,
   globalSetup: process.env.E2E_TEST_EMAIL ? "./e2e/auth-setup.ts" : undefined,
   reporter: process.env.CI
     ? [["github"], ["html", { open: "never" }]]

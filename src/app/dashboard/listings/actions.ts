@@ -121,18 +121,42 @@ export async function publishListingAction(listingId: string, currentStatus: Lis
   return result;
 }
 
+async function getOwnedListingIds(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  ids: string[],
+  sellerId: string
+) {
+  const { data, error } = await supabase
+    .from("listings")
+    .select("id")
+    .in("id", ids)
+    .eq("seller_id", sellerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((row) => row.id);
+}
+
 export async function bulkArchiveListingAction(ids: string[]) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
   const supabase = await createSupabaseServerClient();
+  const ownedIds = await getOwnedListingIds(supabase, ids, user.id);
+
+  if (ownedIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
   const { error, data } = await supabase
     .from("listings")
     .update({
       status: "archived",
       updated_at: new Date().toISOString(),
     })
-    .in("id", ids)
+    .in("id", ownedIds)
     .eq("seller_id", user.id)
     .select("id");
 
@@ -147,16 +171,21 @@ export async function bulkDeleteListingAction(ids: string[]) {
   if (!user) throw new Error("Unauthorized");
 
   const supabase = await createSupabaseServerClient();
+  const ownedIds = await getOwnedListingIds(supabase, ids, user.id);
 
-  // 1. Delete associated data
-  await supabase.from("listing_images").delete().in("listing_id", ids);
-  await supabase.from("favorites").delete().in("listing_id", ids);
+  if (ownedIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  // 1. Delete associated data (only for caller-owned listings)
+  await supabase.from("listing_images").delete().in("listing_id", ownedIds);
+  await supabase.from("favorites").delete().in("listing_id", ownedIds);
 
   // 2. Delete listings
   const { error, data } = await supabase
     .from("listings")
     .delete()
-    .in("id", ids)
+    .in("id", ownedIds)
     .eq("seller_id", user.id)
     .select("id");
 

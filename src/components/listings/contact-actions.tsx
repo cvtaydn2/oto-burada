@@ -40,6 +40,23 @@ interface ContactActionsProps {
   currentUserId?: string | null;
 }
 
+const WHATSAPP_MESSAGE = "Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.";
+
+function formatPhoneNumber(phone: string) {
+  const clean = phone.replace(/\D/g, "");
+  if (clean.length === 12 && clean.startsWith("90")) {
+    return `+90 ${clean.slice(2, 5)} ${clean.slice(5, 8)} ${clean.slice(8, 10)} ${clean.slice(10, 12)}`;
+  }
+  if (clean.length === 10) {
+    return `0${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6, 8)} ${clean.slice(8, 10)}`;
+  }
+  return phone;
+}
+
+function getWhatsappLink(phone: string) {
+  return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+}
+
 export function ContactActions({
   listingId,
   listingSlug,
@@ -54,11 +71,11 @@ export function ContactActions({
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [isLogging, setIsLogging] = useState(false);
 
-  const { isContactable, isTrusted } = getSellerTrustUI(seller);
+  const trustUI = getSellerTrustUI(seller);
+  const { isContactable, isTrusted, label, subMessage, tone } = trustUI;
 
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
   if (isOwnListing) {
-    const { label, subMessage, tone } = getSellerTrustUI(seller);
     const hasIssues = !isContactable;
 
     return (
@@ -84,7 +101,6 @@ export function ContactActions({
   }
 
   if (!isContactable) {
-    const { label, subMessage } = getSellerTrustUI(seller);
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
         <p className="mb-1 text-xs font-bold leading-tight text-amber-900">{label}</p>
@@ -94,17 +110,6 @@ export function ContactActions({
       </div>
     );
   }
-
-  const formatPhone = (p: string) => {
-    const clean = p.replace(/\D/g, "");
-    if (clean.length === 12 && clean.startsWith("90")) {
-      return `+90 ${clean.slice(2, 5)} ${clean.slice(5, 8)} ${clean.slice(8, 10)} ${clean.slice(10, 12)}`;
-    }
-    if (clean.length === 10) {
-      return `0${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6, 8)} ${clean.slice(8, 10)}`;
-    }
-    return p;
-  };
 
   const handleReveal = async () => {
     if (isRevealed || isLogging) return;
@@ -123,9 +128,7 @@ export function ContactActions({
     }
   };
 
-  const whatsappLink = revealedPhone
-    ? `https://wa.me/${revealedPhone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.")}`
-    : null;
+  const whatsappLink = revealedPhone ? getWhatsappLink(revealedPhone) : null;
 
   return (
     <div className="space-y-3">
@@ -269,7 +272,7 @@ export function ContactActions({
             className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-muted px-4 text-sm font-bold text-foreground"
           >
             <Phone className="size-5 text-primary" />
-            {revealedPhone ? formatPhone(revealedPhone) : "N/A"}
+            {revealedPhone ? formatPhoneNumber(revealedPhone) : "N/A"}
           </a>
         )}
       </div>

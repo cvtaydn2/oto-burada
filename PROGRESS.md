@@ -1,5 +1,363 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 34. Faz-18 Supabase Live DB Deep Audit (Security/Performance/Data)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Analysis + Patch Draft)
+**Scope**: Supabase MCP ile canlı DB’de security/performance/data sorunlarını fonksiyon/policy düzeyinde inceleme, log kontrolü ve patch taslağı üretimi.
+
+### 34.1 Çalıştırılan Canlı Kontroller
+- Security advisors: `get_advisors(security)`
+- Performance advisors: `get_advisors(performance)`
+- Logs: `get_logs(postgres)`, `get_logs(api)`
+- SQL audit:
+  - Public tablo RLS/policy + scan/index kullanım görünümü
+  - `SECURITY DEFINER` fonksiyonlar + `proconfig(search_path)` + `anon/auth EXECUTE`
+  - `listing_questions` policy detayı
+  - Dead tuple yoğunluk kontrolü
+
+### 34.2 Kritik Bulgular
+- **P1 — SECURITY DEFINER execute surface genişliği**
+  - Çok sayıda `public` schema `SECURITY DEFINER` fonksiyonunda `anon`/`authenticated` execute açık görünüyor.
+  - Özellikle advisor’da tekrarlanan linter bulguları bunu doğruluyor.
+- **P1 — listing_questions policy çakışması**
+  - `listing_questions_admin_all_v2` + action-specific permissive policy’ler aynı role/action için birlikte çalışıyor.
+  - Bu hem performans linter’ı tetikliyor hem policy değerlendirme maliyetini artırıyor.
+- **P2 — Unused index envanteri geniş**
+  - Performance advisor çok sayıda `unused_index` raporluyor.
+  - Not: Düşük trafik/soğuk index false-positive olabilir; doğrudan silme yapılmadı.
+- **P2 — Dead tuple dağılımı**
+  - Özellikle küçük ama sık güncellenen tablolarda dead tuple birikimi var (`profiles`, `platform_settings`, `pricing_plans`, vb.).
+
+### 34.3 Log Sonucu
+- Postgres loglarında son pencerede kritik hata gözlenmedi (çoğunlukla connection logları).
+- API log penceresi boş döndü (son 1 dakikalık pencerede event yok).
+
+### 34.4 Üretilen Patch Taslağı (Uygulanmadı)
+- Draft SQL: [`scratch/supabase-phase18-patch-draft.sql`](scratch/supabase-phase18-patch-draft.sql)
+- İçerik:
+  1. `SECURITY DEFINER` fonksiyonlarda revoke-then-allowlist yaklaşımı,
+  2. `listing_questions` policy sadeleştirme stratejisi,
+  3. dead tuple için operasyonel VACUUM/ANALYZE planı.
+
+### 34.5 Sonraki Adım
+- Faz-19’da draft SQL, gerçek endpoint sözleşmesiyle doğrulanıp güvenli allowlist netleştirilecek.
+- Ardından migration dosyası üretilip önce branch ortamında uygulanacak ve advisor/log tekrar kontrolü yapılacak.
+
+## 33. Faz-17 Migration Security-Definer False-Positive Ayıklama + Patch Planı
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: `SECURITY DEFINER` + `search_path` taramasındaki heuristic false-positive’leri ayıklamak ve sadece gerekli dosyalar için patch migration planı çıkarmak (DDL uygulamadan).
+
+### 33.1 İncelenen Hedef Set
+Heuristic taramadan gelen 15 dosya satır bazında kontrol edildi:
+- [`0001_add-analytics-rpc-functions.sql`](database/migrations/0001_add-analytics-rpc-functions.sql)
+- [`0004_add-payments-webhook-support.sql`](database/migrations/0004_add-payments-webhook-support.sql)
+- [`0006_add-price-history-and-market-features.sql`](database/migrations/0006_add-price-history-and-market-features.sql)
+- [`0008_add-rate-limit-rpc-and-indexes.sql`](database/migrations/0008_add-rate-limit-rpc-and-indexes.sql)
+- [`0009_audit-recommendations.sql`](database/migrations/0009_audit-recommendations.sql)
+- [`0017_fix-duplicate-rls-policies.sql`](database/migrations/0017_fix-duplicate-rls-policies.sql)
+- [`0020_fix-price-history-trigger.sql`](database/migrations/0020_fix-price-history-trigger.sql)
+- [`0021_fix-security-performance-advisor--rollback.sql`](database/migrations/0021_fix-security-performance-advisor--rollback.sql)
+- [`0022_fix-security-performance-advisor.sql`](database/migrations/0022_fix-security-performance-advisor.sql)
+- [`0023_fix-security-warnings.sql`](database/migrations/0023_fix-security-warnings.sql)
+- [`0111_add_min_max_to_market_stats.sql`](database/migrations/0111_add_min_max_to_market_stats.sql)
+- [`0119_fix_public_profiles_security_definer.sql`](database/migrations/0119_fix_public_profiles_security_definer.sql)
+- [`0120_fix_security_and_performance_lints.sql`](database/migrations/0120_fix_security_and_performance_lints.sql)
+- [`0121_fix_remaining_lints.sql`](database/migrations/0121_fix_remaining_lints.sql)
+- [`0136_infrastructure_security_performance.sql`](database/migrations/0136_infrastructure_security_performance.sql)
+
+### 33.2 False-Positive Sonucu
+- Regex sadece `search_path = public` aradığı için, aşağıdaki güvenli varyasyonları kaçırdığı doğrulandı:
+  - `SET search_path = 'public'`
+  - `SET search_path = ''` (fail-closed yaklaşım)
+- Bu nedenle 15 dosyanın önemli kısmı **false-positive** çıktı.
+- Ayrıca bazı dosyalarda `SECURITY DEFINER` ifadesi yalnız comment/rollback metninde geçiyor (gerçek fonksiyon bildirimi değil):
+  - [`0017_fix-duplicate-rls-policies.sql`](database/migrations/0017_fix-duplicate-rls-policies.sql)
+  - [`0021_fix-security-performance-advisor--rollback.sql`](database/migrations/0021_fix-security-performance-advisor--rollback.sql)
+  - [`0119_fix_public_profiles_security_definer.sql`](database/migrations/0119_fix_public_profiles_security_definer.sql)
+  - [`0120_fix_security_and_performance_lints.sql`](database/migrations/0120_fix_security_and_performance_lints.sql)
+  - [`0121_fix_remaining_lints.sql`](database/migrations/0121_fix_remaining_lints.sql)
+
+### 33.3 Muhtemel Gerçek Backlog (Patch Planı)
+Manuel doğrulama sonrası patch migration için adaylar:
+- [`0001_add-analytics-rpc-functions.sql`](database/migrations/0001_add-analytics-rpc-functions.sql): `SECURITY DEFINER` var, aynı migration içinde görünür `SET search_path` yok.
+- [`0020_fix-price-history-trigger.sql`](database/migrations/0020_fix-price-history-trigger.sql): `SECURITY DEFINER` ifadesi var, `SET search_path` görünmüyor.
+- [`0136_infrastructure_security_performance.sql`](database/migrations/0136_infrastructure_security_performance.sql): `ALTER FUNCTION ... SECURITY DEFINER` satırı var; ilgili fonksiyonlarda `search_path` ayarı function-level yeniden doğrulanmalı.
+
+### 33.4 Uygulanacak Patch Migration İçeriği (Plan)
+Yeni migration (ör. `0140_harden_security_definer_search_path.sql`) içinde:
+1. Aday fonksiyonları `ALTER FUNCTION ... SET search_path TO 'public'` veya güvenlik gereğine göre `SET search_path = ''` ile normalize et.
+2. `SECURITY DEFINER` fonksiyonlar için exposed schema/risk kontrolü yap.
+3. Gerekli yerlerde `REVOKE EXECUTE` politikalarıyla çağrı yüzeyini daralt.
+4. Sonunda doğrulama SQL’i ekle (function-level `proconfig` kontrolü).
+
+### 33.5 Sonraki Adım
+- Faz-18: Aday 3 dosyadaki fonksiyonları tek tek çıkartıp patch migration SQL’i hazırlanacak; ardından hedefli migration lint/doğrulama çalıştırılacak.
+
+## 32. Faz-16 Unified Backend Category Audit (All Core Backend Groups)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Backend’in tüm ana kategorilerinin tek formatta taranması ve birleşik risk görünümü (`src/app/api`, `src/services`, `src/lib/supabase`, `src/lib/auth`, `src/domain`, `database/migrations`).
+
+### 32.1 Kategori Bazlı Üretilen Audit Artefaktları
+- API route audit:
+  - [`scratch/api-route-audit.md`](scratch/api-route-audit.md)
+  - [`scratch/api-route-audit.json`](scratch/api-route-audit.json)
+- Services audit:
+  - [`scratch/services-audit.md`](scratch/services-audit.md)
+  - [`scratch/services-audit.json`](scratch/services-audit.json)
+- Lib/Supabase audit:
+  - [`scratch/lib-supabase-audit.md`](scratch/lib-supabase-audit.md)
+  - [`scratch/lib-supabase-audit.json`](scratch/lib-supabase-audit.json)
+- Lib/Auth audit:
+  - [`scratch/lib-auth-audit.md`](scratch/lib-auth-audit.md)
+  - [`scratch/lib-auth-audit.json`](scratch/lib-auth-audit.json)
+- Domain audit:
+  - [`scratch/domain-audit.md`](scratch/domain-audit.md)
+  - [`scratch/domain-audit.json`](scratch/domain-audit.json)
+- Migration audit:
+  - [`scratch/migrations-audit.md`](scratch/migrations-audit.md)
+  - [`scratch/migrations-audit.json`](scratch/migrations-audit.json)
+
+### 32.2 Birleşik Sayısal Özet
+- API route dosyası: **67**
+- Services dosyası: **75**
+- `src/lib/supabase` dosyası: **9**
+- `src/lib/auth` dosyası: **7**
+- `src/domain` dosyası: **19**
+- Migration SQL dosyası: **118**
+
+Ek teknik metrikler:
+- Services: `use server=17`, `admin client=34`, `server client=20`, `.from=46`, `.rpc=1`
+- Lib/Supabase: `admin client=2`, `server client=6`
+- Lib/Auth: `admin client=4`, `server client=5`
+- Domain: `.from=2` (çoğunlukla orchestration/pure logic beklentisiyle uyumlu)
+- Migrations: `SECURITY DEFINER` içerip `search_path=public` göstermeyen dosya sayısı (heuristic): **15**
+
+### 32.3 P1 / P2 / P3 Bulgular
+- **P1 — Migration Security Definer Review Backlog**
+  - [`scratch/migrations-audit.json`](scratch/migrations-audit.json) çıktısına göre 15 migration’da `SECURITY DEFINER` + görünür `search_path=public` birlikte tespit edilmedi.
+  - Not: Bu sayı statik regex heuristic’tir; fonksiyon seviyesinde manuel doğrulama ve gerekirse patch migration gerekir.
+- **P2 — Privilege Surface Consolidation**
+  - `src/services` içinde admin client kullanım yoğunluğu (`34/75`) yüksek; least-privilege fırsatları var.
+- **P2 — Wrapper Muafiyetlerinin Sözleşmeye Bağlanması**
+  - API’de wrapper’sız ama kasıtlı route’lar allowlist/test ile kontrol altında; bu modelin sürdürülebilirliği için allowlist governance sürdürülmeli.
+- **P3 — Kategori İçi Standartlaşma**
+  - Bazı servis dosyaları `"use server"` taşıyor; bazıları pure helper. Dosya isimlendirme/katman sınırları sonraki refactor fazında normalize edilebilir.
+
+### 32.4 Sonraki Adım (Faz-17 Önerisi)
+- `migrations` için 15 dosyada function-level inceleme yapıp:
+  1. gerçekten `SECURITY DEFINER` var mı,
+  2. `search_path` açıkça `public` mi,
+  3. değilse patch migration backlog’una ekleyip hedefli doğrulama çalıştır.
+
+## 31. Faz-15 Services Exhaustive Audit (src/services)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: `src/services` altındaki production dosyalarının (`*.ts`, test hariç) tek tek taranması ve API route audit ile aynı formatta tablo/metric çıkarılması.
+
+### 31.1 Üretilen Denetim Artefaktları
+- Servis audit tablosu: [`scratch/services-audit.md`](scratch/services-audit.md)
+- Makine-okunur çıktı: [`scratch/services-audit.json`](scratch/services-audit.json)
+- Üretim scripti: [`scratch/generate-services-audit.cjs`](scratch/generate-services-audit.cjs)
+
+### 31.2 Toplam Sayılar
+- Toplam servis dosyası: **75**
+- `"use server"` içeren: **17**
+- `createSupabaseAdminClient` kullanan: **34**
+- `createSupabaseServerClient` kullanan: **20**
+- Doğrudan `.from(...)` kullanan: **46**
+- `.rpc(...)` kullanan dosya: **1**
+- Security wrapper (`with*`) kullanan servis dosyası: **0** *(beklenen; wrapper’lar route katmanında)*
+
+### 31.3 Kural-Temelli İlk Gözlemler
+- **Layering doğrulaması:** Güvenlik wrapper’ların route katmanında kalması korunuyor; servislerde doğrudan `with*` görünmemesi mimariyle uyumlu.
+- **Admin client yoğunluğu:** `admin/*`, `system/*`, `reference/*` ve bazı `listings/*` dosyalarında admin client ağırlığı var; Faz-16’da least-privilege gözden geçirme adayı.
+- **Server client dağılımı:** `payments/*`, `profile/*`, `support/*`, `saved-searches/*` ve bazı listing akışlarında RLS odaklı server client kullanımı mevcut.
+
+### 31.4 Sonraki Adım
+- Faz-16’da `src/services` için dosya bazlı risk puanlama (P1/P2/P3) ve ilk kritik refactor/fix seçimi yapılacak.
+
+## 30. Faz-14 API Security Audit Test Determinism Hardening
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: `api-security-audit` testinde public endpoint tespitini substring yaklaşımından deterministic/anchored kurallara taşımak ve allowlist drift’ini testle kilitlemek.
+
+### 30.1 Uygulanan Değişiklikler
+- Dosya: [`src/__tests__/security/api-security-audit.test.ts`](src/__tests__/security/api-security-audit.test.ts)
+- `isPublicEndpoint()` içinde path eşleşmesi kesin regex kurallarına geçirildi.
+  - Özellikle geniş eşleşme üreten `/api/auth/` paterni, yalnız CSRF route’u hedefleyen kurala daraltıldı:
+    - [`/src/app/api/auth/csrf/route.ts$`](src/__tests__/security/api-security-audit.test.ts:119)
+- Public route seti deterministic hale getirildi:
+  - [`EXPECTED_PUBLIC_ROUTES`](src/__tests__/security/api-security-audit.test.ts:157) tanımlandı.
+  - Test, gerçek public route listesini bu set ile birebir karşılaştıracak şekilde eklendi.
+
+### 30.2 Neden Önemli
+- Substring tabanlı public tespit, yanlış-pozitif üreterek güvenlik testlerini gevşetebiliyordu.
+- Deterministic allowlist ile yeni/yanlış public route eklenmesi CI’da anında görünür hale geldi.
+
+### 30.3 Doğrulama
+- Çalıştırıldı: [`npm run test:unit:lite -- src/__tests__/security/api-security-audit.test.ts`](package.json:14)
+- Sonuç: ✅ `1` dosya / `5` test geçti.
+
+## 29. Faz-13 API Route Exhaustive Audit (src/app/api)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: `src/app/api` altındaki tüm `route.ts/route.tsx` dosyalarının güvenlik wrapper, client türü ve DB erişim paterni bazında tek tek envanterlenmesi.
+
+### 29.1 Üretilen Denetim Artefaktları
+- Tam route tablosu: [`scratch/api-route-audit.md`](scratch/api-route-audit.md)
+- Makine-okunur çıktı: [`scratch/api-route-audit.json`](scratch/api-route-audit.json)
+- Üretim scripti: [`scratch/generate-api-route-audit.cjs`](scratch/generate-api-route-audit.cjs)
+
+### 29.2 Toplam Sayılar
+- Toplam route dosyası: **67**
+- Güvenlik wrapper kullanılan route: **54**
+- Wrapper görünmeyen route: **13**
+- `createSupabaseAdminClient` kullanan: **19**
+- `createSupabaseServerClient` kullanan: **13**
+- Doğrudan `.from(...)` sorgusu içeren: **25**
+
+### 29.3 Wrapper Görünmeyen 13 Route İçin Sınıflandırma
+- **Beklenen/Intentional (public veya özel doğrulama):**
+  - [`src/app/api/auth/csrf/route.ts`](src/app/api/auth/csrf/route.ts)
+  - [`src/app/api/contact/route.ts`](src/app/api/contact/route.ts)
+  - [`src/app/api/listings/[id]/price-history/route.ts`](src/app/api/listings/[id]/price-history/route.ts)
+  - [`src/app/api/listings/[id]/verify-eids/route.ts`](src/app/api/listings/[id]/verify-eids/route.ts)
+  - [`src/app/api/market/estimate/route.ts`](src/app/api/market/estimate/route.ts)
+  - [`src/app/api/og/listing/route.tsx`](src/app/api/og/listing/route.tsx)
+  - [`src/app/api/search/suggestions/route.ts`](src/app/api/search/suggestions/route.ts)
+  - [`src/app/api/sentry-example-api/route.ts`](src/app/api/sentry-example-api/route.ts)
+- **Secret-based internal protection (wrapper yok ama fail-closed kontrol var):**
+  - [`src/app/api/payments/webhook/route.ts`](src/app/api/payments/webhook/route.ts) (signature doğrulama)
+  - [`src/app/api/payments/callback/route.ts`](src/app/api/payments/callback/route.ts) (token + Iyzico retrieve doğrulaması)
+  - [`src/app/api/saved-searches/notify/route.ts`](src/app/api/saved-searches/notify/route.ts) (CRON_SECRET)
+  - [`src/app/api/listings/expiry-warnings/route.ts`](src/app/api/listings/expiry-warnings/route.ts) (CRON_SECRET)
+  - [`src/app/api/health-check/route.ts`](src/app/api/health-check/route.ts) (opsiyonel CRON_SECRET, privileged-check split)
+
+### 29.4 Öncelikli Takip Notları
+- **P1-Route-Std**: Wrapper görünmeyen route’lar için “kasıtlı muafiyet” allowlist dokümantasyonu oluşturulmalı (test ile enforce).
+- **P2-Health-Consistency**: [`health-check`](src/app/api/health-check/route.ts) ile [`health`](src/app/api/health/route.ts) güvenlik yaklaşımı tek standarda hizalanmalı.
+- **P2-Cron-Consistency**: CRON secret doğrulamalarında [`withCronOrAdmin()`](src/lib/api/security.ts:296) kullanımına yakınsama değerlendirilmeli.
+
+### 29.5 Doğrulama
+- Route envanteri scripti başarıyla çalıştırıldı:
+  - `ROUTES=67`
+  - çıktı dosyaları üretildi (`scratch/api-route-audit.*`).
+
+## 28. Faz-12 Backend Audit + Güvenli Refactor (Kural-Temelli)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: `src/app/api`, `src/services`, `src/lib/supabase`, `database/migrations` üzerinde backend odaklı statik audit ve tek kritik dosyada davranış değiştirmeyen güvenli refactor.
+
+### 28.1 Audit Kapsamı (Tek tek tarama)
+- API yüzeyi envanteri çıkarıldı: [`src/app/api`](src/app/api)
+- Service katmanı envanteri çıkarıldı: [`src/services`](src/services)
+- Supabase entegrasyon çekirdeği çıkarıldı: [`src/lib/supabase`](src/lib/supabase)
+- Migration envanteri çıkarıldı: [`database/migrations`](database/migrations)
+
+### 28.2 Sınıflandırılmış Bulgular (Kural setine göre)
+- **Kritik (P1)**
+  - Toplu silme akışında sahiplik dışı `ids` ile ilişkili tabloları önce silme riski:
+    - Eski yaklaşımda [`bulkDeleteListingAction()`](src/app/dashboard/listings/actions.ts:145) içinde `listing_images` / `favorites` temizliği, sahiplik filtrelenmeden gelen `ids` ile çalışıyordu.
+    - Ana `listings` delete adımı `seller_id` ile filtrelense de yan tablo silme adımı için ön filtreleme açık değildi.
+- **Yüksek (P2)**
+  - Bazı legacy servislerde class-pattern izleri ve yeni `*-actions`/`*-records` standardı dışında kalan noktalar mevcut (takip refactor backlog).
+- **Orta (P3)**
+  - Hedefli test kapsaması bazı dashboard server action akışlarında sınırlı; bu yüzden lint + davranış-korumalı küçük patch stratejisi benimsendi.
+
+### 28.3 Uygulanan Güvenli Refactor/Fix (Davranış Değiştirmeden)
+- Dosya: [`src/app/dashboard/listings/actions.ts`](src/app/dashboard/listings/actions.ts)
+- Yeni helper eklendi: [`getOwnedListingIds()`](src/app/dashboard/listings/actions.ts:124)
+  - Gelen `ids` listesini önce `seller_id` ile kesiştirip sahip olunan ID setini üretiyor.
+- [`bulkArchiveListingAction()`](src/app/dashboard/listings/actions.ts:139)
+  - Güncelleme yalnız `ownedIds` üzerinden yapılıyor.
+  - Sahip olunan ilan yoksa erken dönüş (`count: 0`).
+- [`bulkDeleteListingAction()`](src/app/dashboard/listings/actions.ts:167)
+  - `listing_images` ve `favorites` silme adımları artık yalnız `ownedIds` için çalışıyor.
+  - Böylece yan etkiler kesin olarak çağıranın sahip olduğu ilan setiyle sınırlandı.
+
+### 28.4 Doğrulama
+- Çalıştırıldı: [`npm run lint -- src/app/dashboard/listings/actions.ts`](package.json:10)
+- Sonuç: ✅ başarılı.
+
+### 28.5 Sonraki Adım
+- Aynı kural setiyle `src/app/api/listings/*` altında toplu işlem endpoint’lerinde (bulk archive/delete/draft) sahiplik-filtre sırasını testle güçlendiren 1 hedefli test dosyası eklenecek.
+
+## 27. Faz-11 Components Refactor Standardı (Kural-Temelli Başlangıç)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: `src/components` altında kural-temelli, düşük riskli ilk refactor patch’i.
+
+### 27.1 Refactor Kural Seti (Bu fazda baz alınan)
+1. **Tekrarlı iş kuralı çağrısı yok**: Aynı hesaplama tek yerde yapılır, sonuç destructure edilerek kullanılır.
+2. **Pure helper ayrımı**: Formatlama/link üretimi gibi saf dönüşümler component dışına taşınır.
+3. **Sabit metinler merkezileştirilir**: Tekrarlanan mesaj/metin sabitleri `const` olarak tutulur.
+4. **Davranış değişikliği yok**: İlk tur yalnız okunabilirlik + bakım iyileştirmesi (no-breaking).
+5. **Client component içinde servis mantığı yok**: UI state orchestration kalır, domain/servis kuralları dışarıda kalır.
+6. **Hedefli doğrulama zorunlu**: Refactor sonrası ilgili test dosyası tek başına yeşil olmalı.
+7. **Küçük patch prensibi**: Bir dosyada tek odak; kapsam genişletilmez.
+
+### 27.2 Uygulanan İlk Patch
+- Dosya: [`src/components/listings/contact-actions.tsx`](src/components/listings/contact-actions.tsx)
+- Yapılanlar:
+  - `getSellerTrustUI()` tekrar çağrıları kaldırıldı; tek `trustUI` sonucu kullanıldı.
+  - `formatPhone` inline fonksiyonu dışarı alınıp [`formatPhoneNumber()`](src/components/listings/contact-actions.tsx:43) haline getirildi.
+  - WhatsApp metni sabitleştirildi: [`WHATSAPP_MESSAGE`](src/components/listings/contact-actions.tsx:41)
+  - Link üretimi tek noktaya taşındı: [`getWhatsappLink()`](src/components/listings/contact-actions.tsx:54)
+
+### 27.3 Doğrulama
+- Çalıştırıldı: [`npm run test:unit:lite -- src/components/listings/__tests__/contact-actions.test.tsx`](package.json:14)
+- Sonuç: ✅ `1` dosya / `3` test geçti.
+
+### 27.4 İkinci Patch (Shared Components)
+- Dosya: [`src/components/shared/article-share-actions.tsx`](src/components/shared/article-share-actions.tsx)
+- Yapılanlar:
+  - Tekrarlı button class string’i sabitleştirildi: [`BUTTON_CLASSNAME`](src/components/shared/article-share-actions.tsx:10)
+  - URL erişimi helper’a taşındı: [`getCurrentUrl()`](src/components/shared/article-share-actions.tsx:13)
+  - `handleCopy` ve `handleShare` içinde aynı URL kaynağı tek noktaya bağlandı.
+- Doğrulama:
+  - [`npm run lint -- src/components/shared/article-share-actions.tsx`](package.json:10) ✅
+
+### 27.5 Sonraki Adım
+- Aynı kural setiyle `src/components/shared` veya `src/components/profile` altında test kapsaması olan bir dosyada 3. küçük patch uygulanacak.
+
+## 26. Faz-10 Düşük Kaynak Modu (Node/Test Stabilizasyonu)
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Geliştirme ve test komutlarında CPU/RAM tüketimini düşürmek, paralellik varsayılanlarını güvenli seviyeye çekmek.
+
+### 26.1 Tamamlanan Değişiklikler
+- [`package.json`](package.json) script güncellemeleri:
+  - [`dev:lite`](package.json:7): `NODE_OPTIONS=--max-old-space-size=2048` ile hafıza tavanı kontrollü geliştirme modu.
+  - [`test:unit:lite`](package.json:14): Vitest düşük worker ayarı (`--maxWorkers=2 --minWorkers=1`).
+  - [`test:int:lite`](package.json:16): Integration testleri tek worker (`--maxWorkers=1 --minWorkers=1`).
+  - [`test:e2e:chromium:lite`](package.json:20): Playwright Chromium tek worker (`--workers=1`).
+- [`vitest.config.ts`](vitest.config.ts:12) güncellendi:
+  - Varsayılan unit test worker’ları düşürüldü (`maxWorkers: CI=3, local=2`, `minWorkers: 1`).
+- [`vitest.int.config.ts`](vitest.int.config.ts:17) güncellendi:
+  - Integration testler için sabit tek worker (`maxWorkers: 1`, `minWorkers: 1`).
+- [`playwright.config.ts`](playwright.config.ts:24) güncellendi:
+  - Local’de `fullyParallel: false`, CI’da `true`.
+  - Worker sayısı varsayılanı local’de `2` (CI `2`), opsiyonel override: `PW_WORKERS`.
+
+### 26.2 Doğrulama
+- Çalıştırıldı: [`npm run test:unit:lite -- src/lib/api/__tests__/client.test.ts src/lib/middleware/__tests__/middleware-logic.test.ts`](package.json:14)
+- Sonuç: ✅ `2` dosya / `16` test geçti.
+
+### 26.3 Operasyon Notu
+- Ağır gate’ler (`test:int`, full e2e matrix) cihazı yormamak için yalnız ihtiyaç halinde ve hedefli dosya bazında çalıştırılmalı.
+- Günlük geliştirmede önerilen akış: [`dev:lite`](package.json:7) + hedefli [`test:unit:lite`](package.json:14).
+
 ## 24. Faz-6 Dokümantasyon Senkronizasyonu — Release Readiness
 
 **Date**: 2026-05-06
@@ -21,6 +379,53 @@
 - Lint: kritik dosya seti ✅
 - Hedefli test gate: `10` dosya / `56` test ✅
 - Güvenlik/Fonksiyon/Performans fazları tamamlandı; dokümanlar mevcut operasyonel davranışla hizalı.
+
+## 25. Faz-9 RLS/Policy Runtime Audit — Statik Tamamlama
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Static)
+**Scope**: Migration policy envanteri + backend query/policy eşleştirmesi (MCP olmadan).
+
+### 25.1 Tamamlananlar
+- RLS/policy envanteri çıkarıldı (`enable rls`, `policy`, `security definer`, `security invoker` düzeyinde).
+- Backend sorguları policy beklentileriyle eşleştirildi (`anon/authenticated/admin` erişim modeli).
+- View güvenlik modeli kontrol edildi: [`public.public_profiles`](database/migrations/0119_fix_public_profiles_security_definer.sql:11) `security_invoker = true` ile güvenli.
+
+### 25.2 Canlı Doğrulama Backlog (MCP Unauthorized nedeniyle ertelendi)
+- **BL-RLS-01**: Supabase MCP auth sonrası canlı proje üstünde advisors/security taraması
+- **BL-RLS-02**: Policy runtime smoke SQL seti (`anon/authenticated` rol simülasyonları)
+- **BL-RLS-03**: Çıkan farklar için migration patch + hedefli doğrulama + commit
+
+### 25.3 Not
+- Bu faz statik analiz açısından kapalıdır.
+- Canlı DB doğrulaması ayrı backlog maddesi olarak taşınmıştır.
+
+## 25. Faz-9 RLS/Policy Runtime Audit — Static + Live Checklist
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED (Static)
+**Scope**: Migration policy envanteri + backend query/policy eşleştirmesi; canlı doğrulama için SQL checklist.
+
+### 25.1 Static Audit Sonucu
+- RLS/policy envanteri migration dosyaları üzerinden çıkarıldı.
+- `public_profiles` görünümü için `security_invoker` güvenliği doğrulandı:
+  - [`database/migrations/0119_fix_public_profiles_security_definer.sql`](database/migrations/0119_fix_public_profiles_security_definer.sql)
+- Backend query/policy eşleştirmesi `anon/authenticated/admin` perspektifinde tamamlandı.
+
+### 25.2 Live Runtime Checklist (MCP yokken)
+- Canlı SQL kontrol listesi eklendi:
+  - [`database/RLS_RUNTIME_CHECKLIST.sql`](database/RLS_RUNTIME_CHECKLIST.sql)
+- İçerik:
+  - RLS enable taraması
+  - SECURITY DEFINER + `search_path` kontrolü
+  - bare `auth.uid()` policy kontrolü
+  - view (`security_invoker`) doğrulaması
+  - anon/auth/admin runtime smoke adımları
+  - listing_questions ve storage policy tutarlılık kontrolleri
+
+### 25.3 Backlog (MCP Auth sonrası)
+- `list_projects` + advisor/security taraması canlı çalıştırılacak.
+- Checklist sonuçlarına göre migration patch gerekiyorsa uygulanacak.
 
 ## 23. Faz-5 Test Güvenilirliği — İlk Gate Sonucu
 

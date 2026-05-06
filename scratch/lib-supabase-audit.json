@@ -1,0 +1,101 @@
+[
+  {
+    "file": "src/lib/supabase/admin.ts",
+    "useServer": "no",
+    "usesAdminClient": "yes",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "createSupabaseAdminClient"
+  },
+  {
+    "file": "src/lib/supabase/browser.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "createSupabaseBrowserClient"
+  },
+  {
+    "file": "src/lib/supabase/client-factory.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "getSupabaseClient"
+  },
+  {
+    "file": "src/lib/supabase/client.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "useSupabase, useAuth"
+  },
+  {
+    "file": "src/lib/supabase/env.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "hasSupabaseEnv, hasSupabaseAdminEnv, hasSupabaseStorageEnv, hasSupabaseDocumentsStorageEnv, getSupabaseEnv, getSupabaseAdminEnv, getSupabaseStorageEnv, getSupabaseDocumentsStorageEnv, getSupabaseProjectRef"
+  },
+  {
+    "file": "src/lib/supabase/middleware.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "platform_settings, profiles",
+    "securityWrappers": "none",
+    "exportedFunctions": "updateSession"
+  },
+  {
+    "file": "src/lib/supabase/public-server.ts",
+    "useServer": "no",
+    "usesAdminClient": "yes",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "createSupabasePublicServerClient, shouldUsePublicClient"
+  },
+  {
+    "file": "src/lib/supabase/replica-client.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "getReadSupabaseClient, markStickyMaster, withReadReplica"
+  },
+  {
+    "file": "src/lib/supabase/server.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "createSupabaseServerClient"
+  }
+]

@@ -1,0 +1,211 @@
+[
+  {
+    "file": "src/domain/index.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "-"
+  },
+  {
+    "file": "src/domain/logic/doping-status-machine.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "canTransitionDoping, isDopingActive, getDopingRemainingTime, getDopingListingUpdates, getDopingTypeLabel"
+  },
+  {
+    "file": "src/domain/logic/listing-factory.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "buildBaseSlug, buildListingSlug, createListingEntity, getCleanDescription, getListingBreadcrumbs"
+  },
+  {
+    "file": "src/domain/logic/listing-status-machine.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "-"
+  },
+  {
+    "file": "src/domain/logic/payment-status-machine.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "-"
+  },
+  {
+    "file": "src/domain/logic/profile-logic.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "getProfileMembershipLabel, getProfileInitials"
+  },
+  {
+    "file": "src/domain/logic/slug-generator.ts",
+    "useServer": "no",
+    "usesAdminClient": "yes",
+    "usesServerClient": "no",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "listings",
+    "securityWrappers": "none",
+    "exportedFunctions": "generateUniqueSlug, isSlugUnique"
+  },
+  {
+    "file": "src/domain/logic/trust-score-calculator.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "-"
+  },
+  {
+    "file": "src/domain/usecases/chat-create.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "createChatUseCase"
+  },
+  {
+    "file": "src/domain/usecases/chat-send-message.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "sendMessageUseCase"
+  },
+  {
+    "file": "src/domain/usecases/doping-activate.ts",
+    "useServer": "no",
+    "usesAdminClient": "yes",
+    "usesServerClient": "no",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "payments",
+    "securityWrappers": "none",
+    "exportedFunctions": "activateDopingUseCase"
+  },
+  {
+    "file": "src/domain/usecases/favorite-add.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "favoriteAddUseCase"
+  },
+  {
+    "file": "src/domain/usecases/favorite-remove.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "favoriteRemoveUseCase"
+  },
+  {
+    "file": "src/domain/usecases/index.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "-"
+  },
+  {
+    "file": "src/domain/usecases/listing-archive.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "archiveListingUseCase"
+  },
+  {
+    "file": "src/domain/usecases/listing-bump.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "bumpListingUseCase"
+  },
+  {
+    "file": "src/domain/usecases/listing-create.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "executeListingCreation"
+  },
+  {
+    "file": "src/domain/usecases/listing-publish.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "publishListingUseCase"
+  },
+  {
+    "file": "src/domain/usecases/payment-initiate.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "initiatePaymentUseCase"
+  }
+]

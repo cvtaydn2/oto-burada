@@ -114,32 +114,30 @@ function hasSecurityMiddleware(
 function isPublicEndpoint(filePath: string, content: string): boolean {
   const normalizedFilePath = filePath.replace(/\\/g, "/");
 
-  // Public endpoints that don't require auth
-  const publicPaths = [
-    "/api/auth/",
-    "/api/webhooks/",
-    "/api/health",
-    "/api/cron/",
-    "/api/contact",
-    "/api/market/estimate",
-    "/api/search/suggestions",
-    "/api/og/",
-    "/api/payments/callback",
-    "/api/payments/webhook",
-    "/api/saved-searches/notify",
-    "/api/listings/expiry-warnings",
-    "/api/cron/process-fulfillments",
-    "/api/migrations/legacy-sync",
-    "/api/listings/[listingId]/verify-eids",
-    // verify-eids uses [id] param in actual route
-    "/api/listings/[id]/verify-eids",
-    // price-history is a public read endpoint (no auth required)
-    "/api/listings/[id]/price-history",
-    // SSE stream handles its own auth internally via supabase.auth.getUser()
-    "/api/notifications/stream",
+  // Public endpoints that don't require auth (exact/anchored patterns)
+  const publicPathRules: RegExp[] = [
+    /\/src\/app\/api\/auth\/csrf\/route\.ts$/,
+    /\/src\/app\/api\/webhooks\//,
+    /\/src\/app\/api\/cron\//,
+    /\/src\/app\/api\/contact\/route\.ts$/,
+    /\/src\/app\/api\/market\/estimate\/route\.ts$/,
+    /\/src\/app\/api\/search\/suggestions\/route\.ts$/,
+    /\/src\/app\/api\/og\//,
+    /\/src\/app\/api\/payments\/callback\/route\.ts$/,
+    /\/src\/app\/api\/payments\/webhook\/route\.ts$/,
+    /\/src\/app\/api\/saved-searches\/notify\/route\.ts$/,
+    /\/src\/app\/api\/listings\/expiry-warnings\/route\.ts$/,
+    /\/src\/app\/api\/migrations\/legacy-sync\//,
+    /\/src\/app\/api\/listings\/\[listingId\]\/verify-eids\/route\.ts$/,
+    /\/src\/app\/api\/listings\/\[id\]\/verify-eids\/route\.ts$/,
+    /\/src\/app\/api\/listings\/\[id\]\/price-history\/route\.ts$/,
+    /\/src\/app\/api\/notifications\/stream\/route\.ts$/,
+    /\/src\/app\/api\/health\/route\.ts$/,
+    /\/src\/app\/api\/health-check\/route\.ts$/,
+    /\/src\/app\/api\/sentry-example-api\/route\.ts$/,
   ];
 
-  if (publicPaths.some((p) => normalizedFilePath.includes(p))) {
+  if (publicPathRules.some((rule) => rule.test(normalizedFilePath))) {
     return true;
   }
 
@@ -154,8 +152,47 @@ function isPublicEndpoint(filePath: string, content: string): boolean {
 describe("API Security Audit", () => {
   const routeFiles = getAllRouteFiles(API_DIR);
 
+  const EXPECTED_PUBLIC_ROUTES = new Set([
+    "/src/app/api/auth/csrf/route.ts",
+    "/src/app/api/contact/route.ts",
+    "/src/app/api/cron/cleanup-stale-payments/route.ts",
+    "/src/app/api/cron/cleanup-storage/route.ts",
+    "/src/app/api/cron/expire-dopings/route.ts",
+    "/src/app/api/cron/expire-listings/route.ts",
+    "/src/app/api/cron/expire-reservations/route.ts",
+    "/src/app/api/cron/main/route.ts",
+    "/src/app/api/cron/outbox/route.ts",
+    "/src/app/api/cron/process-fulfillment-jobs/route.ts",
+    "/src/app/api/cron/sync-listing-views/route.ts",
+    "/src/app/api/health-check/route.ts",
+    "/src/app/api/health/route.ts",
+    "/src/app/api/listings/[id]/price-history/route.ts",
+    "/src/app/api/listings/[id]/verify-eids/route.ts",
+    "/src/app/api/listings/expiry-warnings/route.ts",
+    "/src/app/api/market/estimate/route.ts",
+    "/src/app/api/og/listing/route.tsx",
+    "/src/app/api/payments/callback/route.ts",
+    "/src/app/api/payments/webhook/route.ts",
+    "/src/app/api/saved-searches/notify/route.ts",
+    "/src/app/api/search/suggestions/route.ts",
+    "/src/app/api/sentry-example-api/route.ts",
+  ]);
+
   it("should find route files", () => {
     expect(routeFiles.length).toBeGreaterThan(0);
+  });
+
+  describe("Public endpoint allowlist consistency", () => {
+    it("should match expected public route list exactly", () => {
+      const actualPublicRoutes = routeFiles
+        .filter((file) => isPublicEndpoint(file.path, file.content))
+        .map((file) => file.path.replace(process.cwd(), "").replace(/\\/g, "/"))
+        .sort();
+
+      const expectedPublicRoutes = [...EXPECTED_PUBLIC_ROUTES].sort();
+
+      expect(actualPublicRoutes).toEqual(expectedPublicRoutes);
+    });
   });
 
   describe("CSRF Protection", () => {

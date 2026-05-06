@@ -1,0 +1,79 @@
+[
+  {
+    "file": "src/lib/auth/actions.ts",
+    "useServer": "yes",
+    "usesAdminClient": "yes",
+    "usesServerClient": "yes",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "profiles",
+    "securityWrappers": "none",
+    "exportedFunctions": "loginAction, registerAction, forgotPasswordAction, logoutAction, resendVerificationAction, updatePasswordAction"
+  },
+  {
+    "file": "src/lib/auth/api-admin.ts",
+    "useServer": "no",
+    "usesAdminClient": "yes",
+    "usesServerClient": "yes",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "profiles",
+    "securityWrappers": "none",
+    "exportedFunctions": "requireApiAdminUser, isSupabaseAdminUser"
+  },
+  {
+    "file": "src/lib/auth/api-user.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "yes",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "requireApiUser"
+  },
+  {
+    "file": "src/lib/auth/guards.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "-"
+  },
+  {
+    "file": "src/lib/auth/profile-actions.ts",
+    "useServer": "yes",
+    "usesAdminClient": "yes",
+    "usesServerClient": "yes",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "profiles",
+    "securityWrappers": "none",
+    "exportedFunctions": "updateProfileAction, updateCorporateProfileAction"
+  },
+  {
+    "file": "src/lib/auth/session-context.ts",
+    "useServer": "no",
+    "usesAdminClient": "no",
+    "usesServerClient": "no",
+    "directFrom": "no",
+    "rpc": "-",
+    "tables": "-",
+    "securityWrappers": "none",
+    "exportedFunctions": "withSessionContext, getSessionContext"
+  },
+  {
+    "file": "src/lib/auth/session.ts",
+    "useServer": "no",
+    "usesAdminClient": "yes",
+    "usesServerClient": "yes",
+    "directFrom": "yes",
+    "rpc": "-",
+    "tables": "profiles",
+    "securityWrappers": "none",
+    "exportedFunctions": "requireUser, getUserRole, requireAdminUser, getAuthenticatedUserOrThrow"
+  }
+]
