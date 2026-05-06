@@ -41,3 +41,7 @@ export {
 // ── IP extraction ─────────────────────────────────────────────────────────────
 
 export { getClientIp } from "@/lib/api/ip";
+
+// ── Ownership / IDOR Protection ──────────────────────────────────────────────
+
+export { assertOwnership, isOwner, type OwnershipOptions } from "./ownership";

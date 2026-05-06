@@ -57,7 +57,11 @@ function sanitizeMarketplaceFilters(filters: ListingFilters): {
 
   for (const [key, value] of Object.entries(filters)) {
     if (SUPPORTED_MARKETPLACE_FILTER_KEYS.has(key as keyof ListingFilters)) {
-      (sanitized as Record<string, unknown>)[key] = value;
+      if (typeof value === "string") {
+        (sanitized as Record<string, unknown>)[key] = value.replace(/<[^>]*>/g, "");
+      } else {
+        (sanitized as Record<string, unknown>)[key] = value;
+      }
     } else {
       droppedKeys.push(key);
     }

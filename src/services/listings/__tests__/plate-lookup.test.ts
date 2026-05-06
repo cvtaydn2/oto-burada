@@ -1,4 +1,34 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/supabase/server", () => ({
+  createSupabaseServerClient: vi.fn().mockResolvedValue({
+    from: vi.fn().mockImplementation((table: string) => {
+      if (table === "brands") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ id: 1, name: "BMW" }],
+            error: null,
+          }),
+        };
+      }
+      if (table === "models") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ name: "3 Series" }],
+            error: null,
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    }),
+  }),
+}));
 
 import { lookupVehicleByPlate } from "../plate-lookup";
 

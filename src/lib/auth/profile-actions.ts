@@ -230,4 +230,31 @@ export async function updateCorporateProfileAction(
   };
 }
 
-// verifyIdentityAction — E-Devlet entegrasyonu hazır olduğunda buraya eklenecek
+export async function deleteProfileAction(): Promise<{ error?: string; success?: boolean }> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { error: "Oturum doğrulanamadı. Lütfen tekrar giriş yap." };
+  }
+
+  const { error: rpcError } = await supabase.rpc("soft_delete_profile", {
+    p_user_id: user.id,
+  });
+
+  if (rpcError) {
+    logger.auth.error("[Profile] GDPR soft delete RPC failed", null, {
+      userId: user.id,
+      error: rpcError,
+    });
+    return { error: "Profil silinemedi: " + rpcError.message };
+  }
+
+  // Sign out user after successful soft delete
+  await supabase.auth.signOut();
+
+  return { success: true };
+}

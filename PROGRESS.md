@@ -1,5 +1,38 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 46. GDPR Soft Delete, Optimistic Locking, and IDOR Protection
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Implement application-level GDPR soft delete, verify optimistic locking concurrency checks, and write a reusable ownership verification helper to mitigate IDOR.
+
+### 46.1 Applied Fixes
+- **GDPR Soft Delete Action ([profile-actions.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/lib/auth/profile-actions.ts)):** Created `deleteProfileAction` to securely invoke the database-level `soft_delete_profile` RPC, anonymize GDPR-protected profile fields, archive listings, and sign out the user.
+- **Optimistic Locking Verification ([delete-listing.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/services/listings/commands/delete-listing.ts), [listing-submission-persistence.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/services/listings/listing-submission-persistence.ts)):** Verified that listing mutations and deletions cleanly pass the current `version` attribute and perform atomicity-safe concurrent update checks inside the database-level RPC handlers.
+- **IDOR Ownership Helper ([ownership.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/lib/security/ownership.ts)):** Designed and wrote `isOwner` and `assertOwnership` to serve as reusable, defense-in-depth ownership checks for user resources across files.
+- **Security Exports ([index.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/lib/security/index.ts)):** Exported ownership functions through `@/lib/security` single entry point.
+
+### 46.2 Validation
+- **Lint & Typecheck:** Verified that both linter and type checker pass cleanly with **0 errors and 0 warnings**.
+
+### 46.3 Next Step
+- Final production launch on Vercel.
+
+## 45. IDE CSS Syntax Validation Optimization
+
+**Date**: 2026-05-06
+**Status**: ✅ COMPLETED
+**Scope**: Eliminate IDE-level linter warnings/errors in `src/app/globals.css` caused by Tailwind CSS v4's custom directives.
+
+### 45.1 Applied Fixes
+- **VS Code Validation Suppression:** Added `"css.lint.unknownAtRules": "ignore"` and associated `*.css` files with `tailwindcss` mode in `.vscode/settings.json`. This tells the IDE to parse Tailwind v4 features (e.g. `@source`, `@custom-variant`, `@theme`) correctly without throwing syntax errors.
+
+### 45.2 Validation
+- **Lint & Typecheck:** Verified that both `npm run lint` and `npm run typecheck` complete with **0 errors and 0 warnings**.
+
+### 45.3 Next Step
+- Final production deployment and maintenance.
+
 ## 44. UI Component Polish & Mobile Navigation UX Stabilization
 
 **Date**: 2026-05-06

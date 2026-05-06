@@ -16,10 +16,10 @@ vi.mock("@/lib/logging/logger", () => ({
   },
 }));
 
-const mockCreateSupabaseServerClient = vi.fn();
+const mockCreateSupabaseAdminClient = vi.fn();
 
-vi.mock("@/lib/supabase/server", () => ({
-  createSupabaseServerClient: () => mockCreateSupabaseServerClient(),
+vi.mock("@/lib/supabase/admin", () => ({
+  createSupabaseAdminClient: () => mockCreateSupabaseAdminClient(),
 }));
 
 function createSupabaseClientMock(params: {
@@ -97,7 +97,7 @@ describe("processReconciliation - subscription status safety", () => {
       },
     });
 
-    mockCreateSupabaseServerClient.mockResolvedValue(mock.client);
+    mockCreateSupabaseAdminClient.mockReturnValue(mock.client);
 
     const { processReconciliation } = await import("../reconciliation-worker");
     await processReconciliation();
@@ -125,7 +125,7 @@ describe("processReconciliation - subscription status safety", () => {
       },
     });
 
-    mockCreateSupabaseServerClient.mockResolvedValue(mock.client);
+    mockCreateSupabaseAdminClient.mockReturnValue(mock.client);
 
     const { processReconciliation } = await import("../reconciliation-worker");
     await processReconciliation();
@@ -151,7 +151,7 @@ describe("processReconciliation - subscription status safety", () => {
       },
     });
 
-    mockCreateSupabaseServerClient.mockResolvedValue(mock.client);
+    mockCreateSupabaseAdminClient.mockReturnValue(mock.client);
 
     const { processReconciliation } = await import("../reconciliation-worker");
     await processReconciliation();
