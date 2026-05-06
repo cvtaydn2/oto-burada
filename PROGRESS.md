@@ -1,5 +1,22 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 43. Jules (CTO) Commit Integration
+
+**Date**: 2026-05-07
+**Status**: ✅ COMPLETED
+**Scope**: Find and integrate the CTO's (google-labs-jules[bot]) commit from remote branch `origin/jules-6059906657383975030-9d58aaa0` resolving transaction outbox race conditions using `FOR UPDATE SKIP LOCKED`.
+
+### 43.1 Applied Fixes
+- Located CTO's remote branch and commit: `a6211fde7ee76a764b27ee36875a351b82907244`
+- Cherry-picked the commit onto `main` branch successfully (commit `bf0b824` / `a6211fd` in original branch).
+- Added new migration file `0133_fix_outbox_race_conditions.sql` to resolve race conditions in transaction outbox processing.
+
+### 43.2 Validation
+- Verified local migration status: `npm run db:migrate:status` successfully parsed the migrations list and validated all migration numbers.
+
+### 43.3 Next Step
+- Push the merged changes to remote `main` branch.
+
 ## 42. Faz-26 Medium Priority Quality/Security/Performance Pass
 
 **Date**: 2026-05-06
