@@ -1715,6 +1715,89 @@ $$;
 ALTER FUNCTION "public"."is_user_banned"("p_user_id" "uuid") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."expire_dopings_atomic"() RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+  v_now timestamptz := timezone('utc', now());
+  v_featured_count int;
+  v_urgent_count int;
+  v_highlighted_count int;
+  v_purchases_count int;
+BEGIN
+  -- 1. Expire featured dopings
+  WITH expired AS (
+    UPDATE listings
+    SET 
+      featured = false,
+      is_featured = false,
+      featured_until = NULL,
+      updated_at = v_now
+    WHERE featured = true
+      AND featured_until IS NOT NULL
+      AND featured_until < v_now
+    RETURNING id
+  ) SELECT count(*) INTO v_featured_count FROM expired;
+
+  -- 2. Expire urgent dopings
+  WITH expired AS (
+    UPDATE listings
+    SET 
+      is_urgent = false,
+      urgent_until = NULL,
+      updated_at = v_now
+    WHERE is_urgent = true
+      AND urgent_until IS NOT NULL
+      AND urgent_until < v_now
+    RETURNING id
+  ) SELECT count(*) INTO v_urgent_count FROM expired;
+
+  -- 3. Expire highlighted dopings
+  WITH expired AS (
+    UPDATE listings
+    SET 
+      highlighted_until = NULL,
+      frame_color = NULL,
+      updated_at = v_now
+    WHERE highlighted_until IS NOT NULL
+      AND highlighted_until < v_now
+    RETURNING id
+  ) SELECT count(*) INTO v_highlighted_count FROM expired;
+
+  -- 4. Mark doping purchases as expired
+  WITH expired AS (
+    UPDATE doping_purchases
+    SET status = 'expired'
+    WHERE status = 'active'
+      AND expires_at IS NOT NULL
+      AND expires_at < v_now
+    RETURNING id
+  ) SELECT count(*) INTO v_purchases_count FROM expired;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'timestamp', v_now,
+    'counts', jsonb_build_object(
+      'featured', v_featured_count,
+      'urgent', v_urgent_count,
+      'highlighted', v_highlighted_count,
+      'purchases', v_purchases_count
+    )
+  );
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object(
+    'success', false,
+    'error', SQLERRM
+  );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."expire_dopings_atomic"() OWNER TO "postgres";
+
+
+
 CREATE OR REPLACE FUNCTION "public"."is_valid_damage_status_json"("data" "jsonb") RETURNS boolean
     LANGUAGE "plpgsql" IMMUTABLE SECURITY DEFINER
     SET "search_path" TO 'public'

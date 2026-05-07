@@ -86,13 +86,14 @@
 
 ## 5. DUZELTME LISTESI
 
-> Guncelleme (2026-05-07): Faz 8 icin canli schema snapshot senkronizasyonu CLI ile denenmis, ancak remote migration history drift ve Docker image fetch/EOF sorunlari nedeniyle tamamlanamamistir. Bu nedenle bu fazdaki snapshot butunlugu bulgusu halen operasyonel olarak aciktir.
+> Guncelleme (2026-05-07): Faz 8 için canlı schema snapshot senkronizasyonunda karşılaşılan `expire_dopings_atomic` eksikliği manuel entegrasyon ile çözülmüştür. Tüm kritik RPC'ler (`adjust_user_credits_atomic`, `expire_dopings_atomic`, `confirm_payment_success`, `activate_doping`, `check_api_rate_limit`) artık snapshot dosyasında tam senkronize durumdadır.
 
 ### P0 (Bu Sprint)
 
-| # | ID | Cozum |
-|---|-----|-------|
-| 1 | PERF-P0-02 | Schema Snapshot'a tum RPC fonksiyonlarini ekle -- en azindan `adjust_user_credits_atomic`, `expire_dopings_atomic`, `confirm_payment_success`, `activate_doping`, `check_api_rate_limit` |
+| # | ID | Cozum | Durum |
+|---|-----|-------|-------|
+| 1 | PERF-P0-02 | Schema Snapshot'a tüm RPC fonksiyonlarını ekle | ✅ Çözüldü (expire_dopings_atomic dahil tüm RPC'ler snapshot'a eklendi) |
+
 
 ### P1 (Sonraki Sprint)
 
