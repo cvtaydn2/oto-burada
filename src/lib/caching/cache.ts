@@ -146,9 +146,10 @@ export async function withNextCache<T>(
   loader: () => Promise<T>,
   revalidate = 60
 ): Promise<T> {
-  // Skip caching in test/browser environments
+  // Skip caching in test/development/browser environments
   if (
     process.env.NODE_ENV === "test" ||
+    process.env.NODE_ENV === "development" ||
     typeof window !== "undefined" ||
     !process.env.NEXT_RUNTIME
   ) {

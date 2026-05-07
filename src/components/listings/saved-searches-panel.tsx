@@ -4,6 +4,10 @@ import { Bell, ChevronRight, LoaderCircle, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import {
+  deleteSavedSearchAction,
+  toggleSavedSearchNotificationsAction,
+} from "@/app/dashboard/saved-searches/actions";
 import { Button } from "@/components/ui/button";
 import { captureClientEvent } from "@/lib/monitoring/telemetry-client";
 import { formatDate } from "@/lib/utils";
@@ -32,24 +36,13 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
     setErrorMessage(null);
 
     try {
-      const response = await fetch(`/api/saved-searches/${searchId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ notificationsEnabled: nextValue }),
-      });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message?: string };
-      } | null;
+      const result = await toggleSavedSearchNotificationsAction(searchId, nextValue);
 
-      if (!response.ok || !payload?.success) {
-        const message = payload?.error?.message ?? "Kayıtlı arama güncellenemedi.";
+      if (!result.success) {
+        const message = result.error ?? "Kayıtlı arama güncellenemedi.";
         captureClientEvent("saved_search_toggle_failed", {
           searchId,
           nextValue,
-          responseStatus: response.status,
           message,
         });
         setErrorMessage(message);
@@ -79,19 +72,12 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
     setErrorMessage(null);
 
     try {
-      const response = await fetch(`/api/saved-searches/${searchId}`, {
-        method: "DELETE",
-      });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message?: string };
-      } | null;
+      const result = await deleteSavedSearchAction(searchId);
 
-      if (!response.ok || !payload?.success) {
-        const message = payload?.error?.message ?? "Kayıtlı arama silinemedi.";
+      if (!result.success) {
+        const message = result.error ?? "Kayıtlı arama silinemedi.";
         captureClientEvent("saved_search_delete_failed", {
           searchId,
-          responseStatus: response.status,
           message,
         });
         setErrorMessage(message);

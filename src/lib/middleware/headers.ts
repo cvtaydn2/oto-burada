@@ -33,7 +33,12 @@ export function getSecurityHeaders(nonce: string) {
 
   // Nonce-first CSP in both production and development
   scriptSrc.push(`'nonce-${nonce}'`);
-  styleSrc.push(`'nonce-${nonce}'`);
+
+  if (isProduction) {
+    styleSrc.push(`'nonce-${nonce}'`);
+  } else {
+    styleSrc.push("'unsafe-inline'");
+  }
 
   if (!isProduction) {
     // Keep only what Next.js HMR needs in development

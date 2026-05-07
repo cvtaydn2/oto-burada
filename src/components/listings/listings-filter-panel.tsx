@@ -51,20 +51,20 @@ function FilterSection({
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
         aria-expanded={isOpen}
-        className="flex w-full items-center justify-between py-3 text-sm font-medium text-foreground hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex w-full items-center justify-between py-3 text-sm font-medium text-foreground hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="flex items-center gap-2">
           {Icon && (
             <Icon
               size={16}
               className={
-                activeCount && activeCount > 0 ? "text-blue-600" : "text-muted-foreground/70"
+                activeCount && activeCount > 0 ? "text-primary" : "text-muted-foreground/70"
               }
             />
           )}
           {title}
           {activeCount !== undefined && activeCount > 0 && (
-            <span className="flex size-5 items-center justify-center rounded-md bg-blue-600 text-[10px] font-medium text-white">
+            <span className="flex size-5 items-center justify-center rounded-md bg-primary text-[10px] font-medium text-white">
               {activeCount}
             </span>
           )}

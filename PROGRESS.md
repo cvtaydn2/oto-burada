@@ -1,5 +1,18 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 49. CSP Style-Src Development Optimization
+
+**Date**: 2026-05-07
+**Status**: ✅ COMPLETED
+**Scope**: Resolve browser console CSP violation errors in development mode (`npm run dev`) by allowing `'unsafe-inline'` styles for Next.js Fast Refresh (HMR), devtools, and other third-party style injections.
+
+### 49.1 Applied Fixes
+- **CSP Adjustment ([headers.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/lib/middleware/headers.ts)):** Modified the `getSecurityHeaders` function so that when `process.env.NODE_ENV !== "production"`, `'unsafe-inline'` is added to `style-src` instead of `'nonce-${nonce}'`. This permits Next.js Fast Refresh/HMR (`devtool-style-inject.js`), Sentry/Vercel session replays (`rrweb.js`), and other client-side style scripts to inject inline styles locally without throwing CSP violation blocks.
+- **Production Nonce Preservation:** Kept the secure `'nonce-${nonce}'` configuration active in production mode (`isProduction === true`) to ensure maximum security alignment.
+
+### 49.2 Validation
+- **Unit & Integration Test Suite**: Confirmed that all **585 tests across 85 test suites** pass perfectly with 0 failures, ensuring the CSP changes did not break any existing test assertions.
+
 ## 48. Migration Consolidation and Squashing
 
 **Date**: 2026-05-07

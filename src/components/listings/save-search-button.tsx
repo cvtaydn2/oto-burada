@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { saveSearchAction } from "@/app/dashboard/saved-searches/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
@@ -43,30 +44,16 @@ export function SaveSearchButton({
     setMessage(null);
 
     try {
-      const response = await fetch("/api/saved-searches", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          filters,
-          notificationsEnabled: true,
-        }),
-      });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message?: string };
-        message?: string;
-      } | null;
+      const result = await saveSearchAction(filters, true);
 
-      if (!response.ok || !payload?.success) {
+      if (!result.success) {
         setStatus("error");
-        setMessage(payload?.error?.message ?? "Arama kaydedilemedi.");
+        setMessage(result.error ?? "Arama kaydedilemedi.");
         return;
       }
 
       setStatus("success");
-      setMessage(payload.message ?? "Araman kaydedildi.");
+      setMessage(result.message ?? "Araman kaydedildi.");
     } catch {
       setStatus("error");
       setMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");

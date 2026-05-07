@@ -31,7 +31,7 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
               size={18}
               className={cn(
                 "shrink-0 text-muted-foreground/70 transition-transform duration-200",
-                openIndex === i && "rotate-180 text-blue-500"
+                openIndex === i && "rotate-180 text-primary"
               )}
             />
           </Button>

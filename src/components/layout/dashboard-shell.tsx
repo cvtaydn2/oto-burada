@@ -36,12 +36,12 @@ export function DashboardShell({
               <Link
                 href="/"
                 aria-label="Ana sayfaya dön"
-                className="flex size-10 items-center justify-center rounded-xl bg-muted/30 text-muted-foreground/70 border border-border/50 transition hover:bg-card hover:text-blue-500 hover:border-blue-100 hover:shadow-sm"
+                className="flex size-10 items-center justify-center rounded-xl bg-muted/30 text-muted-foreground/70 border border-border/50 transition hover:bg-card hover:text-primary hover:border-primary/20 hover:shadow-sm"
               >
                 <ArrowLeft size={18} aria-hidden="true" />
               </Link>
               <div>
-                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">
+                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">
                   Satıcı Paneli
                 </p>
                 <p className="text-xl font-bold text-foreground leading-none">
@@ -64,7 +64,7 @@ export function DashboardShell({
                 <Link href="/admin">
                   <Button
                     variant="outline"
-                    className="h-9 border-blue-100 bg-blue-50/50 text-blue-700 hover:bg-blue-50 gap-2 font-bold rounded-xl shadow-sm text-xs"
+                    className="h-9 border-primary/10 bg-primary/5 text-primary hover:bg-primary/10 gap-2 font-bold rounded-xl shadow-sm text-xs"
                   >
                     <ShieldCheck size={15} />
                     Admin Paneli

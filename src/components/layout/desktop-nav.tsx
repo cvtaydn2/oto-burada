@@ -24,8 +24,8 @@ export function DesktopNav() {
             href={item.href}
             prefetch={false}
             className={cn(
-              "transition-colors hover:text-blue-500",
-              isActive && "text-blue-500 font-semibold"
+              "transition-colors hover:text-primary",
+              isActive && "text-primary font-bold"
             )}
             aria-current={isActive ? "page" : undefined}
           >

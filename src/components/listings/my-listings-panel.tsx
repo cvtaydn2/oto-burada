@@ -159,7 +159,7 @@ export function MyListingsPanel({
         </div>
       )}
       {bumpMessage && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-6 py-4 text-sm text-blue-700 font-bold shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-sm text-emerald-700 font-bold shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
           {bumpMessage}
         </div>
       )}
@@ -311,9 +311,9 @@ export function MyListingsPanel({
                   variant="outline"
                   size="sm"
                   onClick={exportCsv}
-                  className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest border-border rounded-xl bg-card hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
+                  className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest border-border rounded-xl bg-card hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
                 >
-                  <FileSpreadsheet size={16} className="mr-2 text-blue-500" />
+                  <FileSpreadsheet size={16} className="mr-2 text-primary" />
                   Excel İndir
                 </Button>
               </div>

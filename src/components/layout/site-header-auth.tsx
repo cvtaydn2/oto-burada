@@ -45,7 +45,7 @@ export function SiteHeaderAuth({
             aria-label={isAuthenticated ? "Hesabım" : "Giriş Yap"}
           >
             {isAuthenticated && user ? (
-              <div className="size-9 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
+              <div className="size-9 overflow-hidden rounded-full border border-border bg-primary flex items-center justify-center text-white text-xs font-bold select-none">
                 <span>{user.email?.charAt(0).toUpperCase() ?? "U"}</span>
               </div>
             ) : (
@@ -57,7 +57,7 @@ export function SiteHeaderAuth({
         <Link
           href={postListingHref}
           prefetch={false}
-          className="hidden h-10 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-600 sm:flex"
+          className="hidden h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-primary/90 sm:flex"
         >
           <PlusCircle size={16} />
           İlan Ver

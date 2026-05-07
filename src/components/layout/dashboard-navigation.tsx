@@ -85,8 +85,8 @@ export function DashboardNavigation({ variant = "tabs" }: DashboardNavigationPro
                 className={cn(
                   "inline-flex items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold transition-all",
                   isActive
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-200"
-                    : "bg-white text-slate-500 hover:text-blue-500 hover:bg-blue-50/50 border border-slate-200"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "bg-white text-slate-500 hover:text-primary hover:bg-primary/5 border border-slate-200"
                 )}
               >
                 <Icon size={18} className={cn(isActive ? "text-white" : "text-slate-400")} />
