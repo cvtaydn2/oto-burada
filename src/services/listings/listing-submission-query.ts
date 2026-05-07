@@ -827,7 +827,7 @@ export async function getSimilarDatabaseListings(options: {
     async () =>
       await publicClient
         .from("listings")
-        .select(marketplaceListingSelect)
+        .select(listingCardSelect)
         .eq("status", "approved")
         .neq("slug", options.slug)
         .or(`brand.eq.${safeBrand},city.eq.${safeCity}`)

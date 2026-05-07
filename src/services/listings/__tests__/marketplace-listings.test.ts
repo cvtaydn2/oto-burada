@@ -53,6 +53,7 @@ vi.mock("@/services/listings/listing-submissions", () => ({
 vi.mock("@/services/listings/listing-submission-query", () => ({
   getSimilarDatabaseListings: vi.fn(),
   marketplaceListingSelect: "*",
+  listingCardSelect: "*",
 }));
 
 vi.mock("@/services/listings/catalog", () => ({

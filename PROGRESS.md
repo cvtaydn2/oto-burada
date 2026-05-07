@@ -1306,3 +1306,29 @@ Ek teknik metrikler:
 - **Verification**: Ran `npm run typecheck` and `npm run build`.
 - **Status**: Successful, error-free production build with **0 warnings** and **0 typecheck errors**.
 
+
+## 6. DATABASE PERFORMANCE TUNING & SLOW QUERY REMEDIATION (Phase 63.5)
+
+**Date**: 2026-05-07  
+**Status**: ✅ COMPLETED  
+**Scope**: Remediation of slow queries on Supabase database, client unsubscribe verification, and server reference caching validation.
+
+### 6.1 DATABASE PERFORMANCE MIGRATION
+- **File**: `database/migrations/0146_slow_query_performance_optimizations.sql`
+- **Actions**:
+  - Created partial index `idx_profiles_active` on active profiles to bypass low-cardinality boolean indexing issues.
+  - Created partial composite sort index `idx_listings_marketplace_active_sort` on approved listings to accelerate marketplace sorting/ranking queries.
+  - Created composite lookup index `idx_listing_images_listing_order` on `listing_images` to optimize lateral joins in listing retrieval.
+  - Created index `idx_api_rate_limits_reset_at` on `api_rate_limits(reset_at)` to accelerate cleanup queries.
+  - Re-scheduled `pg_cron` rate-limit cleanup to run every minute instead of every 10 minutes, preventing table bloat and transaction degradation.
+- **Verification**: Applied successfully directly to the Supabase database.
+
+### 6.2 CLIENT-SIDE REAL-TIME CLEANUPS
+- **Files**: `src/hooks/use-notifications.ts`, `src/hooks/use-chat-realtime.ts`, `src/hooks/use-realtime-notifications.ts`, `src/components/shared/auth-provider.tsx`, `src/components/listings/view-counter.tsx`
+- **Actions**: Verified that `useEffect` cleanups successfully execute `.unsubscribe()` on unmount to eliminate memory and connection leaks in production.
+
+### 6.3 SERVER-SIDE REFERENCE DATA CACHING
+- **File**: `src/services/reference/reference-records.ts`
+- **Actions**: Verified that `cities`, `districts`, `models`, and `car_trims` reference lookups leverage robust server-side memory caching via `withCache` / `withNextCache` with no ad-hoc DB-polling on the client.
+
+

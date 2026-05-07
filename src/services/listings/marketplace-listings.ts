@@ -5,7 +5,7 @@ import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { getListingBySlug, getPublicListings } from "@/services/listings/catalog";
 import {
   getSimilarDatabaseListings,
-  marketplaceListingSelect,
+  listingCardSelect,
   type PaginatedListingsResult,
 } from "@/services/listings/listing-submission-query";
 import { type ListingRow, mapListingRow } from "@/services/listings/mappers/listing-row.mapper";
@@ -102,7 +102,7 @@ export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listin
 
   const { data, error } = await publicClient
     .from("listings")
-    .select(marketplaceListingSelect)
+    .select(listingCardSelect)
     .in("id", ids)
     .eq("status", "approved");
 
@@ -143,7 +143,7 @@ export async function getListingById(id: string): Promise<Listing | null> {
 
   const { data, error } = await publicClient
     .from("listings")
-    .select(marketplaceListingSelect)
+    .select(listingCardSelect)
     .eq("id", id)
     .maybeSingle();
 

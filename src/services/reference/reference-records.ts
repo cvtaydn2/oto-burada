@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
+import { withCache, withNextCache } from "@/lib/caching/cache";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -183,25 +184,20 @@ export function mergeCityOptions(cities: CityOption[], extraCities: string[]) {
 }
 
 export async function getLiveMarketplaceReferenceData() {
-  if (
-    process.env.NODE_ENV === "test" ||
-    typeof window !== "undefined" ||
-    !process.env.NEXT_RUNTIME
-  ) {
+  if (process.env.NODE_ENV === "test" || typeof window !== "undefined") {
     return fetchLiveMarketplaceReferenceData();
   }
 
-  try {
-    const { unstable_cache } = await import("next/cache");
-    const getCached = unstable_cache(
-      async () => fetchLiveMarketplaceReferenceData(),
-      ["live-marketplace-reference-data"],
-      { revalidate: 3600 }
-    );
-    return getCached();
-  } catch {
-    return fetchLiveMarketplaceReferenceData();
-  }
+  return withCache(
+    "live-marketplace-reference-data",
+    () =>
+      withNextCache(
+        ["live-marketplace-reference-data"],
+        () => fetchLiveMarketplaceReferenceData(),
+        3600
+      ),
+    60
+  );
 }
 
 /**
