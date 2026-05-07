@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import * as persistence from "@/services/listings/listing-submission-persistence";
+import * as persistence from "@/features/marketplace/services/listing-submission-persistence";
 
 import { archiveListingUseCase } from "../usecases/listing-archive";
 
-vi.mock("@/services/listings/listing-submission-persistence", () => ({
+vi.mock("@/features/marketplace/services/listing-submission-persistence", () => ({
   archiveListing: vi.fn(),
 }));
 

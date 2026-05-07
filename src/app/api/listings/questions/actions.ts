@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 interface QuestionWithListings {
   user_id: string;

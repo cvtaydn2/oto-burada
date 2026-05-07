@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { CSRF_COOKIE_HASH_NAME_CLIENT } from "@/lib/security/csrf";
-import { createNewChat, getUserChats } from "@/services/chat/chat-logic";
+import { createNewChat, getUserChats } from "@/features/chat/services/chat-logic";
+import { CSRF_COOKIE_HASH_NAME_CLIENT } from "@/features/shared/lib/csrf";
+import { logger } from "@/features/shared/lib/logger";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
+import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
 
 const createChatSchema = z.object({
   listingId: z.string().uuid(),

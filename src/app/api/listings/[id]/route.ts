@@ -1,25 +1,25 @@
 import { waitUntil } from "@vercel/functions";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf } from "@/lib/api/security";
-import { validateListingEdit } from "@/lib/listings/edit-guard";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
-import { issuesToFieldErrors } from "@/lib/validators/helpers";
+import { validateListingEdit } from "@/features/marketplace/lib/edit-guard";
 import {
   performAsyncModeration,
   recordSellerTrustGuardRejection,
   runListingTrustGuards,
-} from "@/services/listings/listing-submission-moderation";
+} from "@/features/marketplace/services/listing-submission-moderation";
 import {
   buildUpdatedListing,
   deleteDatabaseListing,
   findEditableListingById,
   updateDatabaseListing,
-} from "@/services/listings/listing-submissions";
+} from "@/features/marketplace/services/listing-submissions";
+import { listingCreateFormSchema, listingCreateSchema } from "@/features/shared/lib";
+import { hasSupabaseEnv } from "@/features/shared/lib/env";
+import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/features/shared/lib/sanitize";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(request, {

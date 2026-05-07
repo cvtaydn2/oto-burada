@@ -1,11 +1,17 @@
 import { ArrowLeft, CheckCircle2, FileSpreadsheet, Info } from "lucide-react";
 import Link from "next/link";
 
-import { BulkImportWizard } from "@/components/modules/dashboard/bulk-import-wizard";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireUser } from "@/lib/auth/session";
+import { requireUser } from "@/features/auth/lib/session";
+import { BulkImportWizard } from "@/features/modules/components/dashboard/bulk-import-wizard";
+import { Alert, AlertDescription, AlertTitle } from "@/features/ui/components/alert";
+import { Button } from "@/features/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/features/ui/components/card";
 
 export default async function BulkImportPage() {
   await requireUser();

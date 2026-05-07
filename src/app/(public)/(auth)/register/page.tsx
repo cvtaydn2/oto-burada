@@ -1,5 +1,5 @@
-import { AuthForm } from "@/components/forms/auth-form";
-import { registerAction } from "@/lib/auth/actions";
+import { registerAction } from "@/features/auth/lib/actions";
+import { AuthForm } from "@/features/forms/components/auth-form";
 
 export default function RegisterPage() {
   return (

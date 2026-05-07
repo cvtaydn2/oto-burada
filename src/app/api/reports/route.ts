@@ -1,16 +1,16 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { sanitizeDescription } from "@/lib/sanitization/sanitize";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { reportCreateSchema } from "@/lib/validators";
-import { issuesToFieldErrors } from "@/lib/validators/helpers";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
 import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
-} from "@/services/reports/report-submissions";
+} from "@/features/reports/services/report-submissions";
+import { reportCreateSchema } from "@/features/shared/lib";
+import { hasSupabaseEnv } from "@/features/shared/lib/env";
+import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeDescription } from "@/features/shared/lib/sanitize";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting

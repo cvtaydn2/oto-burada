@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/features/shared/lib";
 import {
   fuelTypeLabels,
   fuelTypes,
   transmissionTypeLabels,
   transmissionTypes,
-} from "@/lib/constants/domain";
-import { cn } from "@/lib/utils";
+} from "@/features/shared/lib/domain";
+import { Button } from "@/features/ui/components/button";
+import { Label } from "@/features/ui/components/label";
 import type { ListingFilters } from "@/types";
 
 interface TechnicalFilterProps {

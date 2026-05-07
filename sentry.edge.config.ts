@@ -42,3 +42,4 @@ Sentry.init({
   // Enable sending user PII (Personally Identifiable Information)
   sendDefaultPii: true,
 });
+

@@ -10,24 +10,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockVerifyFileOwnership = vi.fn();
 const mockUnregisterFileById = vi.fn();
 
-vi.mock("@/lib/storage/registry", () => ({
+vi.mock("@/features/shared/lib/registry", () => ({
   countDailyUserUploads: vi.fn(() => 0),
   registerFileInRegistry: vi.fn(),
-  verifyFileOwnership: (...args: any[]) => mockVerifyFileOwnership(...args),
-  unregisterFileById: (...args: any[]) => mockUnregisterFileById(...args),
+  verifyFileOwnership: (...args: unknown[]) => mockVerifyFileOwnership(...args),
+  unregisterFileById: (...args: unknown[]) => mockUnregisterFileById(...args),
 }));
 
-vi.mock("@/lib/api/security", () => ({
+vi.mock("@/features/shared/lib/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/features/shared/lib/env", () => ({
   hasSupabaseStorageEnv: vi.fn(() => true),
   getSupabaseStorageEnv: vi.fn(() => ({ listingsBucket: "listing-images" })),
 }));
 
 const mockRemove = vi.fn();
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@/features/shared/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() => ({
     storage: {
       from: vi.fn(() => ({ remove: mockRemove })),
@@ -35,25 +35,25 @@ vi.mock("@/lib/supabase/server", () => ({
   })),
 }));
 
-vi.mock("@/lib/monitoring/telemetry-server", () => ({
+vi.mock("@/features/shared/lib/telemetry-server", () => ({
   captureServerError: vi.fn(),
 }));
 
-vi.mock("@/lib/logging/logger", () => ({
+vi.mock("@/features/shared/lib/logger", () => ({
   logger: { storage: { warn: vi.fn(), error: vi.fn() } },
 }));
 
-vi.mock("@/services/listings/listing-images", () => ({
+vi.mock("@/features/marketplace/services/listing-images", () => ({
   validateListingImageFile: vi.fn(() => null),
   getVerifiedMimeType: vi.fn(() => "image/jpeg"),
   buildListingImageStoragePath: vi.fn(() => "listings/user-1/uuid.jpg"),
 }));
 
-vi.mock("@/lib/storage/upload-policy", () => ({
+vi.mock("@/features/shared/lib/upload-policy", () => ({
   UPLOAD_POLICY: { IMAGES: { MAX_FILE_SIZE_BYTES: 10 * 1024 * 1024, MAX_DAILY_UPLOADS: 50 } },
 }));
 
-import { withAuthAndCsrf } from "@/lib/api/security";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
 
 const mockUser = { id: "user-1" };
 

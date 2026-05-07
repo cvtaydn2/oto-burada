@@ -1,12 +1,18 @@
 import { AlertTriangle, Ban, Shield, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { logger } from "@/features/shared/lib/logger";
+import { Badge } from "@/features/ui/components/badge";
+import { Button } from "@/features/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/features/ui/components/card";
 
 interface AbuseLog {
   id: string;

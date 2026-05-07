@@ -1,14 +1,14 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 
-import { InventoryTable } from "@/components/admin/inventory-table";
-import { SimplePagination } from "@/components/admin/simple-pagination";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InventoryTable } from "@/features/admin-moderation/components/inventory-table";
 import { ListingsModeration } from "@/features/admin-moderation/components/listings-moderation";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAdminInventory } from "@/services/admin/inventory";
+import { SimplePagination } from "@/features/admin-moderation/components/simple-pagination";
+import { getAdminInventory } from "@/features/admin-moderation/services/inventory";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { Input } from "@/features/ui/components/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/features/ui/components/tabs";
 
 export const dynamic = "force-dynamic";
 

@@ -2,15 +2,18 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   QuestionsModeration,
   QuestionWithDetails,
 } from "@/features/admin-moderation/components/questions-moderation";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAllQuestions, getPendingQuestions } from "@/services/admin/questions";
+import {
+  getAllQuestions,
+  getPendingQuestions,
+} from "@/features/admin-moderation/services/questions";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { Input } from "@/features/ui/components/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/features/ui/components/tabs";
 
 export const dynamic = "force-dynamic";
 

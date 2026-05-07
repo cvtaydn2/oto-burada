@@ -1,25 +1,28 @@
 import sharp from "sharp";
 
-import { createRequestSizeErrorMessage, REQUEST_SIZE_LIMITS } from "@/lib/api/request-size";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import {
+  buildListingImageStoragePath,
+  getVerifiedMimeType,
+  validateListingImageFile,
+} from "@/features/marketplace/services/listing-images";
+import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/features/shared/lib/env";
+import { logger } from "@/features/shared/lib/logger";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
 import {
   countDailyUserUploads,
   registerFileInRegistry,
   unregisterFileById,
   verifyFileOwnership,
-} from "@/lib/storage/registry";
-import { UPLOAD_POLICY } from "@/lib/storage/upload-policy";
-import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+} from "@/features/shared/lib/registry";
 import {
-  buildListingImageStoragePath,
-  getVerifiedMimeType,
-  validateListingImageFile,
-} from "@/services/listings/listing-images";
+  createRequestSizeErrorMessage,
+  REQUEST_SIZE_LIMITS,
+} from "@/features/shared/lib/request-size";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { UPLOAD_POLICY } from "@/features/shared/lib/upload-policy";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.

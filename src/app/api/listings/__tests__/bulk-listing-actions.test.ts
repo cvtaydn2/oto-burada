@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withAuthAndCsrf } from "@/lib/api/security";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
 
-vi.mock("@/lib/api/security", () => ({
+vi.mock("@/features/shared/lib/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@/features/shared/lib/server", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
 
-vi.mock("@/lib/monitoring/telemetry-server", () => ({
+vi.mock("@/features/shared/lib/telemetry-server", () => ({
   captureServerEvent: vi.fn(),
 }));
 
 const mockArchiveDatabaseListing = vi.fn();
-vi.mock("@/services/listings/listing-submissions", () => ({
-  archiveDatabaseListing: (...args: any[]) => mockArchiveDatabaseListing(...args),
+vi.mock("@/features/marketplace/services/listing-submissions", () => ({
+  archiveDatabaseListing: (...args: unknown[]) => mockArchiveDatabaseListing(...args),
 }));
 
 import { POST as bulkArchivePOST } from "../bulk-archive/route";

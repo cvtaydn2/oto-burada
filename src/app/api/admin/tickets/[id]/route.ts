@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { sanitizeText } from "@/lib/sanitization/sanitize";
-import type { TicketStatus } from "@/services/support/ticket-service";
-import { updateTicketStatus } from "@/services/support/ticket-service";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeText } from "@/features/shared/lib/sanitize";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import type { TicketStatus } from "@/features/support/services/ticket-service";
+import { updateTicketStatus } from "@/features/support/services/ticket-service";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "in_progress", "resolved", "closed"];
 

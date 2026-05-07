@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
-import { useCsrfToken } from "@/components/providers/csrf-provider";
-import { captureClientEvent, captureClientException } from "@/lib/monitoring/telemetry-client";
+import { useCsrfToken } from "@/features/providers/components/csrf-provider";
+import { captureClientEvent, captureClientException } from "@/features/shared/lib/telemetry-client";
 
 interface ListingViewTrackerProps {
   listingId: string;

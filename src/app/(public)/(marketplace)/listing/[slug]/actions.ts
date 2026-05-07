@@ -1,11 +1,11 @@
 "use server";
 
-import { getCurrentUser } from "@/lib/auth/session";
-import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { createExpertDocumentSignedUrl } from "@/features/marketplace/services/listing-documents";
 import {
   getMarketplaceListingBySlug,
   getStoredListingBySlug,
-} from "@/services/listings/marketplace-listings";
+} from "@/features/marketplace/services/marketplace-listings";
 
 /**
  * Generate signed URL for expert inspection document on-demand.

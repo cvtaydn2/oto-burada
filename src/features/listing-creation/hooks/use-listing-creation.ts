@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FieldPath, useFieldArray, useForm, useWatch } from "react-hook-form";
 
+import { validateListingImageFile } from "@/features/marketplace/services/listing-images";
+import { lookupVehicleByPlate } from "@/features/marketplace/services/plate-lookup";
+import { listingCreateFormSchema } from "@/features/shared/lib";
+import { apiResponseSchemas } from "@/features/shared/lib/api-responses";
+import { API_ROUTES } from "@/features/shared/lib/api-routes";
+import { ApiClient } from "@/features/shared/lib/client";
+import { AnalyticsEvent } from "@/features/shared/lib/events";
 import { useAnalytics } from "@/hooks/use-analytics";
-import { AnalyticsEvent } from "@/lib/analytics/events";
-import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/constants/api-routes";
-import { listingCreateFormSchema } from "@/lib/validators";
-import { apiResponseSchemas } from "@/lib/validators/api-responses";
-import { validateListingImageFile } from "@/services/listings/listing-images";
-import { lookupVehicleByPlate } from "@/services/listings/plate-lookup";
 import {
   type BrandCatalogItem,
   type CityOption,

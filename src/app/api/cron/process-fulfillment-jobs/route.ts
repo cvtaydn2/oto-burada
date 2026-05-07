@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { withCronRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { applyDopingPackage } from "@/services/payments/doping-logic";
+import { applyDopingPackage } from "@/features/payments/services/doping-logic";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { logger } from "@/features/shared/lib/logger";
+import { withCronRoute } from "@/features/shared/lib/security";
 
 /**
  * ── PILL: Issue 1 - Fulfillment Job Processor (DLQ & Retries) ──────

@@ -1,4 +1,4 @@
-import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
+import { ForgotPasswordForm } from "@/features/forms/components/forgot-password-form";
 
 export const metadata = {
   title: "Şifremi Unuttum | OtoBurada",

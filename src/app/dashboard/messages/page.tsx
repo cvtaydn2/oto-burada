@@ -4,15 +4,15 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ChatList } from "@/components/chat/chat-list";
-import { ChatWindow } from "@/components/chat/chat-window";
-import { useAuthUser } from "@/components/shared/auth-provider";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { ChatList } from "@/features/chat/components/chat-list";
+import { ChatWindow } from "@/features/chat/components/chat-window";
+import { useAuthUser } from "@/features/shared/components/auth-provider";
+import { API_ROUTES } from "@/features/shared/lib/api-routes";
+import { ApiClient } from "@/features/shared/lib/client";
+import { Button } from "@/features/ui/components/button";
+import { Card } from "@/features/ui/components/card";
 import { useCreateChat } from "@/hooks/use-chat-queries";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/constants/api-routes";
 import type { ChatWithLastMessage } from "@/types/chat";
 
 export default function MessagesPage() {

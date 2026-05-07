@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { deleteChatMessage, getChatMessages, sendChatMessage } from "@/services/chat/chat-logic";
+import {
+  deleteChatMessage,
+  getChatMessages,
+  sendChatMessage,
+} from "@/features/chat/services/chat-logic";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
+import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
 
 const messageSchema = z.object({
   content: z.string().trim().min(1).max(2000),

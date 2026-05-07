@@ -1,18 +1,18 @@
 import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
+import { createAdminModerationAction } from "@/features/admin-moderation/services/moderation-actions";
 import {
   performAsyncModeration,
   runListingTrustGuards,
-} from "@/services/listings/listing-submission-moderation";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
+} from "@/features/marketplace/services/listing-submission-moderation";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 const adminEditSchema = z.object({
   title: z.string().min(5).max(200).optional(),

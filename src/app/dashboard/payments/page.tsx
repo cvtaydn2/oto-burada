@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { requireUser } from "@/lib/auth/session";
+import { requireUser } from "@/features/auth/lib/session";
 
 interface PaymentsPageProps {
   searchParams: Promise<{ status?: string; token?: string; message?: string }>;

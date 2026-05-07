@@ -3,8 +3,8 @@
  * Prevents race conditions during concurrent listing creation.
  */
 
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { logger } from "@/features/shared/lib/logger";
 
 import { buildBaseSlug } from "./listing-factory";
 

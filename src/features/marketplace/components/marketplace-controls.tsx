@@ -3,13 +3,13 @@
 import { ArrowDownUp } from "lucide-react";
 import dynamic from "next/dynamic";
 
-import { Button } from "@/components/ui/button";
-import { marketplace } from "@/lib/constants/ui-strings";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/shared/lib";
+import { marketplace } from "@/features/shared/lib/ui-strings";
+import { Button } from "@/features/ui/components/button";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 const MobileFilterDrawer = dynamic(() =>
-  import("@/components/ui/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer)
+  import("@/features/ui/components/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer)
 );
 
 const SORT_OPTIONS = [
@@ -23,7 +23,7 @@ const SORT_OPTIONS = [
   { value: "year_asc", label: marketplace.sortOptions.yearAsc },
 ];
 
-import { SaveSearchButton } from "@/components/listings/save-search-button";
+import { SaveSearchButton } from "@/features/marketplace/components/save-search-button";
 
 interface MarketplaceControlsProps {
   filters: ListingFilters;

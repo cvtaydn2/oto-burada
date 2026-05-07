@@ -1,14 +1,14 @@
 import { NextRequest } from "next/server";
 
-import { getClientIp } from "@/lib/api/ip";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf } from "@/lib/api/security";
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { logger } from "@/lib/logging/logger";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { initiatePaymentSchema } from "@/lib/validators/payment";
-import { initializePaymentCheckout } from "@/services/payments/payment-logic";
+import { initializePaymentCheckout } from "@/features/payments/services/payment-logic";
+import { DOPING_PACKAGES } from "@/features/shared/lib/doping";
+import { getClientIp } from "@/features/shared/lib/ip";
+import { logger } from "@/features/shared/lib/logger";
+import { initiatePaymentSchema } from "@/features/shared/lib/payment";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 export async function POST(req: NextRequest) {
   // SECURITY: Apply authentication, CSRF protection, and rate limiting

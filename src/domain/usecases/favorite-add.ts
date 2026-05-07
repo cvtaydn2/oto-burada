@@ -1,6 +1,6 @@
-import { addDatabaseFavorite } from "@/services/favorites/favorite-records";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { getStoredProfileById } from "@/services/profile/profile-records";
+import { addDatabaseFavorite } from "@/features/favorites/services/favorite-records";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
+import { getStoredProfileById } from "@/features/profile/services/profile-records";
 
 export interface FavoriteAddResult {
   success: boolean;

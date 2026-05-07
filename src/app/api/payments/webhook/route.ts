@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 
-import { verifyIyzicoWebhook } from "@/lib/api/iyzico-webhook";
-import { logger } from "@/lib/logging/logger";
-import { secrets } from "@/lib/security/secrets";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { verifyIyzicoWebhook } from "@/features/shared/lib/iyzico-webhook";
+import { logger } from "@/features/shared/lib/logger";
+import { secrets } from "@/features/shared/lib/secrets";
 
 export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();
@@ -14,7 +13,7 @@ export async function POST(req: NextRequest) {
     // Catch JSON parse errors to prevent 500 errors on malformed payloads
     // and avoid unnecessary Iyzico retries
     const rawBody = await req.text();
-    let body: any;
+    let body: unknown;
 
     try {
       body = JSON.parse(rawBody);
@@ -115,7 +114,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ status: "ok" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.api.error("Payment webhook error", { message: error.message });
     // F-08: Return generic message to prevent information disclosure
     return NextResponse.json(

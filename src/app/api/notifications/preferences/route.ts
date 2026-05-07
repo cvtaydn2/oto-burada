@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
 import {
   getNotificationPreferences,
   upsertNotificationPreferences,
-} from "@/services/notifications/notification-preferences";
+} from "@/features/notifications/services/notification-preferences";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
 
 const prefsSchema = z.object({
   notifyFavorite: z.boolean().optional(),

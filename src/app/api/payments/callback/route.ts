@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { applyDopingPackage } from "@/services/payments/doping-logic";
-import { retrievePaymentResult } from "@/services/payments/payment-logic";
+import { applyDopingPackage } from "@/features/payments/services/doping-logic";
+import { retrievePaymentResult } from "@/features/payments/services/payment-logic";
+import { DOPING_PACKAGES } from "@/features/shared/lib/doping";
+import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 /**
  * Payment Callback Handler

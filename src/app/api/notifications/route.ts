@@ -1,11 +1,11 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerError } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   getStoredNotificationsByUser,
   markAllDatabaseNotificationsRead,
-} from "@/services/notifications/notification-records";
+} from "@/features/notifications/services/notification-records";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuth, withAuthAndCsrf } from "@/features/shared/lib/security";
+import { captureServerError } from "@/features/shared/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting

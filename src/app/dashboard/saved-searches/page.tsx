@@ -1,8 +1,8 @@
-import { SavedSearchesPanel } from "@/components/listings/saved-searches-panel";
-import { requireUser } from "@/lib/auth/session";
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
-import { getStoredSavedSearchesByUser } from "@/services/saved-searches/saved-search-records";
-import { buildSavedSearchSummary } from "@/services/saved-searches/saved-search-utils";
+import { requireUser } from "@/features/auth/lib/session";
+import { SavedSearchesPanel } from "@/features/marketplace/components/saved-searches-panel";
+import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
+import { getStoredSavedSearchesByUser } from "@/features/marketplace/services/saved-search-records";
+import { buildSavedSearchSummary } from "@/features/marketplace/services/saved-search-utils";
 
 export const dynamic = "force-dynamic";
 

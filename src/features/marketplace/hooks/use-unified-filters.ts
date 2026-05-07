@@ -6,7 +6,7 @@ import { useCallback, useRef, useState, useTransition } from "react";
 import {
   createSearchParamsFromListingFilters,
   DEFAULT_LISTING_FILTERS,
-} from "@/services/listings/listing-filters";
+} from "@/features/marketplace/services/listing-filters";
 import { type ListingFilters } from "@/types";
 
 const DEBOUNCE_DELAY_MS = 500;

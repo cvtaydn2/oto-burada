@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { formatTL } from "@/lib/utils";
+import { formatTL } from "@/features/shared/lib";
+import { Button } from "@/features/ui/components/button";
 import { type ListingFilters } from "@/types";
 
 interface ActiveFilterTagsProps {

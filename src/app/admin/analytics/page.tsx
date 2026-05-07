@@ -2,12 +2,12 @@ import { TrendingUp } from "lucide-react";
 import dynamicImport from "next/dynamic";
 import { Suspense } from "react";
 
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAdminAnalytics } from "@/services/admin/analytics";
+import { getAdminAnalytics } from "@/features/admin-moderation/services/analytics";
+import { requireAdminUser } from "@/features/auth/lib/session";
 
 const AdminAnalyticsClient = dynamicImport(
   () =>
-    import("@/components/admin/admin-analytics-client").then((mod) => ({
+    import("@/features/admin-moderation/components/admin-analytics-client").then((mod) => ({
       default: mod.AdminAnalyticsClient,
     })),
   {

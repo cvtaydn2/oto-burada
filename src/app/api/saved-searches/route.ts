@@ -1,14 +1,14 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { savedSearchCreateSchema } from "@/lib/validators";
-import { issuesToFieldErrors } from "@/lib/validators/helpers";
 import {
   createOrUpdateDatabaseSavedSearch,
   getStoredSavedSearchesByUser,
-} from "@/services/saved-searches/saved-search-records";
-import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
+} from "@/features/marketplace/services/saved-search-records";
+import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
+import { savedSearchCreateSchema } from "@/features/shared/lib";
+import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuth, withAuthAndCsrf } from "@/features/shared/lib/security";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting

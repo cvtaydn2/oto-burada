@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DEFAULT_LISTING_FILTERS } from "@/services/listings/listing-filters";
+import { DEFAULT_LISTING_FILTERS } from "@/features/marketplace/services/listing-filters";
 
 import { useUnifiedFilters } from "../use-unified-filters";
 

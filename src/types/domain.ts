@@ -11,8 +11,8 @@ import type {
   reportStatuses,
   transmissionTypes,
   userRoles,
-} from "@/lib/constants/domain";
-import type { VehicleCategory } from "@/lib/constants/vehicle-categories";
+} from "@/features/shared/lib/domain";
+import type { VehicleCategory } from "@/features/shared/lib/vehicle-categories";
 
 export type UserRole = (typeof userRoles)[number];
 export type ListingStatus = (typeof listingStatuses)[number];

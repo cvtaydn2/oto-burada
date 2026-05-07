@@ -85,17 +85,17 @@ vi.mock("next/headers", () => ({
 }));
 
 // Mock Supabase Admin
-vi.mock("@/lib/supabase/admin", () => ({
+vi.mock("@/features/shared/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => createSupabaseMockClient()),
 }));
 
 // Mock Supabase Server
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@/features/shared/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() => Promise.resolve(createSupabaseMockClient())),
 }));
 
 // Mock Supabase Env
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/features/shared/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
   getSupabaseAdminEnv: vi.fn(() => ({
     url: "https://example.supabase.co",

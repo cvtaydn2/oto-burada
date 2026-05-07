@@ -17,69 +17,74 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { DamageReportCard } from "@/components/listings/damage-report-card";
-import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
-import { ExpertPdfButton } from "@/components/listings/expert-pdf-button";
-import { FavoriteButton } from "@/components/listings/favorite-button";
-// Components
-import { ListingGallery } from "@/components/listings/listing-gallery";
-import { ListingPromoBadges } from "@/components/listings/listing-promo-badges";
-import { ListingQuestions } from "@/components/listings/listing-questions";
-import { SellerReviewForm } from "@/components/listings/seller-review-form";
-import { SellerTrustBadges } from "@/components/listings/seller-trust-badges";
-import { ShareButton } from "@/components/listings/share-button";
-import { MarketValuationBadge } from "@/components/market/market-valuation-badge";
-import { PriceAnalysisWidget } from "@/components/market/price-analysis-widget";
-// import { PriceHistoryChart } from "@/components/market/price-history-chart";
+// import { PriceHistoryChart } from "@/features/marketplace/components/price-history-chart";
 // SEO & Monitoring
 import {
   BreadcrumbStructuredData,
   ListingDetailStructuredData,
 } from "@/components/seo/structured-data";
-import { FraudWarningBanner } from "@/components/shared/fraud-warning-banner";
-import { ListingCard } from "@/components/shared/listing-card";
 import { getCleanDescription, getListingBreadcrumbs } from "@/domain/logic/listing-factory";
 import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { DamageReportCard } from "@/features/marketplace/components/damage-report-card";
+import { ExpertInspectionCard } from "@/features/marketplace/components/expert-inspection-card";
+import { ExpertPdfButton } from "@/features/marketplace/components/expert-pdf-button";
+import { FavoriteButton } from "@/features/marketplace/components/favorite-button";
 import { ListingSpecs } from "@/features/marketplace/components/listing-detail/listing-specs";
+// Components
+import { ListingGallery } from "@/features/marketplace/components/listing-gallery";
+import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
+import { ListingQuestions } from "@/features/marketplace/components/listing-questions";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
-import { getCurrentUser } from "@/lib/auth/session";
-import { getListingDopingDisplayItems } from "@/lib/listings/utils";
-import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
-import { cn, formatPrice } from "@/lib/utils";
-import { getMarketValuation } from "@/services/listings/listing-price-history";
+import { MarketValuationBadge } from "@/features/marketplace/components/market-valuation-badge";
+import { PriceAnalysisWidget } from "@/features/marketplace/components/price-analysis-widget";
+import { SellerReviewForm } from "@/features/marketplace/components/seller-review-form";
+import { SellerTrustBadges } from "@/features/marketplace/components/seller-trust-badges";
+import { ShareButton } from "@/features/marketplace/components/share-button";
+import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
+import { getMarketValuation } from "@/features/marketplace/services/listing-price-history";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
   getSimilarMarketplaceListings,
   getStoredListingBySlug,
-} from "@/services/listings/marketplace-listings";
-import { getSellerReviewStats as getSellerRatingSummary } from "@/services/profile/seller-reviews";
+} from "@/features/marketplace/services/marketplace-listings";
+import { getSellerReviewStats as getSellerRatingSummary } from "@/features/profile/services/seller-reviews";
+import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/features/seo/lib";
+import { FraudWarningBanner } from "@/features/shared/components/fraud-warning-banner";
+import { ListingCard } from "@/features/shared/components/listing-card";
+import { cn, formatPrice } from "@/features/shared/lib";
 
 const ListingMap = dynamic(
-  () => import("@/components/shared/listing-map-wrapper").then((m) => m.ListingMapWrapper),
+  () => import("@/features/shared/components/listing-map-wrapper").then((m) => m.ListingMapWrapper),
   { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
 const ContactActions = dynamic(
-  () => import("@/components/listings/contact-actions").then((m) => m.ContactActions),
+  () => import("@/features/marketplace/components/contact-actions").then((m) => m.ContactActions),
   { loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-muted" /> }
 );
 
 const MobileStickyActions = dynamic(() =>
-  import("@/components/listings/mobile-sticky-actions").then((m) => m.MobileStickyActions)
+  import("@/features/marketplace/components/mobile-sticky-actions").then(
+    (m) => m.MobileStickyActions
+  )
 );
 
 const ReportListingForm = dynamic(() =>
-  import("@/components/forms/report-listing-form").then((m) => m.ReportListingForm)
+  import("@/features/forms/components/report-listing-form").then((m) => m.ReportListingForm)
 );
 
 const PriceHistoryChart = dynamic(
-  () => import("@/components/market/price-history-chart").then((m) => m.PriceHistoryChart),
+  () =>
+    import("@/features/marketplace/components/price-history-chart").then(
+      (m) => m.PriceHistoryChart
+    ),
   { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
 const ReserveButton = dynamic(
-  () => import("@/components/reservations/reserve-button").then((m) => m.ReserveButton),
+  () => import("@/features/reservations/components/reserve-button").then((m) => m.ReserveButton),
   { loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-muted" /> }
 );
 

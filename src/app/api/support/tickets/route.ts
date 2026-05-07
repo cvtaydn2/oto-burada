@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
-import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
-import { createTicket } from "@/services/support/ticket-service";
+import { logger } from "@/features/shared/lib/logger";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/features/shared/lib/sanitize";
+import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
+import { createTicket } from "@/features/support/services/ticket-service";
 
 // Import types from service - single source of truth
 const VALID_CATEGORIES: TicketCategory[] = [
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
   const user = security.user!;
 
   try {
-    const { getUserTickets } = await import("@/services/support/ticket-service");
+    const { getUserTickets } = await import("@/features/support/services/ticket-service");
     const tickets = await getUserTickets(user.id);
     return apiSuccess(tickets);
   } catch (error) {

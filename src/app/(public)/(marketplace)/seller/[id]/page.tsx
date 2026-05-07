@@ -12,21 +12,21 @@ import {
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { ReviewForm } from "@/components/reviews/review-form";
-import { ListingCard } from "@/components/shared/listing-card";
-import { TrustBadge } from "@/components/shared/trust-badge";
-import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/auth/session";
-import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { getListingDopingDisplayItems } from "@/lib/listings/utils";
-import { cn } from "@/lib/utils";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import {
   getMarketplaceSeller,
   getPublicMarketplaceListings,
-} from "@/services/listings/marketplace-listings";
-import { getSellerTrustSummary } from "@/services/profile/profile-trust";
-import { getSellerReviews, getSellerReviewStats } from "@/services/profile/seller-reviews";
+} from "@/features/marketplace/services/marketplace-listings";
+import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
+import { getSellerTrustSummary } from "@/features/profile/services/profile-trust";
+import { getSellerReviews, getSellerReviewStats } from "@/features/profile/services/seller-reviews";
+import { ListingCard } from "@/features/shared/components/listing-card";
+import { TrustBadge } from "@/features/shared/components/trust-badge";
+import { cn } from "@/features/shared/lib";
+import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 interface SellerProfilePageProps {

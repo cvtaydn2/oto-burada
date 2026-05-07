@@ -15,9 +15,9 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { formatCurrency } from "@/lib/utils";
+import { WhatsAppSupport } from "@/features/shared/components/whatsapp-support";
+import { formatCurrency } from "@/features/shared/lib";
+import { DOPING_PACKAGES } from "@/features/shared/lib/doping";
 
 export const metadata: Metadata = {
   title: "Fiyatlandırma - OtoBurada Ücretsiz İlan & Doping Paketleri",

@@ -1,4 +1,4 @@
-import { removeDatabaseFavorite } from "@/services/favorites/favorite-records";
+import { removeDatabaseFavorite } from "@/features/favorites/services/favorite-records";
 
 export interface FavoriteRemoveResult {
   success: boolean;

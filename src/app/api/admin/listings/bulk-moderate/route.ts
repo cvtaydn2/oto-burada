@@ -2,13 +2,13 @@ import { waitUntil } from "@vercel/functions";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
-import { sanitizeText } from "@/lib/sanitization/sanitize";
-import { moderateListingsWithSideEffects } from "@/services/admin/listing-moderation";
+import { moderateListingsWithSideEffects } from "@/features/admin-moderation/services/listing-moderation";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { checkRateLimit } from "@/features/shared/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeText } from "@/features/shared/lib/sanitize";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 const bulkModerationSchema = z.object({
   action: z.enum(["approve", "reject"]),

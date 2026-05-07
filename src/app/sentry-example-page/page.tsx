@@ -3,7 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/features/ui/components/button";
 
 class SentryExampleFrontendError extends Error {
   constructor(message: string | undefined) {

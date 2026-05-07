@@ -1,5 +1,5 @@
-import { logger } from "@/lib/logging/logger";
-import { buildPendingListing } from "@/services/listings/listing-submissions";
+import { buildPendingListing } from "@/features/marketplace/services/listing-submissions";
+import { logger } from "@/features/shared/lib/logger";
 import type { Listing, ListingCreateInput } from "@/types";
 
 export interface ListingCreationResult {

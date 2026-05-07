@@ -5,7 +5,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-import { logger } from "@/lib/logging/logger";
+import { logger } from "@/features/shared/lib/logger";
 
 export async function register() {
   // Validate required environment variables at server startup.

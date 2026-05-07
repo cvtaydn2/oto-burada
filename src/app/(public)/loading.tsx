@@ -1,4 +1,4 @@
-import { ListingGridSkeleton } from "@/components/shared/skeletons";
+import { ListingGridSkeleton } from "@/features/shared/components/skeletons";
 
 export default function PublicLoading() {
   return (

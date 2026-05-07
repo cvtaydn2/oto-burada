@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react";
 
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getAuthContext, requireUser } from "@/lib/auth/session";
-import { getStoredProfileById } from "@/services/profile/profile-records";
+import { getAuthContext, requireUser } from "@/features/auth/lib/session";
+import { DashboardShell } from "@/features/layout/components/dashboard-shell";
+import { getStoredProfileById } from "@/features/profile/services/profile-records";
 
 export default async function DashboardLayout({ children }: PropsWithChildren) {
   const user = await requireUser();

@@ -1,29 +1,29 @@
 import { Activity, Database, Monitor, ShieldCheck } from "lucide-react";
 import { Suspense } from "react";
 
-import { AdminBroadcastPanel } from "@/components/admin/admin-broadcast-panel";
-import { AdminHeaderActions } from "@/components/admin/admin-header-actions";
+import { AdminBroadcastPanel } from "@/features/admin-moderation/components/admin-broadcast-panel";
+import { AdminHeaderActions } from "@/features/admin-moderation/components/admin-header-actions";
 import {
   AdminAnalyticsSection,
   AdminAnalyticsSkeleton,
-} from "@/components/admin/dashboard/admin-analytics-section";
+} from "@/features/admin-moderation/components/dashboard/admin-analytics-section";
 import {
   AdminMetricsSection,
   AdminMetricsSkeleton,
-} from "@/components/admin/dashboard/admin-metrics-section";
+} from "@/features/admin-moderation/components/dashboard/admin-metrics-section";
 import {
   AdminRecentActionsSection,
   AdminRecentActionsSkeleton,
-} from "@/components/admin/dashboard/admin-recent-actions-section";
+} from "@/features/admin-moderation/components/dashboard/admin-recent-actions-section";
 // Dashboard Components
-import { QuickSystemStat } from "@/components/admin/dashboard/quick-system-stat";
-import { requireAdminUser } from "@/lib/auth/session";
-import { captureServerError } from "@/lib/monitoring/telemetry-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getAdminAnalytics } from "@/services/admin/analytics";
-import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
-import { getPersistenceHealth } from "@/services/admin/persistence-health";
-import { getStoredReports } from "@/services/reports/report-submissions";
+import { QuickSystemStat } from "@/features/admin-moderation/components/dashboard/quick-system-stat";
+import { getAdminAnalytics } from "@/features/admin-moderation/services/analytics";
+import { getRecentAdminModerationActions } from "@/features/admin-moderation/services/moderation-actions";
+import { getPersistenceHealth } from "@/features/admin-moderation/services/persistence-health";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { getStoredReports } from "@/features/reports/services/report-submissions";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { captureServerError } from "@/features/shared/lib/telemetry-server";
 
 type AsyncErrorResult = { error: string };
 

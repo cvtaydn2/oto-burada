@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { hasSupabaseEnv } from "@/features/shared/lib/env";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

@@ -1,6 +1,6 @@
 "use client";
 
-import { AppErrorBoundary } from "@/components/shared/error-boundary";
+import { AppErrorBoundary } from "@/features/shared/components/error-boundary";
 
 export default function Error({
   error,

@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createReservation as createReservationSvc } from "@/services/reservations/reservation-service";
+import { createReservation as createReservationSvc } from "@/features/reservations/services/reservation-service";
+import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 import type { CreateReservationInput } from "@/types";
 
 export async function createReservationAction(
@@ -63,7 +63,8 @@ export async function confirmReservationAction(
   }
 
   try {
-    const { confirmReservation } = await import("@/services/reservations/reservation-service");
+    const { confirmReservation } =
+      await import("@/features/reservations/services/reservation-service");
     await confirmReservation(user.id, reservationId, appointmentAt);
 
     revalidatePath("/dashboard/reservations");
@@ -94,7 +95,8 @@ export async function cancelReservationAction(
   }
 
   try {
-    const { cancelReservation } = await import("@/services/reservations/reservation-service");
+    const { cancelReservation } =
+      await import("@/features/reservations/services/reservation-service");
     await cancelReservation(user.id, reservationId, reason);
 
     revalidatePath("/dashboard/reservations");

@@ -1,5 +1,5 @@
-import { listingSchema } from "@/lib/validators";
-import { toSlugSegment } from "@/services/listings/listing-submission-helpers";
+import { toSlugSegment } from "@/features/marketplace/services/listing-submission-helpers";
+import { listingSchema } from "@/features/shared/lib";
 import type { Listing, ListingCreateInput } from "@/types";
 
 function normalizeListingPrice(price: number): number {

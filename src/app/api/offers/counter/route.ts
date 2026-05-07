@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { withUserAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { respondToOffer } from "@/services/offers/offer-service";
+import { respondToOffer } from "@/features/offers/services/offer-service";
+import { logger } from "@/features/shared/lib/logger";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
 
 export async function POST(request: Request) {
   const security = await withUserAndCsrf(request, {

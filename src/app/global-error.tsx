@@ -5,8 +5,8 @@ import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
-import { captureClientException } from "@/lib/monitoring/telemetry-client";
+import { captureClientException } from "@/features/shared/lib/telemetry-client";
+import { Button } from "@/features/ui/components/button";
 
 export default function GlobalError({
   error,

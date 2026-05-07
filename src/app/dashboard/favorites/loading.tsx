@@ -1,4 +1,4 @@
-import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
+import { ListingsGridSkeleton } from "@/features/marketplace/components/listings-grid-skeleton";
 
 export default function Loading() {
   return (

@@ -1,7 +1,7 @@
 import { BadgeCheck, Calculator, CarFront, Info, TrendingUp } from "lucide-react";
 
-import { ValuationForm } from "@/components/market/valuation-form";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { ValuationForm } from "@/features/marketplace/components/valuation-form";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
 export const metadata = {
   title: "Aracım Ne Kadar? | Ücretsiz Araç Değerleme",

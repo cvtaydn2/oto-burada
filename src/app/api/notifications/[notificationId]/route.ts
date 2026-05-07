@@ -1,10 +1,10 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   deleteDatabaseNotification,
   markDatabaseNotificationRead,
-} from "@/services/notifications/notification-records";
+} from "@/features/notifications/services/notification-records";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
 
 export async function PATCH(
   request: Request,

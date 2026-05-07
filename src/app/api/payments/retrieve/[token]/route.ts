@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { withUserRoute } from "@/lib/api/security";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withUserRoute } from "@/features/shared/lib/security";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {

@@ -1,9 +1,9 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { sanitizeText } from "@/lib/sanitization/sanitize";
-import { moderateListingWithSideEffects } from "@/services/admin/listing-moderation";
+import { moderateListingWithSideEffects } from "@/features/admin-moderation/services/listing-moderation";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeText } from "@/features/shared/lib/sanitize";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const security = await withAdminRoute(request, {

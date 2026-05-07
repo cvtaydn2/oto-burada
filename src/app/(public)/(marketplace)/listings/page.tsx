@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 
-import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import {
   BreadcrumbStructuredData,
   ListingStructuredData,
   OrganizationStructuredData,
 } from "@/components/seo/structured-data";
-import { buildAbsoluteUrl, buildListingsMetadata } from "@/lib/seo";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { ListingsPageClient } from "@/features/marketplace/components/listings-page-client";
+import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
+import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {

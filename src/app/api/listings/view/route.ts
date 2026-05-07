@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { withSecurity } from "@/lib/api/security";
-import { getCurrentUser } from "@/lib/auth/session";
-import { logger } from "@/lib/logging/logger";
-import { recordListingView } from "@/services/listings/listing-views";
-import { getListingById } from "@/services/listings/marketplace-listings";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { recordListingView } from "@/features/marketplace/services/listing-views";
+import { getListingById } from "@/features/marketplace/services/marketplace-listings";
+import { logger } from "@/features/shared/lib/logger";
+import { withSecurity } from "@/features/shared/lib/security";
 
 const viewSchema = z.object({
   listingId: z.string().uuid(),

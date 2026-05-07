@@ -1,14 +1,14 @@
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { sanitizeText } from "@/lib/sanitization/sanitize";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
+import { createAdminModerationAction } from "@/features/admin-moderation/services/moderation-actions";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
+import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
+import { updateDatabaseReportStatus } from "@/features/reports/services/report-submissions";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeText } from "@/features/shared/lib/sanitize";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 import type { ReportStatus } from "@/types";
 
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];

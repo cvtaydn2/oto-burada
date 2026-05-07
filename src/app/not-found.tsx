@@ -1,4 +1,4 @@
-import { NotFoundError } from "@/components/shared/error-state";
+import { NotFoundError } from "@/features/shared/components/error-state";
 
 export default function NotFound() {
   return (

@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser } from "@/features/auth/lib/session";
 import {
   createOrUpdateDatabaseSavedSearch,
   deleteDatabaseSavedSearch,
   updateDatabaseSavedSearch,
-} from "@/services/saved-searches/saved-search-records";
-import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
+} from "@/features/marketplace/services/saved-search-records";
+import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
 import type { ListingFilters } from "@/types";
 
 /**

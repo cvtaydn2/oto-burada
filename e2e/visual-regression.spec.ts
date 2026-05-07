@@ -36,3 +36,4 @@ test.describe("Görsel Regresyon (Visual Regression)", () => {
     });
   }
 });
+

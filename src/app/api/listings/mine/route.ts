@@ -12,10 +12,10 @@
  * - Better monitoring and metrics
  */
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withSecurity } from "@/lib/api/security";
-import { captureServerError } from "@/lib/monitoring/telemetry-server";
-import { getStoredUserListings } from "@/services/listings/listing-submissions";
+import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withSecurity } from "@/features/shared/lib/security";
+import { captureServerError } from "@/features/shared/lib/telemetry-server";
 
 const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first
 const MY_LISTINGS_MAX_LIMIT = 50;

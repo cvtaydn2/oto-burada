@@ -161,3 +161,4 @@ test.describe("İlan Detay Sayfası", () => {
     await expect(inactiveMessage.or(notFoundMessage)).toBeVisible({ timeout: 8_000 });
   });
 });
+

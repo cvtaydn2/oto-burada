@@ -77,3 +77,4 @@ test.describe("Listing Creation Wizard", () => {
     await expect(page.getByRole("button", { name: /Tüm Bilgileri Kaydet/i })).toBeVisible();
   });
 });
+

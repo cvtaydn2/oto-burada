@@ -1,17 +1,17 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-import { ListingCreateForm } from "@/components/forms/listing-create-form";
-import { MyListingsPanel } from "@/components/listings/my-listings-panel";
-import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
-import { requireUser } from "@/lib/auth/session";
-import { cn } from "@/lib/utils";
-import { getStoredUserListings } from "@/services/listings/listing-submissions";
-import { getStoredProfileById } from "@/services/profile/profile-records";
+import { requireUser } from "@/features/auth/lib/session";
+import { ListingCreateForm } from "@/features/forms/components/listing-create-form";
+import { MyListingsPanel } from "@/features/marketplace/components/my-listings-panel";
+import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
+import { getStoredProfileById } from "@/features/profile/services/profile-records";
+import { AccountTrustNotice } from "@/features/shared/components/account-trust-notice";
+import { cn } from "@/features/shared/lib";
 import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
-} from "@/services/reference/live-reference-data";
+} from "@/features/shared/services/live-reference-data";
 import { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +47,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     getLiveMarketplaceReferenceData(),
     getStoredProfileById(user.id),
     editId
-      ? import("@/services/listings/queries/get-listings").then((m) =>
+      ? import("@/features/marketplace/services/queries/get-listings").then((m) =>
           m.getStoredListingById(editId)
         )
       : Promise.resolve(null),

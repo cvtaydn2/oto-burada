@@ -3,19 +3,22 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import { HomeErrorHandler } from "@/components/layout/home-error-handler";
-import { HomeHero } from "@/components/layout/home-hero";
 import {
   OrganizationStructuredData,
   WebSiteStructuredData,
 } from "@/components/seo/structured-data";
-import { ListingCard } from "@/components/shared/listing-card";
-import { getAppUrl } from "@/lib/seo";
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { HomeErrorHandler } from "@/features/layout/components/home-error-handler";
+import { HomeHero } from "@/features/layout/components/home-hero";
+import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { getAppUrl } from "@/features/seo/lib";
+import { ListingCard } from "@/features/shared/components/listing-card";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
 const FeaturedCarousel = dynamic(
-  () => import("@/components/listings/featured-carousel").then((mod) => mod.FeaturedCarousel),
+  () =>
+    import("@/features/marketplace/components/featured-carousel").then(
+      (mod) => mod.FeaturedCarousel
+    ),
   {
     loading: () => <div className="h-[400px] w-full animate-pulse rounded-2xl bg-muted/20" />,
   }

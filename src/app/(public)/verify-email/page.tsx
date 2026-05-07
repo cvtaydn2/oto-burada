@@ -1,8 +1,8 @@
 import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-import { ResendVerificationButton } from "@/components/auth/resend-verification-button";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ResendVerificationButton } from "@/features/auth/components/resend-verification-button";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 export const metadata = {
   title: "E-posta Doğrulama | OtoBurada",

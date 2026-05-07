@@ -8,12 +8,12 @@
  * Security: admin auth OR CRON_SECRET header.
  */
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withCronOrAdmin } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withCronOrAdmin } from "@/features/shared/lib/security";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 

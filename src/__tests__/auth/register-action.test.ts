@@ -12,36 +12,36 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/lib/monitoring/telemetry-server", () => ({
+vi.mock("@/features/shared/lib/telemetry-server", () => ({
   trackServerEvent: vi.fn(),
   identifyServerUser: vi.fn(),
 }));
 
-vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
+vi.mock("@/features/shared/lib/rate-limit-middleware", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
 }));
 
-vi.mock("@/lib/rate-limiting/rate-limit", () => ({
+vi.mock("@/features/shared/lib/rate-limit", () => ({
   rateLimitProfiles: { auth: {}, forgotPassword: {} },
 }));
 
-vi.mock("@/lib/rate-limiting/distributed-rate-limit", () => ({
+vi.mock("@/features/shared/lib/distributed-rate-limit", () => ({
   checkBruteForceLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-vi.mock("@/lib/security/turnstile", () => ({
+vi.mock("@/features/shared/lib/turnstile", () => ({
   isTurnstileEnabled: vi.fn(() => false),
   verifyTurnstileToken: vi.fn(),
 }));
 
-vi.mock("@/lib/seo", () => ({
+vi.mock("@/features/seo/lib", () => ({
   getAppUrl: vi.fn(() => "https://otoburada.com"),
 }));
 
 const mockSignUp = vi.fn();
 const mockGetUser = vi.fn();
 
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@/features/shared/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() =>
     Promise.resolve({
       auth: {
@@ -57,11 +57,11 @@ vi.mock("@/lib/supabase/server", () => ({
   ),
 }));
 
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/features/shared/lib/env", () => ({
   hasSupabaseEnv: vi.fn(() => true),
 }));
 
-import { registerAction } from "@/lib/auth/actions";
+import { registerAction } from "@/features/auth/lib/actions";
 
 function makeFormData(fields: Record<string, string>): FormData {
   const fd = new FormData();
@@ -174,7 +174,7 @@ describe("registerAction — success path", () => {
   });
 
   it("returns rate-limit error when rate limit is exceeded", async () => {
-    const { checkRateLimit } = await import("@/lib/rate-limiting/rate-limit-middleware");
+    const { checkRateLimit } = await import("@/features/shared/lib/rate-limit-middleware");
     vi.mocked(checkRateLimit).mockResolvedValueOnce({
       allowed: false,
       remaining: 0,

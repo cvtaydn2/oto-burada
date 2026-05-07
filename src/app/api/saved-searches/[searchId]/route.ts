@@ -1,14 +1,14 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { savedSearchUpdateSchema } from "@/lib/validators";
-import { issuesToFieldErrors } from "@/lib/validators/helpers";
 import {
   deleteDatabaseSavedSearch,
   updateDatabaseSavedSearch,
-} from "@/services/saved-searches/saved-search-records";
+} from "@/features/marketplace/services/saved-search-records";
+import { savedSearchUpdateSchema } from "@/features/shared/lib";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export async function PATCH(request: Request, context: { params: Promise<{ searchId: string }> }) {
   // Security checks: CSRF + Auth + Rate limiting

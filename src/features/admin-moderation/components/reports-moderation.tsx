@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { formatDate } from "@/features/shared/lib";
+import { reportReasonLabels, reportStatusLabels } from "@/features/shared/lib/domain";
+import { Button } from "@/features/ui/components/button";
+import { Label } from "@/features/ui/components/label";
 import { useErrorCapture } from "@/hooks/use-error-capture";
-import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
-import { formatDate } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";
 
 interface ReportsModerationProps {

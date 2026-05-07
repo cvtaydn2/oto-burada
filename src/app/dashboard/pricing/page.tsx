@@ -1,11 +1,11 @@
 import { ShieldCheck, Zap } from "lucide-react";
 import type { Metadata } from "next";
 
-import { DopingStore } from "@/components/dashboard/doping-store";
-import { PlanSelector } from "@/components/dashboard/plan-selector";
-import { requireUser } from "@/lib/auth/session";
-import { getPublicPricingPlans } from "@/services/admin/plans";
-import { getStoredUserListings } from "@/services/listings/listing-submissions";
+import { getPublicPricingPlans } from "@/features/admin-moderation/services/plans";
+import { requireUser } from "@/features/auth/lib/session";
+import { DopingStore } from "@/features/dashboard/components/doping-store";
+import { PlanSelector } from "@/features/dashboard/components/plan-selector";
+import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
 import type { Listing } from "@/types";
 
 export const metadata: Metadata = {

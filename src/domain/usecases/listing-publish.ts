@@ -1,4 +1,4 @@
-import { publishListing } from "@/services/listings/listing-submission-persistence";
+import { publishListing } from "@/features/marketplace/services/listing-submission-persistence";
 import type { Listing } from "@/types";
 
 import { ListingStatusMachine } from "../logic/listing-status-machine";

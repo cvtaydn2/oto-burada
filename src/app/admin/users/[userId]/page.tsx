@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { AdminUserDetailClient } from "@/components/admin/admin-user-detail-client";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getUserDetail } from "@/services/admin/user-details";
+import { AdminUserDetailClient } from "@/features/admin-moderation/components/admin-user-detail-client";
+import { getUserDetail } from "@/features/admin-moderation/services/user-details";
+import { requireAdminUser } from "@/features/auth/lib/session";
 
 export const dynamic = "force-dynamic";
 

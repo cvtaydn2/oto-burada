@@ -1,6 +1,6 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
+import { Label } from "@/features/ui/components/label";
 import type { CityOption } from "@/types";
 
 import { FilterSelect } from "./filter-select";

@@ -12,8 +12,8 @@
  * passing CRON_SECRET via internal HTTP fetch.
  */
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { triggerSavedSearchNotifications } from "@/services/system/saved-search-notifier";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { triggerSavedSearchNotifications } from "@/features/shared/services/saved-search-notifier";
 
 /**
  * Main handler for Vercel Cron.

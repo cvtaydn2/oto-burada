@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import { withUserAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { toggleChatArchive } from "@/services/chat/chat-logic";
+import { toggleChatArchive } from "@/features/chat/services/chat-logic";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
 
 const archiveSchema = z.object({
   archive: z.boolean(),

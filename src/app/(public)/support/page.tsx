@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { FaqAccordion } from "@/components/shared/faq-accordion";
-import { TicketForm } from "@/components/support/ticket-form";
-import { TicketList } from "@/components/support/ticket-list";
-import { getCurrentUser } from "@/lib/auth/session";
-import { getUserTickets } from "@/services/support/ticket-service";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { FaqAccordion } from "@/features/shared/components/faq-accordion";
+import { TicketForm } from "@/features/support/components/ticket-form";
+import { TicketList } from "@/features/support/components/ticket-list";
+import { getUserTickets } from "@/features/support/services/ticket-service";
 
 const FAQ_CATEGORIES = [
   {

@@ -146,3 +146,4 @@ test.describe("Mobil Uyumluluk", () => {
     await expect(mobileNav).toBeVisible();
   });
 });
+

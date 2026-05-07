@@ -2,28 +2,28 @@ import * as Sentry from "@sentry/nextjs";
 import { waitUntil } from "@vercel/functions";
 
 import { executeListingCreation } from "@/domain/usecases/listing-create";
-import { AnalyticsEvent } from "@/lib/analytics/events";
-import { mapUseCaseError, validateRequestBody } from "@/lib/api/handler-utils";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrfToken } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, trackServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { verifyTurnstileToken } from "@/lib/security/turnstile";
-import { listingCreateSchema } from "@/lib/validators/listing";
-import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
-import { checkListingLimit } from "@/services/listings/listing-limits";
+import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
+import { checkListingLimit } from "@/features/marketplace/services/listing-limits";
 import {
   performAsyncModeration,
   runListingTrustGuards,
-} from "@/services/listings/listing-submission-moderation";
+} from "@/features/marketplace/services/listing-submission-moderation";
 import {
   createDatabaseListing,
   getDatabaseListings,
-} from "@/services/listings/listing-submissions";
-import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
+} from "@/features/marketplace/services/listing-submissions";
+import { getFilteredMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
+import { AnalyticsEvent } from "@/features/shared/lib/events";
+import { mapUseCaseError, validateRequestBody } from "@/features/shared/lib/handler-utils";
+import { listingCreateSchema } from "@/features/shared/lib/listing";
+import { logger } from "@/features/shared/lib/logger";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { enforceRateLimit, getRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withUserAndCsrfToken } from "@/features/shared/lib/security";
+import { captureServerError, trackServerEvent } from "@/features/shared/lib/telemetry-server";
+import { verifyTurnstileToken } from "@/features/shared/lib/turnstile";
 
 // This endpoint now handles ONLY public marketplace search.
 
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   // Use a distributed lock to prevent concurrent listing creation requests
   // from bypassing quota checks.
   const lockKey = `lock:listing_create:${user.id}`;
-  const { redis } = await import("@/lib/redis/client");
+  const { redis } = await import("@/features/shared/lib/client");
 
   if (redis) {
     const lock = await redis.set(lockKey, "LOCKED", { nx: true, ex: 15 });

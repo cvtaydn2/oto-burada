@@ -1,10 +1,10 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { bulkListingActionSchema } from "@/lib/validators";
+import { bulkListingActionSchema } from "@/features/shared/lib";
+import { logger } from "@/features/shared/lib/logger";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 // Bulk draft: 20 operations per hour per user
 const BULK_DRAFT_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };

@@ -14,11 +14,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { logger } from "@/lib/logging/logger";
-import { captureClientException } from "@/lib/monitoring/telemetry-client";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { createSupabaseBrowserClient } from "@/features/shared/lib/browser";
+import { logger } from "@/features/shared/lib/logger";
+import { captureClientException } from "@/features/shared/lib/telemetry-client";
+import { Button } from "@/features/ui/components/button";
+import { Card, CardContent } from "@/features/ui/components/card";
 
 type PaymentResultStatus =
   | "failure"

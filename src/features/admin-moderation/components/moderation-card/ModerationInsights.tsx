@@ -3,10 +3,10 @@
 import { Shield, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
-import { getTrustToneClass } from "@/lib/listings/trust-ui";
-import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { cn } from "@/lib/utils";
-import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+import { getTrustToneClass } from "@/features/marketplace/lib/trust-ui";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import { getListingCardInsights } from "@/features/marketplace/services/listing-card-insights";
+import { cn } from "@/features/shared/lib";
 import type { Listing } from "@/types";
 
 interface ModerationInsightsProps {

@@ -10,10 +10,10 @@ import {
   deleteQuestionAction,
   rejectQuestionAction,
 } from "@/app/admin/questions/actions";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/features/shared/lib";
+import { Badge } from "@/features/ui/components/badge";
+import { Button } from "@/features/ui/components/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/features/ui/components/card";
 
 export interface QuestionWithDetails {
   id: string;

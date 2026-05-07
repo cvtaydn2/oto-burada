@@ -1,7 +1,7 @@
-import { apiSuccess } from "@/lib/api/response";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { getCachedData, setCachedData } from "@/lib/redis/client";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCachedData, setCachedData } from "@/features/shared/lib/client";
+import { enforceRateLimit, getRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
+import { apiSuccess } from "@/features/shared/lib/response";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
     return apiSuccess(result);
   } catch (error) {
     // Non-critical — but capture for observability
-    const { captureServerError } = await import("@/lib/monitoring/telemetry-server");
+    const { captureServerError } = await import("@/features/shared/lib/telemetry-server");
     captureServerError("Search suggestions query failed", "search", error, { query: q });
     return apiSuccess({ brands: [], models: [] });
   }

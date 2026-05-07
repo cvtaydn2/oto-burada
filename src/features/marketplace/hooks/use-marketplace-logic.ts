@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
 import { type Listing, type ListingFilters } from "@/types";
 
 import { useUnifiedFilters } from "./use-unified-filters";

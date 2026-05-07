@@ -8,12 +8,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { requireAdminUser } from "@/lib/auth/session";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { cn } from "@/lib/utils";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { cn } from "@/features/shared/lib";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { Badge } from "@/features/ui/components/badge";
+import { Button } from "@/features/ui/components/button";
+import { Input } from "@/features/ui/components/input";
 
 const PAGE_SIZE = 50;
 

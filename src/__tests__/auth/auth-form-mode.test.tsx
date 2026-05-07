@@ -6,8 +6,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { AuthForm } from "@/components/forms/auth-form";
-import type { AuthActionState } from "@/lib/auth/actions";
+import type { AuthActionState } from "@/features/auth/lib/actions";
+import { AuthForm } from "@/features/forms/components/auth-form";
 
 // Stub Next.js navigation
 vi.mock("next/navigation", () => ({

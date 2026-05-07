@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getAuthContext } from "@/lib/auth/session";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { getAuthContext } from "@/features/auth/lib/session";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
 
 import { GET } from "../route";
 
-vi.mock("@/lib/auth/session", () => ({
+vi.mock("@/features/auth/lib/session", () => ({
   getAuthContext: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/features/shared/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
   hasSupabaseEnv: vi.fn(() => true),
 }));
@@ -41,7 +41,7 @@ const mockDbQuery = {
   },
 };
 
-vi.mock("@/lib/supabase/admin", () => ({
+vi.mock("@/features/shared/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
     from: vi.fn(() => mockDbQuery),
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
@@ -49,7 +49,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 // Mock logger to avoid spam
-vi.mock("@/lib/logging/logger", () => ({
+vi.mock("@/features/shared/lib/logger", () => ({
   logger: {
     market: {
       error: vi.fn(),

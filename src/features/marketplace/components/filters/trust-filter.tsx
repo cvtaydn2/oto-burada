@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/features/ui/components/input";
+import { Label } from "@/features/ui/components/label";
 
 interface TrustFilterProps {
   hasExpertReport?: boolean;

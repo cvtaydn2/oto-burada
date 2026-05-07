@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { setCsrfTokenCookie } from "@/lib/security/csrf";
+import { setCsrfTokenCookie } from "@/features/shared/lib/csrf";
 
 /**
  * GET /api/auth/csrf
@@ -19,11 +19,11 @@ export async function GET() {
   });
 
   // Apply security headers to this sensitive endpoint
-  const { applySecurityHeaders } = await import("@/lib/middleware/headers");
+  const { applySecurityHeaders } = await import("@/features/shared/lib/headers");
   applySecurityHeaders(response);
 
   // Also return token in header as requested for improved security pattern
-  const { CSRF_HEADER_NAME_CLIENT } = await import("@/lib/security/csrf");
+  const { CSRF_HEADER_NAME_CLIENT } = await import("@/features/shared/lib/csrf");
   response.headers.set(CSRF_HEADER_NAME_CLIENT, token);
 
   return response;

@@ -1,5 +1,5 @@
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { initializePaymentCheckout } from "@/services/payments/payment-logic";
+import { initializePaymentCheckout } from "@/features/payments/services/payment-logic";
+import { DOPING_PACKAGES } from "@/features/shared/lib/doping";
 
 export async function initiatePaymentUseCase(params: {
   userId: string;

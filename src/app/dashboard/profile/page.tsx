@@ -1,18 +1,21 @@
 import { Building2, CheckCircle2, Mail, Phone, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 
-import { IdentityVerificationForm } from "@/components/forms/identity-verification-form";
-import { ProfileForm } from "@/components/forms/profile-form";
-import { updateProfileAction } from "@/lib/auth/profile-actions";
-import { requireUser } from "@/lib/auth/session";
-import { trust } from "@/lib/constants/ui-strings";
-import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { cn } from "@/lib/utils";
-import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
+import { updateProfileAction } from "@/features/auth/lib/profile-actions";
+import { requireUser } from "@/features/auth/lib/session";
+import { IdentityVerificationForm } from "@/features/forms/components/identity-verification-form";
+import { ProfileForm } from "@/features/forms/components/profile-form";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import {
+  buildProfileFromAuthUser,
+  getStoredProfileById,
+} from "@/features/profile/services/profile-records";
+import { cn } from "@/features/shared/lib";
+import { trust } from "@/features/shared/lib/ui-strings";
 import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
-} from "@/services/reference/live-reference-data";
+} from "@/features/shared/services/live-reference-data";
 import { Profile } from "@/types";
 
 export const dynamic = "force-dynamic";

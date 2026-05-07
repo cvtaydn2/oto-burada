@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import { withUserAndCsrfToken } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { markChatMessagesAsRead } from "@/services/chat/chat-logic";
+import { markChatMessagesAsRead } from "@/features/chat/services/chat-logic";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
+import { withUserAndCsrfToken } from "@/features/shared/lib/security";
 
 function mapChatReadRouteError(error: unknown, fallbackMessage: string) {
   const message = error instanceof Error ? error.message : fallbackMessage;

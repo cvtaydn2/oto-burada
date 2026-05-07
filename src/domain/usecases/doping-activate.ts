@@ -1,5 +1,5 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { applyDopingPackage } from "@/services/payments/doping-logic";
+import { applyDopingPackage } from "@/features/payments/services/doping-logic";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
 
 export async function activateDopingUseCase(params: {
   userId: string;

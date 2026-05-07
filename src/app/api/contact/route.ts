@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/telemetry-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
-import { isValidRequestOrigin } from "@/lib/security";
-import { getDisposableEmailMessage, isDisposableEmail } from "@/lib/security/email-validation";
-import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/security/turnstile";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { contactFormSchema } from "@/lib/validators/domain";
-import { createPublicTicket } from "@/services/support/ticket-service";
+import { isValidRequestOrigin } from "@/features/shared/lib";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { contactFormSchema } from "@/features/shared/lib/domain";
+import {
+  getDisposableEmailMessage,
+  isDisposableEmail,
+} from "@/features/shared/lib/email-validation";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { logger } from "@/features/shared/lib/logger";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { enforceRateLimit, getRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/features/shared/lib/sanitize";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { isTurnstileEnabled, verifyTurnstileToken } from "@/features/shared/lib/turnstile";
+import { createPublicTicket } from "@/features/support/services/ticket-service";
 
 // ── Spam heuristics ───────────────────────────────────────────────────────────
 
