@@ -91,6 +91,23 @@ export async function POST(req: NextRequest) {
     const clientIp = await getClientIp();
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const callbackUrl = `${baseUrl}/api/payments/callback`;
+
+    // API-P1-02 hardening: callback URL must be same-origin and HTTPS in production
+    let parsedCallback: URL;
+    try {
+      parsedCallback = new URL(callbackUrl);
+    } catch {
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme callback URL geçersiz.", 500);
+    }
+
+    if (process.env.NODE_ENV === "production" && parsedCallback.protocol !== "https:") {
+      return apiError(
+        API_ERROR_CODES.INTERNAL_ERROR,
+        "Production ortamında callback URL HTTPS olmalıdır.",
+        500
+      );
+    }
 
     // SECURITY: Generate idempotency key to prevent double processing
     // PILL: Issue C-1 - Idempotency
@@ -113,7 +130,7 @@ export async function POST(req: NextRequest) {
           price: pkg.price,
         },
       ],
-      callbackUrl: `${baseUrl}/api/payments/callback`,
+      callbackUrl,
       listingId,
       idempotencyKey,
     });

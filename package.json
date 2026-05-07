@@ -36,6 +36,7 @@
     "db:seed-references": "node scripts/seed-marketplace-references.mjs",
     "db:verify-demo": "node scripts/verify-supabase-demo.mjs",
     "db:bootstrap-demo": "node scripts/bootstrap-supabase-demo.mjs",
+    "db:refresh-snapshot": "node scripts/refresh-schema-snapshot.mjs",
     "db:gen-types": "supabase gen types typescript --local > src/types/supabase.ts",
     "diagnose": "node scripts/diagnose-production.mjs",
     "vercel:pull": "vercel env pull .env.local",

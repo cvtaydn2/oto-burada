@@ -1,5 +1,43 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 47. Faz 2-8 Audit Remediation Pass (Partial Completion + External DB Blockers)
+
+**Date**: 2026-05-07
+**Status**: 🟡 IN PROGRESS
+**Scope**: Apply the code-level fixes from audit phases 2-8, validate targeted lint/typecheck, and document external blockers for live schema snapshot synchronization.
+
+### 47.1 Applied Fixes
+- **Phase 2-3 Security/API hardening:**
+  - [`src/app/api/payments/initialize/route.ts`](src/app/api/payments/initialize/route.ts) içinde callback URL doğrulaması sertleştirildi.
+  - [`src/app/api/listings/mine/route.ts`](src/app/api/listings/mine/route.ts) içinde private listing limit üst sınırı düşürüldü.
+- **Phase 4 Services fixes:**
+  - [`src/services/payments/payment-logic.ts`](src/services/payments/payment-logic.ts) ödeme tutarı yazımı `decimal TRY` beklentisine hizalandı.
+  - [`src/services/payments/doping-logic.ts`](src/services/payments/doping-logic.ts) `doping_applications` / active RPC çıktısını canonical kaynak olarak belgeleyip dönüşe aktif doping bilgisini ekledi.
+- **Phase 5 Domain fixes:**
+  - [`src/domain/logic/listing-factory.ts`](src/domain/logic/listing-factory.ts) içinde fiyat için integer-like TL zorunluluğu ve round/coercion karşıtı doğrulama eklendi.
+  - [`src/domain/logic/trust-score-calculator.ts`](src/domain/logic/trust-score-calculator.ts) algoritması kodda dokümante edildi.
+  - [`README.md`](README.md) içine trust score açıklaması eklendi.
+- **Phase 6-7 UI/Admin fixes:**
+  - [`src/services/admin/moderation-actions.ts`](src/services/admin/moderation-actions.ts) içinde merkezi [`logAdminAction()`](src/services/admin/moderation-actions.ts:31) alias/canonical helper tanımlandı.
+  - [`src/services/admin/user-actions.ts`](src/services/admin/user-actions.ts) audit log yazımları merkezi helper’a taşındı.
+  - [`src/components/layout/mobile-nav.tsx`](src/components/layout/mobile-nav.tsx) ve [`src/components/layout/admin-mobile-nav.tsx`](src/components/layout/admin-mobile-nav.tsx) doğrudan `vaul` yerine ortak [`drawer.tsx`](src/components/ui/drawer.tsx) sarmalayıcısına geçirildi.
+
+### 47.2 Validation
+- Successful targeted checks:
+  - [`npm run typecheck`](package.json)
+  - [`npm run lint -- src/services/payments/payment-logic.ts src/services/payments/doping-logic.ts src/lib/security/rate-limiter.ts`](package.json)
+  - [`npm run lint -- src/domain/logic/listing-factory.ts src/domain/logic/trust-score-calculator.ts`](package.json)
+  - [`npm run lint -- src/services/admin/moderation-actions.ts src/services/admin/user-actions.ts src/components/layout/mobile-nav.tsx src/components/layout/admin-mobile-nav.tsx src/components/shared/error-boundary.tsx src/app/layout.tsx`](package.json)
+
+### 47.3 External Blockers
+- [`npx supabase db pull`](package.json) remote migration history drift nedeniyle durdu.
+- [`npx supabase db dump`](package.json) Docker image fetch sırasında ağ/EOF hatası verdi.
+- [`database/schema.snapshot.sql`](database/schema.snapshot.sql) yanlışlıkla boşalmış snapshot etkisi geri alındı (`git checkout --`).
+
+### 47.4 Next Step
+- Faz 8 için canlı snapshot senkronizasyonunu güvenli ortamda tamamla.
+- Audit markdown dosyalarında kapatılan bulguları status notlarıyla işaretle.
+
 ## 46. GDPR Soft Delete, Optimistic Locking, and IDOR Protection
 
 **Date**: 2026-05-06

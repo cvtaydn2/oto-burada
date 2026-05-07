@@ -25,6 +25,7 @@ const validListingInput = {
   description: "Çok temiz, bakımlı araç. Hasarsız, boyasız.",
   whatsappPhone: "905551234567",
   vin: "WBA12345678901234",
+  turnstileToken: "mock-token",
   images: [
     {
       storagePath: "listings/user/uuid.jpg",

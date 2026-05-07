@@ -167,6 +167,20 @@ Bu hesabın seed sırasında oluşmuş olması gerekir.
 
 ## Env açıklamaları
 
+## Güven skoru (Trust Score)
+
+[`TrustScoreCalculator.calculate()`](src/domain/logic/trust-score-calculator.ts:14) aşağıdaki deterministik kurallarla çalışır:
+
+- başlangıç puanı: `50`
+- e-posta doğrulandıysa: `+10`
+- temel kimlik/doğrulama tamamlandıysa (`isVerified`): `+20`
+- ek cüzdan/doğrulama tamamlandıysa (`isWalletVerified`): `+20`
+- profesyonel satıcıysa: `+10`
+- kullanıcı banlıysa: skor doğrudan `0`
+- kullanıcı `restricted_review` durumundaysa: skor en fazla `30`
+
+Bu skor MVP aşamasında açıklanabilirlik ve moderasyon sadeliği için bilinçli olarak lineer tutulur.
+
 ## API: Listing Create Contract
 
 The `POST /api/listings` endpoint accepts a JSON body matching the `ListingCreateInput` contract.

@@ -28,7 +28,7 @@ function mapAdminActionRow(row: AdminModerationActionRow) {
   });
 }
 
-export async function createAdminModerationAction(input: {
+export async function logAdminAction(input: {
   action: ModerationAction;
   adminUserId: string;
   note?: string | null;
@@ -63,6 +63,8 @@ export async function createAdminModerationAction(input: {
     created_at: data.created_at ?? timestamp,
   });
 }
+
+export const createAdminModerationAction = logAdminAction;
 
 export async function getRecentAdminModerationActions(limit = 8): Promise<AdminModerationAction[]> {
   await requireAdminUser();

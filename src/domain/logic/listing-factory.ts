@@ -2,6 +2,21 @@ import { listingSchema } from "@/lib/validators";
 import { toSlugSegment } from "@/services/listings/listing-submission-helpers";
 import type { Listing, ListingCreateInput } from "@/types";
 
+function normalizeListingPrice(price: number): number {
+  if (!Number.isFinite(price) || price <= 0) {
+    throw new Error("Listing price must be a positive finite number.");
+  }
+
+  // Faz 5 hardening: preserve incoming value exactly and reject fractional drift.
+  // The listing form contract already sends full TL as an integer-like number.
+  // We explicitly avoid any Math.round-style coercion here.
+  if (!Number.isInteger(price)) {
+    throw new Error("Listing price must be provided as a whole TL amount.");
+  }
+
+  return price;
+}
+
 /**
  * Domain Factory for Car Listings.
  * Centralizes the creation and transformation of Listing entities.
@@ -100,7 +115,7 @@ export function createListingEntity(
     mileage: input.mileage,
     fuelType: input.fuelType,
     transmission: input.transmission,
-    price: input.price,
+    price: normalizeListingPrice(input.price),
     city: input.city,
     district: input.district,
     description: input.description,

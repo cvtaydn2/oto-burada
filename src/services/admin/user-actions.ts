@@ -6,7 +6,7 @@ import { requireAdminUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { uuidSchema } from "@/lib/validators/admin";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
+import { logAdminAction } from "@/services/admin/moderation-actions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
@@ -175,12 +175,12 @@ export async function handleVerificationReview(
 
   // 3. Audit Log
   if (adminUserId) {
-    await admin.from("admin_actions").insert({
+    await logAdminAction({
       action: status === "approved" ? "approve" : "reject",
-      admin_user_id: adminUserId,
+      adminUserId,
       note: `İşletme doğrulaması ${status === "approved" ? "onaylandı" : "reddedildi"}.${feedback ? ` Not: ${feedback}` : ""}`,
-      target_id: validatedUserId,
-      target_type: "user",
+      targetId: validatedUserId,
+      targetType: "user",
     });
   }
 
@@ -288,7 +288,7 @@ export async function grantUserCredits(userId: string, credits: number, note: st
     return { success: false, error: rpcError.message };
   }
 
-  await createAdminModerationAction({
+  await logAdminAction({
     action: "credit_grant",
     adminUserId: adminUser.id,
     targetId: validatedUserId,
@@ -331,7 +331,7 @@ export async function grantUserDoping(
     }
   }
 
-  await createAdminModerationAction({
+  await logAdminAction({
     action: "doping_grant",
     adminUserId: adminUser.id,
     targetId: validatedListingId,

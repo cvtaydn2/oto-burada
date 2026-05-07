@@ -5,6 +5,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * Applies a doping package to a listing using the activate_doping RPC.
  * This is typically called after a successful payment.
  *
+ * Source of truth: `doping_applications` records + active doping RPC output.
+ * We do not trust denormalized listing `_until` fields as canonical state.
+ * Those columns are treated as derived cache fields maintained by the database layer.
+ *
  * Pure function - no class wrapper
  * Migration: Phase 28.5 - Legacy Service Patterns Migration
  */
@@ -40,9 +44,12 @@ export async function applyDopingPackage(params: {
     throw new Error(data?.error || "Doping activation failed");
   }
 
+  const activeDopings = await getActiveDopingsForListing(params.listingId);
+
   return {
     purchaseId: data.purchaseId,
     expiresAt: data.expiresAt,
+    activeDopings,
   };
 }
 
@@ -58,7 +65,10 @@ async function getDbPackageId(slug: string): Promise<string | null> {
 }
 
 /**
- * Get active dopings for a listing
+ * Get active dopings for a listing.
+ *
+ * Authoritative source is the database RPC backed by `doping_applications`.
+ * This avoids coupling application logic to denormalized cache columns on `listings`.
  *
  * Pure function - no class wrapper
  * Migration: Phase 28.5 - Legacy Service Patterns Migration

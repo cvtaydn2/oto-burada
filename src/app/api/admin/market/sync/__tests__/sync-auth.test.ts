@@ -14,16 +14,37 @@ vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseEnv: vi.fn(() => true),
 }));
 
+const mockDbQuery = {
+  select() {
+    return this;
+  },
+  eq() {
+    return this;
+  },
+  not() {
+    return this;
+  },
+  is() {
+    return this;
+  },
+  delete() {
+    return this;
+  },
+  insert() {
+    return Promise.resolve({ data: null, error: null });
+  },
+  maybeSingle() {
+    return Promise.resolve({ data: null, error: null });
+  },
+  then(resolve: (value: { data: unknown[]; error: null }) => void) {
+    resolve({ data: [], error: null });
+  },
+};
+
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
-        })),
-        maybeSingleAndMore: vi.fn(), // for future
-      })),
-    })),
+    from: vi.fn(() => mockDbQuery),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   })),
 }));
 

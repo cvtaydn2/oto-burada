@@ -113,7 +113,7 @@ export async function initializePaymentCheckout(params: {
     .from("payments")
     .insert({
       user_id: params.userId,
-      amount: params.price, // Stored as BIGINT (cents)
+      amount: Number((params.price / 100).toFixed(2)), // Stored as decimal TRY (e.g. 39.00)
       currency: "TRY",
       provider: "iyzico",
       status: "pending",
@@ -190,8 +190,8 @@ export async function initializePaymentCheckout(params: {
   const request = {
     locale: "tr",
     conversationId: payment.id,
-    price: (params.price / 100).toFixed(2),
-    paidPrice: (params.price / 100).toFixed(2),
+    price: Number((params.price / 100).toFixed(2)).toFixed(2),
+    paidPrice: Number((params.price / 100).toFixed(2)).toFixed(2),
     currency: "TRY",
     basketId: payment.id,
     paymentGroup: "PRODUCT",

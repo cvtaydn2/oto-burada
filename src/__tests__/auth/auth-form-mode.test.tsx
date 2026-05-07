@@ -46,7 +46,7 @@ describe("AuthForm — mode-specific behavior", () => {
 
     it("renders password field with login autocomplete", () => {
       render(<AuthForm {...loginProps} />);
-      const passwordInput = screen.getByLabelText(/şifre/i);
+      const passwordInput = screen.getByLabelText(/^şifre$/i);
       expect(passwordInput).toHaveAttribute("autocomplete", "current-password");
     });
 
@@ -74,7 +74,7 @@ describe("AuthForm — mode-specific behavior", () => {
 
     it("renders password field with new-password autocomplete", () => {
       render(<AuthForm {...registerProps} />);
-      const passwordInput = screen.getByLabelText(/şifre/i);
+      const passwordInput = screen.getByLabelText(/^şifre$/i);
       expect(passwordInput).toHaveAttribute("autocomplete", "new-password");
     });
 

@@ -2,9 +2,15 @@
 
 import { Menu, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { Drawer } from "vaul";
 
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 import { AdminSidebar } from "./admin-sidebar";
 
@@ -18,8 +24,8 @@ export function AdminMobileNav() {
         <span className="text-xs font-bold tracking-tight uppercase">Admin</span>
       </Link>
 
-      <Drawer.Root direction="left">
-        <Drawer.Trigger asChild>
+      <Drawer direction="left">
+        <DrawerTrigger asChild>
           <Button
             variant="outline"
             size="sm"
@@ -28,10 +34,10 @@ export function AdminMobileNav() {
             <Menu size={16} />
             Menü
           </Button>
-        </Drawer.Trigger>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
-          <Drawer.Content className="fixed inset-y-0 left-0 z-[80] flex w-[280px] flex-col bg-background shadow-2xl focus:outline-none">
+        </DrawerTrigger>
+        <DrawerPortal>
+          <DrawerOverlay className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
+          <DrawerContent className="fixed inset-y-0 left-0 z-[80] flex w-[280px] flex-col bg-background shadow-2xl focus:outline-none">
             <div className="flex-1 overflow-y-auto">
               <div className="h-full">
                 {/* We reuse the sidebar but remove its fixed/hidden classes for the drawer version */}
@@ -40,9 +46,9 @@ export function AdminMobileNav() {
                 </div>
               </div>
             </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+          </DrawerContent>
+        </DrawerPortal>
+      </Drawer>
     </div>
   );
 }

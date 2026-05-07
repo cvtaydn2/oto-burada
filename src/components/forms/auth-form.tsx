@@ -263,6 +263,23 @@ export function AuthForm({
                   </p>
                 )}
 
+                {isLogin && (
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="checkbox"
+                      id="remember"
+                      name="remember"
+                      className="rounded border-input bg-muted/30 text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <Label
+                      htmlFor="remember"
+                      className="text-xs font-medium text-muted-foreground cursor-pointer select-none"
+                    >
+                      Beni Hatırla
+                    </Label>
+                  </div>
+                )}
+
                 {!isLogin && (
                   <div className="space-y-2">
                     <Label

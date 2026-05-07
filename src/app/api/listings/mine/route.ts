@@ -18,7 +18,7 @@ import { captureServerError } from "@/lib/monitoring/telemetry-server";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 
 const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first
-const MY_LISTINGS_MAX_LIMIT = 100;
+const MY_LISTINGS_MAX_LIMIT = 50;
 
 // ── ARCHITECTURE FIX: Issue #8 - No Caching for Private Data ─────
 // Private user data should never be cached

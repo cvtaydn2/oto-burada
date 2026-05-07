@@ -3,8 +3,16 @@
 import { Menu, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Drawer } from "vaul";
 
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { useNavigation } from "@/hooks/use-navigation";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
@@ -72,8 +80,8 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
 
           {/* New "Menü" Tab replacing the header hamburger */}
           <li className="flex-1">
-            <Drawer.Root shouldScaleBackground>
-              <Drawer.Trigger asChild>
+            <Drawer shouldScaleBackground>
+              <DrawerTrigger asChild>
                 <button
                   className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground hover:text-foreground transition-all active:scale-95"
                   aria-label="Menüyü aç"
@@ -85,21 +93,21 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
                   )}
                   <span className="text-[10px] font-bold tracking-tight">Menü</span>
                 </button>
-              </Drawer.Trigger>
-              <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" />
-                <Drawer.Content className="fixed inset-x-0 bottom-0 z-[70] mt-24 flex max-h-[85vh] flex-col rounded-t-[32px] bg-background shadow-2xl focus:outline-none">
-                  <Drawer.Title className="sr-only">Navigasyon Menüsü</Drawer.Title>
-                  <Drawer.Description className="sr-only">
+              </DrawerTrigger>
+              <DrawerPortal>
+                <DrawerOverlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" />
+                <DrawerContent className="fixed inset-x-0 bottom-0 z-[70] mt-24 flex max-h-[85vh] flex-col rounded-t-[32px] bg-background shadow-2xl focus:outline-none">
+                  <DrawerTitle className="sr-only">Navigasyon Menüsü</DrawerTitle>
+                  <DrawerDescription className="sr-only">
                     Hızlı erişim linkleri ve hesap yönetimi.
-                  </Drawer.Description>
+                  </DrawerDescription>
                   <div className="sticky top-0 mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
                   <div className="flex-1 overflow-y-auto px-1 py-2 no-scrollbar">
                     <HeaderMobileNav searchSuggestions={searchSuggestions} />
                   </div>
-                </Drawer.Content>
-              </Drawer.Portal>
-            </Drawer.Root>
+                </DrawerContent>
+              </DrawerPortal>
+            </Drawer>
           </li>
         </ul>
       </nav>
