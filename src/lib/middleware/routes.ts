@@ -34,7 +34,9 @@ export function classifyRoute(pathname: string) {
     pathname.startsWith("/fonts") ||
     pathname.startsWith("/icons") ||
     pathname.startsWith("/favicon") ||
-    pathname.match(/\.(ico|png|jpg|jpeg|svg|webp|gif|woff|woff2|ttf|eot|css|js|map)$/);
+    pathname.match(
+      /\.(ico|png|jpg|jpeg|svg|webp|gif|woff|woff2|ttf|eot|css|js|map|webmanifest|json)$/
+    );
 
   const isProtectedRoute = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
   const isAdminRoute = adminPrefixes.some((prefix) => pathname.startsWith(prefix));
