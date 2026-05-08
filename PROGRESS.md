@@ -1,5 +1,23 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 53. Frontend Rules Optimization and Free-Tier Quota Guard Pass
+
+**Date**: 2026-05-08
+**Status**: ✅ COMPLETED
+**Scope**: Streamline `.agents/rules/frontend-rules.md` to achieve massive file size reduction (from 601 lines down to ~80 lines), embed `always_on` trigger frontmatter tags, and introduce guidelines for free-tier quotas (including Sentry event filtering and Supabase client-side caching to prevent API limit exhaustion).
+
+### 53.1 Applied Fixes
+- **Size Optimization (Boyut Optimizasyonu):** Completely rewrote `.agents/rules/frontend-rules.md`, compressing repetitive sections into high-impact, bullet-pointed guidelines categorized under core headers (Core Principles, Architecture, Component Size, TypeScript, State Management, API, Forms, Performance, UX, Security, Quality Gates). This reduced the context window footprint of the rules significantly.
+- **Trigger Frontmatter Addition:** Added the `trigger: always_on` YAML frontmatter configuration so that AI agents always prioritize and load these frontend guidelines.
+- **Free-Tier Limits Guidance:** Integrated explicit strategies to preserve limited free-tier resources:
+  - **Supabase Caching:** Mandated the use of client-side caching with TanStack Query (`staleTime` optimization) and debounce mechanisms to minimize duplicate database fetches and avoid API read limits.
+  - **Sentry Event Filtering:** Instructed the filtering of non-critical/user-initiated errors (network cancel, abort, etc.) at the client-side level to prevent Sentry free-tier event exhaustion.
+  - **Graceful Degradation:** Mandated the use of Error Boundaries and friendly empty/error states to handle potential quota exhaustion gracefully.
+
+### 53.2 Validation
+- **Quality Check:** Verified file format and ensured total compliance with `AGENTS.md` and `google-jules-doc.txt`.
+- **Lint & Build Stability:** Confirmed that these changes keep our rules completely clean and active for any future model or human iterations.
+
 ## 52. Build-Time Circular Dependency Remediation Pass
 
 **Date**: 2026-05-08
@@ -1415,4 +1433,24 @@ Ek teknik metrikler:
 - **File**: `src/services/reference/reference-records.ts`
 - **Actions**: Verified that `cities`, `districts`, `models`, and `car_trims` reference lookups leverage robust server-side memory caching via `withCache` / `withNextCache` with no ad-hoc DB-polling on the client.
 
+
+## 7. AI RULES DEPLOYMENT & GOOGLE JULES COMPLIANCE (Phase 63.6)
+
+**Date**: 2026-05-08  
+**Status**: ✅ COMPLETED  
+**Scope**: Deployed structured AI guidelines, issue templates, and pull request configurations to fully align with Google Jules and free-tier platform requirements.
+
+### 7.1 JULES SYSTEM INSTRUCTIONS
+- **File**: `.github/JULES_INSTRUCTIONS.md`
+- **Actions**: Created system instructions specifying source of truth hierarchy, free-tier optimization guards, and verification rules.
+
+### 7.2 AUTOMATED TRIGGERS & CONCISE RULESETS
+- **Directory**: `.agents/rules/`
+- **Actions**: Created and optimized `global-rules.md`, `frontend-rules.md`, `backend-rules.md`, `database-rules.md`, `security-rules.md`, `testing-rules.md`, and `ui-ux-rules.md`. Added automated trigger configurations (e.g., `trigger: glob: ...`) to keep context small and cost-effective.
+
+### 7.3 JULES ISSUE TEMPLATES & PR STANDARDS
+- **Directory**: `.github/ISSUE_TEMPLATE/`
+- **Actions**: Created frontend, backend, database, and bugfix templates explicitly linking to correct rulesets. Created `pull_request_template.md` with verification checklist.
+- **File**: `RULES_SETUP.md`
+- **Actions**: Created high-level index mapping documentation hierarchy, triggers, and free-tier safeguards.
 

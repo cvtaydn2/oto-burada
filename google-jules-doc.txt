@@ -1,0 +1,295 @@
+Created At: 2026-05-08T14:28:40Z
+Completed At: 2026-05-08T14:28:40Z
+File Path: `file:///c:/Users/Cevat/Documents/Github/oto-burada/google-jules-doc.txt`
+
+# OtoBurada AI Rules Kurulum Planı (Optimized & Concise - Free-Tier Guarded)
+
+Bu doküman, OtoBurada projesinde Jules, Roo ve Claude gibi AI ajanlarının güvenli, performanslı, mimariye sadık çalışması ve **Vercel, Supabase, Sentry, Upstash, Resend** gibi platformların **ücretsiz sürümlerinin (free-tier)** verimli kullanılmasını sağlamak için tasarlanmıştır.
+
+**Öncelik Sırası:** `AGENTS.md` > `TASKS.md` > `PROGRESS.md` > `.agents/rules/*.md`
+
+---
+
+## 1. Nihai Klasör Yapısı
+
+```txt
+oto-burada/
+├── AGENTS.md
+├── TASKS.md
+├── PROGRESS.md
+├── README.md
+├── RULES_SETUP.md
+├── .github/
+│   ├── JULES_INSTRUCTIONS.md
+│   ├── pull_request_template.md
+│   └── ISSUE_TEMPLATE/
+│       ├── jules-frontend-task.md
+│       ├── jules-backend-task.md
+│       ├── jules-database-task.md
+│       └── jules-bugfix-task.md
+└── .agents/
+    └── rules/
+        ├── README.md
+        ├── global-rules.md
+        ├── frontend-rules.md
+        ├── backend-rules.md
+        ├── database-rules.md
+        ├── security-rules.md
+        ├── testing-rules.md
+        └── ui-ux-rules.md
+```
+
+---
+
+## 2. Kurulum Komutları
+
+```bash
+mkdir -p .github/ISSUE_TEMPLATE .agents/rules
+```
+
+---
+
+## 3. `.agents/rules/README.md`
+
+```md
+# OtoBurada AI Rules Index
+
+Ajanların uyması gereken yardımcı kurallar dizini. Ana anayasa kökteki `AGENTS.md` dosyasıdır.
+
+**Öncelik:** `AGENTS.md` > Kullanıcı Talimatı > `TASKS.md` > `PROGRESS.md` > Bu klasördeki kurallar.
+```
+
+---
+
+## 4. `.agents/rules/global-rules.md`
+
+```md
+---
+trigger: always_on
+---
+
+# GLOBAL RULES (OtoBurada)
+
+- **Mission Lock**: Sadece arabalar için, mobil öncelikli, güvenli ve ücretsiz ilan pazaryeri. Başka sektöre/genel ilan sitesine dönüştürülemez.
+- **MVP Hedefleri**: <2 dk ilan oluşturma, <3 etkileşimde filtreleme, temiz lint/typecheck/build.
+- **Source of Truth**: Her işlem öncesi `AGENTS.md`, `TASKS.md` ve `PROGRESS.md` okunacaktır.
+- **Scope Control**: Sadece atanan göreve odaklan; ilgisiz refactor, toplu dosya taşıma veya geniş formatlama yapma.
+- **Protected Directories**: `.claude-flow/`, `.roo/`, `.swarm/`, `.agents/`, `memory.db`, `state.json` değiştirilemez.
+- **Canonical Stack**: Next.js App Router, TS strict, Tailwind CSS, shadcn/ui, React Hook Form, Zod, TanStack Query, Supabase. Ayrı Express/NestJS backend veya Prisma eklenemez.
+- **Zero-Cost / Free-Tier Guard**: Projedeki tüm harici servislerin (**Vercel, Supabase, Sentry, Upstash, Resend**) yalnızca **ücretsiz paketleri** kullanılır. AI, kaynak kotalarını tüketmeyecek şekilde verimli kod yazmalı ve kotaların dolması durumunda sistemin zarif şekilde (graceful degrade) çalışmasını sağlamalıdır.
+- **Secrets & Env Safety**: Asla secret, API key veya hassas veriyi commit etme veya loglama.
+- **Validation**: Değişiklik sonrası `npm run lint`, `typecheck` ve `build` temiz geçmelidir.
+```
+
+---
+
+## 5. `.agents/rules/frontend-rules.md`
+
+```md
+---
+trigger: glob: "src/**/*.ts,src/**/*.tsx"
+---
+
+# FRONTEND AI CONSTITUTION (OtoBurada)
+
+- **Architecture**: `src/features/[feature_name]/` kullanımı zorunludur. `src/components/`, `src/hooks/`, `src/lib/` ve `src/services/` gibi global dizinler resmi ve izinlidir; yasaklanamaz.
+- **Separation of Concerns**: UI, State, Business, API ve Validation katmanlarını ayır. Monolitik bileşenler yazma (<250 satır).
+- **TypeScript**: `any` yasaktır. Tüm props tiplendirilmeli, ortak tipler `src/types/` içinde toplanmalıdır.
+- **State Management**: Server state için TanStack Query kullan. Derived state için local state tutma, hesapla.
+- **API & Server Actions**: Client component'te doğrudan karmaşık fetch/useEffect yazma. `"use server"` actions, `*-records.ts` (data access) ve `*-logic.ts` (iş mantığı) modelini izle.
+- **Performance & Quota Optimization**: İstemci tarafında gereksiz veritabanı sorgularından (Supabase api/read limit) kaçınmak için akıllı caching ve debounce mekanizmaları kullan. Sentry free-tier kotasını korumak için önemsiz hataları (örneğin network timeouts, user cancel vb.) Sentry'e gönderme, filtrele.
+- **Forms**: React Hook Form ve Zod şemaları ile uncontrolled form yapısı kullan. Loading, disabled ve inline validation UX'ini sağla.
+- **UI/UX Consistency**: Tüm bileşenler ortak tasarım dilini (spacing, typography, colors, radius) kullanmalıdır.
+- **Accessibility**: Semantic HTML, klavye erişilebilirliği ve aria-label'lar zorunludur. Mouse-only UI yasaktır.
+```
+
+---
+
+## 6. `.agents/rules/backend-rules.md`
+
+```md
+---
+trigger: glob: "src/app/api/**/*.ts,src/services/**/*.ts"
+---
+
+# BACKEND & API CONSTITUTION (OtoBurada)
+
+- **Öncelik**: Security > Maintainability > Reliability > Performance > Simplicity
+- **Architecture**: Tüm backend `src/` altındadır. Route handler'lar ince olmalı, business logic barındırmamalıdır.
+- **Service Layer**: `*-actions.ts` (Server Actions), `*-logic.ts` (Pure Business Logic), `*-records.ts` (Direct DB CRUD), `*-client.ts` (Third-party clients) modelini uygula. Class-based god servisler yasaktır.
+- **Free-Tier Limits**: Supabase ve Vercel ücretsiz paketlerindeki bağlantı (connection pooling) ve çalışma süresi (timeout) limitlerini aşmamak için sorguları optimize et. Toplu işlemleri (N+1 sorgular) engelle. Resend günlük 100 e-posta ücretsiz sınırını aşmamak için gereksiz bildirim e-postaları gönderme.
+- **Security**: Yetki kontrollerini (`withUserRoute`, `withAdminRoute`) her endpoint başında yap. Rate limit (Redis/Upstash) zorunludur.
+- **Secrets**: Hassas verileri, key'leri veya database şifrelerini asla loglama veya client bundle'a sızdırma (`server-only` kullan).
+- **Fail-Closed**: Payment/webhook akışlarında imza, sahiplik veya tutar doğrulanamazsa akışı anında kes (fail-closed).
+- **No Network in Transactions**: DB transaction'ları içinde harici HTTP istekleri (Iyzico, Resend vb.) bekleme. Idempotent outbox/fulfillment kuyruğu kullan.
+- **Validation**: Raw request body doğrudan işleme alınamaz, Zod şemasıyla doğrula. Stack trace'i kullanıcıya sızdırma.
+```
+
+---
+
+## 7. `.agents/rules/database-rules.md`
+
+```md
+---
+trigger: glob: "database/**/*.sql,src/services/**/*-records.ts"
+---
+
+# DATABASE RULES (OtoBurada)
+
+- **Source of Truth**: `database/schema.snapshot.sql` şemanın kaynağıdır. Yeni değişiklikler `database/migrations/00XX_name.sql` içinde olmalı ve `npm run db:migrate` ile çalıştırılmalıdır.
+- **Supabase Storage & DB Quota**: Supabase ücretsiz 500MB veritabanı ve 1GB depolama (Storage) sınırlarını aşmamak için:
+  - Görseller yüklenmeden önce istemcide veya Edge Function'da WebP olarak sıkıştırılmalı ve boyutlandırılmalıdır.
+  - Gereksiz loglama tabloları yerine geçici veriler için akıllı silme/cleanup politikaları izle.
+- **RLS First**: Her yeni tablo için aynı migration dosyasında RLS aktif edilmeli ve least-privilege policy'ler yazılmalıdır. Policy içinde `(SELECT auth.uid())` tercih et.
+- **Security Definer**: DB fonksiyonlarında `SET search_path = public` zorunludur.
+- **Performance**: Foreign key'ler, join hot-path'leri ve filtre/sıralama kolonları indexlenmelidir. CPU/RAM limitlerini zorlamamak için `SELECT *` hot path'lerde yasaktır.
+- **Integrity**: Banned/deleted kullanıcıların ilanları inner join'ler ile DB düzeyinde filtrelenmeli, listelerde sızmamalıdır.
+```
+
+---
+
+## 8. `.agents/rules/security-rules.md`
+
+```md
+---
+trigger: always_on
+---
+
+# SECURITY RULES (OtoBurada)
+
+- **Priority**: Güvenlik ve veri bütünlüğü her şeyden önce gelir.
+- **Auth & Authz**: Supabase Auth canonical sistemdir. Mutation'larda sahiplik, rol ve yasaklılık durumu mutlaka DB'den anlık sorgulanmalıdır.
+- **CSRF & Rate Limit**: Authenticated mutation'larda CSRF koruması sağla. Upstash Redis free-tier istek sınırlarını korumak için rate-limit değerlerini optimum belirle.
+- **Sensitive Data**: Parola, JWT, API key ve token'ları asla loglama veya istemciye gönderme.
+- **Upload Safety**: Görsel yüklemelerinde MIME type, dosya boyutu kontrolü yap ve path üretimini güvenli (WebP formatı ve rastgele/UUID) hale getir. Supabase Storage sınırlarına sadık kal.
+- **HTML Safety**: User-generated content render edilirken XSS'e karşı sanitize et. `dangerouslySetInnerHTML` kullanımından kaçın.
+```
+
+---
+
+## 9. `.agents/rules/testing-rules.md`
+
+```md
+---
+trigger: always_on
+---
+
+# TESTING & STABILITY RULES (OtoBurada)
+
+- **Quality Gates**: Kod göndermeden önce `npm run lint`, `npm run typecheck` ve `npm run build` temiz geçmelidir.
+- **Test Önceliği**: Auth, İlan Oluşturma, Ödemeler/Doping, RLS ve Webhook'lar en yüksek önceliklidir.
+- **Unit Tests**: `src/domain/` ve `*-logic.ts` içindeki pure business kuralları (status machine, trust score vb.) test edilmelidir.
+- **Done Definition**: Lint/typecheck hatası olmayan, build'i geçiş yapan, acceptance kriterlerini karşılayan ve dokümantasyonu güncel işler "Done" sayılır.
+```
+
+---
+
+## 10. `.agents/rules/ui-ux-rules.md`
+
+```md
+---
+trigger: glob: "src/app/**/*.tsx,src/components/**/*.tsx"
+---
+
+# UI / UX RULES (OtoBurada)
+
+- **Mobile-First**: Tasarımlar önce mobil için yapılmalıdır (touch target >= 44x44px, bottom drawers, tek elle kullanım).
+- **Hız**: Hızlı LCP ve optimize görseller sağlayarak 3 etkileşimde filtreleme hedefini destekle.
+- **Graceful Degradation**: Harici servisler (Supabase, Sentry, Resend) kotalarından dolayı kapandığında kullanıcıya "Sistem şu an yoğun, lütfen daha sonra tekrar deneyin" empty-state mesajı göster, beyaz ekranla çökmesine izin verme.
+- **States**: Her interaktif ekranın Loading, Empty, Error, Disabled ve Success durumlarını açıkça yönet. White-screen yasaktır.
+- **SEO UX**: Public detay sayfaları SSR uyumlu olmalı, dinamik metadata ve canonical URL barındırmalıdır.
+```
+
+---
+
+## 11. `.github/JULES_INSTRUCTIONS.md`
+
+```md
+# JULES SYSTEM INSTRUCTIONS (OtoBurada)
+
+You are Jules, the autonomous AI engineer. You must work strictly under the repository guidelines:
+
+1. **Source of Truth**: Read `AGENTS.md`, `TASKS.md`, and `PROGRESS.md` before coding. `AGENTS.md` is the ultimate compass.
+2. **Free-Tier Limits**: Explicitly keep in mind that we use free-tiers of Vercel, Supabase, Sentry, Upstash, and Resend. Avoid resource waste, prevent duplicate DB calls, and handle potential quota exhaustion gracefully.
+3. **Architecture Constraints**: Single full-stack Next.js App Router codebase. Do not introduce microservices or separate backends. Use existing actions/records/logic patterns.
+4. **Protected boundaries**: Never touch `.agents/`, `.roo/`, `.claude-flow/` unless explicitly instructed to update rules.
+5. **Validation**: Always run validation (`npm run lint`, `typecheck`, `build`) before completing a task.
+6. **No Secrets**: Never commit or print secrets, keys, or private .env variables.
+```
+
+---
+
+## 12. `.github/pull_request_template.md`
+
+```md
+# Pull Request
+
+## Summary
+Brief description of the changes:
+
+## Validation
+Commands run and results (lint, typecheck, build, unit tests):
+
+## Checklist
+- [ ] `AGENTS.md` and relevant `.agents/rules/*.md` read.
+- [ ] No secrets or service role keys exposed client-side.
+- [ ] Free-tier limits respected (Supabase queries optimized, Sentry logs filtered).
+- [ ] Loading, empty, and error states handled with graceful degradation.
+- [ ] TypeScript/ESLint has no errors.
+```
+
+---
+
+## 13. Issue Templates
+
+### A. Frontend Task (`.github/ISSUE_TEMPLATE/jules-frontend-task.md`)
+```md
+---
+name: Jules Frontend Task
+about: UI, component, page or form task
+title: "[Frontend] "
+labels: ["jules", "frontend"]
+---
+@google-jules
+Read: AGENTS.md, TASKS.md, PROGRESS.md, global-rules.md, frontend-rules.md, ui-ux-rules.md
+Ensure mobile-first, React Hook Form + Zod, clear loading/error states, and graceful degradation for free-tier limits.
+```
+
+### B. Backend Task (`.github/ISSUE_TEMPLATE/jules-backend-task.md`)
+```md
+---
+name: Jules Backend Task
+about: Server actions, routes or logic task
+title: "[Backend] "
+labels: ["jules", "backend"]
+---
+@google-jules
+Read: AGENTS.md, TASKS.md, RUNBOOK.md, global-rules.md, backend-rules.md, security-rules.md
+Follow Server Actions / Records / Logic pattern. Ensure auth wrappers are utilized. Respect free-tier pool limits.
+```
+
+### C. Database Task (`.github/ISSUE_TEMPLATE/jules-database-task.md`)
+```md
+---
+name: Jules Database Task
+about: Migrations, schema or RLS task
+title: "[Database] "
+labels: ["jules", "database", "security"]
+---
+@google-jules
+Read: AGENTS.md, database-rules.md, security-rules.md
+Always create a new migration under `database/migrations/00XX_name.sql`. Enable RLS and index hot-paths to save free-tier DB CPU.
+```
+
+### D. Bugfix Task (`.github/ISSUE_TEMPLATE/jules-bugfix-task.md`)
+```md
+---
+name: Jules Bugfix Task
+about: Focused bugfix or stabilization task
+title: "[Bugfix] "
+labels: ["jules", "bugfix"]
+---
+@google-jules
+Read: AGENTS.md, global-rules.md, testing-rules.md
+Identify root cause, apply scoped fix, run typecheck/lint.
+```

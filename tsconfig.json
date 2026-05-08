@@ -91,7 +91,6 @@
       "@/features/marketplace/lib/utils": ["./src/features/marketplace/lib/listings/utils.ts"],
       "@/features/seo/lib": ["./src/components/seo/structured-data.tsx"],
       "@/features/marketplace/lib/slugs": ["./src/features/marketplace/lib/slugs.ts"],
-      "@/hooks/use-error-capture": ["./src/hooks/use-chat-queries.ts"],
       "@/hooks/usePullToRefresh": ["./src/features/shared/hooks/use-pull-to-refresh.ts"],
       "@/features/profile/services/profile-records": ["./src/features/profile/services/profile/profile-records.ts"],
       "@/features/marketplace/services/listing-filters": ["./src/features/marketplace/services/listings/listing-filters.ts"],
@@ -156,7 +155,6 @@
       "@/features/admin-moderation/services/persistence-health": ["./src/features/admin-moderation/services/admin/persistence-health.ts"],
       "@/features/admin-moderation/services/questions": ["./src/features/admin-moderation/services/admin/questions.ts"],
       "@/features/reports/services/report-submissions": ["./src/features/reports/services/reports/report-submissions.ts"],
-      "@/hooks/useErrorCapture": ["./src/lib/monitoring/sentry-client.ts"],
       "@/hooks/useNavigation": ["./src/hooks/use-navigation.ts"],
       "@/hooks/useChatQueries": ["./src/lib/query-keys.ts"],
       "@/hooks/useListingActions": ["./src/features/marketplace/services/listings/listing-submissions.ts"],
@@ -185,8 +183,7 @@
       "@/features/admin-moderation/services/listing-moderation": ["./src/features/admin-moderation/services/admin/listing-moderation.ts"],
       "@/features/shared/lib/admin": ["./src/lib/supabase/admin.ts"],
       "@/features/shared/lib/sanitize": ["./src/lib/sanitization/sanitize.ts"],
-      "@/components/reviews/review-form": ["./src/features/marketplace/lib/utils.ts"],
-      "@/lib/handler-utils": ["./src/lib/api/handler-utils.ts"]
+      "@/components/reviews/review-form": ["./src/features/marketplace/lib/utils.ts"]
     },
     "types": [
       "vitest/globals"
@@ -203,7 +200,6 @@
   "exclude": [
     "node_modules",
     "scratch",
-    "lib/ruflo",
     "lib/claude-code-templates",
     "**/__tests__/**",
     "**/*.test.ts",

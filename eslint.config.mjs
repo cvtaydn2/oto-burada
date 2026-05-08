@@ -53,7 +53,6 @@ const eslintConfig = [
       "playwright-report/**",
       "test-results/**",
       "src/types/supabase.ts",
-      "lib/ruflo/**",
       "lib/claude-code-templates/**",
       "scratch/**",
       "scripts/**",
