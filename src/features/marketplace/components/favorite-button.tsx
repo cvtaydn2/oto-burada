@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { useFavorites } from "@/features/shared/components/favorites-provider";
 import { Button } from "@/features/ui/components/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/features/ui/components/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/features/ui/components/tooltip";
 import { cn } from "@/lib";
 
 interface FavoriteButtonProps {
@@ -17,7 +19,7 @@ interface FavoriteButtonProps {
 export function FavoriteButton({
   listingId,
   className,
-  showGuestHint = true,
+  showGuestHint = true, // We will keep it but use it in the condition
 }: FavoriteButtonProps) {
   const { hydrated, isAuthenticated, isFavorite, toggleFavorite } = useFavorites();
   const active = hydrated && isFavorite(listingId);
@@ -48,45 +50,62 @@ export function FavoriteButton({
     };
   }, []);
 
+  const isGuestHintOpen = Boolean(showGuestHint && !isAuthenticated && showHint);
+
   return (
-    <div className="relative">
-      <Button
-        type="button"
-        aria-label={active ? "Favorilerden çıkar" : "Favorilere ekle"}
-        aria-pressed={active}
-        disabled={!hydrated}
-        onClick={handleClick}
-        className={cn(
-          "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
-          "size-11",
-          active && "border-primary/30 bg-primary/10 text-primary",
-          className
-        )}
-      >
-        <Heart
-          className={cn("size-4 transition-all duration-300", active && "fill-current scale-110")}
-          aria-hidden="true"
-        />
-        <span className="sr-only" aria-live="polite">
-          {announcement}
-        </span>
-      </Button>
-      {showGuestHint && !isAuthenticated && showHint && (
-        <div
-          role="tooltip"
-          className="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs text-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200"
-        >
-          Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.
-          <Link
-            href="/login"
-            className="mt-2 inline-flex items-center text-indigo-300 hover:text-white"
+    <TooltipProvider>
+      <Tooltip>
+        <Popover open={isGuestHintOpen} onOpenChange={setShowHint}>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                aria-label={active ? "Favorilerden çıkar" : "Favorilere ekle"}
+                aria-pressed={active}
+                disabled={!hydrated}
+                onClick={handleClick}
+                className={cn(
+                  "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
+                  "size-11",
+                  active && "border-primary/30 bg-primary/10 text-primary",
+                  className
+                )}
+              >
+                <Heart
+                  className={cn("size-4 transition-all duration-300", active && "fill-current scale-110")}
+                  aria-hidden="true"
+                />
+                <span className="sr-only" aria-live="polite">
+                  {announcement}
+                </span>
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent sideOffset={4}>
+            {active ? "Favorilerden çıkar" : "Favorilere ekle"}
+          </TooltipContent>
+          <PopoverContent
+            side="top"
+            align="center"
+            sideOffset={8}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            className="bg-slate-900 text-white w-56 p-3 z-50 text-xs shadow-sm border-none relative overflow-visible"
           >
-            <LogIn className="mr-1 size-3" />
-            Giriş
-          </Link>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
-        </div>
-      )}
-    </div>
+            <div className="flex flex-col gap-2">
+              <span>Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.</span>
+              <Link
+                href="/login"
+                className="inline-flex items-center text-indigo-300 hover:text-white"
+              >
+                <LogIn className="mr-1 size-3" />
+                Giriş
+              </Link>
+            </div>
+            {/* Hardcoded CSS arrow pointing down */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900" />
+          </PopoverContent>
+        </Popover>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
