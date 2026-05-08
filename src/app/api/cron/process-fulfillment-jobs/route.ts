@@ -26,6 +26,40 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: fetchError?.message }, { status: 500 });
     }
 
+    // --- PRE-FETCH FOR CREDIT ADD JOBS ---
+    const creditAddJobs = jobs.filter(
+      (j: { job_type: string; payment_id?: string | null }) =>
+        j.job_type === "credit_add" && j.payment_id
+    );
+    const paymentIds = [...new Set(creditAddJobs.map((j) => j.payment_id as string))];
+
+    const paymentsMap = new Map();
+    const plansMap = new Map();
+
+    if (paymentIds.length > 0) {
+      const { data: payments } = await admin
+        .from("payments")
+        .select("id, plan_id, user_id")
+        .in("id", paymentIds);
+
+      if (payments) {
+        payments.forEach((p) => paymentsMap.set(p.id, p));
+
+        const planIds = [...new Set(payments.map((p) => p.plan_id).filter(Boolean) as string[])];
+        if (planIds.length > 0) {
+          const { data: plans } = await admin
+            .from("pricing_plans")
+            .select("id, credits")
+            .in("id", planIds);
+
+          if (plans) {
+            plans.forEach((p) => plansMap.set(p.id, p));
+          }
+        }
+      }
+    }
+    // -------------------------------------
+
     const results = { success: 0, failed: 0 };
 
     for (const job of jobs) {
@@ -36,19 +70,11 @@ export async function GET(request: Request) {
         // 3. Logic based on job type
         if (job.job_type === "credit_add") {
           // B14 FIX: Get credits from pricing_plan instead of using payment amount directly
-          const { data: payment } = await admin
-            .from("payments")
-            .select("plan_id, user_id")
-            .eq("id", job.payment_id)
-            .single();
+          const payment = paymentsMap.get(job.payment_id);
 
           let credits = 0;
           if (payment?.plan_id) {
-            const { data: plan } = await admin
-              .from("pricing_plans")
-              .select("credits")
-              .eq("id", payment.plan_id)
-              .single();
+            const plan = plansMap.get(payment.plan_id);
             credits = plan?.credits ?? 0;
           }
 
