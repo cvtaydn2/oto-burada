@@ -3,3 +3,4 @@
 # Migration manager will apply only files listed here when file exists.
 
 0001_consolidated_baseline.sql
+0002_bulk_mark_jobs_processing.sql

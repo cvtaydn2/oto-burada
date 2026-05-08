@@ -115,9 +115,15 @@ export async function GET(request: Request) {
           let successCount = 0;
           let failCount = 0;
 
-          for (const job of jobs.slice(0, 5)) {
+          const jobsToProcess = jobs.slice(0, 5);
+          if (jobsToProcess.length > 0) {
+            const jobIds = jobsToProcess.map((j) => j.id);
+            await admin.rpc("mark_jobs_processing", { p_job_ids: jobIds });
+          }
+
+          for (const job of jobsToProcess) {
             try {
-              await admin.rpc("mark_job_processing", { p_job_id: job.id });
+              // mark_job_processing is now done in bulk above
 
               if (job.job_type === "doping_apply") {
                 const metadata = job.metadata as {
