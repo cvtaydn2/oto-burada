@@ -20,7 +20,7 @@ export function DashboardShell({
   balanceCredits = 0,
 }: DashboardShellProps) {
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/25">
       {/* Skip navigation */}
       <a
         href="#dashboard-main"
@@ -28,33 +28,33 @@ export function DashboardShell({
       >
         Ana içeriğe geç
       </a>
-      <div className="mx-auto max-w-[1400px] w-full px-4 py-8">
+      <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:py-8">
         {/* Top Header */}
-        <section className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <section className="mb-6 rounded-[1.5rem] border border-border/70 bg-card/95 p-5 shadow-[0_22px_54px_-36px_rgba(15,23,42,0.3)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <Link
                 href="/"
                 aria-label="Ana sayfaya dön"
-                className="flex size-10 items-center justify-center rounded-xl bg-muted/30 text-muted-foreground/70 border border-border/50 transition hover:bg-card hover:text-primary hover:border-primary/20 hover:shadow-sm"
+                className="flex size-11 items-center justify-center rounded-2xl border border-border/70 bg-muted/35 text-muted-foreground/80 transition hover:border-primary/20 hover:bg-card hover:text-primary hover:shadow-sm"
               >
                 <ArrowLeft size={18} aria-hidden="true" />
               </Link>
               <div>
-                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80">
                   Satıcı Paneli
                 </p>
-                <p className="text-xl font-bold text-foreground leading-none">
+                <p className="text-xl font-bold leading-none tracking-tight text-foreground sm:text-[1.4rem]">
                   {email ?? "Kullanıcı"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Link href="/dashboard/pricing">
                 <Badge
                   variant="secondary"
-                  className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100 transition-colors cursor-pointer"
+                  className="flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-amber-200/70 bg-amber-50 px-3 text-amber-800 transition-colors hover:bg-amber-100"
                 >
                   <Coins size={14} className="text-amber-500" />
                   <span className="font-bold">{balanceCredits} İlan Hakkı</span>
@@ -64,7 +64,7 @@ export function DashboardShell({
                 <Link href="/admin">
                   <Button
                     variant="outline"
-                    className="h-9 border-primary/10 bg-primary/5 text-primary hover:bg-primary/10 gap-2 font-bold rounded-xl shadow-sm text-xs"
+                    className="h-9 gap-2 rounded-xl border-primary/10 bg-primary/5 text-xs font-bold text-primary shadow-sm hover:bg-primary/10"
                   >
                     <ShieldCheck size={15} />
                     Admin Paneli
@@ -74,7 +74,7 @@ export function DashboardShell({
               <form action={logoutAction}>
                 <Button
                   type="submit"
-                  className="inline-flex h-9 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium text-muted-foreground transition hover:bg-muted/30 hover:text-red-500 hover:border-red-100"
+                  className="inline-flex h-9 items-center justify-center rounded-xl border border-border/70 bg-background px-4 text-sm font-medium text-muted-foreground transition hover:border-red-200 hover:bg-red-50/70 hover:text-red-600"
                 >
                   Çıkış
                 </Button>
@@ -84,13 +84,13 @@ export function DashboardShell({
         </section>
 
         {/* Main Layout: Sidebar + Content */}
-        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
+        <div className="flex flex-col gap-6 md:flex-row lg:gap-8">
           {/* Sidebar Navigation — mobilde yatay scroll */}
           <aside
             aria-label="Kullanıcı paneli navigasyonu"
             className="w-full md:w-56 lg:w-64 shrink-0"
           >
-            <nav className="rounded-xl border border-border bg-card overflow-hidden md:sticky md:top-24 shadow-sm">
+            <nav className="overflow-hidden rounded-[1.35rem] border border-border/70 bg-card/95 shadow-sm shadow-slate-950/5 md:sticky md:top-24">
               <DashboardNavigation variant="sidebar" />
             </nav>
           </aside>

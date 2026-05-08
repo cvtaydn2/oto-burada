@@ -26,16 +26,16 @@ import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib";
 import { type Listing } from "@/types";
 
 const cardVariants = cva(
-  "group relative overflow-hidden transition-[border-color,box-shadow,transform] duration-normal ease-standard bg-card border border-border/50 shadow-sm rounded-2xl hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5",
+  "group relative overflow-hidden rounded-[1.25rem] border border-border/70 bg-card/95 shadow-sm shadow-slate-950/5 transition-[border-color,box-shadow,transform,background-color] duration-normal ease-standard hover:border-primary/18 hover:bg-card hover:shadow-[0_22px_50px_-24px_rgba(15,23,42,0.32)]",
   {
     variants: {
       variant: {
-        grid: "flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1.5",
-        list: "flex flex-col sm:flex-row min-h-[220px] hover:shadow-xl hover:bg-primary/[0.01]",
-        minimal: "flex flex-col border-none p-0 bg-transparent shadow-none hover:opacity-90",
+        grid: "flex h-full flex-col hover:-translate-y-1",
+        list: "flex min-h-[220px] flex-col sm:flex-row hover:-translate-y-0.5",
+        minimal: "flex flex-col border-none bg-transparent p-0 shadow-none hover:opacity-90",
       },
       isHighlighted: {
-        true: "ring-2 ring-primary/20 bg-gradient-to-br from-primary/[0.03] to-card",
+        true: "ring-1 ring-primary/25 bg-gradient-to-br from-primary/[0.045] via-card to-card shadow-[0_24px_54px_-30px_rgba(37,99,235,0.35)]",
         false: "",
       },
     },
@@ -107,13 +107,13 @@ export const ListingCard = memo(function ListingCard({
     >
       <Link
         href={detailHref}
-        className="absolute inset-0 z-10 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="absolute inset-0 z-10 rounded-[1.25rem] focus:outline-none"
         aria-label={cardAriaLabel}
       />
 
       <div
         className={cn(
-          "relative overflow-hidden bg-muted/20",
+          "relative overflow-hidden bg-muted/30",
           isGrid && "aspect-[4/3] w-full",
           isList && "aspect-[16/10] sm:aspect-auto sm:w-[320px] shrink-0"
         )}
@@ -124,9 +124,9 @@ export const ListingCard = memo(function ListingCard({
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           priority={priority}
-          className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-110"
+          className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-normal" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/72 via-slate-950/10 to-transparent opacity-90 transition-opacity duration-normal group-hover:opacity-75" />
 
         <div className="absolute top-4 left-4 z-20 flex flex-col gap-2 pointer-events-none">
           {isPremiumVisible &&
@@ -157,19 +157,19 @@ export const ListingCard = memo(function ListingCard({
           <div className="absolute top-4 right-4 z-30">
             <FavoriteButton
               listingId={listing.id}
-              className="size-11 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90"
+              className="size-11 rounded-2xl border border-white/25 bg-slate-950/28 text-white backdrop-blur-xl shadow-xl shadow-slate-950/20 transition-[background-color,color,transform,border-color] duration-normal ease-expressive hover:border-white/50 hover:bg-white hover:text-rose-500 active:scale-90"
             />
           </div>
         )}
 
         <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20 pointer-events-none">
           {showInsights && insights.tone === "emerald" && (
-            <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-xl">
+            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-400/30 bg-emerald-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg shadow-emerald-900/20">
               <TrendingDown size={12} />
               {insights.badgeLabel}
             </div>
           )}
-          <div className="rounded-xl bg-black/30 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
+          <div className="rounded-xl border border-white/15 bg-slate-950/35 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md shadow-lg shadow-slate-950/20">
             {listing.images?.length || 0} foto
           </div>
         </div>
@@ -179,16 +179,16 @@ export const ListingCard = memo(function ListingCard({
         className={cn(
           "relative z-20 flex flex-1 flex-col",
           isGrid && "p-5 sm:p-6",
-          isList && "p-4 sm:p-8 sm:pl-10 justify-center"
+          isList && "justify-center p-4 sm:p-7 sm:pl-9"
         )}
       >
-        <div className="space-y-4">
+        <div className="space-y-4.5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-primary">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary/90">
                 {listing.brand}
               </span>
-              <div className="size-1 rounded-full bg-slate-300" aria-hidden="true" />
+              <div className="size-1 rounded-full bg-border" aria-hidden="true" />
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 {listing.year}
               </span>
@@ -196,12 +196,12 @@ export const ListingCard = memo(function ListingCard({
             {showInsights && insights.tone !== "emerald" && (
               <div
                 className={cn(
-                  "rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wide",
+                  "rounded-xl border px-2.5 py-1.5 text-[10px] font-bold tracking-wide shadow-sm",
                   insights.tone === "amber"
-                    ? "border-amber-100 bg-amber-50 text-amber-700"
+                    ? "border-amber-200/70 bg-amber-50 text-amber-800"
                     : insights.tone === "indigo"
-                      ? "border-indigo-100 bg-indigo-50 text-indigo-700"
-                      : "border-border/10 bg-muted/50 text-muted-foreground"
+                      ? "border-indigo-200/70 bg-indigo-50 text-indigo-800"
+                      : "border-border/70 bg-muted/60 text-muted-foreground"
                 )}
               >
                 {insights.badgeLabel}
@@ -209,31 +209,34 @@ export const ListingCard = memo(function ListingCard({
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <h2
               id={`listing-title-${listing.id}`}
-              className="text-lg font-bold tracking-tight text-foreground sm:text-xl lg:text-2xl"
+              className="text-lg font-bold leading-tight tracking-tight text-foreground sm:text-xl lg:text-[1.65rem]"
             >
               {listing.model}
             </h2>
-            <p className="line-clamp-1 text-sm font-medium text-muted-foreground">
+            <p className="line-clamp-2 text-sm font-medium leading-6 text-muted-foreground">
               {listing.title}
             </p>
           </div>
 
           <div
-            className="flex items-baseline gap-1.5"
+            className="flex items-end gap-1.5"
             aria-label={`Fiyat: ${formatPrice(listing.price)} TL`}
           >
-            <span className="text-3xl font-extrabold tracking-tighter text-foreground">
+            <span className="text-3xl font-extrabold tracking-[-0.04em] text-foreground sm:text-[2rem]">
               {formatPrice(listing.price)}
             </span>
-            <span className="text-xs font-bold tracking-wider text-primary/50" aria-hidden="true">
+            <span
+              className="pb-0.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary/60"
+              aria-hidden="true"
+            >
               TL
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 pt-1">
+          <div className="grid grid-cols-3 gap-2.5 pt-1.5">
             <Stat icon={CircleGauge} label={`${formatNumber(listing.mileage)} km`} />
             <Stat icon={Settings2} label={transmissionLabel} />
             <Stat icon={Fuel} label={fuelTypeLabel} />
@@ -242,20 +245,20 @@ export const ListingCard = memo(function ListingCard({
 
         <div
           className={cn(
-            "mt-6 flex items-center justify-between border-t border-slate-100 pt-5",
+            "mt-6 flex items-center justify-between border-t border-border/70 pt-5",
             isList && "sm:mt-6"
           )}
         >
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-8 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-[background-color,color] duration-normal ease-standard group-hover:bg-primary/5 group-hover:text-primary">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-muted-foreground transition-[background-color,color,border-color] duration-normal ease-standard group-hover:border-primary/20 group-hover:bg-primary/5 group-hover:text-primary">
               <MapPin size={14} />
             </div>
-            <span className="truncate text-xs font-bold tracking-wide text-slate-500">
+            <span className="truncate text-xs font-semibold tracking-[0.08em] text-muted-foreground">
               {listing.city}
             </span>
           </div>
 
-          <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+          <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-primary/90">
             Detay
             <ChevronRight size={16} strokeWidth={3} />
           </span>
@@ -277,7 +280,7 @@ function Badge({
   return (
     <div
       className={cn(
-        "flex h-8 items-center gap-2 rounded-xl border border-white/20 px-4 text-[10px] font-bold uppercase tracking-widest backdrop-blur-xl",
+        "flex h-8 items-center gap-2 rounded-xl border border-white/20 px-4 text-[10px] font-bold uppercase tracking-[0.16em] backdrop-blur-xl",
         className
       )}
     >
@@ -298,12 +301,12 @@ function Stat({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex size-11 items-center justify-center rounded-2xl bg-muted/30 text-slate-400 transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105 group-hover:bg-primary/5 group-hover:text-primary">
-        <Icon size={16} />
+      <div className="flex size-11 items-center justify-center rounded-2xl border border-border/60 bg-muted/35 text-muted-foreground transition-[background-color,color,transform,border-color] duration-normal ease-standard group-hover:scale-[1.03] group-hover:border-primary/20 group-hover:bg-primary/5 group-hover:text-primary">
+        <Icon size={16} strokeWidth={2.25} />
       </div>
       <div className="flex min-w-0 items-baseline gap-1">
-        <span className="truncate text-[12px] font-bold text-slate-600">{label}</span>
-        {sub && <span className="text-[9px] font-bold uppercase text-slate-400">{sub}</span>}
+        <span className="truncate text-[12px] font-semibold text-foreground/80">{label}</span>
+        {sub && <span className="text-[9px] font-bold uppercase text-muted-foreground">{sub}</span>}
       </div>
     </div>
   );

@@ -60,7 +60,7 @@ export function MarketplaceControls({
     SORT_OPTIONS.find((o) => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-1.5 shadow-sm">
+    <div className="flex flex-wrap items-center gap-2.5 rounded-[1.2rem] border border-border/70 bg-card/95 p-2 shadow-sm shadow-slate-950/5">
       <MobileFilterDrawer
         brands={brands}
         cities={cities}
@@ -77,14 +77,14 @@ export function MarketplaceControls({
 
       <div className="hidden h-8 w-px bg-border sm:block" />
 
-      <div className="hidden sm:flex items-center gap-1 rounded-xl bg-muted/30 p-1">
+      <div className="hidden sm:flex items-center gap-1 rounded-xl border border-border/60 bg-muted/30 p-1">
         <Button
           onClick={() => setViewMode("grid")}
           className={cn(
-            "min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-all",
+            "min-h-10 rounded-lg border px-3.5 py-2 text-xs font-bold transition-all",
             viewMode === "grid"
-              ? "border-border/50 bg-card text-foreground shadow-sm"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-border/70 bg-card text-foreground shadow-sm shadow-slate-950/5"
+              : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
           )}
         >
           Kart
@@ -92,10 +92,10 @@ export function MarketplaceControls({
         <Button
           onClick={() => setViewMode("list")}
           className={cn(
-            "min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-all",
+            "min-h-10 rounded-lg border px-3.5 py-2 text-xs font-bold transition-all",
             viewMode === "list"
-              ? "border-border/50 bg-card text-foreground shadow-sm"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-border/70 bg-card text-foreground shadow-sm shadow-slate-950/5"
+              : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
           )}
         >
           Liste
@@ -105,7 +105,7 @@ export function MarketplaceControls({
       <div className="relative ml-auto">
         <Button
           onClick={() => setIsSortOpen(!isSortOpen)}
-          className="flex h-11 items-center gap-3 rounded-xl border border-border bg-card px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/50"
+          className="flex h-11 items-center gap-3 rounded-xl border border-border/70 bg-background/80 px-5 text-xs font-bold text-foreground transition-all hover:border-primary/15 hover:bg-muted/50"
           aria-haspopup="listbox"
           aria-expanded={isSortOpen}
         >
@@ -119,7 +119,7 @@ export function MarketplaceControls({
         {isSortOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-            <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+            <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-border/70 bg-card/95 p-2 shadow-[0_20px_48px_-28px_rgba(15,23,42,0.3)] animate-in fade-in zoom-in-95 duration-200">
               {SORT_OPTIONS.map((option) => (
                 <li key={option.value}>
                   <Button
@@ -128,10 +128,10 @@ export function MarketplaceControls({
                       setIsSortOpen(false);
                     }}
                     className={cn(
-                      "w-full rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all",
+                      "w-full rounded-xl px-4 py-3 text-left text-sm font-semibold shadow-none transition-all",
                       (filters.sort ?? "newest") === option.value
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/15"
+                        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                     )}
                   >
                     {option.label}

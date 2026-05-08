@@ -32,38 +32,41 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={cn("flex flex-col items-center justify-center py-16 px-4 text-center", className)}
+      className={cn(
+        "flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-border/80 bg-card/75 px-4 py-16 text-center shadow-sm shadow-slate-950/5",
+        className
+      )}
       role="status"
       aria-live="polite"
     >
       {/* Illustration or Icon */}
       {illustration && (
-        <div className="mb-6 size-32 text-muted-foreground/30 animate-in fade-in duration-500">
+        <div className="mb-6 size-32 text-muted-foreground/40 animate-in fade-in duration-500">
           {illustration}
         </div>
       )}
 
       {icon && !illustration && (
-        <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 animate-in fade-in duration-500">
+        <div className="mb-6 flex size-20 items-center justify-center rounded-full border border-border/70 bg-muted/45 text-muted-foreground/60 animate-in fade-in duration-500">
           {icon}
         </div>
       )}
 
       {/* Title */}
-      <h3 className="mb-3 text-xl sm:text-2xl font-bold text-foreground tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+      <h3 className="mb-3 text-xl font-bold tracking-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 sm:text-2xl">
         {title}
       </h3>
 
       {/* Description */}
       {description && (
-        <p className="mb-8 max-w-md text-sm text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+        <p className="mb-8 max-w-md text-sm leading-6 text-muted-foreground animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
           {description}
         </p>
       )}
 
       {/* Actions */}
       {(primaryAction || secondaryAction) && (
-        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+        <div className="flex w-full max-w-sm flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300 sm:flex-row">
           {primaryAction && (
             <Button
               onClick={primaryAction.onClick}

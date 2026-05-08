@@ -68,16 +68,16 @@ export function AuthForm({
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-1 overflow-hidden bg-[#F8FAFC]">
+    <div className="flex min-h-screen flex-1 overflow-hidden bg-background">
       {/* Cinematic Left Panel */}
       <AuthCinematicPanel />
 
       {/* Auth Content */}
       <section
         aria-label="Kimlik Doğrulama Paneli"
-        className="flex w-full items-center justify-center px-6 py-12 sm:px-10 lg:w-1/2 lg:px-20 bg-background"
+        className="flex w-full items-center justify-center bg-background px-6 py-12 sm:px-10 lg:w-1/2 lg:px-20"
       >
-        <div className="w-full max-w-sm space-y-10">
+        <div className="w-full max-w-md space-y-8 lg:space-y-10">
           {/* Mobile Header */}
           <div className="text-center lg:hidden space-y-4">
             <Link
@@ -92,13 +92,20 @@ export function AuthForm({
             </Link>
           </div>
 
-          <div className="space-y-1 text-center lg:text-left">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{config.title}</h1>
-            <p className="text-sm font-medium text-muted-foreground">{config.description}</p>
+          <div className="space-y-2 text-center lg:text-left">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">
+              Güvenli hesap erişimi
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-[2.15rem]">
+              {config.title}
+            </h1>
+            <p className="text-sm font-medium leading-6 text-muted-foreground">
+              {config.description}
+            </p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-card rounded-2xl p-8 border border-border shadow-sm relative">
+          <div className="relative rounded-[1.6rem] border border-border/70 bg-card/95 p-6 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.28)] sm:p-8">
             <form action={formAction} className="space-y-6">
               {next ? <input type="hidden" name="next" value={next} /> : null}
               <input type="hidden" name="turnstile_token" value={turnstileToken || ""} />
@@ -117,7 +124,7 @@ export function AuthForm({
               />
 
               {!isLogin && (
-                <div className="flex justify-center py-2">
+                <div className="flex justify-center rounded-2xl border border-dashed border-border/80 bg-muted/25 py-3">
                   <BotProtection onVerify={setTurnstileToken} />
                 </div>
               )}
@@ -127,10 +134,10 @@ export function AuthForm({
               <AuthSubmitButton label={submitLabel} />
             </form>
 
-            <div className="mt-8 pt-8 border-t border-border flex flex-col gap-4 text-center">
+            <div className="mt-8 flex flex-col gap-4 border-t border-border/80 pt-8 text-center">
               <Link
                 href={alternateHref}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-background px-4 text-sm font-medium text-foreground transition-all hover:bg-muted"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input/90 bg-background px-4 text-sm font-semibold text-foreground transition-all hover:border-primary/15 hover:bg-muted/40"
               >
                 {alternateLabel}
               </Link>
