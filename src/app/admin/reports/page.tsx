@@ -1,8 +1,10 @@
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, TriangleAlert } from "lucide-react";
+import Link from "next/link";
 
 import { ReportsModeration } from "@/features/admin-moderation/components/reports-moderation";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { getStoredReports } from "@/features/reports/services/report-submissions";
+import { Badge } from "@/features/ui/components/badge";
 import { createSupabaseAdminClient } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +25,10 @@ export default async function AdminReportsPage({
       : storedReports.filter((report) => report.status === "open" || report.status === "reviewing");
 
   if (urgent === "true") {
-    actionableReports = actionableReports.filter((r) => r.reason === "fake_listing");
+    actionableReports = actionableReports.filter((report) => report.reason === "fake_listing");
   }
 
-  // Fetch only the listing meta (id, title, slug) we actually need for the report list.
-  // Avoids loading full listing data (images, expert_inspection, etc.) for every report.
-  const listingIds = [...new Set(actionableReports.map((r) => r.listingId))];
+  const listingIds = [...new Set(actionableReports.map((report) => report.listingId))];
   let listingMetaById: Record<string, { slug: string; title: string }> = {};
 
   if (listingIds.length > 0) {
@@ -39,136 +39,171 @@ export default async function AdminReportsPage({
       .in("id", listingIds);
 
     listingMetaById = Object.fromEntries(
-      (listingMeta ?? []).map((l) => [l.id, { slug: l.slug, title: l.title }])
+      (listingMeta ?? []).map((listing) => [
+        listing.id,
+        { slug: listing.slug, title: listing.title },
+      ])
     );
   }
 
+  const openCount = actionableReports.filter((report) => report.status === "open").length;
+  const reviewingCount = actionableReports.filter((report) => report.status === "reviewing").length;
+  const resolvedCount = storedReports.filter((report) => report.status === "resolved").length;
+  const dismissedCount = storedReports.filter((report) => report.status === "dismissed").length;
+
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="size-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
-            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">
-              Şikayet Denetimi
-            </span>
+    <main className="min-h-full max-w-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+      <section className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+                Şikayet Denetimi
+              </span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Kullanıcı <span className="text-rose-600">Raporları</span>
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+                Topluluk bildirimlerini önceliklendirilmiş moderasyon kuyruğunda yönet ve kararları
+                audit iziyle destekle.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Kullanıcı <span className="text-rose-600">Raporları</span>
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">
-            İlanlar hakkında gelen topluluk geri bildirimlerini ve şikayetleri yönetin.
-          </p>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[520px]">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700/80">
+                Açık
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">{openCount}</p>
+            </div>
+            <div className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-700/80">
+                İncelemede
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {reviewingCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700/80">
+                Çözüldü
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {resolvedCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Geçersiz
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {dismissedCount}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-        <div className="space-y-8">
-          <div className="rounded-3xl border border-rose-200/50 bg-card p-6 md:p-8 shadow-sm relative overflow-hidden">
-            <div className="absolute -right-10 -top-10 size-40 bg-rose-50 rounded-full blur-3xl opacity-50" />
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-6">
+          <div className="overflow-hidden rounded-3xl border border-rose-200/60 bg-card shadow-sm">
+            <div className="border-b border-rose-100/80 bg-rose-50/60 p-4 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-rose-100 bg-background text-rose-500 shadow-sm">
+                    <ShieldAlert size={22} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold uppercase tracking-tight text-rose-900">
+                      İnceleme önceliği
+                    </h2>
+                    <p className="mt-1 text-sm leading-6 text-rose-700/80">
+                      Dolandırıcılık ve kapora şikayetleri her zaman ilk doğrulama katmanı olarak
+                      ele alınmalı.
+                    </p>
+                  </div>
+                </div>
 
-            <div className="relative mb-8 flex items-center gap-4 rounded-2xl border border-rose-100 bg-rose-50/50 p-6">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-card text-rose-500 shadow-sm border border-rose-100">
-                <ShieldAlert size={28} />
+                <Badge className="w-fit rounded-full border-none bg-white/90 px-3 py-1 text-xs font-semibold text-rose-700 shadow-sm">
+                  {actionableReports.length} görünür rapor
+                </Badge>
+              </div>
+            </div>
+
+            <div className="p-0 sm:p-1">
+              <ReportsModeration listingMetaById={listingMetaById} reports={actionableReports} />
+            </div>
+          </div>
+        </div>
+
+        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+          <div className="rounded-3xl border border-blue-200/70 bg-blue-600 p-5 text-white shadow-sm shadow-blue-100 sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                <TriangleAlert className="size-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-rose-900 leading-tight uppercase tracking-tight">
-                  İnceleme Önceliği
-                </h3>
-                <p className="mt-1 text-sm text-rose-700/80 font-bold italic leading-relaxed">
-                  Dolandırıcılık ve Kapora şikayetleri sistem tarafından otomatik olarak en üste
-                  taşınır.
+                <h3 className="text-base font-bold">Hızlı filtre</h3>
+                <p className="mt-1 text-sm leading-6 text-blue-100">
+                  Yüksek riskli şikayetleri ya da tüm geçmişi tek dokunuşla aç.
                 </p>
               </div>
             </div>
 
-            <ReportsModeration listingMetaById={listingMetaById} reports={actionableReports} />
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="grid gap-4">
-            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-              <span
-                className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-blue-600 transition-colors"
-                aria-hidden="true"
-              >
-                Açık
-              </span>
-              <span
-                className="text-3xl font-bold text-foreground tracking-tighter"
-                aria-label={`Açık şikayet: ${actionableReports.filter((r) => r.status === "open").length}`}
-              >
-                {actionableReports.filter((r) => r.status === "open").length}
-              </span>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-              <span
-                className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-amber-600 transition-colors"
-                aria-hidden="true"
-              >
-                İncelemede
-              </span>
-              <span
-                className="text-3xl font-bold text-foreground tracking-tighter"
-                aria-label={`İncelemede: ${actionableReports.filter((r) => r.status === "reviewing").length}`}
-              >
-                {actionableReports.filter((r) => r.status === "reviewing").length}
-              </span>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-              <span
-                className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-emerald-600 transition-colors"
-                aria-hidden="true"
-              >
-                Çözüldü
-              </span>
-              <span
-                className="text-3xl font-bold text-emerald-600 tracking-tighter"
-                aria-label={`Çözülen şikayet: ${storedReports.filter((r) => r.status === "resolved").length}`}
-              >
-                {storedReports.filter((r) => r.status === "resolved").length}
-              </span>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-              <span
-                className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-muted-foreground transition-colors"
-                aria-hidden="true"
-              >
-                Geçersiz
-              </span>
-              <span
-                className="text-3xl font-bold text-muted-foreground/70 tracking-tighter"
-                aria-label={`Geçersiz şikayet: ${storedReports.filter((r) => r.status === "dismissed").length}`}
-              >
-                {storedReports.filter((r) => r.status === "dismissed").length}
-              </span>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-blue-600 bg-blue-600 p-6 shadow-sm shadow-blue-100 relative overflow-hidden text-white group">
-            <div className="absolute -right-4 -bottom-4 size-24 bg-card/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-            <h4 className="font-bold text-lg mb-2">Hızlı Filtre</h4>
-            <p className="text-blue-100 text-xs font-medium mb-4 leading-relaxed italic">
-              Sadece yüksek riskli şikayetleri listeleyerek zaman kazanın.
-            </p>
-            <div className="space-y-2">
-              <a
+            <div className="mt-5 grid gap-2">
+              <Link
                 href={urgent === "true" ? "/admin/reports" : "/admin/reports?urgent=true"}
-                className="w-full bg-card text-blue-600 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer"
+                className="flex min-h-11 items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
               >
-                {urgent === "true" ? "TÜMÜNÜ GÖSTER" : "ACİL OLANLAR"}
-              </a>
-              <a
+                <span>{urgent === "true" ? "Tümünü göster" : "Acil olanlar"}</span>
+                <Badge className="rounded-full border-none bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                  {urgent === "true" ? "Sıfırla" : "Risk"}
+                </Badge>
+              </Link>
+              <Link
                 href={show === "all" ? "/admin/reports" : "/admin/reports?show=all"}
-                className="w-full bg-blue-700 text-white rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-blue-800 transition-colors flex items-center justify-center cursor-pointer"
+                className="flex min-h-11 items-center justify-between rounded-2xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800"
               >
-                {show === "all" ? "SADECE AKTİFLER" : "TÜM GEÇMİŞ"}
-              </a>
+                <span>{show === "all" ? "Sadece aktifler" : "Tüm geçmiş"}</span>
+                <Badge className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[11px] font-bold text-white">
+                  {show === "all" ? "Canlı" : "Arşiv"}
+                </Badge>
+              </Link>
             </div>
           </div>
-        </div>
-      </div>
+
+          <div className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">Durum özeti</h3>
+            <div className="mt-4 grid gap-3">
+              <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                  Filtre modu
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {urgent === "true"
+                    ? "Sadece riskli raporlar"
+                    : show === "all"
+                      ? "Tüm geçmiş"
+                      : "Açık ve incelemede"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                  Moderasyon notu
+                </p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Kapatma ve çözme kararlarında kısa bağlam notu bırakmak, audit ekranında takip
+                  kolaylığı sağlar.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
     </main>
   );
 }

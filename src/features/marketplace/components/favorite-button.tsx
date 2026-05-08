@@ -7,7 +7,12 @@ import { useEffect, useRef, useState } from "react";
 import { useFavorites } from "@/features/shared/components/favorites-provider";
 import { Button } from "@/features/ui/components/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/features/ui/components/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/features/ui/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/features/ui/components/tooltip";
 import { cn } from "@/lib";
 
 interface FavoriteButtonProps {
@@ -65,14 +70,17 @@ export function FavoriteButton({
                 disabled={!hydrated}
                 onClick={handleClick}
                 className={cn(
-                  "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
+                  "flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
                   "size-11",
                   active && "border-primary/30 bg-primary/10 text-primary",
                   className
                 )}
               >
                 <Heart
-                  className={cn("size-4 transition-all duration-300", active && "fill-current scale-110")}
+                  className={cn(
+                    "size-4 transition-all duration-300",
+                    active && "fill-current scale-110"
+                  )}
                   aria-hidden="true"
                 />
                 <span className="sr-only" aria-live="polite">
@@ -89,20 +97,21 @@ export function FavoriteButton({
             align="center"
             sideOffset={8}
             onOpenAutoFocus={(e) => e.preventDefault()}
-            className="bg-slate-900 text-white w-56 p-3 z-50 text-xs shadow-sm border-none relative overflow-visible"
+            className="relative z-50 w-64 overflow-visible rounded-2xl border-none bg-slate-900 p-3 text-xs text-white shadow-sm"
           >
-            <div className="flex flex-col gap-2">
-              <span>Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.</span>
+            <div className="flex flex-col gap-2.5">
+              <span className="leading-5 text-slate-100">
+                Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.
+              </span>
               <Link
                 href="/login"
-                className="inline-flex items-center text-indigo-300 hover:text-white"
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg text-indigo-300 transition hover:text-white"
               >
-                <LogIn className="mr-1 size-3" />
+                <LogIn className="size-3.5" />
                 Giriş
               </Link>
             </div>
-            {/* Hardcoded CSS arrow pointing down */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900" />
+            <div className="absolute left-1/2 top-full -translate-x-1/2 border-[6px] border-transparent border-t-slate-900" />
           </PopoverContent>
         </Popover>
       </Tooltip>

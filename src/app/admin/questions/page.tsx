@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -29,80 +29,153 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
   const offset = (currentPage - 1) * limit;
   const normalizedStatus = status === "all" || status === "pending" ? status : "pending";
 
-  // Parallel fetch counts and main list
   const pendingQuestions = await getPendingQuestions(100);
   const allQuestions = await getAllQuestions(limit, offset);
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="size-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">
-              İletişim Denetimi
-            </span>
+    <main className="min-h-full max-w-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+      <section className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+                İletişim Denetimi
+              </span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Soru <span className="text-amber-600">Moderasyonu</span>
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+                İlanlara gelen soruları mobilde daha okunabilir kartlarla incele, sonra güvenli onay
+                akışıyla karar ver.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Soru <span className="text-amber-600">Moderasyonu</span>
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">
-            İlanlara gelen soruları inceleyin, onaylayın veya engelleyin.
-          </p>
-        </div>
-      </div>
 
-      <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-border/50 bg-muted/30 flex items-center justify-between gap-4">
-          <form className="relative flex-1 max-w-xl group">
-            <input type="hidden" name="status" value={status} />
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-amber-500 transition-colors"
-              size={18}
-            />
-            <Input
-              name="q"
-              defaultValue={q}
-              className="pl-12 h-12 bg-card border-border focus:border-amber-300 focus:ring-4 focus:ring-amber-50 rounded-xl font-medium placeholder:italic placeholder:text-slate-300 transition-all"
-              placeholder="Soru veya kullanıcı ile ara..."
-            />
-          </form>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700/80">
+                Bekleyen
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {pendingQuestions.length}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Görünen sayfa
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {currentPage}
+              </p>
+            </div>
+            <div className="col-span-2 rounded-2xl border border-blue-200 bg-blue-50/80 p-4 sm:col-span-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700/80">
+                Moderasyon notu
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-foreground">
+                Silme ve ret aksiyonları ek onay adımı ile korunur.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="border-b border-border/50 bg-muted/20 p-4 sm:p-6">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                Soru inceleme kuyruğu
+              </h2>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Kullanıcı, ilan ve soru içeriğini tek satırda değerlendir; sonra uygun moderasyon
+                kararını ver.
+              </p>
+            </div>
+
+            <form className="group relative w-full xl:max-w-xl">
+              <input type="hidden" name="status" value={status} />
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 transition-colors group-focus-within:text-amber-500"
+                size={18}
+              />
+              <Input
+                name="q"
+                defaultValue={q}
+                className="h-11 rounded-2xl border-border bg-background pl-11 text-sm font-medium transition-all placeholder:text-muted-foreground/70 focus:border-amber-300 focus:ring-4 focus:ring-amber-50"
+                placeholder="Soru veya kullanıcı ile ara"
+              />
+            </form>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <ShieldAlert className="size-4 shrink-0" />
+            Kalıcı silme ve ret işlemleri yanlış dokunuş riskini azaltmak için ek onay ister.
+          </div>
         </div>
 
         <Tabs value={normalizedStatus} className="w-full">
-          <div className="px-6 border-b border-border/50 bg-card overflow-x-auto">
-            <TabsList className="h-20 bg-transparent gap-10 p-0 flex">
+          <div className="border-b border-border/50 px-4 py-3 sm:px-6">
+            <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-2">
               <TabsTrigger
                 value="pending"
                 asChild
-                className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-amber-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-amber-600"
+                className="h-auto rounded-2xl border border-border/70 px-4 py-3 data-[state=active]:border-amber-300 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700 data-[state=active]:shadow-none"
               >
-                <Link href={`?status=pending${q ? `&q=${q}` : ""}`}>
-                  Onay Bekleyen
+                <Link
+                  href={`?status=pending${q ? `&q=${q}` : ""}`}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <span className="text-left">
+                    <span className="block text-sm font-semibold">Onay bekleyen</span>
+                    <span className="mt-1 block text-xs font-medium text-muted-foreground">
+                      Hızlı karar kuyruğu
+                    </span>
+                  </span>
                   <Badge
                     variant="secondary"
-                    className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2 py-0.5 font-bold"
+                    className="rounded-full bg-amber-100 px-2.5 py-1 font-bold text-amber-700 hover:bg-amber-100"
                   >
                     {pendingQuestions.length}
                   </Badge>
                 </Link>
               </TabsTrigger>
+
               <TabsTrigger
                 value="all"
                 asChild
-                className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-amber-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-amber-600"
+                className="h-auto rounded-2xl border border-border/70 px-4 py-3 data-[state=active]:border-blue-300 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none"
               >
-                <Link href={`?status=all${q ? `&q=${q}` : ""}`}>Tüm Sorular</Link>
+                <Link
+                  href={`?status=all${q ? `&q=${q}` : ""}`}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <span className="text-left">
+                    <span className="block text-sm font-semibold">Tüm sorular</span>
+                    <span className="mt-1 block text-xs font-medium text-muted-foreground">
+                      Geçmiş ve mevcut kayıtlar
+                    </span>
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full bg-blue-100 px-2.5 py-1 font-bold text-blue-700 hover:bg-blue-100"
+                  >
+                    {allQuestions.length}
+                  </Badge>
+                </Link>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="pending" className="m-0 p-8 bg-muted/20">
+          <TabsContent value="pending" className="m-0 bg-muted/10 p-4 sm:p-6">
             <Suspense
               fallback={
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 animate-pulse">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-64 bg-card rounded-3xl border border-border" />
+                    <div key={i} className="h-64 rounded-3xl border border-border bg-card" />
                   ))}
                 </div>
               }
@@ -111,12 +184,11 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="all" className="m-0 p-8 bg-muted/20">
-            {/* We can reuse QuestionsModeration or create a table for all questions */}
+          <TabsContent value="all" className="m-0 bg-muted/10 p-4 sm:p-6">
             <QuestionsModeration questions={allQuestions as QuestionWithDetails[]} />
           </TabsContent>
         </Tabs>
-      </div>
+      </section>
     </main>
   );
 }

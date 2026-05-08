@@ -92,197 +92,207 @@ export function DashboardListingCard({
   return (
     <div
       className={cn(
-        "group flex gap-3 rounded-2xl border transition-all duration-500",
+        "group rounded-2xl border transition-all duration-500",
         isSelected
           ? "border-primary bg-primary/5 ring-1 ring-primary/10"
           : "border-border/50 bg-card hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5",
         isArchived && "opacity-70 grayscale-[0.5]"
       )}
     >
-      <div className="flex items-start pt-4 pl-4">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={onToggleSelect}
-          className="size-4.5 rounded-lg border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all shadow-sm"
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col sm:flex-row gap-4 p-4 pl-0">
-        <div className="relative h-24 w-full sm:w-36 shrink-0 overflow-hidden rounded-xl bg-muted/30 border border-border/40 shadow-sm transition-transform duration-500 group-hover:shadow-md">
-          {listing.images?.[0]?.url ? (
-            <Image
-              src={supabaseImageUrl(listing.images[0].url, 320, 75)}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 100vw, 144px"
-              className="object-cover group-hover:scale-105 transition-transform duration-700"
-              placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}
-              blurDataURL={listing.images[0].placeholderBlur ?? undefined}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-slate-300">
-              <Rocket size={24} />
-            </div>
-          )}
-          {dopingItems[0] && (
-            <div
-              className={cn(
-                "absolute top-2 left-2 rounded-lg px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.15em] text-white shadow-lg backdrop-blur-sm",
-                getListingDopingStatusTone(dopingItems[0].expiresAt) === "expiring"
-                  ? "bg-amber-500"
-                  : "bg-primary"
-              )}
-            >
-              {dopingItems[0].label}
-            </div>
-          )}
+      <div className="flex gap-3 p-3 sm:p-4">
+        <div className="pt-1">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={onToggleSelect}
+            className="size-4.5 rounded-lg border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary transition-all shadow-sm"
+          />
         </div>
 
-        <div className="min-w-0 flex-1 flex flex-col justify-center gap-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className={cn(
-                "text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm",
-                statusClassMap[listing.status]
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+            <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-xl border border-border/40 bg-muted/30 shadow-sm transition-transform duration-500 group-hover:shadow-md sm:h-24 sm:w-36 lg:w-40">
+              {listing.images?.[0]?.url ? (
+                <Image
+                  src={supabaseImageUrl(listing.images[0].url, 320, 75)}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 100vw, 160px"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}
+                  blurDataURL={listing.images[0].placeholderBlur ?? undefined}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-slate-300">
+                  <Rocket size={24} />
+                </div>
               )}
-            >
-              {statusLabelMap[listing.status]}
-            </span>
-            <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">
-              {listing.brand}
-            </span>
-          </div>
-
-          <p className="font-bold text-foreground text-base tracking-tight truncate group-hover:text-primary transition-colors">
-            {listing.title}
-          </p>
-
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold text-primary tracking-tight">
-              {formatCurrency(listing.price)}
-            </span>
-            <span className="text-[10px] font-bold text-primary/40 uppercase">TL</span>
-          </div>
-
-          <div className="mt-2 flex items-center justify-between gap-3 overflow-hidden">
-            <div className="flex items-center gap-3 text-[10px] text-muted-foreground/60 font-bold uppercase tracking-[0.1em]">
-              <span>{listing.year}</span>
-              <span className="w-1 h-1 rounded-full bg-border" />
-              <span>{formatNumber(listing.mileage)} KM</span>
-              <span className="w-1 h-1 rounded-full bg-border" />
-              <span className="truncate">{listing.city}</span>
+              {dopingItems[0] && (
+                <div
+                  className={cn(
+                    "absolute left-2 top-2 rounded-lg px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.15em] text-white shadow-lg backdrop-blur-sm",
+                    getListingDopingStatusTone(dopingItems[0].expiresAt) === "expiring"
+                      ? "bg-amber-500"
+                      : "bg-primary"
+                  )}
+                >
+                  {dopingItems[0].label}
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              {dopingItems.length > 1 && (
-                <span className="hidden rounded-full border border-primary/15 bg-primary/5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-primary md:inline-flex">
-                  +{dopingItems.length - 1} aktif boost
+            <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={cn(
+                    "rounded-lg border px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest shadow-sm",
+                    statusClassMap[listing.status]
+                  )}
+                >
+                  {statusLabelMap[listing.status]}
                 </span>
-              )}
-
-              {dopingItems[0] &&
-                getListingDopingStatusTone(dopingItems[0].expiresAt) === "expiring" && (
-                  <span className="hidden rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-amber-700 md:inline-flex">
-                    Süresi bitiyor
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">
+                  {listing.brand}
+                </span>
+                {dopingItems.length > 1 && (
+                  <span className="rounded-full border border-primary/15 bg-primary/5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-primary">
+                    +{dopingItems.length - 1} aktif boost
                   </span>
                 )}
-            </div>
-
-            {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
-              <Link
-                href="/dashboard/profile"
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500 hover:text-white transition-all animate-pulse"
-              >
-                <div className="size-1.5 rounded-full bg-amber-500" />
-                <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
-                  Güveni Artır
-                </span>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <div className="flex sm:flex-col gap-2 justify-end sm:justify-center pt-2 sm:pt-0 sm:pl-4 sm:border-l sm:border-border/40">
-          <Link
-            href={`/dashboard/listings?edit=${listing.id}`}
-            className="flex items-center justify-center size-11 rounded-xl bg-card border border-border/50 text-muted-foreground/70 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all shadow-sm group/btn"
-            aria-label="İlanı düzenle"
-          >
-            <Pencil className="size-4" />
-          </Link>
-
-          {isApproved &&
-            (!canBump ? (
-              <div
-                className="flex items-center justify-center size-11 rounded-xl bg-muted/40 text-slate-300 border border-border/30 cursor-help"
-                title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}
-              >
-                <ArrowUpCircle className="size-4" />
+                {dopingItems[0] &&
+                  getListingDopingStatusTone(dopingItems[0].expiresAt) === "expiring" && (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-amber-700">
+                      Süresi bitiyor
+                    </span>
+                  )}
               </div>
-            ) : (
+
+              <div className="space-y-1.5">
+                <p className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-lg">
+                  {listing.title}
+                </p>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xl font-bold tracking-tight text-primary">
+                    {formatCurrency(listing.price)}
+                  </span>
+                  <span className="text-[10px] font-bold uppercase text-primary/40">TL</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60">
+                <span>{listing.year}</span>
+                <span className="h-1 w-1 rounded-full bg-border" />
+                <span>{formatNumber(listing.mileage)} KM</span>
+                <span className="h-1 w-1 rounded-full bg-border" />
+                <span className="truncate">{listing.city}</span>
+              </div>
+
+              {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
+                <Link
+                  href="/dashboard/profile"
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-amber-600 transition-all hover:bg-amber-500 hover:text-white"
+                >
+                  <div className="size-1.5 rounded-full bg-current" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
+                    Güveni Artır
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-border/50 pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">
+              Düzenleme ve öne çıkarma işlemlerini buradan hızlıca yönetebilirsin.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+              <Link
+                href={`/dashboard/listings?edit=${listing.id}`}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border/60 bg-background px-3 text-xs font-semibold text-muted-foreground transition-all hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
+                aria-label="İlanı düzenle"
+              >
+                <Pencil className="size-4" />
+                <span>Düzenle</span>
+              </Link>
+
+              {isApproved &&
+                (!canBump ? (
+                  <div
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border/40 bg-muted/40 px-3 text-xs font-semibold text-muted-foreground/60"
+                    title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}
+                  >
+                    <ArrowUpCircle className="size-4" />
+                    <span>{bumpCooldownDays} gün kaldı</span>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => onBump(listing.id)}
+                    disabled={isBumping}
+                    aria-label="İlanı Üste Taşı"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-600 hover:text-white disabled:opacity-30"
+                    title="Üste Taşı"
+                  >
+                    {isBumping ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ArrowUpCircle className="size-4" />
+                    )}
+                    <span>Üste taşı</span>
+                  </Button>
+                ))}
+
               <Button
                 type="button"
-                onClick={() => onBump(listing.id)}
-                disabled={isBumping}
-                aria-label="İlanı Üste Taşı"
-                className="flex items-center justify-center size-11 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm"
-                title="Üste Taşı"
-              >
-                {isBumping ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <ArrowUpCircle className="size-4" />
+                onClick={() => onArchive(listing.id)}
+                disabled={isArchiving}
+                aria-label={isArchived ? "Yeniden Yayına Al" : "Arşivle"}
+                className={cn(
+                  "inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold shadow-sm transition-all disabled:opacity-30",
+                  isArchived
+                    ? "border-slate-800 bg-slate-900 text-white hover:bg-slate-950"
+                    : "border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white"
                 )}
+                title={isArchived ? "Yeniden Yayına Al" : "Arşivle"}
+              >
+                {isArchiving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : isArchived ? (
+                  <RotateCcw className="size-4" />
+                ) : (
+                  <Archive className="size-4" />
+                )}
+                <span>{isArchived ? "Yayına al" : "Arşivle"}</span>
               </Button>
-            ))}
 
-          <Button
-            type="button"
-            onClick={() => onArchive(listing.id)}
-            disabled={isArchiving}
-            aria-label={isArchived ? "Yeniden Yayına Al" : "Arşivle"}
-            className={cn(
-              "flex items-center justify-center size-11 rounded-xl transition-all disabled:opacity-30 border shadow-sm",
-              isArchived
-                ? "bg-slate-900 border-slate-800 text-white hover:bg-slate-950"
-                : "bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white"
-            )}
-            title={isArchived ? "Yeniden Yayına Al" : "Arşivle"}
-          >
-            {isArchiving ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : isArchived ? (
-              <RotateCcw className="size-4" />
-            ) : (
-              <Archive className="size-4" />
-            )}
-          </Button>
-
-          {isApproved && (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  type="button"
-                  aria-label="Doping Al"
-                  className="flex items-center justify-center size-11 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
-                  title="Doping Al"
-                >
-                  <Zap className="size-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold">Doping Mağazası</DialogTitle>
-                  <DialogDescription className="font-medium">
-                    İlanınızı öne çıkarmak ve daha hızlı satmak için bir doping seçin.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-6">
-                  <DopingStore listing={listing} />
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
+              {isApproved && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      aria-label="Doping Al"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-amber-100 bg-amber-50 px-3 text-xs font-semibold text-amber-700 shadow-sm transition-all hover:bg-amber-600 hover:text-white"
+                      title="Doping Al"
+                    >
+                      <Zap className="size-4" />
+                      <span>Doping al</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto rounded-3xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold">Doping Mağazası</DialogTitle>
+                      <DialogDescription className="font-medium">
+                        İlanınızı öne çıkarmak ve daha hızlı satmak için bir doping seçin.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6">
+                      <DopingStore listing={listing} />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

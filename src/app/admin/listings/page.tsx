@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 import { InventoryTable } from "@/features/admin-moderation/components/inventory-table";
@@ -23,7 +23,6 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const normalizedStatus =
     status === "pending" || status === "approved" || status === "history" ? status : "approved";
 
-  // Tüm count'ları ve asıl listeyi paralel çek
   const [
     { total: pendingCount },
     { total: approvedCount },
@@ -39,84 +38,164 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const totalPages = Math.ceil(total / (limit || 12));
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">
-              Envanter Denetimi
-            </span>
+    <main className="min-h-full max-w-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+      <section className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+                Envanter Denetimi
+              </span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                İlan <span className="text-blue-600">Yönetimi</span>
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+                Moderasyon kuyruğunu, yayındaki ilanları ve arşiv geçmişini tek akışta yönet.
+                Destructive işlemler ek onay penceresiyle korunur.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            İlan <span className="text-blue-600">Yönetimi</span>
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground font-medium italic italic">
-            Platformdaki tüm ilanları denetleyin, onaylayın veya yayından kaldırın.
-          </p>
-        </div>
-      </div>
 
-      <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-border/50 bg-muted/30 flex items-center justify-between gap-4">
-          <form className="relative flex-1 max-w-xl group">
-            <input type="hidden" name="status" value={status} />
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-blue-500 transition-colors"
-              size={18}
-            />
-            <Input
-              name="q"
-              defaultValue={q}
-              className="pl-12 h-12 bg-card border-border focus:border-blue-300 focus:ring-4 focus:ring-blue-50 rounded-xl font-medium placeholder:italic placeholder:text-slate-300 transition-all"
-              placeholder="VIN, Başlık veya Marka ile akıllı ara..."
-            />
-          </form>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[520px]">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700/80">
+                Bekleyen
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {pendingCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700/80">
+                Yayında
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {approvedCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Arşiv
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                {historyCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Görünen sonuç
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">{total}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="border-b border-border/50 bg-muted/20 p-4 sm:p-6">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                Moderasyon ve yayın akışı
+              </h2>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Kuyrukta filtrele, ilanı ön izle ve yalnızca doğruladıktan sonra karar ver.
+              </p>
+            </div>
+
+            <form className="relative w-full xl:max-w-xl group">
+              <input type="hidden" name="status" value={status} />
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 transition-colors group-focus-within:text-blue-500"
+                size={18}
+              />
+              <Input
+                name="q"
+                defaultValue={q}
+                className="h-11 rounded-2xl border-border bg-background pl-11 text-sm font-medium transition-all placeholder:text-muted-foreground/70 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                placeholder="VIN, başlık, marka veya ID ile ara"
+              />
+            </form>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <ShieldAlert className="size-4 shrink-0" />
+            Kalıcı silme ve yayından kaldırma gibi kritik işlemler ek onay gerektirir.
+          </div>
         </div>
 
         <Tabs value={normalizedStatus} className="w-full">
-          <div className="px-6 border-b border-border/50 bg-card overflow-x-auto">
-            <TabsList className="h-20 bg-transparent gap-10 p-0 flex">
+          <div className="border-b border-border/50 px-4 py-3 sm:px-6">
+            <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-3">
               <TabsTrigger
                 value="pending"
                 asChild
-                className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
+                className="h-auto rounded-2xl border border-border/70 px-4 py-3 data-[state=active]:border-amber-300 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700 data-[state=active]:shadow-none"
               >
-                <Link href={`?status=pending${q ? `&q=${q}` : ""}`}>
-                  Onay Bekleyen
+                <Link
+                  href={`?status=pending${q ? `&q=${q}` : ""}`}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <span className="text-left">
+                    <span className="block text-sm font-semibold">Onay bekleyenler</span>
+                    <span className="mt-1 block text-xs font-medium text-muted-foreground">
+                      Yeni ilan karar kuyruğu
+                    </span>
+                  </span>
                   <Badge
                     variant="secondary"
-                    className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2 py-0.5 font-bold"
+                    className="rounded-full bg-amber-100 px-2.5 py-1 font-bold text-amber-700 hover:bg-amber-100"
                   >
                     {pendingCount}
                   </Badge>
                 </Link>
               </TabsTrigger>
+
               <TabsTrigger
                 value="approved"
                 asChild
-                className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
+                className="h-auto rounded-2xl border border-border/70 px-4 py-3 data-[state=active]:border-blue-300 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none"
               >
-                <Link href={`?status=approved${q ? `&q=${q}` : ""}`}>
-                  Yayında Olanlar
+                <Link
+                  href={`?status=approved${q ? `&q=${q}` : ""}`}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <span className="text-left">
+                    <span className="block text-sm font-semibold">Yayındaki ilanlar</span>
+                    <span className="mt-1 block text-xs font-medium text-muted-foreground">
+                      Canlı envanter ve görünürlük
+                    </span>
+                  </span>
                   <Badge
                     variant="secondary"
-                    className="bg-blue-50 text-blue-600 hover:bg-blue-50 border-none rounded-lg px-2 py-0.5 font-bold"
+                    className="rounded-full bg-blue-100 px-2.5 py-1 font-bold text-blue-700 hover:bg-blue-100"
                   >
                     {approvedCount}
                   </Badge>
                 </Link>
               </TabsTrigger>
+
               <TabsTrigger
                 value="history"
                 asChild
-                className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
+                className="h-auto rounded-2xl border border-border/70 px-4 py-3 data-[state=active]:border-slate-300 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
-                <Link href={`?status=history${q ? `&q=${q}` : ""}`}>
-                  Arşiv & Ret
+                <Link
+                  href={`?status=history${q ? `&q=${q}` : ""}`}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <span className="text-left">
+                    <span className="block text-sm font-semibold">Arşiv ve ret</span>
+                    <span className="mt-1 block text-xs font-medium text-muted-foreground">
+                      Kapatılan veya reddedilen kayıtlar
+                    </span>
+                  </span>
                   <Badge
                     variant="secondary"
-                    className="bg-muted text-muted-foreground hover:bg-muted border-none rounded-lg px-2 py-0.5 font-bold"
+                    className="rounded-full bg-muted px-2.5 py-1 font-bold text-muted-foreground hover:bg-muted"
                   >
                     {historyCount}
                   </Badge>
@@ -125,54 +204,23 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
             </TabsList>
           </div>
 
-          <TabsContent value="pending" className="m-0 p-8 bg-muted/20">
+          <TabsContent value="pending" className="m-0 bg-muted/10 p-0">
             <ListingsModeration pendingListings={listings} />
           </TabsContent>
 
-          <TabsContent value="approved" className="m-0">
+          <TabsContent value="approved" className="m-0 bg-muted/10 p-0">
             <InventoryTable listings={listings} adminUserId={adminUser.id} />
           </TabsContent>
 
-          <TabsContent value="history" className="m-0">
+          <TabsContent value="history" className="m-0 bg-muted/10 p-0">
             <InventoryTable listings={listings} adminUserId={adminUser.id} />
           </TabsContent>
 
-          <div className="p-4 border-t border-border/50 bg-card">
+          <div className="border-t border-border/50 bg-background p-4 sm:p-5">
             <SimplePagination currentPage={currentPage} totalPages={totalPages} />
           </div>
         </Tabs>
-      </div>
-
-      {/* Summary Stats Footer */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
-        <div className="p-8 bg-card rounded-3xl border border-border shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-2 -top-2 size-20 bg-muted/30 rounded-full blur-2xl transition-transform" />
-          <h3 className="text-muted-foreground/70 font-bold uppercase text-[10px] tracking-widest mb-2 italic">
-            Bu Segmentte
-          </h3>
-          <span className="text-3xl font-bold text-foreground tracking-tighter">{total}</span>
-        </div>
-
-        <div className="p-8 bg-card rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-2 -top-2 size-20 bg-blue-50 rounded-full blur-2xl transition-transform" />
-          <h3 className="text-blue-600 font-bold uppercase text-[10px] tracking-widest mb-2 italic">
-            Aktif Satıştakiler
-          </h3>
-          <span className="text-3xl font-bold text-foreground tracking-tighter">
-            {approvedCount}
-          </span>
-        </div>
-
-        <div className="p-8 bg-card rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-2 -top-2 size-20 bg-amber-50 rounded-full blur-2xl transition-transform" />
-          <h3 className="text-amber-600 font-bold uppercase text-[10px] tracking-widest mb-2 italic">
-            Onay Bekleyen
-          </h3>
-          <span className="text-3xl font-bold text-foreground tracking-tighter">
-            {pendingCount}
-          </span>
-        </div>
-      </div>
+      </section>
     </main>
   );
 }

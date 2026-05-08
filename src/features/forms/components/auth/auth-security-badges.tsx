@@ -9,18 +9,18 @@ interface SecurityBadgeProps {
 
 function SecurityBadge({ icon, label }: SecurityBadgeProps) {
   return (
-    <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground/30 tracking-widest">
-      <div className="text-muted-foreground/20">{icon}</div>
-      {label}
+    <div className="flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-2 text-[11px] font-medium text-muted-foreground shadow-sm">
+      <div className="text-primary">{icon}</div>
+      <span>{label}</span>
     </div>
   );
 }
 
 export function AuthSecurityBadges() {
   return (
-    <div className="flex justify-center gap-8">
-      <SecurityBadge icon={<Lock size={12} />} label="AES-256 GÜVENLİ" />
-      <SecurityBadge icon={<CreditCard size={12} />} label="PCI-DSS UYUMLU" />
+    <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:justify-start">
+      <SecurityBadge icon={<Lock size={14} />} label="Şifreli erişim" />
+      <SecurityBadge icon={<CreditCard size={14} />} label="Güvenli oturum akışı" />
     </div>
   );
 }

@@ -28,21 +28,23 @@ export function ListingSellerInfo({
   const initial = displayName.charAt(0) || "?";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Seller Card */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg font-bold text-primary sm:size-12 sm:text-xl">
             {initial}
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <div className="truncate text-sm font-bold text-foreground">{displayName}</div>
-            <div className="mt-0.5 flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 {seller?.userType === "professional" ? "Galeri" : "Bireysel"}
               </span>
               {membershipLabel && (
-                <span className="text-[10px] text-muted-foreground">{membershipLabel}</span>
+                <span className="text-[10px] leading-5 text-muted-foreground">
+                  {membershipLabel}
+                </span>
               )}
             </div>
           </div>
@@ -50,12 +52,12 @@ export function ListingSellerInfo({
 
         {/* Rating */}
         {sellerRating.count > 0 && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-muted/30 px-3 py-2">
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-muted/30 px-3 py-2">
             <Star size={14} className="fill-amber-400 text-amber-400" />
             <span className="text-sm font-bold text-foreground">
               {sellerRating.average.toFixed(1)}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs leading-5 text-muted-foreground">
               ({sellerRating.count} değerlendirme)
             </span>
           </div>
@@ -67,7 +69,7 @@ export function ListingSellerInfo({
         {seller?.businessSlug && (
           <Link
             href={`/galeri/${seller.businessSlug}`}
-            className="mt-4 flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-muted text-xs font-bold text-foreground transition hover:bg-muted/80"
+            className="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-muted text-xs font-bold text-foreground transition hover:bg-muted/80"
           >
             Tüm İlanları Gör
             <ChevronRight size={14} />

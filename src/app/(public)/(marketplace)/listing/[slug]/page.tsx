@@ -150,19 +150,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       />
 
       <main className="min-h-screen bg-muted/30">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-32 lg:pb-12">
+        <div className="mx-auto max-w-[1400px] px-3 py-3 pb-32 sm:px-4 sm:py-5 lg:px-6 lg:pb-12">
           {/* ── Breadcrumb ── */}
           <ListingBreadcrumb items={pageBreadcrumbs} />
 
           {/* ── Fraud Warning Banner ── */}
-          <FraudWarningBanner className="mb-6" />
+          <FraudWarningBanner className="mb-4 sm:mb-6" />
 
           {/* ══════════════════════════════════════════════════════════════════
               ZONE 1 — HERO: Gallery + Price/Contact (above the fold)
           ══════════════════════════════════════════════════════════════════ */}
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1fr_360px] lg:gap-8 mb-6 sm:mb-8">
+          <div className="mb-5 grid grid-cols-1 gap-4 sm:mb-6 sm:gap-5 lg:grid-cols-[1fr_360px] lg:gap-8">
             {/* ── Left: Gallery & Title block ── */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                 <ListingGallery images={listing.images} title={listing.title} />
               </div>
@@ -175,7 +175,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </div>
 
             {/* ── Right: Price + Contact (sticky on desktop) ── */}
-            <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <div className="space-y-3 sm:space-y-4 lg:sticky lg:top-24 lg:self-start">
               <ListingPriceBox
                 listingId={listing.id}
                 listingSlug={listing.slug}
@@ -211,19 +211,39 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             transmission={listing.transmission}
           />
 
+          <section className="mb-5 overflow-x-auto pb-1 sm:mb-6" aria-label="İlan bölümleri">
+            <div className="flex min-w-max gap-2">
+              {[
+                ["aciklama", "Açıklama"],
+                ["ekspertiz", "Ekspertiz"],
+                ["hasar", "Hasar"],
+                ["sorular", "Sorular"],
+                ["konum", "Konum"],
+              ].map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={`#${href}`}
+                  className="inline-flex h-10 items-center rounded-full border border-border bg-card px-4 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </section>
+
           {/* ══════════════════════════════════════════════════════════════════
               ZONE 3 — CONTENT: Description, Inspection, Damage, Analysis, Map
           ══════════════════════════════════════════════════════════════════ */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-5 lg:space-y-6">
             {/* Description */}
             {cleanDescription && <ListingDescriptionSection description={cleanDescription} />}
 
             {/* Expert Inspection */}
             <section
               id="ekspertiz"
-              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6"
             >
-              <div className="mb-6 flex items-center justify-between gap-4">
+              <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <ShieldCheck size={20} />
@@ -238,9 +258,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             {/* Damage Report */}
             <section
               id="hasar"
-              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6"
             >
-              <div className="mb-6 flex items-center gap-3">
+              <div className="mb-4 flex items-center gap-3 sm:mb-5">
                 <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Zap size={20} />
                 </div>
@@ -262,7 +282,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             {/* Questions Section */}
             <section
               id="sorular"
-              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6"
             >
               <ListingQuestions
                 listingId={listing.id}
@@ -276,7 +296,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               id="konum"
               className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card"
             >
-              <div className="border-b border-border p-5">
+              <div className="border-b border-border p-4 sm:p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <MapPin size={20} />
@@ -295,7 +315,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </section>
 
             {/* Report Listing */}
-            <section className="rounded-2xl border border-border bg-card p-6">
+            <section className="rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6">
               <div className="mb-4 flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
                   <Flag size={20} />
@@ -313,8 +333,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
             {/* Similar Listings */}
             {similarListings.length > 0 && (
-              <section className="rounded-2xl border border-border bg-card p-6">
-                <div className="mb-6 flex items-center justify-between">
+              <section className="rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6">
+                <div className="mb-4 flex items-center justify-between sm:mb-6">
                   <h2 className="text-lg font-bold text-foreground">Benzer İlanlar</h2>
                   <Link
                     href={`/listings?brand=${encodeURIComponent(listing.brand)}`}
@@ -323,7 +343,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     Tümünü Gör
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                   {similarListings.map((l) => (
                     <ListingCard key={l.id} listing={l} />
                   ))}

@@ -60,19 +60,40 @@ export function MarketplaceControls({
     SORT_OPTIONS.find((o) => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 rounded-[1.2rem] border border-border/70 bg-card/95 p-2 shadow-sm shadow-slate-950/5">
-      <MobileFilterDrawer
-        brands={brands}
-        cities={cities}
-        filters={filters}
-        activeCount={activeFiltersCount}
-        resultCount={total}
-        onApply={(f) => applyFilters(f, true)}
-        onReset={handleReset}
-      />
+    <div className="flex w-full flex-wrap items-center gap-2 rounded-[1rem] border border-border/70 bg-background/70 p-2 shadow-sm shadow-slate-950/5 sm:w-auto sm:gap-2.5 sm:rounded-[1.2rem]">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+        <div className="min-w-0 flex-1 sm:hidden">
+          <MobileFilterDrawer
+            brands={brands}
+            cities={cities}
+            filters={filters}
+            activeCount={activeFiltersCount}
+            resultCount={total}
+            onApply={(f) => applyFilters(f, true)}
+            onReset={handleReset}
+          />
+        </div>
 
-      <div className="hidden sm:block">
-        <SaveSearchButton filters={filters} resultCount={total} userId={userId} variant="compact" />
+        <div className="hidden sm:block">
+          <MobileFilterDrawer
+            brands={brands}
+            cities={cities}
+            filters={filters}
+            activeCount={activeFiltersCount}
+            resultCount={total}
+            onApply={(f) => applyFilters(f, true)}
+            onReset={handleReset}
+          />
+        </div>
+
+        <div className="hidden sm:block">
+          <SaveSearchButton
+            filters={filters}
+            resultCount={total}
+            userId={userId}
+            variant="compact"
+          />
+        </div>
       </div>
 
       <div className="hidden h-8 w-px bg-border sm:block" />
@@ -102,10 +123,10 @@ export function MarketplaceControls({
         </Button>
       </div>
 
-      <div className="relative ml-auto">
+      <div className="relative ml-auto w-full sm:w-auto">
         <Button
           onClick={() => setIsSortOpen(!isSortOpen)}
-          className="flex h-11 items-center gap-3 rounded-xl border border-border/70 bg-background/80 px-5 text-xs font-bold text-foreground transition-all hover:border-primary/15 hover:bg-muted/50"
+          className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background/80 px-4 text-xs font-bold text-foreground transition-all hover:border-primary/15 hover:bg-muted/50 sm:w-auto sm:justify-start sm:px-5"
           aria-haspopup="listbox"
           aria-expanded={isSortOpen}
         >
@@ -119,7 +140,7 @@ export function MarketplaceControls({
         {isSortOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-            <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-border/70 bg-card/95 p-2 shadow-[0_20px_48px_-28px_rgba(15,23,42,0.3)] animate-in fade-in zoom-in-95 duration-200">
+            <ul className="absolute right-0 top-full z-50 mt-3 w-full min-w-[15rem] rounded-2xl border border-border/70 bg-card/95 p-2 shadow-[0_20px_48px_-28px_rgba(15,23,42,0.3)] animate-in fade-in zoom-in-95 duration-200 sm:w-64">
               {SORT_OPTIONS.map((option) => (
                 <li key={option.value}>
                   <Button

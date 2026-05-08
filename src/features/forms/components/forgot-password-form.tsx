@@ -16,128 +16,161 @@ export function ForgotPasswordForm() {
   const submittedEmail = state?.fields?.email;
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-card">
-      {/* Visual Side */}
-      <div className="hidden lg:flex relative bg-slate-950 items-center justify-center p-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,#0060ff20,transparent)]" />
-          <div className="absolute w-[800px] h-[800px] bg-primary/5 blur-[150px] -bottom-40 -left-40 rounded-full" />
-        </div>
-        <div className="relative z-10 w-full max-w-lg space-y-12">
-          <div className="flex items-center gap-4">
-            <div className="h-px w-12 bg-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">
-              Güvenlik Protokolü
-            </span>
+    <div className="min-h-screen grid bg-background lg:grid-cols-2">
+      <div className="hidden overflow-hidden bg-slate-950 lg:flex lg:items-center lg:justify-center lg:p-16 xl:p-20">
+        <div className="relative z-10 w-full max-w-lg space-y-8 text-white">
+          <div className="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-white/80">
+            Hesap kurtarma
           </div>
-          <h2 className="text-7xl font-bold italic text-white leading-tight tracking-tightest uppercase">
-            HESAP <span className="text-primary tracking-widest block">ERİŞİMİ</span>
-          </h2>
-          <p className="text-muted-foreground/70 font-medium text-lg leading-relaxed italic border-l-4 border-primary pl-8">
-            Şifrenizi mi unuttunuz? E-posta adresinize sıfırlama bağlantısı gönderelim.
-          </p>
+          <div className="space-y-4">
+            <h2 className="text-4xl font-bold tracking-tight xl:text-5xl">
+              Şifrenizi yenilemek için güvenli bağlantıyı e-posta ile gönderelim.
+            </h2>
+            <p className="max-w-md text-base leading-7 text-slate-300">
+              Hesabınıza tekrar erişebilmeniz için kısa ve güvenli bir sıfırlama akışı sunuyoruz.
+              Gönderilen bağlantı üzerinden yeni şifrenizi belirleyebilirsiniz.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <PanelBenefit
+              title="Kısa akış"
+              description="Tek bir e-posta adresiyle şifre yenileme bağlantınızı isteyin."
+            />
+            <PanelBenefit
+              title="Güvenli doğrulama"
+              description="Bağlantı yalnızca hesabınızla ilişkili doğrulama adımı üzerinden çalışır."
+            />
+          </div>
         </div>
       </div>
 
-      {/* Form Side */}
-      <div className="flex items-center justify-center p-8 lg:p-24 relative overflow-hidden bg-muted/50">
-        <div className="w-full max-w-md space-y-10 relative z-10">
-          <div className="space-y-4">
+      <div className="flex items-center justify-center px-4 py-8 sm:px-6 sm:py-10 lg:px-12 lg:py-12 xl:px-16">
+        <div className="w-full max-w-md space-y-6 sm:space-y-7">
+          <div className="space-y-3">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 hover:text-primary transition-colors italic"
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ChevronLeft size={14} />
-              GİRİŞE DÖN
+              <ChevronLeft size={16} />
+              Girişe dön
             </Link>
-            <h1 className="text-4xl font-bold italic uppercase tracking-tighter text-foreground leading-tight">
-              Şifremi <span className="text-primary italic">Unuttum</span>
-            </h1>
-            <p className="text-sm font-medium text-muted-foreground italic">
-              E-posta adresinizi girin, size bir sıfırlama bağlantısı gönderelim.
-            </p>
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                Şifre sıfırlama
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-[2.15rem]">
+                Şifremi unuttum
+              </h1>
+              <p className="text-sm leading-6 text-muted-foreground">
+                E-posta adresinizi girin. Size yeni şifre belirlemeniz için güvenli bir bağlantı
+                gönderelim.
+              </p>
+            </div>
           </div>
 
           {state?.message ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 space-y-2">
-              <p className="text-sm font-bold text-emerald-700">✅ {state.message}</p>
-              {submittedEmail ? (
-                <p className="text-xs font-semibold text-emerald-700/80">
-                  Gönderilen adres: {submittedEmail}
+            <div className="space-y-4 rounded-[1.6rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-6">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-emerald-700">{state.message}</p>
+                {submittedEmail ? (
+                  <p className="text-sm leading-6 text-emerald-700/85">
+                    Gönderilen adres: <span className="font-semibold">{submittedEmail}</span>
+                  </p>
+                ) : null}
+                <p className="text-sm leading-6 text-emerald-700/85">
+                  E-posta birkaç dakika içinde gelmediyse spam klasörünü kontrol edin.
                 </p>
-              ) : null}
-              <p className="text-xs text-emerald-600">
-                Spam klasörünü de kontrol etmeyi unutmayın.
-              </p>
-              <div className="pt-2 flex flex-col gap-3 sm:flex-row">
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/login"
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-emerald-700"
+                  className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
                 >
-                  Girişe Dön
+                  Girişe dön
                 </Link>
                 <Link
                   href="/forgot-password"
-                  className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-200 px-4 text-xs font-bold uppercase tracking-widest text-emerald-700 transition hover:bg-emerald-100"
+                  className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
                 >
-                  Başka E-posta Dene
+                  Başka e-posta dene
                 </Link>
               </div>
             </div>
           ) : (
-            <form action={formAction} className="space-y-6">
-              <div className="space-y-2 group">
-                <Label
-                  htmlFor="forgot-email"
-                  className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
-                >
-                  E-POSTA ADRESİ
-                </Label>
-                <div className="relative">
-                  <Mail
-                    className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
-                    size={20}
-                  />
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    name="email"
-                    defaultValue={state?.fields?.email ?? ""}
-                    placeholder="isim@mail.com"
-                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
+            <div className="rounded-[1.6rem] border border-border/70 bg-card p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.22)] sm:p-6">
+              <div className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3">
+                <p className="text-sm font-semibold text-foreground">Nasıl çalışır?</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  E-posta adresinizi doğruladıktan sonra hesabınıza özel sıfırlama bağlantısı
+                  gönderilir.
+                </p>
               </div>
 
-              {state?.error && (
-                <div
-                  role="alert"
-                  className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600"
-                >
-                  {state.error}
+              <form action={formAction} className="mt-5 space-y-5 sm:mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email" className="text-sm font-medium text-foreground">
+                    E-posta adresi
+                  </Label>
+                  <div className="relative">
+                    <Mail
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      size={18}
+                    />
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      name="email"
+                      defaultValue={state?.fields?.email ?? ""}
+                      placeholder="isim@mail.com"
+                      className="h-12 w-full rounded-xl border-border/80 bg-background pl-11 pr-4"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
                 </div>
-              )}
 
-              <AuthSubmitButton
-                label="SIFIRLAMA BAĞLANTISI GÖNDER"
-                icon={<Fingerprint size={20} />}
-              />
-            </form>
+                {state?.error && (
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600"
+                  >
+                    {state.error}
+                  </div>
+                )}
+
+                <AuthSubmitButton
+                  label="Sıfırlama bağlantısı gönder"
+                  icon={<Fingerprint size={18} />}
+                />
+              </form>
+            </div>
           )}
 
-          <div className="pt-6 border-t border-border">
-            <div className="flex items-center gap-4 p-6 rounded-3xl bg-indigo-50 border border-indigo-100">
-              <ShieldCheck className="text-primary shrink-0" size={24} />
-              <p className="text-[11px] font-bold text-indigo-900/60 leading-relaxed italic">
-                Eğer e-posta almazsanız, lütfen spam klasörünü kontrol edin veya 10 dakika sonra
-                tekrar deneyin.
-              </p>
+          <div className="rounded-2xl border border-border/70 bg-muted/20 p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-background text-primary shadow-sm">
+                <ShieldCheck size={18} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">Güvenlik notu</p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Şifre sıfırlama bağlantısı kişiye özeldir. Ortak cihazlarda işlem yaptıktan sonra
+                  oturumu kapatmanız önerilir.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PanelBenefit({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <p className="mt-1 text-sm leading-6 text-slate-300">{description}</p>
     </div>
   );
 }

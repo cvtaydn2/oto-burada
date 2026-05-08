@@ -87,10 +87,10 @@ export default function MessagesPage() {
 
   if (!isAuthResolved) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Card className="p-8 text-center">
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md rounded-3xl border-border/60 p-8 text-center shadow-sm">
           <MessageCircle className="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
-          <p className="text-muted-foreground">Mesajlar yükleniyor...</p>
+          <p className="text-sm text-muted-foreground">Mesajlar yükleniyor...</p>
         </Card>
       </div>
     );
@@ -98,25 +98,32 @@ export default function MessagesPage() {
 
   if (!isAuthenticated || !userId) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Card className="p-8 text-center">
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md rounded-3xl border-border/60 p-8 text-center shadow-sm">
           <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-muted-foreground">Oturum bulunamadı. Lütfen yeniden giriş yapın.</p>
+          <p className="text-sm text-muted-foreground">
+            Oturum bulunamadı. Lütfen yeniden giriş yapın.
+          </p>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full gap-4 p-4">
+    <div className="flex h-full flex-col gap-4 p-3 sm:p-4 lg:flex-row">
       {showChatList && (
         <Card
-          className={`${isMobile && selectedChatId ? "hidden" : ""} flex-1 p-4 md:p-6 overflow-hidden`}
+          className={`${isMobile && selectedChatId ? "hidden" : ""} flex min-h-[calc(100vh-14rem)] flex-1 flex-col overflow-hidden rounded-3xl border-border/60 p-4 shadow-sm md:p-5 lg:max-w-[380px]`}
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-xl font-semibold">Mesajlarım</h2>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground md:text-xl">Mesajlarım</h2>
+              <p className="text-xs text-muted-foreground">
+                Tüm ilan görüşmelerin burada listelenir.
+              </p>
+            </div>
           </div>
-          <div className="h-[calc(100vh-14rem)] overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden">
             <ChatList
               userId={userId}
               onChatSelect={handleChatSelect}
@@ -128,10 +135,10 @@ export default function MessagesPage() {
 
       {showChatWindow && (
         <Card
-          className={`${!isMobile && !selectedChatId ? "hidden md:flex" : ""} flex-1 flex flex-col`}
+          className={`${!isMobile && !selectedChatId ? "hidden lg:flex" : ""} flex min-h-[calc(100vh-14rem)] flex-1 flex-col overflow-hidden rounded-3xl border-border/60 shadow-sm`}
         >
           {isMobile && selectedChatId && (
-            <div className="p-4 border-b">
+            <div className="border-b px-3 py-2.5">
               <Button variant="ghost" size="icon" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
@@ -140,12 +147,12 @@ export default function MessagesPage() {
           {selectedChatId ? (
             <ChatWindow chatId={selectedChatId} userId={userId} onBack={handleBack} />
           ) : (
-            <div className="flex items-center justify-center h-full text-center p-4">
-              <div className="max-w-md">
-                <MessageCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">Mesajınızı seçin</h3>
-                <p className="text-muted-foreground">
-                  Sol taraftan bir sohbet seçerek mesajlaşmaya başlayabilirsiniz.
+            <div className="flex h-full items-center justify-center p-5 text-center">
+              <div className="max-w-md rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-10">
+                <MessageCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-medium text-foreground">Bir konuşma seçin</h3>
+                <p className="text-sm text-muted-foreground">
+                  Soldaki listeden bir sohbet açarak araç sahibiyle görüşmeye başlayabilirsiniz.
                 </p>
               </div>
             </div>

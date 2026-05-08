@@ -132,8 +132,8 @@ export function ContactActions({
   const whatsappLink = revealedPhone ? getWhatsappLink(revealedPhone) : null;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2.5 rounded-2xl border border-indigo-100/50 bg-indigo-50/50 p-3 group">
+    <div className="space-y-3 lg:space-y-3.5">
+      <div className="hidden items-center gap-2.5 rounded-2xl border border-indigo-100/50 bg-indigo-50/50 p-3 group lg:flex">
         <div className="flex size-8 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm transition-transform group-hover:scale-110">
           <ShieldAlert className="size-4" />
         </div>
@@ -235,7 +235,7 @@ export function ContactActions({
             router.push(`/dashboard/messages?new=${listingId}&seller=${sellerId}`);
             captureClientEvent("contact_chat_clicked", { listingId, sellerId });
           }}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-blue-600 bg-blue-600 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95"
+          className="hidden h-12 w-full items-center justify-center gap-2 rounded-xl border border-blue-600 bg-blue-600 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95 lg:flex"
         >
           <MessageSquare className="size-5" />
           Mesaj Gönder
@@ -243,7 +243,7 @@ export function ContactActions({
       )}
 
       {isTrusted && !isRevealed && (
-        <div className="mb-2 flex items-center gap-2 rounded-xl border border-emerald-100/50 bg-emerald-50/50 p-3">
+        <div className="mb-2 hidden items-center gap-2 rounded-xl border border-emerald-100/50 bg-emerald-50/50 p-3 lg:flex">
           <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
           <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
             Güvenilir Satıcı Bağlantısı Aktif
@@ -279,14 +279,16 @@ export function ContactActions({
       </div>
 
       {listingTitle && listingPrice && listingSlug && (
-        <OfferPanel
-          listingId={listingId}
-          listingTitle={listingTitle}
-          listingSlug={listingSlug}
-          currentPrice={listingPrice}
-          currentUserId={currentUserId}
-          sellerId={sellerId}
-        />
+        <div className="hidden lg:block">
+          <OfferPanel
+            listingId={listingId}
+            listingTitle={listingTitle}
+            listingSlug={listingSlug}
+            currentPrice={listingPrice}
+            currentUserId={currentUserId}
+            sellerId={sellerId}
+          />
+        </div>
       )}
     </div>
   );

@@ -13,19 +13,20 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { AdminRole } from "@/features/admin-moderation/services/roles";
 import { deleteRole } from "@/features/admin-moderation/services/roles";
 import { RoleForm } from "@/features/forms/components/role-form";
+import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 interface AdminRolesClientProps {
   initialRoles: AdminRole[];
 }
 
-// Stable color map — custom roles get a default color
 const ROLE_COLORS: Record<string, string> = {
   "Süper Admin": "bg-slate-900",
   Moderatör: "bg-blue-600",
@@ -38,7 +39,10 @@ function getRoleColor(name: string) {
 }
 
 function getAccessLabel(permissions: string[]) {
-  if (permissions.includes("all")) return "Tüm yetkiler";
+  if (permissions.includes("all")) {
+    return "Tüm yetkiler";
+  }
+
   const moduleLabels: Record<string, string> = {
     listings: "İlan",
     reports: "Rapor",
@@ -47,6 +51,7 @@ function getAccessLabel(permissions: string[]) {
     settings: "Ayarlar",
     plans: "Paket",
   };
+
   const actionLabels: Record<string, string> = {
     manage: "Yönet",
     approve: "Onayla",
@@ -55,14 +60,15 @@ function getAccessLabel(permissions: string[]) {
     view: "Görüntüle",
     update: "Güncelle",
   };
-  const labels = permissions.map((p) => {
-    const [mod, act] = p.split(".");
-    return `${moduleLabels[mod] ?? mod} ${actionLabels[act] ?? act}`;
+
+  const labels = permissions.map((permission) => {
+    const [moduleName, actionName] = permission.split(".");
+    return `${moduleLabels[moduleName] ?? moduleName} ${actionLabels[actionName] ?? actionName}`;
   });
-  return labels.slice(0, 2).join(", ") + (labels.length > 2 ? ` +${labels.length - 2}` : "");
+
+  return `${labels.slice(0, 2).join(", ")}${labels.length > 2 ? ` +${labels.length - 2}` : ""}`;
 }
 
-// ── Modal wrapper ─────────────────────────────────────────────────────────────
 function Modal({
   title,
   subtitle,
@@ -75,33 +81,34 @@ function Modal({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-y-auto max-h-[90vh]">
-        <div className="flex items-start justify-between p-6 border-b border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-              <Shield size={24} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-border/70 bg-background shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-border/70 p-5 sm:p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-600">
+              <Shield size={22} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-              {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+              <h3 className="text-lg font-bold text-foreground">{title}</h3>
+              {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
             </div>
           </div>
           <Button
+            type="button"
+            variant="ghost"
             onClick={onClose}
-            className="size-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="size-9 rounded-xl"
             aria-label="Kapat"
           >
             <X size={18} />
           </Button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-5 sm:p-6">{children}</div>
       </div>
     </div>
   );
 }
 
-// ── Delete confirmation modal ─────────────────────────────────────────────────
 function DeleteModal({
   role,
   onConfirm,
@@ -114,41 +121,50 @@ function DeleteModal({
   isPending: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="mb-5 flex items-center gap-4">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-3xl border border-border/70 bg-background p-5 shadow-2xl sm:p-6">
+        <div className="mb-5 flex items-start gap-4">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
             <Trash2 size={22} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Rolü Sil</h3>
-            <p className="text-sm text-slate-500">Bu işlem geri alınamaz</p>
+            <h3 className="text-lg font-bold text-foreground">Rolü sil</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Bu işlem geri alınamaz.</p>
           </div>
         </div>
-        <p className="mb-6 text-sm text-slate-600 leading-relaxed">
-          <span className="font-bold text-slate-900">{role.name}</span> rolünü silmek istediğinizden
-          emin misiniz?
-          {role.user_count > 0 && (
-            <span className="block mt-2 text-amber-600 font-medium">
-              ⚠️ Bu role atanmış {role.user_count} kullanıcı var.
-            </span>
-          )}
-        </p>
-        <div className="flex gap-3">
+
+        <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-sm leading-6 text-rose-900">
+          <p>
+            <span className="font-bold">{role.name}</span> rolünü kalıcı olarak kaldırmak
+            üzeresiniz.
+          </p>
+          <p className="mt-2 text-xs text-rose-800">
+            Rol silme kararı audit izine yazılır; bu yüzden önce role atanmış kullanıcı sayısını
+            doğrulayın.
+          </p>
+          {role.user_count > 0 ? (
+            <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+              Bu role atanmış {role.user_count} kullanıcı bulunuyor. Silmeden önce alternatif rol
+              planı yapın.
+            </p>
+          ) : null}
+        </div>
+
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
-            className="flex-1 rounded-xl font-bold"
+            className="flex-1 rounded-xl"
             onClick={onCancel}
             disabled={isPending}
           >
-            İptal
+            Vazgeç
           </Button>
           <Button
-            className="flex-1 rounded-xl bg-rose-600 font-bold hover:bg-rose-700"
+            className="flex-1 rounded-xl bg-rose-600 font-semibold hover:bg-rose-700"
             onClick={onConfirm}
             disabled={isPending}
           >
-            {isPending ? <Loader2 className="animate-spin size-4" /> : "Sil"}
+            {isPending ? <Loader2 className="size-4 animate-spin" /> : "Rolü Sil"}
           </Button>
         </div>
       </div>
@@ -156,7 +172,6 @@ function DeleteModal({
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
 export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -167,16 +182,30 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
   const [viewTarget, setViewTarget] = useState<AdminRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const roleSummary = useMemo(
+    () => ({
+      total: initialRoles.length,
+      system: initialRoles.filter((role) => role.is_system).length,
+      custom: initialRoles.filter((role) => !role.is_system).length,
+      assignedUsers: initialRoles.reduce((total, role) => total + role.user_count, 0),
+    }),
+    [initialRoles]
+  );
+
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
+
     setIsDeleting(true);
+
     try {
       await deleteRole(deleteTarget.id);
       toast.success(`"${deleteTarget.name}" rolü silindi`);
       setDeleteTarget(null);
       startTransition(() => router.refresh());
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Rol silinemedi");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Rol silinemedi");
     } finally {
       setIsDeleting(false);
     }
@@ -190,201 +219,240 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
 
   return (
     <>
-      <main className="space-y-6 p-4 lg:p-6">
-        {/* Header */}
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+        <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Key className="text-primary" size={16} />
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] italic">
+            <div className="mb-2 flex items-center gap-2">
+              <Key className="size-4 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
                 Erişim kontrolü
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               Roller ve <span className="text-blue-600">Yetkiler</span>
             </h1>
-            <p className="mt-1.5 text-sm text-slate-500 font-medium italic">
-              Sistem rolleri değiştirilemez. Özel roller oluşturabilir ve yönetebilirsiniz.
+            <p className="mt-1.5 max-w-2xl text-sm font-medium italic text-muted-foreground">
+              Sistem rolleri korunur. Özel roller için görünür kapsam, kullanıcı etkisi ve audit
+              yönü bu yüzeyde netleştirilir.
             </p>
           </div>
-          <Button
-            onClick={() => setShowCreate(true)}
-            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm"
-          >
-            <Plus size={16} />
-            Yeni Rol Tanımla
-          </Button>
-        </div>
 
-        {/* Role cards */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          {initialRoles.map((role) => (
-            <div
-              key={role.id}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-blue-200 hover:shadow-sm"
+          <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[320px] xl:items-end">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-900">
+              <p className="font-semibold">Operasyon uyarısı</p>
+              <p className="mt-1 text-amber-800">
+                Sistem rolleri düzenlenmez veya silinmez. Özel rollerde değişiklik yapmadan önce
+                kullanıcı atama etkisini gözden geçirin.
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowCreate(true)}
+              className="h-11 w-full gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold hover:bg-blue-700 xl:w-auto"
             >
-              {/* Card header */}
-              <div className="space-y-3 p-6 bg-slate-50 border-b border-slate-100">
-                <div
-                  className={`size-10 rounded-xl ${getRoleColor(role.name)} flex items-center justify-center text-white`}
-                >
-                  <Shield size={20} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-slate-900">{role.name}</h3>
-                    {role.is_system && (
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                        Sistem
-                      </span>
-                    )}
+              <Plus size={16} />
+              Yeni Rol Tanımla
+            </Button>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Auditability özeti
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-foreground sm:text-lg">
+                Rol envanteri ve atama yoğunluğu tek bakışta görünür.
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                Bu kartlar aksiyon öncesi bağlam üretir; hangi rolün sistemde sabit olduğunu ve kaç
+                kullanıcıyı etkilediğini hızla anlamanızı sağlar.
+              </p>
+            </div>
+            <Button variant="outline" className="rounded-xl" asChild>
+              <a href="/admin/audit">
+                Audit kayıtlarını aç
+                <ChevronRight className="ml-2 size-4" />
+              </a>
+            </Button>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <SummaryCard label="Toplam rol" value={roleSummary.total} tone="default" />
+            <SummaryCard label="Sistem rolü" value={roleSummary.system} tone="info" />
+            <SummaryCard label="Özel rol" value={roleSummary.custom} tone="success" />
+            <SummaryCard
+              label="Atanmış kullanıcı"
+              value={roleSummary.assignedUsers}
+              tone="warning"
+            />
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+          {initialRoles.map((role) => (
+            <article
+              key={role.id}
+              className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm transition-colors hover:border-border"
+            >
+              <div className="border-b border-border/60 bg-muted/20 p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={cn(
+                        "flex size-11 items-center justify-center rounded-2xl text-white shadow-sm",
+                        getRoleColor(role.name)
+                      )}
+                    >
+                      <Shield size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-bold text-foreground">{role.name}</h3>
+                        {role.is_system ? (
+                          <Badge className="bg-slate-100 text-slate-700">Sistem</Badge>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {role.user_count} atanmış kullanıcı
+                      </p>
+                      {role.description ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground break-words">
+                          {role.description}
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm text-muted-foreground">Açıklama girilmemiş.</p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {role.user_count} atanmış kişi
-                  </p>
-                  {role.description && (
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-1">{role.description}</p>
-                  )}
+
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "self-start border text-[11px] font-semibold",
+                      role.is_system
+                        ? "border-slate-200 bg-slate-50 text-slate-700"
+                        : "border-blue-200 bg-blue-50 text-blue-700"
+                    )}
+                  >
+                    {role.is_system ? "Korunan rol" : "Düzenlenebilir"}
+                  </Badge>
                 </div>
               </div>
 
-              {/* Card body */}
-              <div className="space-y-4 p-6">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    Erişim Kapsamı
+              <div className="space-y-4 p-5">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <InfoPanel label="Erişim kapsamı" value={getAccessLabel(role.permissions)} />
+                  <InfoPanel
+                    label="İşlem güvenliği"
+                    value={role.is_system ? "Yalnız görüntülenir" : "Düzenleme ve silme açık"}
+                  />
+                </div>
+
+                <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                    Yetki sinyali
                   </p>
-                  <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-3">
-                    <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                    <span className="text-xs font-medium text-slate-900 truncate">
+                  <div className="mt-3 flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                    <p className="text-sm leading-6 text-foreground break-words">
                       {getAccessLabel(role.permissions)}
-                    </span>
+                    </p>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   <Button
                     onClick={() => setViewTarget(role)}
-                    className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
+                    variant="outline"
+                    className="h-10 flex-1 rounded-xl text-sm font-semibold"
                   >
-                    <Eye size={14} />
+                    <Eye className="mr-2 size-4" />
                     Detay
                   </Button>
                   <Button
                     onClick={() => setEditTarget(role)}
                     disabled={role.is_system}
+                    variant="outline"
                     title={role.is_system ? "Sistem rolleri düzenlenemez" : "Düzenle"}
-                    className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="h-10 flex-1 rounded-xl border-blue-200 bg-blue-50 text-sm font-semibold text-blue-700 hover:bg-blue-100 hover:text-blue-800 disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
                   >
-                    <Edit3 size={14} />
+                    <Edit3 className="mr-2 size-4" />
                     Düzenle
                   </Button>
                   <Button
                     onClick={() => setDeleteTarget(role)}
                     disabled={role.is_system}
+                    variant="outline"
                     title={role.is_system ? "Sistem rolleri silinemez" : "Sil"}
-                    className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium transition-all hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="h-10 flex-1 rounded-xl border-rose-200 bg-rose-50 text-sm font-semibold text-rose-700 hover:bg-rose-100 hover:text-rose-800 disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 className="mr-2 size-4" />
                     Sil
                   </Button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
-        </div>
-
-        {/* Audit logs link */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
-            <div className="flex items-center gap-5">
-              <div className="flex size-14 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                <Shield size={28} />
-              </div>
-              <div>
-                <h4 className="text-lg font-bold text-slate-900">Gelişmiş erişim logları</h4>
-                <p className="text-sm text-slate-500">
-                  Hangi yetkinin ne zaman ve kim tarafından kullanıldığını inceleyin.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition-all hover:border-blue-300 hover:text-blue-600"
-              asChild
-            >
-              <a href="/admin/audit">
-                Logları görüntüle
-                <ChevronRight size={18} />
-              </a>
-            </Button>
-          </div>
-        </div>
+        </section>
       </main>
 
-      {/* Create modal */}
-      {showCreate && (
+      {showCreate ? (
         <Modal
-          title="Yeni Rol Tanımla"
+          title="Yeni rol tanımla"
           subtitle="Özel yetki seti oluşturun"
           onClose={() => setShowCreate(false)}
         >
           <RoleForm onSuccess={handleFormSuccess} onCancel={() => setShowCreate(false)} />
         </Modal>
-      )}
+      ) : null}
 
-      {/* Edit modal */}
-      {editTarget && (
-        <Modal title="Rolü Düzenle" subtitle={editTarget.name} onClose={() => setEditTarget(null)}>
+      {editTarget ? (
+        <Modal title="Rolü düzenle" subtitle={editTarget.name} onClose={() => setEditTarget(null)}>
           <RoleForm
             initialData={editTarget}
             onSuccess={handleFormSuccess}
             onCancel={() => setEditTarget(null)}
           />
         </Modal>
-      )}
+      ) : null}
 
-      {/* View modal */}
-      {viewTarget && (
+      {viewTarget ? (
         <Modal
           title={viewTarget.name}
-          subtitle={viewTarget.description ?? undefined}
+          subtitle={viewTarget.description ?? "Rol açıklaması bulunmuyor."}
           onClose={() => setViewTarget(null)}
         >
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
-                Yetkiler
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Yetki listesi
               </p>
               <div className="space-y-2">
-                {viewTarget.permissions.map((p) => (
+                {viewTarget.permissions.map((permission) => (
                   <div
-                    key={p}
-                    className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2"
+                    key={permission}
+                    className="flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/20 px-3 py-3"
                   >
-                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                    <span className="text-sm font-medium text-slate-700">{p}</span>
+                    <CheckCircle2 size={14} className="shrink-0 text-emerald-600" />
+                    <span className="text-sm font-medium text-foreground break-words">
+                      {permission}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Atanmış Kullanıcı
-                </p>
-                <p className="text-lg font-bold text-slate-900 mt-1">{viewTarget.user_count}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Tür
-                </p>
-                <p className="text-sm font-bold text-slate-900 mt-1">
-                  {viewTarget.is_system ? "Sistem Rolü" : "Özel Rol"}
-                </p>
-              </div>
+
+            <div className="grid gap-3 border-t border-border/70 pt-4 sm:grid-cols-2">
+              <InfoPanel label="Atanmış kullanıcı" value={String(viewTarget.user_count)} />
+              <InfoPanel label="Tür" value={viewTarget.is_system ? "Sistem rolü" : "Özel rol"} />
             </div>
+
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-xs leading-5 text-blue-900">
+              Audit görünürlüğü için izinler ham anahtar olarak da gösterilir. Böylece policy ve UI
+              kararları arasında eşleştirme yapmak kolaylaşır.
+            </div>
+
             <Button
               className="w-full rounded-xl"
               variant="outline"
@@ -394,17 +462,51 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
             </Button>
           </div>
         </Modal>
-      )}
+      ) : null}
 
-      {/* Delete confirmation */}
-      {deleteTarget && (
+      {deleteTarget ? (
         <DeleteModal
           role={deleteTarget}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
           isPending={isDeleting}
         />
-      )}
+      ) : null}
     </>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "default" | "info" | "success" | "warning";
+}) {
+  const toneClassName = {
+    default: "border-border/70 bg-background text-foreground",
+    info: "border-blue-200 bg-blue-50 text-blue-800",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    warning: "border-amber-200 bg-amber-50 text-amber-800",
+  }[tone];
+
+  return (
+    <div className={cn("rounded-2xl border px-4 py-4", toneClassName)}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em]">{label}</p>
+      <p className="mt-2 text-2xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+function InfoPanel({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-muted/30 px-3 py-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-medium leading-6 text-foreground break-words">{value}</p>
+    </div>
   );
 }

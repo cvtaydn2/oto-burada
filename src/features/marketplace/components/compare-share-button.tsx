@@ -48,17 +48,17 @@ export function CompareShareButton({ ids }: CompareShareButtonProps) {
   return (
     <Button
       onClick={() => void handleShare()}
-      className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground hover:bg-muted/30 hover:border-border transition-all shadow-sm"
+      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border/70 bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground shadow-sm transition-all hover:border-border hover:bg-muted/30 sm:w-auto"
     >
       {copied ? (
         <>
           <Check size={15} className="text-emerald-500" />
-          <span className="text-emerald-600">Kopyalandı!</span>
+          <span className="truncate text-emerald-600">Kopyalandı!</span>
         </>
       ) : (
         <>
           <Share2 size={15} />
-          Karşılaştırmayı Paylaş
+          <span className="truncate">Karşılaştırmayı Paylaş</span>
         </>
       )}
     </Button>

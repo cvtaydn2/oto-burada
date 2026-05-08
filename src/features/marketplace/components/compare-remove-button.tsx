@@ -22,8 +22,9 @@ export function CompareRemoveButton({ otherIds }: CompareRemoveButtonProps) {
           router.push("/");
         }
       }}
-      className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-colors hover:text-destructive"
+      className="absolute right-3 top-3 z-10 flex size-10 items-center justify-center rounded-full border border-border/70 bg-background/95 text-muted-foreground shadow-sm transition-colors hover:border-destructive/20 hover:text-destructive"
       title="Karşılaştırmadan çıkar"
+      aria-label="Karşılaştırmadan çıkar"
     >
       <X className="size-4" />
     </Button>

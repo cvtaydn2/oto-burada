@@ -31,15 +31,23 @@ const initialState: AuthActionState = null;
 
 const AUTH_MODE_CONFIG = {
   login: {
-    title: "Giriş Yap",
-    description: "Hesabınıza erişmek için e-posta adresinizi girin.",
+    title: "Giriş yap",
+    description: "Hesabınıza erişmek için e-posta adresiniz ve şifrenizle devam edin.",
+    eyebrow: "Güvenli hesap erişimi",
+    helperTitle: "Hızlı erişim",
+    helperDescription:
+      "İlanlarınızı, favorilerinizi ve hesap ayarlarınızı tek yerden yönetmek için oturum açın.",
     passwordHint: "Hesabınızı açmak için mevcut şifrenizi girin.",
     passwordPlaceholder: "Şifrenizi girin",
     passwordAutoComplete: "current-password",
   },
   register: {
-    title: "Hesap Oluştur",
-    description: "Ücretsiz ilan vermek için hemen kayıt olun.",
+    title: "Hesap oluştur",
+    description: "Ücretsiz ilan vermek ve araç alım-satım sürecini yönetmek için kayıt olun.",
+    eyebrow: "Ücretsiz üyelik",
+    helperTitle: "2 dakikada başlayın",
+    helperDescription:
+      "Temel bilgilerinizi girin, hesabınızı doğrulayın ve ilk ilanınızı hızlıca yayına hazırlayın.",
     passwordHint: "Güvenli bir şifre seçin. En az 8 karakter kullanın.",
     passwordPlaceholder: "En az 8 karakter",
     passwordAutoComplete: "new-password",
@@ -69,44 +77,45 @@ export function AuthForm({
 
   return (
     <div className="flex min-h-screen flex-1 overflow-hidden bg-background">
-      {/* Cinematic Left Panel */}
       <AuthCinematicPanel />
 
-      {/* Auth Content */}
       <section
-        aria-label="Kimlik Doğrulama Paneli"
-        className="flex w-full items-center justify-center bg-background px-6 py-12 sm:px-10 lg:w-1/2 lg:px-20"
+        aria-label="Kimlik doğrulama paneli"
+        className="flex w-full items-center justify-center bg-background px-4 py-8 sm:px-6 sm:py-10 lg:w-1/2 lg:px-12 lg:py-12 xl:px-16"
       >
-        <div className="w-full max-w-md space-y-8 lg:space-y-10">
-          {/* Mobile Header */}
-          <div className="text-center lg:hidden space-y-4">
+        <div className="w-full max-w-md space-y-6 sm:space-y-7">
+          <div className="space-y-4 text-center lg:hidden">
             <Link
               href="/"
-              aria-label="OtoBurada Ana Sayfa"
-              className="inline-flex items-center gap-3 text-3xl font-bold tracking-tighter text-foreground mx-auto"
+              aria-label="OtoBurada ana sayfa"
+              className="inline-flex items-center gap-3 text-2xl font-bold tracking-tight text-foreground"
             >
-              <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-                <CarFront size={22} className="text-white" />
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
+                <CarFront size={22} />
               </div>
               OtoBurada
             </Link>
           </div>
 
-          <div className="space-y-2 text-center lg:text-left">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">
-              Güvenli hesap erişimi
+          <div className="space-y-3 text-center lg:text-left">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              {config.eyebrow}
             </p>
             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-[2.15rem]">
               {config.title}
             </h1>
-            <p className="text-sm font-medium leading-6 text-muted-foreground">
-              {config.description}
-            </p>
+            <p className="text-sm leading-6 text-muted-foreground">{config.description}</p>
           </div>
 
-          {/* Form Card */}
-          <div className="relative rounded-[1.6rem] border border-border/70 bg-card/95 p-6 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.28)] sm:p-8">
-            <form action={formAction} className="space-y-6">
+          <div className="rounded-[1.6rem] border border-border/70 bg-card p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.24)] sm:p-6 lg:p-7">
+            <div className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3">
+              <p className="text-sm font-semibold text-foreground">{config.helperTitle}</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                {config.helperDescription}
+              </p>
+            </div>
+
+            <form action={formAction} className="mt-5 space-y-5 sm:mt-6 sm:space-y-6">
               {next ? <input type="hidden" name="next" value={next} /> : null}
               <input type="hidden" name="turnstile_token" value={turnstileToken || ""} />
 
@@ -124,7 +133,7 @@ export function AuthForm({
               />
 
               {!isLogin && (
-                <div className="flex justify-center rounded-2xl border border-dashed border-border/80 bg-muted/25 py-3">
+                <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 px-4 py-3">
                   <BotProtection onVerify={setTurnstileToken} />
                 </div>
               )}
@@ -134,17 +143,16 @@ export function AuthForm({
               <AuthSubmitButton label={submitLabel} />
             </form>
 
-            <div className="mt-8 flex flex-col gap-4 border-t border-border/80 pt-8 text-center">
+            <div className="mt-6 border-t border-border/80 pt-6 text-center">
               <Link
                 href={alternateHref}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input/90 bg-background px-4 text-sm font-semibold text-foreground transition-all hover:border-primary/15 hover:bg-muted/40"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input/90 bg-background px-4 text-sm font-semibold text-foreground transition-all hover:border-primary/20 hover:bg-muted/40"
               >
                 {alternateLabel}
               </Link>
             </div>
           </div>
 
-          {/* Security Badges */}
           <AuthSecurityBadges />
         </div>
       </section>

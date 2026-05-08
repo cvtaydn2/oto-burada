@@ -18,9 +18,9 @@ export function ListingInfoCard({
   dopingItems,
 }: ListingInfoCardProps) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5 lg:p-6">
       {/* Badges row */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
         <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
           {listing.brand}
         </span>
@@ -43,13 +43,13 @@ export function ListingInfoCard({
       </div>
 
       {/* Title */}
-      <h1 className="mb-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+      <h1 className="mb-1 text-xl font-bold tracking-tight text-foreground sm:text-2xl lg:text-3xl">
         {listing.model}
       </h1>
-      <p className="mb-4 text-sm text-muted-foreground">{listing.title}</p>
+      <p className="mb-3 text-sm leading-6 text-muted-foreground sm:mb-4">{listing.title}</p>
 
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs leading-5 text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <MapPin size={13} className="text-primary" />
           {listing.city}, {listing.district}

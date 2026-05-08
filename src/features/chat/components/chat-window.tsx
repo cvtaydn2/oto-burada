@@ -116,11 +116,11 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="p-4 border-b">
-          <Skeleton className="h-10 w-32" />
+      <div className="flex h-full flex-col">
+        <div className="border-b bg-background/95 p-4">
+          <Skeleton className="h-10 w-40" />
         </div>
-        <div className="flex-1 p-4 space-y-4">
+        <div className="flex-1 space-y-4 p-4 sm:p-5">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-start gap-3">
               <Skeleton className="h-8 w-8 rounded-full" />
@@ -137,21 +137,23 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <Car className="h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">Mesajlar yüklenemedi.</p>
+      <div className="flex h-full flex-col items-center justify-center p-5 text-center">
+        <Car className="mb-4 h-12 w-12 text-muted-foreground" />
+        <h3 className="text-base font-semibold text-foreground">Mesajlar yüklenemedi</h3>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          Konuşma geçmişine şu anda ulaşılamıyor. Bağlantıyı yenileyip tekrar deneyin.
+        </p>
         <Button variant="outline" className="mt-4" onClick={() => void refetch()}>
-          Yeniden Dene
+          Yeniden dene
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b bg-background flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-3 border-b bg-background/95 p-4 backdrop-blur sm:p-5">
+        <div className="flex min-w-0 items-center gap-3">
           {onBack && (
             <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
               <ArrowLeft className="h-4 w-4" />
@@ -162,9 +164,11 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
               <Car className="h-5 w-5" />
             </AvatarFallback>
           </Avatar>
-          <div>
-            <h3 className="font-medium">{recipientName || "Satıcı"}</h3>
-            <p className="text-xs text-muted-foreground">{isTyping ? "Yazıyor..." : "Çevrimiçi"}</p>
+          <div className="min-w-0">
+            <h3 className="truncate font-medium text-foreground">{recipientName || "Satıcı"}</h3>
+            <p className="text-xs text-muted-foreground">
+              {isTyping ? "Yazıyor..." : "Mesajlaşma aktif"}
+            </p>
           </div>
         </div>
         <Button
@@ -172,30 +176,40 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
           size="sm"
           onClick={handleArchive}
           disabled={archiveMutation.isPending}
+          className="shrink-0"
         >
           Arşivle
         </Button>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 px-4 py-4 sm:px-5" ref={scrollAreaRef}>
         <div className="space-y-4">
-          {messages?.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              isOwn={message.senderId === userId}
-              onDelete={handleDeleteMessage}
-            />
-          ))}
+          {messages && messages.length > 0 ? (
+            messages.map((message) => (
+              <MessageBubble
+                key={message.id}
+                message={message}
+                isOwn={message.senderId === userId}
+                onDelete={handleDeleteMessage}
+              />
+            ))
+          ) : (
+            <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-6 text-center">
+              <div className="max-w-sm space-y-2">
+                <p className="text-sm font-semibold text-foreground">Henüz mesaj yok</p>
+                <p className="text-sm text-muted-foreground">
+                  İlk mesajı göndererek araçla ilgili detayları netleştirebilirsiniz.
+                </p>
+              </div>
+            </div>
+          )}
 
           {isTyping && <TypingIndicator />}
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
 
-      {/* Input */}
-      <div className="p-4 border-t bg-background">
+      <div className="border-t bg-background p-4 sm:p-5">
         <ChatInput
           onSend={handleSendMessage}
           onTyping={handleTyping}

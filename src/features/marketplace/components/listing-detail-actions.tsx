@@ -34,22 +34,22 @@ export function ListingDetailActions({
   const [reportOpen, setReportOpen] = useState(false);
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
       <ShareButton
         title={title}
         price={price}
-        className="bg-card border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-muted transition flex items-center shadow-sm"
+        className="min-h-11 flex-1 rounded-xl border border-border/70 bg-card px-3.5 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:bg-muted/40 sm:flex-none"
       />
       <FavoriteButton
         listingId={listingId}
-        className="bg-card border border-border text-muted-foreground w-11 h-11 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm"
+        className="size-11 rounded-xl border border-border/70 bg-card text-muted-foreground shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
       />
       <Dialog open={reportOpen} onOpenChange={setReportOpen}>
         <DialogTrigger asChild>
           <Button
             type="button"
             onClick={() => captureClientEvent("report_dialog_opened", { listingId, sellerId })}
-            className="bg-card border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition flex items-center gap-2 shadow-sm"
+            className="min-h-11 flex-1 rounded-xl border border-border/70 bg-card px-3.5 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 sm:flex-none"
           >
             <Flag className="size-4" />
             Bildir

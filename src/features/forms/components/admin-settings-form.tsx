@@ -1,8 +1,18 @@
 "use client";
 
-import { AlertTriangle, Bell, Globe, LoaderCircle, Lock, RefreshCw, Save, Zap } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  Globe,
+  LoaderCircle,
+  Lock,
+  RefreshCw,
+  Save,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -28,7 +38,6 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Sync state with server props after revalidation
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(initialSettings);
@@ -37,8 +46,10 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
 
   const handleSave = async () => {
     setIsSaving(true);
+
     try {
       const result = await updateAllPlatformSettings(settings);
+
       if (result.success) {
         toast.success("Ayarlar başarıyla kaydedildi.");
         setHasChanges(false);
@@ -56,11 +67,13 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
 
   const handleClearCache = async () => {
     setIsClearingCache(true);
+
     try {
       const res = await fetch("/api/admin/cache/clear", { method: "POST" });
       const data = await res
         .json()
         .catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
+
       if (res.ok && data.success) {
         toast.success("Önbellek başarıyla temizlendi.");
         router.refresh();
@@ -94,281 +107,455 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
     setHasChanges(true);
   };
 
+  const settingsSummary = useMemo(
+    () =>
+      [
+        {
+          label: "Bakım modu",
+          value: settings.general_appearance?.maintenance_mode ? "Aktif" : "Kapalı",
+          tone: settings.general_appearance?.maintenance_mode ? "danger" : "default",
+        },
+        {
+          label: "Otomatik onay",
+          value: settings.moderation_policies?.auto_approve_regulars ? "Açık" : "Kapalı",
+          tone: settings.moderation_policies?.auto_approve_regulars ? "success" : "default",
+        },
+        {
+          label: "VIN kontrolü",
+          value: settings.moderation_policies?.vin_check_enabled ? "Açık" : "Kapalı",
+          tone: settings.moderation_policies?.vin_check_enabled ? "success" : "default",
+        },
+        {
+          label: "Debug log",
+          value: settings.performance?.debug_mode ? "Açık" : "Kapalı",
+          tone: settings.performance?.debug_mode ? "warning" : "default",
+        },
+      ] as const,
+    [settings]
+  );
+
   return (
     <div
       className={cn(
         "space-y-6 transition-opacity duration-300",
-        isSaving && "opacity-70 pointer-events-none"
+        isSaving && "pointer-events-none opacity-70"
       )}
     >
-      {/* Header */}
-      <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Sistem Konfigürasyonu</h1>
-          <p className="mt-1 text-sm text-muted-foreground font-medium italic">
-            Platformun global parametrelerini ve özellik bayraklarını yönetin.
+          <div className="mb-2 flex items-center gap-2">
+            <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.45)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+              Sistem kontrolü
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Sistem <span className="text-blue-600">Konfigürasyonu</span>
+          </h1>
+          <p className="mt-1.5 max-w-2xl text-sm font-medium italic text-muted-foreground">
+            Global davranışları, moderation eşiklerini ve operasyonel toggle’ları tek merkezden
+            yönetin.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {hasChanges && (
+        <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[320px] xl:items-end">
+          {hasChanges ? (
             <Badge
               variant="outline"
-              className="gap-1.5 border-amber-200 bg-amber-50 text-amber-700 font-bold text-[10px] uppercase tracking-widest"
+              className="w-fit gap-1.5 border-amber-200 bg-amber-50 text-[10px] font-bold uppercase tracking-widest text-amber-700"
             >
-              <AlertTriangle size={11} />
-              Kaydedilmemiş değişiklikler
+              <AlertTriangle className="size-3.5" />
+              Kaydedilmemiş değişiklikler var
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="w-fit gap-1.5 border-emerald-200 bg-emerald-50 text-[10px] font-bold uppercase tracking-widest text-emerald-700"
+            >
+              <ShieldCheck className="size-3.5" />
+              Son durum kayıtla uyumlu
             </Badge>
           )}
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || !hasChanges}
-            className="h-12 gap-2 rounded-xl px-6 text-sm font-bold bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-100 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0"
-          >
-            {isSaving ? <LoaderCircle className="animate-spin" size={18} /> : <Save size={18} />}
-            Değişiklikleri Kaydet
-          </Button>
+
+          <div className="flex w-full flex-col gap-2 sm:flex-row xl:justify-end">
+            <Button
+              onClick={handleSave}
+              disabled={isSaving || !hasChanges}
+              className="h-11 flex-1 gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold hover:bg-blue-700 xl:flex-none"
+            >
+              {isSaving ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              Değişiklikleri Kaydet
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              Auditability özeti
+            </p>
+            <h2 className="mt-1 text-base font-semibold text-foreground sm:text-lg">
+              Hangi kritik toggle’ların açık olduğunu hızlıca görün.
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Bu alan karar öncesi kontrol listesi gibi davranır. Özellikle bakım modu ve debug log
+              açıkken kaydetmeden önce etkisini doğrulayın.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-900">
+            <p className="font-semibold">Operasyon notu</p>
+            <p className="mt-1 text-amber-800">
+              Önbellek temizleme anlık aksiyondur; diğer alanlar ise yalnız{" "}
+              <span className="font-semibold">Kaydet</span> ile kalıcı olur.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {settingsSummary.map((item) => (
+            <StatusSummaryCard
+              key={item.label}
+              label={item.label}
+              value={item.value}
+              tone={item.tone}
+            />
+          ))}
         </div>
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Genel Görünüm */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="size-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-              <Globe size={24} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Genel Görünüm</h2>
-          </div>
+        <section className="space-y-5 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+          <SectionHeader
+            icon={Globe}
+            title="Genel görünüm"
+            description="Marka yüzeyi ve destek iletişim bilgisi gibi herkese açık ayarlar."
+            tone="blue"
+          />
 
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">
-                Site Başlığı
-              </Label>
+          <div className="space-y-4">
+            <FieldBlock
+              label="Site başlığı"
+              hint="Sekme başlığı ve üst seviye branding yüzeylerinde görünür."
+            >
               <Input
                 value={settings.general_appearance?.site_title ?? ""}
-                onChange={(e) =>
-                  updateSubSetting("general_appearance", "site_title", e.target.value)
+                onChange={(event) =>
+                  updateSubSetting("general_appearance", "site_title", event.target.value)
                 }
-                className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
+                className="h-11 rounded-xl border-border/70 bg-muted/20"
               />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">
-                Destek E-Posta
-              </Label>
+            </FieldBlock>
+
+            <FieldBlock
+              label="Destek e-posta"
+              hint="Destek dönüş adresi olarak kullanılır. Operasyon ekibi için erişilebilir kalmalı."
+            >
               <Input
                 type="email"
                 value={settings.general_appearance?.support_email ?? ""}
-                onChange={(e) =>
-                  updateSubSetting("general_appearance", "support_email", e.target.value)
+                onChange={(event) =>
+                  updateSubSetting("general_appearance", "support_email", event.target.value)
                 }
-                className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
+                className="h-11 rounded-xl border-border/70 bg-muted/20"
               />
-            </div>
+            </FieldBlock>
 
-            {/* Bakım Modu — kritik toggle, kırmızı uyarı ile */}
-            <div
-              className={cn(
-                "flex items-center justify-between rounded-2xl p-5 border transition-colors",
-                settings.general_appearance?.maintenance_mode
-                  ? "bg-red-50 border-red-200"
-                  : "bg-muted/30 border-border/50"
-              )}
+            <ToggleRow
+              title="Bakım modu"
+              description="Siteyi geçici olarak dış erişime kapatır. Açıkken canlı kullanıcı akışı etkilenir."
+              checked={settings.general_appearance?.maintenance_mode ?? false}
+              onCheckedChange={(value) =>
+                updateSubSetting("general_appearance", "maintenance_mode", value)
+              }
+              danger={settings.general_appearance?.maintenance_mode ?? false}
+              badge={settings.general_appearance?.maintenance_mode ? "Canlıda aktif" : "Kapalı"}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-5 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+          <SectionHeader
+            icon={Lock}
+            title="Moderasyon"
+            description="İlan kabul eşiği ve güvenlik doğrulama katmanları."
+            tone="amber"
+          />
+
+          <div className="space-y-4">
+            <ToggleRow
+              title="Otomatik onay"
+              description="Güvenilir kullanıcı ilanlarını manuel bekleme olmadan yayına alır."
+              checked={settings.moderation_policies?.auto_approve_regulars ?? false}
+              onCheckedChange={(value) =>
+                updateSubSetting("moderation_policies", "auto_approve_regulars", value)
+              }
+              badge={
+                settings.moderation_policies?.auto_approve_regulars
+                  ? "Hızlı akış"
+                  : "Manuel kontrol"
+              }
+            />
+
+            <ToggleRow
+              title="VIN kontrolü"
+              description="Araç verisini ek kontrol katmanından geçirir. Şüpheli girişlerde görünürlük artar."
+              checked={settings.moderation_policies?.vin_check_enabled ?? false}
+              onCheckedChange={(value) =>
+                updateSubSetting("moderation_policies", "vin_check_enabled", value)
+              }
+              badge={settings.moderation_policies?.vin_check_enabled ? "Doğrulama aktif" : "Bypass"}
+            />
+
+            <FieldBlock
+              label="Maksimum ücretsiz ilan"
+              hint="Bireysel kullanıcı başına ücretsiz yayın limitini belirler."
+              compact
             >
-              <div className="flex flex-col gap-1">
-                <span
-                  className={cn(
-                    "text-sm font-bold uppercase tracking-tight",
-                    settings.general_appearance?.maintenance_mode
-                      ? "text-red-700"
-                      : "text-foreground"
-                  )}
-                >
-                  Bakım Modu
-                  {settings.general_appearance?.maintenance_mode && (
-                    <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
-                      AKTİF
-                    </span>
-                  )}
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  Siteyi geçici olarak dışa kapat
-                </span>
-              </div>
-              <Switch
-                checked={settings.general_appearance?.maintenance_mode ?? false}
-                onCheckedChange={(val) =>
-                  updateSubSetting("general_appearance", "maintenance_mode", val)
-                }
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Moderasyon */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="size-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
-              <Lock size={24} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Moderasyon</h2>
-          </div>
-
-          <div className="space-y-5">
-            <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  Otomatik Onay
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  Eski üyelerin ilanlarını otomatik yayınla
-                </span>
-              </div>
-              <Switch
-                checked={settings.moderation_policies?.auto_approve_regulars ?? false}
-                onCheckedChange={(val) =>
-                  updateSubSetting("moderation_policies", "auto_approve_regulars", val)
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  VIN Kontrolü
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  API üzerinden gerçeklik testi yap
-                </span>
-              </div>
-              <Switch
-                checked={settings.moderation_policies?.vin_check_enabled ?? false}
-                onCheckedChange={(val) =>
-                  updateSubSetting("moderation_policies", "vin_check_enabled", val)
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">
-                Maksimum Ücretsiz İlan
-              </Label>
               <Input
                 type="number"
                 min={1}
                 max={100}
                 value={settings.moderation_policies?.max_free_listings ?? 3}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value);
-                  if (!isNaN(val) && val > 0) {
-                    updateSubSetting("moderation_policies", "max_free_listings", val);
+                onChange={(event) => {
+                  const value = Number.parseInt(event.target.value, 10);
+                  if (!Number.isNaN(value) && value > 0) {
+                    updateSubSetting("moderation_policies", "max_free_listings", value);
                   }
                 }}
-                className="h-10 rounded-xl bg-muted/30 border-transparent focus:bg-card w-24 text-center font-bold"
+                className="h-11 w-full rounded-xl border-border/70 bg-muted/20 text-center font-semibold sm:w-28"
               />
-            </div>
+            </FieldBlock>
           </div>
-        </div>
+        </section>
 
-        {/* Bildirimler */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-              <Bell size={24} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Bildirimler</h2>
-          </div>
+        <section className="space-y-5 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+          <SectionHeader
+            icon={Bell}
+            title="Bildirimler"
+            description="Operasyon ekibine giden uyarı ve entegrasyon sinyalleri."
+            tone="indigo"
+          />
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  Slack Entegrasyonu
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  Yeni ilanlar için kanal bildirimi
-                </span>
-              </div>
-              <Switch
-                checked={settings.notification_settings?.new_listing_slack ?? false}
-                onCheckedChange={(val) =>
-                  updateSubSetting("notification_settings", "new_listing_slack", val)
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  Rapor Uyarıları
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  Adminlere anlık email gönder
-                </span>
-              </div>
-              <Switch
-                checked={settings.notification_settings?.report_email_alerts ?? false}
-                onCheckedChange={(val) =>
-                  updateSubSetting("notification_settings", "report_email_alerts", val)
-                }
-              />
-            </div>
-          </div>
-        </div>
+            <ToggleRow
+              title="Slack entegrasyonu"
+              description="Yeni ilan sinyalini ekibin Slack kanalına taşır."
+              checked={settings.notification_settings?.new_listing_slack ?? false}
+              onCheckedChange={(value) =>
+                updateSubSetting("notification_settings", "new_listing_slack", value)
+              }
+              badge={
+                settings.notification_settings?.new_listing_slack ? "Kanal bildirimi" : "Kapalı"
+              }
+            />
 
-        {/* Performans */}
-        <div className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-              <Zap size={24} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Performans</h2>
+            <ToggleRow
+              title="Rapor uyarıları"
+              description="Admin raporlarında e-posta uyarısı üretir; yoğun abuse dönemlerinde operasyon netliği sağlar."
+              checked={settings.notification_settings?.report_email_alerts ?? false}
+              onCheckedChange={(value) =>
+                updateSubSetting("notification_settings", "report_email_alerts", value)
+              }
+              badge={
+                settings.notification_settings?.report_email_alerts ? "E-posta aktif" : "Kapalı"
+              }
+            />
           </div>
+        </section>
 
-          <div className="space-y-5">
-            {/* Önbellek Temizle — ayrı API çağrısı, kaydet butonuna bağlı değil */}
-            <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-border/50 p-5">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  Önbellek Temizle
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  Tüm sayfa önbelleklerini sıfırla
-                </span>
+        <section className="space-y-5 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+          <SectionHeader
+            icon={Zap}
+            title="Performans"
+            description="Anlık operasyon aksiyonları ve log yoğunluğu kontrolü."
+            tone="emerald"
+          />
+
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">Önbellek temizle</p>
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Tüm sayfa önbelleklerini sıfırlar. Bu işlem anlıktır ve kaydet akışından
+                    bağımsız yürür.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isClearingCache}
+                  className="h-10 rounded-xl border-border/70 text-sm font-semibold hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                  onClick={handleClearCache}
+                >
+                  {isClearingCache ? (
+                    <LoaderCircle className="mr-2 size-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-2 size-4" />
+                  )}
+                  Önbelleği Temizle
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isClearingCache}
-                className="font-bold text-[10px] tracking-widest text-muted-foreground border-border hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all gap-1.5"
-                onClick={handleClearCache}
-              >
-                {isClearingCache ? (
-                  <LoaderCircle className="animate-spin" size={13} />
-                ) : (
-                  <RefreshCw size={13} />
-                )}
-                SIFIRLA
-              </Button>
             </div>
 
-            {/* Debug Mode — state'e bağlı, kaydet ile persist ediliyor */}
-            <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  Hata Ayıklama (Debug)
-                </span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
-                  Detaylı sunucu loglarını aktif et
-                </span>
-              </div>
-              <Switch
-                checked={settings.performance?.debug_mode ?? false}
-                onCheckedChange={(val) => updateSubSetting("performance", "debug_mode", val)}
-              />
-            </div>
+            <ToggleRow
+              title="Hata ayıklama modu"
+              description="Detaylı sunucu loglarını açar. Sadece teşhis sürecinde aktif bırakın."
+              checked={settings.performance?.debug_mode ?? false}
+              onCheckedChange={(value) => updateSubSetting("performance", "debug_mode", value)}
+              badge={settings.performance?.debug_mode ? "Yüksek log hacmi" : "Standart"}
+              warning={settings.performance?.debug_mode ?? false}
+            />
           </div>
-        </div>
+        </section>
       </div>
+    </div>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+  tone,
+}: {
+  icon: typeof Globe;
+  title: string;
+  description: string;
+  tone: "blue" | "amber" | "indigo" | "emerald";
+}) {
+  const toneClasses = {
+    blue: "border-blue-100 bg-blue-50 text-blue-600",
+    amber: "border-amber-100 bg-amber-50 text-amber-600",
+    indigo: "border-indigo-100 bg-indigo-50 text-indigo-600",
+    emerald: "border-emerald-100 bg-emerald-50 text-emerald-600",
+  }[tone];
+
+  return (
+    <div className="flex items-start gap-4">
+      <div
+        className={cn("flex size-12 items-center justify-center rounded-2xl border", toneClasses)}
+      >
+        <Icon className="size-5" />
+      </div>
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function FieldBlock({
+  label,
+  hint,
+  children,
+  compact = false,
+}: {
+  label: string;
+  hint: string;
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-border/70 bg-muted/20 p-4",
+        compact && "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+      )}
+    >
+      <div className={cn("space-y-1", compact && "sm:max-w-[70%]")}>
+        <Label className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+          {label}
+        </Label>
+        <p className="text-xs leading-5 text-muted-foreground">{hint}</p>
+      </div>
+      <div className={cn("mt-3", compact ? "sm:mt-0 sm:w-auto" : "")}>{children}</div>
+    </div>
+  );
+}
+
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onCheckedChange,
+  badge,
+  danger = false,
+  warning = false,
+}: {
+  title: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (value: boolean) => void;
+  badge: string;
+  danger?: boolean;
+  warning?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border p-4 transition-colors sm:p-5",
+        danger
+          ? "border-rose-200 bg-rose-50/80"
+          : warning
+            ? "border-amber-200 bg-amber-50/70"
+            : "border-border/70 bg-muted/20"
+      )}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-foreground">{title}</p>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]",
+                danger
+                  ? "bg-rose-100 text-rose-700"
+                  : warning
+                    ? "bg-amber-100 text-amber-700"
+                    : checked
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-muted text-muted-foreground"
+              )}
+            >
+              {badge}
+            </span>
+          </div>
+          <p className="text-xs leading-5 text-muted-foreground">{description}</p>
+        </div>
+        <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      </div>
+    </div>
+  );
+}
+
+function StatusSummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "default" | "success" | "warning" | "danger";
+}) {
+  const toneClassName = {
+    default: "border-border/70 bg-background text-foreground",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    warning: "border-amber-200 bg-amber-50 text-amber-800",
+    danger: "border-rose-200 bg-rose-50 text-rose-800",
+  }[tone];
+
+  return (
+    <div className={cn("rounded-2xl border px-4 py-4", toneClassName)}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em]">{label}</p>
+      <p className="mt-2 text-lg font-bold">{value}</p>
     </div>
   );
 }

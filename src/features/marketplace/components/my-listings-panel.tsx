@@ -146,19 +146,20 @@ export function MyListingsPanel({
       <MyListingsAlerts archiveError={archiveError} bumpMessage={bumpMessage} />
 
       {showForm && children && (
-        <div className="rounded-3xl border border-primary/10 bg-primary/[0.02] p-8 shadow-sm animate-in fade-in zoom-in-95 duration-500">
-          <div className="mb-8 flex items-center justify-between">
+        <div className="animate-in fade-in zoom-in-95 rounded-3xl border border-primary/10 bg-primary/[0.02] p-5 shadow-sm duration-500 sm:p-8">
+          <div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8 sm:flex-nowrap sm:items-center">
             <div>
               <h3 className="text-2xl font-bold text-foreground tracking-tight">
                 {activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}
               </h3>
-              <p className="text-sm font-medium text-muted-foreground mt-1">
+              <p className="mt-1 text-sm font-medium text-muted-foreground">
                 İlan bilgilerini güncelleyerek yayına hazır hale getirin.
               </p>
             </div>
             <Button
               onClick={() => setShowForm(false)}
-              className="size-10 rounded-xl bg-white border border-border flex items-center justify-center text-muted-foreground/70 hover:text-red-500 hover:border-red-100 transition-all shadow-sm"
+              className="flex size-11 items-center justify-center rounded-xl border border-border bg-white text-muted-foreground/70 shadow-sm transition-all hover:border-red-100 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label="İlan formunu kapat"
             >
               <X size={20} />
             </Button>
@@ -170,13 +171,28 @@ export function MyListingsPanel({
       {!showForm && (
         <Button
           onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-4 rounded-3xl border-2 border-dashed border-primary/20 bg-card py-10 text-lg font-bold text-primary transition-all hover:bg-primary/[0.02] hover:border-primary/40 active:scale-[0.99] group shadow-sm"
+          className="group flex w-full items-center justify-between gap-4 rounded-3xl border border-primary/15 bg-card px-5 py-5 text-left text-primary shadow-sm transition-all hover:border-primary/30 hover:bg-primary/[0.02] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.99] sm:px-6"
           aria-label="Yeni İlan Ver"
         >
-          <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-inner">
-            <Plus size={32} strokeWidth={3} />
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner transition-transform duration-500 group-hover:scale-105">
+              <Plus size={24} strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary/75">
+                Yeni ilan
+              </p>
+              <p className="mt-1 text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                Yeni ilan yayınla
+              </p>
+              <p className="mt-1 text-sm font-normal text-muted-foreground">
+                2 dakikadan kısa sürede yeni araç ilanı oluştur.
+              </p>
+            </div>
           </div>
-          YENİ İLAN YAYINLA
+          <span className="shrink-0 text-xs font-bold uppercase tracking-[0.18em] text-primary/70">
+            Başlat
+          </span>
         </Button>
       )}
 

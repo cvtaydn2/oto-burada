@@ -1,5 +1,5 @@
 import {
-  ChevronRight,
+  ArrowRight,
   HelpCircle,
   Mail,
   MapPin,
@@ -19,237 +19,303 @@ export const metadata = {
   description: "OtoBurada ile iletişime geçin. Soru, öneri veya işbirliği için ekibimize ulaşın.",
 };
 
+const CONTACT_CHANNELS = [
+  {
+    icon: MessageCircle,
+    title: "WhatsApp",
+    description: "En hızlı geri dönüş için ekibimize doğrudan mesaj bırakın.",
+    value: "+90 (212) 000 00 00",
+    accentClassName: "bg-emerald-50 text-emerald-600",
+  },
+  {
+    icon: Mail,
+    title: "E-posta",
+    description: "Detaylı destek talepleri ve iş birlikleri için bize yazın.",
+    value: "destek@otoburada.com",
+    accentClassName: "bg-slate-100 text-slate-700",
+  },
+  {
+    icon: Phone,
+    title: "Destek saatleri",
+    description: "Hafta içi 09:00 - 18:00 arasında destek ekibimiz aktiftir.",
+    value: "Hafta içi 09:00 - 18:00",
+    accentClassName: "bg-blue-50 text-blue-600",
+  },
+] as const;
+
+const FAQ_ITEMS = [
+  {
+    question: "İlan vermek ücretli mi?",
+    answer:
+      "Hayır, OtoBurada üzerinde bireysel ilan vermek ücretsizdir. Kurumsal planlar ve görünürlük artıran ek hizmetler ayrıca sunulur.",
+  },
+  {
+    question: "İlanım ne zaman onaylanır?",
+    answer:
+      "Moderasyon ekibimiz ilanları genellikle kısa süre içinde inceler. Mesai dışındaki başvurular ilk uygun zaman diliminde değerlendirilir.",
+  },
+  {
+    question: "Ekspertiz zorunlu mu?",
+    answer:
+      "Zorunlu değildir. Ancak ekspertiz raporu eklenen ilanlar, alıcıların daha hızlı güven oluşturmasına yardımcı olur.",
+  },
+  {
+    question: "Şüpheli ilanı nasıl bildirebilirim?",
+    answer:
+      "İlan detay sayfasındaki şikayet akışını kullanabilir veya destek ekibine ulaşabilirsiniz. Bildirimler moderasyon tarafından incelenir.",
+  },
+] as const;
+
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-[1200px] px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12 space-y-8 sm:space-y-12 md:space-y-16">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground mb-2 sm:mb-4">
-          Bize Ulaşın
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Soru, öneri veya işbirlikleri için ekibimizle iletişime geçebilirsiniz. Size en kısa
-          sürede dönüş yapacağız.
-        </p>
-      </div>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+      <div className="space-y-8 sm:space-y-10 lg:space-y-14">
+        <section className="rounded-[2rem] border border-border/70 bg-card px-5 py-6 shadow-sm sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div className="space-y-4 sm:space-y-5">
+              <div className="inline-flex items-center rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-primary">
+                İletişim
+              </div>
+              <div className="space-y-3">
+                <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                  Sorular, öneriler ve destek talepleri için doğru kanala hızlıca ulaşın.
+                </h1>
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                  OtoBurada’da iletişim deneyimini de marketplace yüzeyleri kadar sade tutuyoruz.
+                  İhtiyacınıza göre WhatsApp, e-posta veya destek formu üzerinden bize
+                  ulaşabilirsiniz.
+                </p>
+              </div>
+            </div>
 
-      {/* Contact Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <ContactCard
-          icon={<MessageCircle size={28} />}
-          title="WhatsApp"
-          description="En hızlı çözüm için danışmanlarımıza anlık mesaj gönderin."
-          value="+90 (212) 000 00 00"
-          color="bg-emerald-500"
-        />
-        <ContactCard
-          icon={<Mail size={28} />}
-          title="E-Posta"
-          description="Resmi başvurular ve detaylı teknik destek talepleri için."
-          value="destek@otoburada.com"
-          color="bg-slate-900"
-        />
-        <ContactCard
-          icon={<Phone size={28} />}
-          title="Destek"
-          description="Hafta içi 09:00 - 18:00 arası destek ekibimize ulaşın."
-          value="destek@otoburada.com"
-          color="bg-blue-500"
-        />
-      </div>
+            <div className="rounded-[1.75rem] border border-border/70 bg-muted/25 p-4 sm:p-5">
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                {CONTACT_CHANNELS.map((channel) => (
+                  <ContactCard key={channel.title} {...channel} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
-      {/* Main Content: Contact Info + Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-card rounded-3xl shadow-sm border border-border/50 overflow-hidden">
-        {/* Left: Blue Info Panel */}
-        <div className="bg-blue-600 p-10 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-500 rounded-full opacity-50 blur-3xl pointer-events-none" />
+        <section className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr] lg:gap-6">
+          <div className="overflow-hidden rounded-[1.75rem] border border-border/70 bg-slate-950 text-white shadow-[0_24px_60px_-40px_rgba(15,23,42,0.4)]">
+            <div className="relative h-full px-5 py-6 sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+              <div className="absolute right-0 top-0 h-48 w-48 -translate-y-10 translate-x-12 rounded-full bg-primary/15 blur-3xl" />
+              <div className="relative z-10 flex h-full flex-col gap-6">
+                <div className="space-y-3">
+                  <div className="inline-flex size-11 items-center justify-center rounded-2xl bg-white/10 text-white">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-semibold tracking-tight">İletişim bilgileri</h2>
+                    <p className="text-sm leading-6 text-slate-200">
+                      Resmi başvurular, güvenlik bildirimleri veya genel destek talepleri için
+                      aşağıdaki kanalları kullanabilirsiniz.
+                    </p>
+                  </div>
+                </div>
 
-          <div className="relative z-10">
-            <h2 className="text-2xl font-bold mb-8">İletişim Bilgilerimiz</h2>
+                <div className="space-y-4">
+                  <InfoRow
+                    icon={<MapPin className="size-4.5" />}
+                    title="Genel merkez"
+                    detail={
+                      <>
+                        Levent Mah. Çayır Çimen Sk. No:1
+                        <br />
+                        Beşiktaş, İstanbul
+                      </>
+                    }
+                  />
+                  <InfoRow
+                    icon={<Phone className="size-4.5" />}
+                    title="Müşteri desteği"
+                    detail={
+                      <>
+                        +90 (212) 000 00 00
+                        <br />
+                        <span className="text-slate-300">Hafta içi 09:00 - 18:00</span>
+                      </>
+                    }
+                  />
+                  <InfoRow
+                    icon={<Mail className="size-4.5" />}
+                    title="E-posta"
+                    detail="destek@otoburada.com"
+                  />
+                </div>
 
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <MapPin size={20} className="text-blue-300 mt-0.5 shrink-0" />
-                <div>
-                  <h4 className="font-bold">Genel Merkez</h4>
-                  <p className="text-blue-100 text-sm mt-1">
-                    Levent Mah. Çayır Çimen Sk. No:1
-                    <br />
-                    Beşiktaş, İstanbul
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-sm font-medium text-white">Öncelikli konu güvenlik mi?</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">
+                    Şüpheli ilan, kötüye kullanım veya güven sorunlarında destek merkezine yönelerek
+                    daha ayrıntılı rehberleri inceleyebilirsiniz.
                   </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <Phone size={20} className="text-blue-300 mt-0.5 shrink-0" />
-                <div>
-                  <h4 className="font-bold">Müşteri Hizmetleri</h4>
-                  <p className="text-blue-100 text-sm mt-1">
-                    destek@otoburada.com
-                    <br />
-                    <span className="text-xs opacity-75">Hafta içi 09:00 - 18:00</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <Mail size={20} className="text-blue-300 mt-0.5 shrink-0" />
-                <div>
-                  <h4 className="font-bold">E-Posta</h4>
-                  <p className="text-blue-100 text-sm mt-1">destek@otoburada.com</p>
+                  <Link
+                    href="/support"
+                    className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100"
+                  >
+                    Destek merkezine git
+                    <ArrowRight className="size-4" />
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="relative z-10 mt-12 flex space-x-4">
-            <a
-              href="https://x.com/otoburada"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full bg-card/10 flex items-center justify-center hover:bg-card/20 transition"
-              aria-label="X (Twitter)"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </a>
-            <a
-              href="https://instagram.com/otoburada"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full bg-card/10 flex items-center justify-center hover:bg-card/20 transition"
-              aria-label="Instagram"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-              </svg>
-            </a>
-            <a
-              href="https://linkedin.com/company/otoburada"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full bg-card/10 flex items-center justify-center hover:bg-card/20 transition"
-              aria-label="LinkedIn"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        {/* Right: Contact Form */}
-        <div className="p-10">
-          <h2 className="text-2xl font-bold text-foreground mb-6">
-            {FEATURES.TICKETS ? "Mesaj Gönderin" : "İletişime Geçin"}
-          </h2>
-          {FEATURES.TICKETS ? (
-            <ContactForm />
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Şu anda sadece WhatsApp ve E-Posta üzerinden destek vermekteyiz. Lütfen yandaki
-                iletişim kanallarını kullanın.
-              </p>
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-blue-800 text-sm font-bold">
-                WhatsApp: +90 (212) 000 00 00
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="grid lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-8">
-          <div className="bg-card rounded-3xl p-10 border border-border/50 shadow-sm">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="size-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white">
-                <HelpCircle size={24} />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">Sıkça Sorulan Sorular</h2>
-            </div>
-            <div className="space-y-4">
-              <FaqItem
-                question="İlan vermek ücretli mi?"
-                answer="Hayır, OtoBurada üzerinde bireysel ilan vermek tamamen ücretsizdir. Kurumsal üyelikler ve ek özellikler için mağaza paketlerimizi inceleyebilirsiniz."
-              />
-              <FaqItem
-                question="İlanım ne zaman onaylanır?"
-                answer="Moderasyon ekibimiz ilanları genellikle 1-2 saat içerisinde inceleyip onaylamaktadır. Mesai saatleri dışındaki ilanlar ertesi sabah öncelikli olarak değerlendirilir."
-              />
-              <FaqItem
-                question="Ekspertiz zorunlu mu?"
-                answer="Hayır, zorunlu değil. Ancak ekspertiz raporu eklenen ilanlar daha hızlı satış yapmanıza olanak tanır."
-              />
-              <FaqItem
-                question="Şüpheli ilan nasıl bildiririm?"
-                answer="İlan detay sayfasındaki 'İlanı Şikayet Et' butonunu kullanarak moderasyon ekibimize bildirebilirsiniz."
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-4">
-          <div className="bg-indigo-900 rounded-3xl p-10 text-white shadow-sm h-full flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-card/5 blur-[100px] pointer-events-none" />
-            <div className="relative z-10">
-              <ShieldCheck className="text-blue-400 mb-6" size={48} />
-              <h3 className="text-2xl font-bold mb-4">Güvenlik Önemli</h3>
-              <p className="text-sm text-indigo-100 leading-relaxed">
-                OtoBurada&apos;da güvenliğiniz bizim için en üst önceliktir. Şüpheli durumları
-                bildirmek veya güvenli alım-satım rehberimize ulaşmak için her zaman yanınızdayız.
+          <div className="rounded-[1.75rem] border border-border/70 bg-card p-5 shadow-sm sm:p-6 lg:p-7">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                {FEATURES.TICKETS ? "Mesaj gönderin" : "Bize ulaşın"}
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Destek formunu kullanarak mesajınızı iletebilir, kısa sorular için doğrudan WhatsApp
+                veya e-posta kanalını tercih edebilirsiniz.
               </p>
             </div>
+
+            <div className="mt-6">
+              {FEATURES.TICKETS ? (
+                <ContactForm />
+              ) : (
+                <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4 sm:p-5">
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Şu anda form üzerinden ticket açma özelliği aktif değil. Yine de destek
+                    ekibimize hızlı şekilde ulaşmak için mevcut iletişim kanallarını
+                    kullanabilirsiniz.
+                  </p>
+                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                    WhatsApp: +90 (212) 000 00 00
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background px-4 py-3 text-sm text-foreground">
+                    E-posta: destek@otoburada.com
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-[1.12fr_0.88fr] lg:gap-6">
+          <div className="rounded-[1.75rem] border border-border/70 bg-card p-5 shadow-sm sm:p-6 lg:p-7">
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-muted text-foreground">
+                <HelpCircle className="size-5" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Sıkça sorulan sorular
+                </h2>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  İletişime geçmeden önce en sık karşılaşılan başlıkları buradan gözden
+                  geçirebilirsiniz.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {FAQ_ITEMS.map((item) => (
+                <FaqItem key={item.question} question={item.question} answer={item.answer} />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-border/70 bg-muted/20 p-5 shadow-sm sm:p-6 lg:p-7">
+            <div className="space-y-3">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/8 text-primary">
+                <ShieldCheck className="size-5" />
+              </div>
+              <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                Güvenlik ve güven bildirimi
+              </h3>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Güvenli alışveriş rehberi, şüpheli ilan bildirme akışı ve hesap güvenliği notları
+                için destek merkezi sayfasındaki rehberleri kullanabilirsiniz.
+              </p>
+            </div>
+
+            <div className="mt-5 space-y-3 rounded-2xl border border-border/70 bg-background/90 p-4">
+              <p className="text-sm font-medium text-foreground">
+                Ne zaman destek merkezine gitmeliyim?
+              </p>
+              <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
+                <li>Şüpheli ilan veya kullanıcı davranışı gördüğünüzde,</li>
+                <li>Hesap erişimi ve doğrulama konusunda yardıma ihtiyaç duyduğunuzda,</li>
+                <li>
+                  İlan moderasyonu veya teknik bir sorun hakkında ayrıntılı rehber aradığınızda.
+                </li>
+              </ul>
+            </div>
+
             <Link
               href="/support"
-              className="relative z-10 mt-10 inline-flex items-center justify-between h-14 w-full px-6 rounded-2xl bg-card text-foreground text-xs font-bold uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all group"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-900"
             >
-              Destek Merkezi
-              <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              Destek merkezini aç
+              <ArrowRight className="size-4" />
             </Link>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
 }
 
 function ContactCard({
-  icon,
+  icon: Icon,
   title,
   description,
   value,
-  color,
+  accentClassName,
 }: {
-  icon: React.ReactNode;
+  icon: typeof MessageCircle;
   title: string;
   description: string;
   value: string;
-  color: string;
+  accentClassName: string;
 }) {
   return (
-    <div className="bg-card rounded-2xl p-8 border border-border/50 shadow-sm hover:shadow-md transition-all group">
-      <div
-        className={`size-14 rounded-2xl ${color} flex items-center justify-center text-white mb-5 shadow-sm`}
-      >
+    <div className="rounded-2xl border border-border/70 bg-background/90 p-4">
+      <div className={`flex size-10 items-center justify-center rounded-xl ${accentClassName}`}>
+        <Icon className="size-4.5" />
+      </div>
+      <p className="mt-4 text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+        {title}
+      </p>
+      <p className="mt-2 text-base font-semibold text-foreground">{value}</p>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon,
+  title,
+  detail,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  detail: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+      <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
         {icon}
       </div>
-      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">
-        {title}
-      </h3>
-      <p className="text-lg font-bold text-foreground mb-3">{value}</p>
-      <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-white">{title}</p>
+        <div className="text-sm leading-6 text-slate-200">{detail}</div>
+      </div>
     </div>
   );
 }
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-muted/30 p-6 hover:border-blue-200 transition-all">
-      <h4 className="text-sm font-bold text-foreground mb-2">{question}</h4>
-      <p className="text-xs text-muted-foreground leading-relaxed">{answer}</p>
+    <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4 sm:px-5">
+      <h4 className="text-sm font-semibold text-foreground">{question}</h4>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
     </div>
   );
 }

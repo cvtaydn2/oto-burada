@@ -129,38 +129,40 @@ export function ListingsPageClient({
         </div>
       )}
 
-      <main className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-6 sm:px-4 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <MarketplaceHeader filters={filters} total={total} />
+      <main className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-4 sm:px-4 sm:py-6">
+        <div className="mb-5 space-y-3 sm:mb-6 sm:space-y-4">
+          <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <MarketplaceHeader filters={filters} total={total} />
 
-            <MarketplaceControls
+              <MarketplaceControls
+                filters={filters}
+                activeFiltersCount={activeFiltersCount}
+                brands={brands}
+                cities={cities}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                isSortOpen={isSortOpen}
+                setIsSortOpen={setIsSortOpen}
+                handleFilterChange={handleFilterChange}
+                handleReset={handleReset}
+                applyFilters={applyFilters}
+                userId={userId}
+                total={total}
+              />
+            </div>
+
+            <MarketplaceQuickFilters
               filters={filters}
-              activeFiltersCount={activeFiltersCount}
-              brands={brands}
-              cities={cities}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              isSortOpen={isSortOpen}
-              setIsSortOpen={setIsSortOpen}
               handleFilterChange={handleFilterChange}
               handleReset={handleReset}
-              applyFilters={applyFilters}
-              userId={userId}
-              total={total}
             />
           </div>
 
-          <MarketplaceQuickFilters
-            filters={filters}
-            handleFilterChange={handleFilterChange}
-            handleReset={handleReset}
-          />
-
           {filters.validationError && (
-            <div className="mt-4 flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/50 p-4 text-sm font-medium text-amber-700 animate-in fade-in slide-in-from-top-2 duration-300">
-              <Search size={14} className="shrink-0" />
-              {filters.validationError}
+            <div className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50/50 p-3 text-sm font-medium text-amber-700 animate-in fade-in slide-in-from-top-2 duration-300 sm:p-4">
+              <Search size={14} className="mt-0.5 shrink-0" />
+              <span className="leading-6">{filters.validationError}</span>
             </div>
           )}
 
@@ -179,7 +181,7 @@ export function ListingsPageClient({
           />
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row">
+        <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
           <MarketplaceSidebar
             brands={brands}
             cities={cities}
@@ -194,11 +196,11 @@ export function ListingsPageClient({
             {isError ? (
               <ListingsErrorState error={error} refetch={refetch} />
             ) : isPending ? (
-              <div className="min-h-[400px] rounded-2xl border border-border bg-card p-6 shadow-sm sm:min-h-[600px] sm:p-10">
+              <div className="min-h-[360px] rounded-2xl border border-border bg-card p-4 shadow-sm sm:min-h-[520px] sm:p-8">
                 <ListingsGridSkeleton />
               </div>
             ) : allListings.length > 0 ? (
-              <div className="space-y-6 sm:space-y-8">
+              <div className="space-y-4 sm:space-y-6">
                 <ListingsResultsSummary
                   total={total}
                   visibleStart={visibleStart}
@@ -212,7 +214,7 @@ export function ListingsPageClient({
                     "relative transition-opacity duration-normal",
                     isPending ? "pointer-events-none opacity-50" : "opacity-100",
                     viewMode === "grid"
-                      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3"
+                      ? "grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5"
                       : "flex flex-col gap-4"
                   )}
                 >
@@ -242,7 +244,7 @@ export function ListingsPageClient({
                     onPageChange={handlePageChange}
                   />
                 ) : (
-                  <div ref={loadMoreRef} className="flex justify-center py-8">
+                  <div ref={loadMoreRef} className="flex justify-center py-6 sm:py-8">
                     {isFetchingNextPage ? (
                       <div className="flex items-center gap-3 rounded-full bg-muted/50 px-4 py-2">
                         <div className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />

@@ -81,8 +81,8 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
 
   return (
     <>
-      <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
-        <div className="p-4 sm:p-6 space-y-4">
+      <div className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
+        <div className="space-y-3 p-3 sm:space-y-4 sm:p-5 lg:p-6">
           {/* Main Viewport */}
           <div className="relative group">
             <div className="overflow-hidden rounded-2xl bg-muted touch-pan-y" ref={emblaRef}>
@@ -136,14 +136,14 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
             )}
 
             {/* Overlay Indicators */}
-            <div className="absolute inset-x-0 bottom-4 flex items-center justify-between px-6 pointer-events-none">
-              <div className="px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest italic">
+            <div className="pointer-events-none absolute inset-x-0 bottom-3 flex items-end justify-between gap-2 px-3 sm:bottom-4 sm:px-6">
+              <div className="rounded-full bg-black/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest italic text-white backdrop-blur-md">
                 {currentIndex + 1} / {images.length}
               </div>
-              <div className="flex items-center gap-2 pointer-events-auto">
+              <div className="pointer-events-auto flex flex-wrap justify-end gap-2">
                 <Button
                   onClick={() => setIsLightboxOpen(true)}
-                  className="px-4 py-2.5 rounded-full bg-card/90 backdrop-blur-md text-foreground text-[10px] font-bold uppercase tracking-widest italic hover:bg-card transition-all shadow-sm flex items-center gap-1.5"
+                  className="h-9 rounded-full bg-card/90 px-3 text-[10px] font-bold uppercase tracking-widest italic text-foreground shadow-sm transition-all hover:bg-card sm:h-auto sm:px-4 sm:py-2.5"
                 >
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
@@ -151,7 +151,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                 {show360Button && (
                   <Button
                     onClick={() => setIs360Open(true)}
-                    className="px-4 py-2.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-sm flex items-center gap-1.5"
+                    className="h-9 rounded-full bg-blue-500 px-3 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm transition-all hover:bg-blue-600 sm:h-auto sm:px-4 sm:py-2.5"
                   >
                     <Rotate3d size={12} />
                     360° Görünüm
@@ -162,7 +162,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
           </div>
 
           {/* Thumbnails */}
-          <div className="overflow-hidden py-2" ref={thumbRef}>
+          <div className="hidden overflow-hidden py-2 sm:block" ref={thumbRef}>
             <div className="flex gap-2 sm:gap-3">
               {images.map((image, index) => (
                 <Button

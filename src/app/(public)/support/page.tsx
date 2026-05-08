@@ -1,3 +1,4 @@
+import { ArrowRight, BadgeCheck, FileText, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 import { getCurrentUser } from "@/features/auth/lib/session";
@@ -8,9 +9,10 @@ import { getUserTickets } from "@/features/support/services/ticket-service";
 
 const FAQ_CATEGORIES = [
   {
-    icon: "BadgeCheck",
-    iconColor: "text-emerald-500",
-    title: "İLAN YÖNETİMİ",
+    icon: BadgeCheck,
+    accentClassName: "bg-emerald-50 text-emerald-600",
+    title: "İlan yönetimi",
+    description: "İlan oluşturma, onay süreci ve görünürlük seçenekleri hakkında temel bilgiler.",
     items: [
       {
         q: "İlan nasıl verilir?",
@@ -31,9 +33,10 @@ const FAQ_CATEGORIES = [
     ],
   },
   {
-    icon: "ShieldAlert",
-    iconColor: "text-rose-500",
-    title: "GÜVENLİK & GİZLİLİK",
+    icon: ShieldAlert,
+    accentClassName: "bg-rose-50 text-rose-600",
+    title: "Güvenlik ve gizlilik",
+    description: "Güvenli alım-satım, hesap koruması ve şüpheli ilan bildirimleri için rehberler.",
     items: [
       {
         q: "Şüpheli ilan bildirimi",
@@ -54,9 +57,11 @@ const FAQ_CATEGORIES = [
     ],
   },
   {
-    icon: "FileText",
-    iconColor: "text-primary",
-    title: "TEKNİK KONULAR",
+    icon: FileText,
+    accentClassName: "bg-primary/10 text-primary",
+    title: "Teknik konular",
+    description:
+      "Şifre sıfırlama, e-posta doğrulama ve cihaz uyumluluğu ile ilgili sık sorulanlar.",
     items: [
       {
         q: "Şifremi unuttum",
@@ -76,7 +81,7 @@ const FAQ_CATEGORIES = [
       },
     ],
   },
-];
+] as const;
 
 export default async function SupportPage() {
   const user = await getCurrentUser();
@@ -90,72 +95,185 @@ export default async function SupportPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-14 space-y-20">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-foreground">Destek Merkezi</h1>
-        <p className="text-muted-foreground font-medium text-lg">
-          Sorularınız için aşağıdaki SSS bölümünü inceleyin veya bir destek talebi oluşturun.
-        </p>
-      </div>
-
-      {user && userTickets.length > 0 && (
-        <section className="space-y-6">
-          <h2 className="text-xl font-bold text-foreground">Destek Taleplerim</h2>
-          <TicketList tickets={userTickets} />
-        </section>
-      )}
-
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold text-foreground">Sık Sorulan Sorular</h2>
-        <div className="space-y-4">
-          {FAQ_CATEGORIES.map((cat, idx) => (
-            <div key={idx} className="rounded-xl border border-border bg-card">
-              <div className="px-6 py-5 border-b border-border/50 flex items-center gap-3">
-                <span className={`size-2 rounded-full ${cat.iconColor.replace("text-", "bg-")}`} />
-                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  {cat.title}
-                </h3>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+      <div className="space-y-8 sm:space-y-10 lg:space-y-14">
+        <section className="rounded-[2rem] border border-border/70 bg-card px-5 py-6 shadow-sm sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+          <div className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+            <div className="space-y-4">
+              <div className="inline-flex items-center rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-primary">
+                Destek merkezi
               </div>
-              <div className="divide-y divide-slate-50">
-                {cat.items.map((item, i) => (
-                  <FaqAccordion key={i} items={[item]} />
-                ))}
+              <div className="space-y-3">
+                <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                  Yardım ihtiyaçlarını tek yerde toplayan daha sade bir destek akışı.
+                </h1>
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                  Önce sık sorulan soruları inceleyin, ardından gerekiyorsa destek talebi oluşturun.
+                  Bu yüzeyi mobilde daha rahat taranacak, daha az yoğun ve daha net bir bilgi
+                  hiyerarşisiyle sunuyoruz.
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      <section className="space-y-6">
-        <div className="rounded-xl border border-border bg-card p-8">
-          <div className="mb-6 space-y-2">
-            <h2 className="text-xl font-bold text-foreground">Yeni Destek Talebi Oluştur</h2>
-            <p className="text-sm text-muted-foreground">
-              Teknik sorunlar, ilan moderasyonu veya hesap erişimiyle ilgili taleplerini bu formdan
-              iletebilirsin.
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <SupportSummaryCard
+                title="Önce rehberleri kontrol edin"
+                description="En sık karşılaşılan ilan, güvenlik ve teknik sorular için hazırlanmış özet cevaplar burada yer alır."
+              />
+              <SupportSummaryCard
+                title="Gerekirse ticket oluşturun"
+                description="Çözülemeyen durumlarda form üzerinden destek ekibine ayrıntılı talep iletebilirsiniz."
+              />
+              <SupportSummaryCard
+                title="Hesabınızla devam edin"
+                description="Giriş yaptığınızda açık taleplerinizi ve önceki destek geçmişinizi aynı ekranda takip edebilirsiniz."
+              />
+            </div>
+          </div>
+        </section>
+
+        {user && userTickets.length > 0 && (
+          <section className="space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                Destek taleplerim
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Mevcut destek kayıtlarınızı buradan takip edebilirsiniz.
+              </p>
+            </div>
+            <div className="rounded-[1.75rem] border border-border/70 bg-card p-4 shadow-sm sm:p-5 lg:p-6">
+              <TicketList tickets={userTickets} />
+            </div>
+          </section>
+        )}
+
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              Sık sorulan sorular
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              En çok ihtiyaç duyulan üç başlığı daha okunabilir bloklar halinde grupladık.
             </p>
           </div>
-          {user ? (
-            <TicketForm />
-          ) : (
-            <div className="space-y-3 text-sm text-muted-foreground font-medium">
-              <p>
-                Destek talebi oluşturmak ve mevcut taleplerini görmek için giriş yapman gerekiyor.
-              </p>
-              <Link
-                href="/login?next=%2Fsupport"
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Giriş yap ve destek talebi oluştur
-              </Link>
-              <p className="text-xs text-muted-foreground">
-                Giriş yaptıktan sonra önceki sayfaya geri dönerek destek formunu kayıpsız şekilde
-                tamamlayabilirsin.
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            {FAQ_CATEGORIES.map((category) => {
+              const Icon = category.icon;
+
+              return (
+                <div
+                  key={category.title}
+                  className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-sm"
+                >
+                  <div className="border-b border-border/70 px-4 py-4 sm:px-5">
+                    <div
+                      className={`flex size-10 items-center justify-center rounded-xl ${category.accentClassName}`}
+                    >
+                      <Icon className="size-4.5" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold tracking-tight text-foreground">
+                      {category.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {category.description}
+                    </p>
+                  </div>
+                  <div className="divide-y divide-border/60">
+                    {category.items.map((item) => (
+                      <FaqAccordion key={item.q} items={[item]} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6">
+          <div className="rounded-[1.75rem] border border-border/70 bg-card p-5 shadow-sm sm:p-6 lg:p-7">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                Yeni destek talebi oluştur
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Teknik sorunlar, ilan moderasyonu veya hesap erişimiyle ilgili taleplerinizi bu
+                alandan iletebilirsiniz.
               </p>
             </div>
-          )}
-        </div>
-      </section>
+
+            <div className="mt-6">
+              {user ? (
+                <TicketForm />
+              ) : (
+                <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4 sm:p-5">
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Destek talebi oluşturmak ve mevcut taleplerinizi görmek için giriş yapmanız
+                    gerekir. Girişten sonra yeniden destek merkezine dönebilirsiniz.
+                  </p>
+                  <Link
+                    href="/login?next=%2Fsupport"
+                    className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Giriş yap ve destek talebi oluştur
+                  </Link>
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Kısa sorular için iletişim sayfasındaki WhatsApp ve e-posta kanallarını da
+                    kullanabilirsiniz.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-border/70 bg-muted/20 p-5 shadow-sm sm:p-6 lg:p-7">
+            <div className="space-y-3">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <ShieldAlert className="size-5" />
+              </div>
+              <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                Öncelikli güvenlik bildirimleri
+              </h3>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Şüpheli ilan, hesap güvenliği veya dolandırıcılık şüphesi gibi konuları gecikmeden
+                destek ekibine iletmeniz önerilir.
+              </p>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-border/70 bg-background/90 p-4">
+              <p className="text-sm font-medium text-foreground">Hızlı yönlendirme</p>
+              <div className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
+                <p>• Şüpheli içerikler için önce ilan üzerindeki bildirim akışını kullanın.</p>
+                <p>
+                  • Hesap erişimi sorunlarında e-posta doğrulama ve şifre yenileme rehberlerine
+                  bakın.
+                </p>
+                <p>
+                  • Ayrıntılı destek gerektiğinde ticket oluşturarak daha fazla bağlam paylaşın.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/contact"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-900"
+            >
+              İletişim kanallarını görüntüle
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function SupportSummaryCard({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-background/90 p-4">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }

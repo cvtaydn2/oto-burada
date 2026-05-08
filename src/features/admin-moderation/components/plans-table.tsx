@@ -1,8 +1,16 @@
 "use client";
 
-import { CheckCircle2, Edit3, Loader2, MoreVertical, Tag, Trash2, XCircle } from "lucide-react";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import {
+  CheckCircle2,
+  Edit3,
+  Loader2,
+  MoreVertical,
+  Plus,
+  Tag,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -22,10 +30,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/features/ui/components/dropdown-menu";
-import { formatCurrency } from "@/lib";
+import { cn, formatCurrency } from "@/lib";
 
 interface PlansTableProps {
   initialPlans: PricingPlan[];
+}
+
+function getFeatureEntries(plan: PricingPlan) {
+  if (Array.isArray(plan.features)) {
+    return plan.features.map((feature) => String(feature).replaceAll("_", " "));
+  }
+
+  return Object.entries(plan.features as Record<string, boolean>)
+    .filter(([, value]) => value === true)
+    .map(([key]) => key.replaceAll("_", " "));
 }
 
 export function PlansTable({ initialPlans }: PlansTableProps) {
@@ -36,16 +54,26 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [deleteModal, setDeleteModal] = useState<PricingPlan | null>(null);
 
+  const planSummary = useMemo(
+    () => ({
+      total: plans.length,
+      active: plans.filter((plan) => plan.is_active).length,
+      inactive: plans.filter((plan) => !plan.is_active).length,
+    }),
+    [plans]
+  );
+
   const handleToggleStatus = async (plan: PricingPlan) => {
     setIsLoading(plan.id);
+
     try {
       await togglePlanStatus(plan.id, plan.is_active);
       setPlans((prev) =>
-        prev.map((p) => (p.id === plan.id ? { ...p, is_active: !p.is_active } : p))
+        prev.map((item) => (item.id === plan.id ? { ...item, is_active: !item.is_active } : item))
       );
       toast.success(`${plan.name} durumu güncellendi`);
-    } catch (err) {
-      captureError(err, "handleToggleStatus");
+    } catch (error) {
+      captureError(error, "handleToggleStatus");
       toast.error("İşlem başarısız oldu");
     } finally {
       setIsLoading(null);
@@ -54,13 +82,14 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
 
   const handleDelete = async (plan: PricingPlan) => {
     setIsLoading(plan.id);
+
     try {
       await deletePricingPlan(plan.id);
-      setPlans((prev) => prev.filter((p) => p.id !== plan.id));
+      setPlans((prev) => prev.filter((item) => item.id !== plan.id));
       toast.success(`${plan.name} paketi silindi`);
       setDeleteModal(null);
-    } catch (err) {
-      captureError(err, "handleDelete");
+    } catch (error) {
+      captureError(error, "handleDelete");
       toast.error("Paket silinemedi");
     } finally {
       setIsLoading(null);
@@ -69,178 +98,287 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
 
   return (
     <>
-      <div className="p-6 border-b border-slate-100 bg-slate-50/10 flex justify-end">
-        <Button
-          onClick={() => setShowCreateForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-[10px] tracking-widest uppercase h-11 px-6 shadow-sm shadow-indigo-100 gap-2"
-        >
-          <Plus size={16} />
-          YENİ PAKET EKLE
-        </Button>
+      <div className="border-b border-border/70 bg-muted/20 p-4 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              Paket kontrol yüzeyi
+            </p>
+            <h4 className="mt-1 text-base font-semibold text-foreground sm:text-lg">
+              Plan durumu, içerik kapsamı ve aksiyonlar daha okunabilir hale getirildi.
+            </h4>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Aktivasyon ve silme kararları ayrı tonlarda gösterilir. Mobilde her plan kendi
+              kartında aksiyon netliğiyle açılır.
+            </p>
+          </div>
+
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="h-11 w-full gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold hover:bg-indigo-700 sm:w-auto"
+          >
+            <Plus size={16} />
+            Yeni Paket Ekle
+          </Button>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <SummaryBadge label="Toplam" value={planSummary.total} tone="default" />
+          <SummaryBadge label="Aktif" value={planSummary.active} tone="success" />
+          <SummaryBadge label="Pasif" value={planSummary.inactive} tone="warning" />
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="space-y-3 p-4 sm:hidden">
+        {plans.map((plan) => {
+          const features = getFeatureEntries(plan);
+          const isBusy = isLoading === plan.id;
+
+          return (
+            <article
+              key={plan.id}
+              className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-600">
+                    <Tag size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="break-words text-base font-semibold text-foreground">
+                      {plan.name}
+                    </h4>
+                    <p className="mt-1 text-sm font-medium text-foreground">
+                      {formatCurrency(plan.price)}
+                    </p>
+                  </div>
+                </div>
+                <PlanStatusBadge isActive={plan.is_active} />
+              </div>
+
+              <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+                <InfoCell label="İlan kredisi" value={`${plan.credits} ilan`} />
+                <InfoCell
+                  label="İşlem notu"
+                  value={plan.is_active ? "Satışa açık" : "Gizli / pasif"}
+                />
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-border/70 bg-muted/20 p-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+                  Özellikler
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {features.length > 0 ? (
+                    features.map((feature) => (
+                      <Badge
+                        key={feature}
+                        className="border-emerald-100 bg-emerald-50 text-[10px] font-semibold text-emerald-700"
+                      >
+                        {feature}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Özellik tanımlanmamış.</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditModal(plan)}
+                  className="h-10 rounded-xl text-sm font-semibold"
+                >
+                  <Edit3 className="mr-2 size-4" />
+                  Düzenle
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleToggleStatus(plan)}
+                  disabled={isBusy}
+                  className={cn(
+                    "h-10 rounded-xl text-sm font-semibold",
+                    plan.is_active
+                      ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  )}
+                >
+                  {isBusy ? (
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                  ) : plan.is_active ? (
+                    <XCircle className="mr-2 size-4" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 size-4" />
+                  )}
+                  {plan.is_active ? "Pasife Al" : "Aktif Et"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDeleteModal(plan)}
+                  className="h-10 rounded-xl border-rose-200 bg-rose-50 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  Paketi Sil
+                </Button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto sm:block">
+        <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="bg-slate-50/50">
-              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            <tr className="border-b border-border/70 bg-muted/20">
+              <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
                 Paket Adı
               </th>
-              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
                 Fiyat
               </th>
-              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                Kredi (İlan)
+              <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+                Kredi
               </th>
-              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
                 Özellikler
               </th>
-              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
                 Durum
               </th>
-              <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
                 İşlem
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
-            {plans.map((plan) => (
-              <tr key={plan.id} className="hover:bg-indigo-50/20 transition-colors group">
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
-                      <Tag size={16} />
+          <tbody className="divide-y divide-border/60">
+            {plans.map((plan) => {
+              const features = getFeatureEntries(plan);
+
+              return (
+                <tr key={plan.id} className="transition-colors hover:bg-indigo-50/20">
+                  <td className="px-6 py-5 align-top">
+                    <div className="flex items-start gap-3">
+                      <div className="flex size-9 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-500">
+                        <Tag size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{plan.name}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {plan.is_active ? "Yayında ve satın alınabilir" : "Şu anda görünmüyor"}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-sm font-bold text-slate-800 uppercase tracking-tight">
-                      {plan.name}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  <span className="text-sm font-bold text-slate-900">
+                  </td>
+                  <td className="px-6 py-5 align-top text-sm font-semibold text-foreground">
                     {formatCurrency(plan.price)}
-                  </span>
-                </td>
-                <td className="px-6 py-5">
-                  <Badge className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-1 px-2.5 rounded-lg uppercase italic">
-                    {plan.credits} İLAN
-                  </Badge>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex gap-1.5 flex-wrap max-w-[200px]">
-                    {Array.isArray(plan.features)
-                      ? plan.features.map((feature) => (
+                  </td>
+                  <td className="px-6 py-5 align-top">
+                    <Badge className="bg-slate-100 text-slate-700">{plan.credits} ilan</Badge>
+                  </td>
+                  <td className="px-6 py-5 align-top">
+                    <div className="flex max-w-[260px] flex-wrap gap-1.5">
+                      {features.length > 0 ? (
+                        features.map((feature) => (
                           <Badge
                             key={feature}
-                            className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-bold uppercase tracking-tighter"
+                            className="border-emerald-100 bg-emerald-50 text-[10px] font-semibold text-emerald-700"
                           >
-                            {String(feature).replace("_", " ")}
+                            {feature}
                           </Badge>
                         ))
-                      : Object.entries(plan.features as Record<string, boolean>).map(
-                          ([key, val]) =>
-                            val === true && (
-                              <Badge
-                                key={key}
-                                className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-bold uppercase tracking-tighter"
-                              >
-                                {key.replace("_", " ")}
-                              </Badge>
-                            )
-                        )}
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  {plan.is_active ? (
-                    <div className="flex items-center gap-1.5 text-emerald-600">
-                      <CheckCircle2 size={14} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest italic">
-                        Aktif
-                      </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          Özellik tanımlanmamış.
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <XCircle size={14} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest italic">
-                        Pasif
-                      </span>
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-5 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-9 w-9 p-0 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 transition-all"
+                  </td>
+                  <td className="px-6 py-5 align-top">
+                    <PlanStatusBadge isActive={plan.is_active} />
+                  </td>
+                  <td className="px-6 py-5 text-right align-top">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="size-9 rounded-xl border border-transparent p-0 hover:border-border/70 hover:bg-background"
+                        >
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-56 rounded-2xl border-border/70 p-2"
                       >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-[200px] rounded-2xl p-2 shadow-sm border-slate-100"
-                    >
-                      <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 py-2">
-                        Paket Kontrolü
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-slate-50" />
-                      <DropdownMenuItem
-                        onClick={() => setEditModal(plan)}
-                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50"
-                      >
-                        <Edit3 size={14} />
-                        DÜZENLE
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleToggleStatus(plan)}
-                        disabled={isLoading === plan.id}
-                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50"
-                      >
-                        {isLoading === plan.id ? (
-                          <Loader2 className="animate-spin" size={14} />
-                        ) : plan.is_active ? (
-                          <XCircle size={14} />
-                        ) : (
-                          <CheckCircle2 size={14} />
-                        )}
-                        {plan.is_active ? "PASİFE AL" : "AKTİF ET"}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-slate-50" />
-                      <DropdownMenuItem
-                        onClick={() => setDeleteModal(plan)}
-                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50"
-                      >
-                        <Trash2 size={14} />
-                        SİL
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
+                        <DropdownMenuLabel className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+                          Paket kontrolü
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setEditModal(plan)}
+                          className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium"
+                        >
+                          <Edit3 className="mr-2 size-4" />
+                          Düzenle
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleToggleStatus(plan)}
+                          disabled={isLoading === plan.id}
+                          className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium"
+                        >
+                          {isLoading === plan.id ? (
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                          ) : plan.is_active ? (
+                            <XCircle className="mr-2 size-4" />
+                          ) : (
+                            <CheckCircle2 className="mr-2 size-4" />
+                          )}
+                          {plan.is_active ? "Pasife al" : "Aktif et"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeleteModal(plan)}
+                          className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600"
+                        >
+                          <Trash2 className="mr-2 size-4" />
+                          Sil
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* Edit Modal / Create Modal */}
       {(editModal || showCreateForm) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-sm max-h-[90vh] overflow-y-auto">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                {editModal ? <Edit3 size={28} /> : <Plus size={28} />}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-border/70 bg-background p-6 shadow-2xl sm:p-8">
+            <div className="mb-6 flex items-start gap-4">
+              <div className="flex size-14 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-600">
+                {editModal ? <Edit3 size={26} /> : <Plus size={26} />}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900 leading-tight">
-                  {editModal ? "Paketi Düzenle" : "Yeni Paket Oluştur"}
+                <h3 className="text-xl font-bold text-foreground">
+                  {editModal ? "Paketi düzenle" : "Yeni paket oluştur"}
                 </h3>
-                <p className="text-sm text-slate-500 font-medium italic mt-0.5">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {editModal
-                    ? editModal.name
-                    : "İlan paketlerinin detaylarını ve özelliklerini tanımlayın."}
+                    ? `${editModal.name} için fiyat, kredi ve özellik ayarlarını güncelleyin.`
+                    : "İlan paketinin fiyatını, kredi miktarını ve görünür avantajlarını tanımlayın."}
                 </p>
               </div>
+            </div>
+
+            <div className="mb-5 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-xs leading-5 text-blue-900">
+              Form kaydı plan verisini günceller. Aktivasyon kararı ise tablo kartındaki ayrı
+              aksiyon üzerinden kontrol edilir.
             </div>
 
             <PlanForm
@@ -258,40 +396,45 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
-                <Trash2 size={24} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-border/70 bg-background p-5 shadow-2xl sm:p-6">
+            <div className="mb-5 flex items-start gap-4">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                <Trash2 size={22} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Paketi Sil</h3>
-                <p className="text-sm text-slate-500">Bu işlem geri alınamaz</p>
+                <h3 className="text-lg font-bold text-foreground">Paketi sil</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Bu işlem geri alınamaz.</p>
               </div>
             </div>
-            <p className="mb-6 text-sm text-slate-600">
-              <span className="font-bold text-slate-900">{deleteModal.name}</span> paketini silmek
-              istediğinizden emin misiniz? Bu paketi kullanan mevcut kullanıcılar etkilenmeyecektir.
-            </p>
-            <div className="flex gap-3">
+
+            <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-sm leading-6 text-rose-900">
+              <p>
+                <span className="font-bold">{deleteModal.name}</span> paketini kaldırmak üzeresiniz.
+              </p>
+              <p className="mt-2 text-xs text-rose-800">
+                Mevcut kullanıcı geçmişi korunur, ancak yeni satış akışı bu paketi artık sunmaz.
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
-                className="flex-1 rounded-xl border-slate-200 font-bold"
+                className="flex-1 rounded-xl"
                 onClick={() => setDeleteModal(null)}
               >
-                İptal
+                Vazgeç
               </Button>
               <Button
-                className="flex-1 rounded-xl bg-rose-600 font-bold hover:bg-rose-700"
+                className="flex-1 rounded-xl bg-rose-600 font-semibold hover:bg-rose-700"
                 onClick={() => handleDelete(deleteModal)}
                 disabled={isLoading === deleteModal.id}
               >
                 {isLoading === deleteModal.id ? (
-                  <Loader2 className="animate-spin" size={18} />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  "Sil"
+                  "Paketi Sil"
                 )}
               </Button>
             </div>
@@ -299,5 +442,47 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
         </div>
       )}
     </>
+  );
+}
+
+function PlanStatusBadge({ isActive }: { isActive: boolean }) {
+  return isActive ? (
+    <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">Aktif</Badge>
+  ) : (
+    <Badge className="border-slate-200 bg-slate-50 text-slate-600">Pasif</Badge>
+  );
+}
+
+function SummaryBadge({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "default" | "success" | "warning";
+}) {
+  const toneClassName = {
+    default: "border-border/70 bg-background text-foreground",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    warning: "border-amber-200 bg-amber-50 text-amber-800",
+  }[tone];
+
+  return (
+    <div className={cn("rounded-2xl border px-4 py-4", toneClassName)}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em]">{label}</p>
+      <p className="mt-2 text-2xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+function InfoCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-muted/30 px-3 py-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-medium leading-6 text-foreground break-words">{value}</p>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
-import { AlertTriangle, Ban, Shield, TrendingUp } from "lucide-react";
+import { AlertTriangle, Ban, Shield, ShieldAlert, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import {
@@ -10,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/features/ui/components/card";
+import { cn } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -32,10 +34,30 @@ interface BannedIP {
   expires_at: string | null;
 }
 
-async function getAbuseData() {
+interface SecurityPageData {
+  logs: AbuseLog[];
+  bannedIPs: BannedIP[];
+  stats: {
+    total24h: number;
+    reasonCounts: Record<string, number>;
+  };
+}
+
+const REASON_STYLES: Record<string, string> = {
+  honeypot: "border-red-200 bg-red-50 text-red-800",
+  spam_pattern: "border-orange-200 bg-orange-50 text-orange-800",
+  similarity: "border-yellow-200 bg-yellow-50 text-yellow-800",
+  rate_limit: "border-blue-200 bg-blue-50 text-blue-800",
+  disposable_email: "border-purple-200 bg-purple-50 text-purple-800",
+  turnstile_fail: "border-pink-200 bg-pink-50 text-pink-800",
+  ip_banned: "border-slate-200 bg-slate-100 text-slate-800",
+  success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+};
+
+async function getAbuseData(): Promise<SecurityPageData> {
   if (!hasSupabaseAdminEnv()) {
     throw new Error(
-      "Kritik Yapılandırma Hatası: SUPABASE_SERVICE_ROLE_KEY eksik. Güvenlik verilerine erişilemiyor."
+      "Kritik yapılandırma hatası: SUPABASE_SERVICE_ROLE_KEY eksik. Güvenlik verilerine erişilemiyor."
     );
   }
 
@@ -56,223 +78,355 @@ async function getAbuseData() {
 
   const logs = (logsResult.data || []) as AbuseLog[];
   const bannedIPs = (bannedResult.data || []) as BannedIP[];
-
-  // Calculate stats
   const last24h = statsResult.data || [];
-  const reasonCounts = last24h.reduce(
-    (acc, log) => {
-      acc[log.reason] = (acc[log.reason] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+
+  const reasonCounts = last24h.reduce<Record<string, number>>((acc, log) => {
+    acc[log.reason] = (acc[log.reason] || 0) + 1;
+    return acc;
+  }, {});
 
   return {
     logs,
     bannedIPs,
     stats: {
       total24h: last24h.length,
-      reasonCounts: reasonCounts,
-    } as { total24h: number; reasonCounts: Record<string, number> },
+      reasonCounts,
+    },
   };
 }
 
-export default async function SecurityPage() {
-  // Redundant: AdminLayout already calls requireAdminUser()
-  // But we keep a try-catch for the data fetching which requires service role key
+function formatDate(value: string) {
+  return new Date(value).toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-  let data;
+function getTopReason(stats: SecurityPageData["stats"]) {
+  const entries = Object.entries(stats.reasonCounts);
+  const sorted = entries.sort((a, b) => (b[1] || 0) - (a[1] || 0));
+  return sorted[0] ?? null;
+}
+
+export default async function SecurityPage() {
+  await requireAdminUser();
+
+  let data: SecurityPageData;
+
   try {
     data = await getAbuseData();
   } catch (error) {
     logger.security.error("[SecurityPage] Failed to fetch abuse data", error);
+
     return (
-      <div className="p-8 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive">
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <AlertTriangle className="w-6 h-6" />
-          Veri Erişim Hatası
-        </h2>
-        <p className="text-sm opacity-90">
-          {(error as Error).message ||
-            "Güvenlik verileri alınırken bir hata oluştu. Lütfen ortam değişkenlerini (SUPABASE_SERVICE_ROLE_KEY) kontrol edin."}
-        </p>
-        <Button
-          variant="outline"
-          className="mt-4 border-destructive/30 hover:bg-destructive/10"
-          asChild
-        >
-          <Link href="/admin">Geri Dön</Link>
-        </Button>
-      </div>
+      <main className="min-h-full bg-muted/30 p-4 sm:p-6 lg:p-8">
+        <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-6 text-destructive shadow-sm sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
+                <AlertTriangle className="size-5 sm:size-6" />
+                Veri erişim hatası
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 opacity-90">
+                {(error as Error).message ||
+                  "Güvenlik verileri alınırken hata oluştu. Lütfen service role yapılandırmasını kontrol edin."}
+              </p>
+              <p className="text-xs opacity-80">
+                Bu yüzey abuse görünürlüğü için admin servis anahtarına bağlıdır. Yapılandırma
+                eksikse karar geçmişi ve engelleme aksiyonları görünmez.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:text-destructive"
+              asChild
+            >
+              <Link href="/admin">Panele dön</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
     );
   }
 
   const { logs, bannedIPs, stats } = data;
-
-  const reasonColors: Record<string, string> = {
-    honeypot: "bg-red-100 text-red-800",
-    spam_pattern: "bg-orange-100 text-orange-800",
-    similarity: "bg-yellow-100 text-yellow-800",
-    rate_limit: "bg-blue-100 text-blue-800",
-    disposable_email: "bg-purple-100 text-purple-800",
-    turnstile_fail: "bg-pink-100 text-pink-800",
-    ip_banned: "bg-gray-100 text-gray-800",
-    success: "bg-green-100 text-green-800",
-  };
+  const topReason = getTopReason(stats);
+  const blockedAttempts = logs.filter((log) => log.reason !== "success").length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Güvenlik & Abuse Yönetimi</h1>
-          <p className="text-muted-foreground mt-1">Contact form spam ve bot saldırılarını izle</p>
-        </div>
-        <Shield className="w-8 h-8 text-muted-foreground" />
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Son 24 Saat</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.total24h || 0}</div>
-            <p className="text-xs text-muted-foreground">Toplam deneme</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Yasaklı IP</CardTitle>
-            <Ban className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{bannedIPs.length}</div>
-            <p className="text-xs text-muted-foreground">Aktif ban</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Çok Tetiklenen</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.reasonCounts
-                ? (() => {
-                    const entries = Object.entries(stats.reasonCounts as Record<string, number>);
-                    const sorted = entries.sort((a, b) => (b[1] || 0) - (a[1] || 0));
-                    return sorted[0]?.[0] || "-";
-                  })()
-                : "-"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.reasonCounts
-                ? (() => {
-                    const entries = Object.entries(stats.reasonCounts as Record<string, number>);
-                    const sorted = entries.sort((a, b) => (b[1] || 0) - (a[1] || 0));
-                    return sorted[0]?.[1] || 0;
-                  })()
-                : 0}{" "}
-              kez
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Banned IPs */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Yasaklı IP Adresleri</CardTitle>
-          <CardDescription>Bu IP&apos;ler contact form&apos;u kullanamaz</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {bannedIPs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Henüz yasaklı IP yok.</p>
-          ) : (
-            <div className="space-y-2">
-              {bannedIPs.map((ban) => (
-                <div
-                  key={ban.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <p className="font-mono text-sm font-medium">{ban.ip_address}</p>
-                    <p className="text-xs text-muted-foreground">{ban.reason}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(ban.banned_at).toLocaleDateString("tr-TR")}
-                    </p>
-                    {ban.expires_at ? (
-                      <p className="text-xs text-orange-600">
-                        Bitiş: {new Date(ban.expires_at).toLocaleDateString("tr-TR")}
-                      </p>
-                    ) : (
-                      <Badge variant="destructive" className="text-xs">
-                        Kalıcı
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Abuse Logs */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Abuse Log (Son 100)</CardTitle>
-          <CardDescription>Tüm contact form denemeleri (başarılı ve başarısız)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {logs.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-start justify-between p-3 border rounded-lg hover:bg-muted/50 transition"
-              >
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Badge className={reasonColors[log.reason] || "bg-gray-100 text-gray-800"}>
-                      {log.reason}
-                    </Badge>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {log.ip_address}
-                    </span>
-                  </div>
-                  <p className="text-sm">{log.email}</p>
-                  {log.user_agent && (
-                    <p className="text-xs text-muted-foreground truncate max-w-md">
-                      {log.user_agent}
-                    </p>
-                  )}
-                </div>
-                <div className="text-right space-y-1">
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(log.created_at).toLocaleString("tr-TR")}
-                  </p>
-                  {log.reason !== "success" && (
-                    <form action="/api/admin/security/ban" method="POST">
-                      <input type="hidden" name="ip" value={log.ip_address} />
-                      <input type="hidden" name="reason" value={`Abuse: ${log.reason}`} />
-                      <Button type="submit" size="sm" variant="destructive" className="text-xs">
-                        <Ban className="w-3 h-3 mr-1" />
-                        Ban IP
-                      </Button>
-                    </form>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="mb-2 flex items-center gap-2">
+            <div className="size-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.45)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+              Abuse görünürlüğü
+            </span>
           </div>
-        </CardContent>
-      </Card>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Güvenlik <span className="text-rose-600">Operasyonları</span>
+          </h1>
+          <p className="mt-1.5 max-w-2xl text-sm font-medium italic text-muted-foreground">
+            Contact abuse akışını, IP ban kararlarını ve son 24 saatlik sinyalleri tek yerden
+            izleyin.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
+          <p className="font-semibold">Karar notu</p>
+          <p className="mt-1 text-xs leading-5 text-amber-800">
+            Ban aksiyonu anlıktır. Kayıtları önce reason, zaman ve tekrar yoğunluğu ile doğrulayın;
+            yanlış pozitifleri bu yüzden görünür tuttuk.
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
+        <MetricCard
+          title="Son 24 Saat"
+          value={stats.total24h}
+          description="Toplam form denemesi"
+          icon={TrendingUp}
+        />
+        <MetricCard
+          title="Yasaklı IP"
+          value={bannedIPs.length}
+          description="Aktif ban kaydı"
+          icon={Ban}
+        />
+        <MetricCard
+          title="Bloke Girişim"
+          value={blockedAttempts}
+          description="Başarısız veya engellenen kayıt"
+          icon={ShieldAlert}
+        />
+        <MetricCard
+          title="En Sık Sinyal"
+          value={topReason?.[0] ?? "-"}
+          description={topReason ? `${topReason[1]} kez görüldü` : "24 saatte sinyal yok"}
+          icon={Shield}
+        />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <Card className="overflow-hidden border-border/70 shadow-sm">
+          <CardHeader className="border-b border-border/60 bg-muted/20">
+            <CardTitle>Yasaklı IP adresleri</CardTitle>
+            <CardDescription>
+              Form erişimi kapatılmış IP kayıtları. Kalıcı ve süreli banlar burada görünür.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {bannedIPs.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+                <p className="text-sm font-semibold text-foreground">Henüz yasaklı IP yok.</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Şüpheli yoğunluk oluştuğunda ilgili kayıtlar burada audit amaçlı saklanır.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {bannedIPs.map((ban) => (
+                  <div
+                    key={ban.id}
+                    className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 space-y-2">
+                        <p className="break-all font-mono text-sm font-semibold text-foreground">
+                          {ban.ip_address}
+                        </p>
+                        <p className="text-sm text-muted-foreground break-words">{ban.reason}</p>
+                      </div>
+                      <div className="flex flex-col items-start gap-2 sm:items-end">
+                        <span className="text-xs text-muted-foreground">
+                          Ban tarihi: {formatDate(ban.banned_at)}
+                        </span>
+                        {ban.expires_at ? (
+                          <Badge className="border-amber-200 bg-amber-50 text-amber-800">
+                            Bitiş: {formatDate(ban.expires_at)}
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive">Kalıcı ban</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden border-border/70 shadow-sm">
+          <CardHeader className="border-b border-border/60 bg-muted/20">
+            <CardTitle>Abuse logları</CardTitle>
+            <CardDescription>
+              Son 100 kayıt. Başarılı ve engellenen denemeler birlikte gösterilir ki karar bağlamı
+              kaybolmasın.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 sm:p-6">
+            {logs.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+                <p className="text-sm font-semibold text-foreground">Henüz abuse kaydı yok.</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Yeni form hareketleri oluştuğunda log satırları burada görünecek.
+                </p>
+              </div>
+            ) : (
+              logs.map((log) => {
+                const isSuccessful = log.reason === "success";
+
+                return (
+                  <article
+                    key={log.id}
+                    className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm transition-colors hover:border-border"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0 flex-1 space-y-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            className={cn(
+                              "border font-semibold",
+                              REASON_STYLES[log.reason] || REASON_STYLES.ip_banned
+                            )}
+                          >
+                            {log.reason}
+                          </Badge>
+                          <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                            {formatDate(log.created_at)}
+                          </span>
+                        </div>
+
+                        <div className="grid gap-2 text-sm sm:grid-cols-2 xl:grid-cols-3">
+                          <InfoBlock label="IP Adresi" value={log.ip_address} mono />
+                          <InfoBlock label="E-posta" value={log.email} />
+                          <InfoBlock
+                            label="İşlem önerisi"
+                            value={
+                              isSuccessful ? "İzlemeye devam et" : "Tekrar yoğunluğunu doğrula"
+                            }
+                          />
+                        </div>
+
+                        {log.user_agent && (
+                          <div className="rounded-xl bg-muted/30 px-3 py-2">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+                              User agent
+                            </p>
+                            <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">
+                              {log.user_agent}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="w-full lg:w-52 lg:flex-none">
+                        <div className="rounded-2xl border border-border/70 bg-muted/20 p-3">
+                          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+                            Aksiyon
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            Sadece başarısız kayıtlar için IP ban formu açılır. Böylece yanlış
+                            pozitif riskini azaltırız.
+                          </p>
+
+                          {!isSuccessful ? (
+                            <form
+                              action="/api/admin/security/ban"
+                              method="POST"
+                              className="mt-3 space-y-2"
+                            >
+                              <input type="hidden" name="ip" value={log.ip_address} />
+                              <input type="hidden" name="reason" value={`Abuse: ${log.reason}`} />
+                              <Button
+                                type="submit"
+                                variant="destructive"
+                                className="h-10 w-full rounded-xl text-sm font-semibold"
+                              >
+                                <Ban className="mr-2 size-4" />
+                                IP ban uygula
+                              </Button>
+                              <p className="text-[11px] text-muted-foreground">
+                                Ban sebebi otomatik olarak{" "}
+                                <span className="font-medium">Abuse: {log.reason}</span> şeklinde
+                                kaydedilir.
+                              </p>
+                            </form>
+                          ) : (
+                            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                              Başarılı istek. Bu kayıt gözlem amacıyla tutulur, ban aksiyonu
+                              gerekmez.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+      </section>
+    </main>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+}: {
+  title: string;
+  value: number | string;
+  description: string;
+  icon: typeof Shield;
+}) {
+  return (
+    <Card className="border-border/70 shadow-sm">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+        <div>
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <CardDescription className="mt-1 text-xs">{description}</CardDescription>
+        </div>
+        <div className="rounded-xl border border-border/70 bg-muted/20 p-2 text-muted-foreground">
+          <Icon className="size-4" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="break-words text-2xl font-bold text-foreground">{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InfoBlock({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="rounded-xl bg-muted/30 px-3 py-2">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-1 break-all text-sm font-medium text-foreground",
+          mono && "font-mono text-xs"
+        )}
+      >
+        {value}
+      </p>
     </div>
   );
 }

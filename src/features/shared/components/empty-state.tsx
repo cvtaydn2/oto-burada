@@ -33,7 +33,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-border/80 bg-card/75 px-4 py-16 text-center shadow-sm shadow-slate-950/5",
+        "flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-border/80 bg-card/75 px-4 py-14 text-center shadow-sm shadow-slate-950/5 sm:px-6 sm:py-16",
         className
       )}
       role="status"
@@ -66,7 +66,7 @@ export function EmptyState({
 
       {/* Actions */}
       {(primaryAction || secondaryAction) && (
-        <div className="flex w-full max-w-sm flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300 sm:flex-row">
+        <div className="flex w-full max-w-md flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300 sm:flex-row">
           {primaryAction && (
             <Button
               onClick={primaryAction.onClick}

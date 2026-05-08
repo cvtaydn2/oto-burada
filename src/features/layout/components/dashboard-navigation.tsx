@@ -41,26 +41,34 @@ export function DashboardNavigation({ variant = "tabs" }: DashboardNavigationPro
 
   if (variant === "sidebar") {
     return (
-      // Mobilde yatay scroll, md'de dikey liste
       <div className="overflow-x-auto md:overflow-visible">
-        <ul className="flex md:flex-col gap-0.5 px-2 py-1 min-w-max md:min-w-0">
+        <ul className="flex min-w-max gap-2 px-1 pb-1 md:min-w-0 md:flex-col md:gap-1 md:px-0 md:pb-0">
           {dashboardNavItems.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
-              <li key={item.href} className="shrink-0 md:shrink">
+              <li key={item.href} className="shrink-0 md:shrink md:[&:not(:last-child)]:mb-0.5">
                 <Link
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap md:whitespace-normal",
+                    "flex min-h-11 items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all whitespace-nowrap md:min-h-[unset] md:whitespace-normal md:px-3.5",
                     isActive
-                      ? "bg-primary/10 text-primary md:border-l-4 md:border-primary md:rounded-l-none"
-                      : "text-gray-600 hover:bg-gray-50 md:border-l-4 md:border-transparent hover:text-gray-800"
+                      ? "border-primary/20 bg-primary/10 text-primary shadow-sm shadow-primary/10"
+                      : "border-transparent bg-background/60 text-muted-foreground hover:border-border/80 hover:bg-muted/40 hover:text-foreground"
                   )}
                 >
-                  <Icon size={17} className={cn(isActive ? "text-primary" : "text-gray-400")} />
-                  <span>{item.label}</span>
+                  <span
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                      isActive
+                        ? "border-primary/20 bg-primary/10 text-primary"
+                        : "border-border/60 bg-background text-muted-foreground"
+                    )}
+                  >
+                    <Icon size={16} />
+                  </span>
+                  <span className="leading-tight">{item.label}</span>
                 </Link>
               </li>
             );
@@ -73,7 +81,7 @@ export function DashboardNavigation({ variant = "tabs" }: DashboardNavigationPro
   // tabs variant (horizontal)
   return (
     <nav aria-label="Dashboard menü" className="overflow-x-auto pb-2 scrollbar-hide">
-      <ul className="flex gap-3">
+      <ul className="flex gap-2.5">
         {dashboardNavItems.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -83,14 +91,17 @@ export function DashboardNavigation({ variant = "tabs" }: DashboardNavigationPro
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold transition-all",
+                  "inline-flex min-h-11 items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                    : "bg-white text-slate-500 hover:text-primary hover:bg-primary/5 border border-slate-200"
+                    ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "border-border/70 bg-card text-muted-foreground hover:border-primary/15 hover:bg-primary/5 hover:text-primary"
                 )}
               >
-                <Icon size={18} className={cn(isActive ? "text-white" : "text-slate-400")} />
-                <span>{item.label}</span>
+                <Icon
+                  size={17}
+                  className={cn(isActive ? "text-white" : "text-muted-foreground/70")}
+                />
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             </li>
           );

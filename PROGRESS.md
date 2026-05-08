@@ -1,5 +1,67 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 62. Marketplace Helper Surfaces Responsive UX Phase (Palette)
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Apply a production-safe responsive and density pass to remaining marketplace helper surfaces, compare/filter utility flows, and listing-detail secondary public components without changing business logic, backend contracts, schema, or dependencies.
+
+### 62.1 Applied Fixes
+- **Advanced filter page density polish ([advanced-filter-page.tsx](src/features/marketplace/components/advanced-filter-page.tsx)):** Tightened outer spacing on compact screens, improved header wrapping, widened mobile-safe CTA hit areas, and reworked the sticky apply bar so result counts and the primary action remain readable without cramped stacking.
+- **Pagination and compare utility ergonomics ([listing-pagination.tsx](src/features/marketplace/components/listing-pagination.tsx), [compare-share-button.tsx](src/features/marketplace/components/compare-share-button.tsx), [compare-remove-button.tsx](src/features/marketplace/components/compare-remove-button.tsx)):** Reduced pagination crowding with a more mobile-tolerant control row, improved horizontal overflow behavior for page chips, expanded compare share/remove hit areas, and strengthened small-screen button readability.
+- **Listing header and secondary action alignment ([listing-header.tsx](src/features/marketplace/components/listing-header.tsx), [listing-detail-actions.tsx](src/features/marketplace/components/listing-detail-actions.tsx), [favorite-button.tsx](src/features/marketplace/components/favorite-button.tsx)):** Elevated the header price/location hierarchy, converted detail actions into better-wrapping premium chips, and ensured favorite interactions preserve stronger tap targets and cleaner guest-sync guidance.
+- **Description and Q&A readability pass ([listing-description.tsx](src/features/marketplace/components/listing-description.tsx), [listing-questions.tsx](src/features/marketplace/components/listing-questions.tsx)):** Added calmer surfaced framing, clearer helper copy, more resilient text wrapping, improved answer/reply spacing, and mobile-safe form/action layouts for listing-side discussion flows.
+
+### 62.2 Validation
+- **Targeted ESLint (`npm run lint -- ...`)**: Passed with **0 errors and 0 warnings** for all touched helper-surface files.
+- **TypeScript (`npm run typecheck`)**: Passed with **0 errors**.
+
+### 62.3 Conscious Deferrals
+- No dashboard, admin, backend, schema, dependency, or business-logic changes were introduced in this phase.
+- The compare page table itself was left structurally intact; this pass focused on helper/action surfaces around compare and listing utility flows rather than introducing broader layout redesign.
+
+## 61. Admin Moderation Responsive & Safety UX Phase (Palette)
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Apply a production-safe admin-only UX pass across listings moderation, reports, audit, questions, and admin navigation to improve mobile readability, action safety, and visual hierarchy without changing backend contracts, schema, or dependencies.
+
+### 61.1 Applied Fixes
+- **Listings moderation flow ([page.tsx](src/app/admin/listings/page.tsx), [listings-moderation.tsx](src/features/admin-moderation/components/listings-moderation.tsx)):** Reframed the listings admin shell with clearer queue metrics, safer moderation guidance, mobile-first tab cards, and calmer surfaced grouping so pending, approved, and history states feel like one coherent workflow instead of fragmented surfaces.
+- **Inventory safety & responsive inventory view ([inventory-table.tsx](src/features/admin-moderation/components/inventory-table.tsx)):** Replaced desktop-only density with a dual mobile-card/desktop-table presentation, separated preview versus destructive actions more clearly, and introduced confirmation dialogs for approve, archive, reject, and permanent delete flows to reduce accidental admin actions.
+- **Reports moderation safety pass ([page.tsx](src/app/admin/reports/page.tsx), [reports-moderation.tsx](src/features/admin-moderation/components/reports-moderation.tsx)):** Improved report summary hierarchy, sticky mobile-friendly filter/support side panels, clearer risk framing, denser but calmer report cards, textarea token alignment, and confirmation gating for review/resolve/dismiss status changes.
+- **Audit and questions responsive pass ([page.tsx](src/app/admin/audit/page.tsx), [page.tsx](src/app/admin/questions/page.tsx), [questions-moderation.tsx](src/features/admin-moderation/components/questions-moderation.tsx)):** Converted audit into a mobile-readable card stack alongside the existing desktop table, improved search and summary hierarchy, tightened question moderation page density, and replaced fragile `confirm()` destructive question actions with production-safe alert dialogs.
+- **Admin shell/navigation consistency ([admin-sidebar.tsx](src/features/layout/components/admin-sidebar.tsx), [admin-mobile-nav.tsx](src/features/layout/components/admin-mobile-nav.tsx)):** Reduced token drift by aligning spacing, borders, rounded surfaces, and labels, while making the mobile drawer header and sidebar items more scannable with short descriptions and clearer active-state structure.
+
+### 61.2 Validation
+- **Targeted ESLint**: Passed with **0 errors and 0 warnings** for all touched admin files.
+- **TypeScript (`npm run typecheck`)**: Passed with **0 errors**.
+
+### 61.3 Conscious Deferrals
+- No backend, schema, dependency, or business-logic contract changes were introduced in this phase.
+- Existing admin data-fetching and moderation services were preserved; this pass focused strictly on responsive density, hierarchy, and action-safety UX.
+
+## 60. Public Marketplace Mobile Responsive Phase 1 (Palette)
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Apply production-safe mobile/responsive density improvements to the public marketplace listings and listing-detail experience without changing business logic, backend contracts, or product architecture.
+
+### 60.1 Applied Fixes
+- **Listings page shell & density ([listings-page-client.tsx](src/features/marketplace/components/listings-page-client.tsx)):** Reduced outer padding, grouped the header/control area into a calmer surfaced shell, tightened result/list spacing, and slightly reduced card-grid gaps to improve scan speed and reduce mobile vertical bloat.
+- **Listings controls & filter clarity ([marketplace-controls.tsx](src/features/marketplace/components/marketplace-controls.tsx), [listings-results-summary.tsx](src/features/marketplace/components/listings-results-summary.tsx), [active-filter-tags.tsx](src/features/marketplace/components/active-filter-tags.tsx)):** Made sort controls full-width on mobile, improved page-size framing, converted active filters into a compact surfaced group with visible count, and reduced control fragmentation across small screens.
+- **Listing detail progressive disclosure ([page.tsx](src/app/(public)/(marketplace)/listing/[slug]/page.tsx)):** Tightened page spacing, added a horizontal quick-jump chip row for key sections, reduced section padding, and improved content rhythm to reduce excessive scrolling on mobile while preserving SEO-safe server rendering.
+- **Detail CTA hierarchy ([listing-price-box.tsx](src/features/marketplace/components/listing-detail/listing-price-box.tsx), [mobile-sticky-actions.tsx](src/features/marketplace/components/mobile-sticky-actions.tsx), [contact-actions.tsx](src/features/marketplace/components/contact-actions.tsx)):** Moved heavy contact interactions behind the mobile sticky bar, added clear mobile CTA guidance, hid secondary/denser contact affordances on small screens, and made the sticky CTA module more structured and readable.
+- **Detail card/layout polish ([listing-info-card.tsx](src/features/marketplace/components/listing-detail/listing-info-card.tsx), [listing-seller-info.tsx](src/features/marketplace/components/listing-detail/listing-seller-info.tsx), [listing-description-section.tsx](src/features/marketplace/components/listing-detail/listing-description-section.tsx), [listing-specs.tsx](src/features/marketplace/components/listing-detail/listing-specs.tsx), [listing-gallery.tsx](src/features/marketplace/components/listing-gallery.tsx)):** Reduced title/meta density, softened seller/spec card spacing, improved description readability, hid thumbnail overload on small screens, and made gallery overlay controls wrap more gracefully on compact viewports.
+
+### 60.2 Validation
+- **Targeted ESLint (`npm run lint -- ...`)**: Passed with **0 errors and 0 warnings** for all touched marketplace/detail files.
+- **TypeScript (`npm run typecheck`)**: Passed with **0 errors**.
+
+### 60.3 Conscious Deferrals
+- No business logic, Supabase/backend/schema, admin, or dashboard changes were introduced in this phase.
+- No visual redesign or dependency additions were introduced; improvements stayed within the existing component system and UX language.
+
 ## 59. Premium Frontend UX, Accessibility & Design Consistency Overhaul (Palette)
 
 **Date**: 2026-05-09

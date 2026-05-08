@@ -14,43 +14,46 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
   const activeDopings = getListingDopingDisplayItems(listing);
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5">
-      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-        {/* Title Section */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+    <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-start gap-2">
+            <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">
               {listing.brand}{" "}
               <span className="font-medium text-muted-foreground">{listing.model}</span>
             </h1>
             {activeDopings.slice(0, 3).map((doping) => (
-              <Badge key={doping.type} className="bg-amber-500 text-white text-xs font-medium">
-                <Sparkles className="w-3 h-3 mr-1" />
+              <Badge
+                key={doping.type}
+                className="min-h-7 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-semibold text-white"
+              >
+                <Sparkles className="mr-1 size-3" />
                 {doping.label}
               </Badge>
             ))}
             {isAdvantageous && (
-              <Badge className="bg-emerald-500 text-white text-xs font-medium">
+              <Badge className="min-h-7 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-semibold text-white">
                 Avantajlı Fiyat
               </Badge>
             )}
           </div>
-          <p className="text-base text-muted-foreground">{listing.title}</p>
-
-          {/* Location */}
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-muted-foreground">
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+            {listing.title}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 px-3 py-1 text-primary/90">
+              <MapPin className="size-4 text-primary" />
               {listing.city} / {listing.district}
             </span>
           </div>
         </div>
 
-        {/* Price Section */}
-        <div className="lg:text-right">
-          <div className="text-3xl font-bold text-primary">
+        <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 lg:min-w-[180px] lg:text-right">
+          <div className="text-2xl font-bold text-primary sm:text-3xl">
             {formatPrice(listing.price)}
-            <span className="text-lg font-semibold text-muted-foreground/70 ml-1">TL</span>
+            <span className="ml-1 text-base font-semibold text-muted-foreground/70 sm:text-lg">
+              TL
+            </span>
           </div>
         </div>
       </div>

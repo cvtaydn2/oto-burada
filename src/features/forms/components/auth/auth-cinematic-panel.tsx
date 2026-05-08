@@ -11,13 +11,15 @@ interface FeatureItemProps {
 
 function FeatureItem({ icon, title, desc }: FeatureItemProps) {
   return (
-    <div className="flex gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors group">
-      <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center text-white/50 group-hover:text-white transition-colors">
-        {icon}
-      </div>
-      <div>
-        <h3 className="text-sm font-bold tracking-tight">{title}</h3>
-        <p className="text-xs text-slate-500 font-medium leading-relaxed">{desc}</p>
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+      <div className="flex items-start gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+          {icon}
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-white">{title}</h3>
+          <p className="mt-1 text-sm leading-6 text-slate-300">{desc}</p>
+        </div>
       </div>
     </div>
   );
@@ -25,65 +27,61 @@ function FeatureItem({ icon, title, desc }: FeatureItemProps) {
 
 export function AuthCinematicPanel() {
   return (
-    <section className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-slate-950 px-16 py-16 text-white">
+    <section className="relative hidden overflow-hidden bg-slate-950 px-14 py-14 text-white lg:flex lg:w-1/2 lg:flex-col lg:justify-between xl:px-16 xl:py-16">
       <div
-        className="absolute inset-0 bg-cover bg-center scale-105 transition-transform duration-1000"
+        className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.6)), url("/images/hero_bg.png")',
+            'linear-gradient(to right, rgba(2, 6, 23, 0.94), rgba(2, 6, 23, 0.72)), url("/images/hero_bg.png")',
         }}
       />
 
-      {/* Abstract Overlays */}
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px]" />
+      <div className="absolute inset-0">
+        <div className="absolute right-[-10%] top-[-10%] h-[45%] w-[45%] rounded-full bg-blue-600/20 blur-[120px]" />
+        <div className="absolute bottom-[-12%] left-[-10%] h-[45%] w-[45%] rounded-full bg-indigo-600/12 blur-[120px]" />
       </div>
 
       <div className="relative z-10">
         <Link
           href="/"
-          className="inline-flex items-center gap-3 text-2xl font-bold tracking-tighter text-white"
+          className="inline-flex items-center gap-3 text-2xl font-bold tracking-tight text-white"
         >
-          <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-            <CarFront size={22} className="text-white" />
+          <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
+            <CarFront size={22} />
           </div>
           OtoBurada
         </Link>
       </div>
 
-      <div className="relative z-10 max-w-xl space-y-8">
+      <div className="relative z-10 max-w-xl space-y-7">
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/40">
-            GÜVENLİ PAZARYERİ
+          <div className="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-white/80">
+            Güvenli araç pazarı
           </div>
-          <h1 className="text-5xl font-bold leading-[1.2] tracking-tight">
-            İkinci Elin <span className="text-primary">En Temiz</span> Hali.
+          <h1 className="text-4xl font-bold leading-tight tracking-tight xl:text-5xl">
+            Araç ilanlarını daha sade, güvenilir ve mobil odaklı bir deneyimle yönetin.
           </h1>
+          <p className="max-w-md text-base leading-7 text-slate-300">
+            OtoBurada; moderasyon, net bilgi hiyerarşisi ve WhatsApp öncelikli iletişimle ikinci el
+            araç deneyimini daha anlaşılır hale getirir.
+          </p>
         </div>
 
-        <p className="max-w-md text-lg font-medium leading-relaxed text-slate-400">
-          Binlerce güncel ilan, şeffaf ekspertiz verileri ve güven odaklı moderasyon ile
-          hayalinizdeki araca ulaşın.
-        </p>
-
-        <div className="flex flex-col gap-3">
+        <div className="space-y-3">
           <FeatureItem
             icon={<ShieldCheck size={18} />}
-            title="Resmi Ekspertiz"
-            desc="Sadece doğrulanmış raporlar yayına alınır"
+            title="Moderasyon destekli güven"
+            desc="İlanlar daha kontrollü şekilde incelenir, kullanıcılar daha net bir pazar yeri deneyimi yaşar."
           />
           <FeatureItem
             icon={<BadgeCheck size={18} />}
-            title="Hızlı WhatsApp"
-            desc="Fiyat teklifi ve randevu tek tıkla elinizde"
+            title="Hızlı iletişim akışı"
+            desc="Satıcıya ulaşmak ve ilanlarla ilgilenmek için sade, mobil uyumlu temas noktaları sunar."
           />
         </div>
       </div>
 
-      <div className="relative z-10 flex items-center gap-8 text-[10px] font-medium uppercase tracking-widest text-slate-500">
-        <span>© 2026 OtoBurada</span>
-      </div>
+      <div className="relative z-10 text-xs font-medium text-slate-400">© 2026 OtoBurada</div>
     </section>
   );
 }

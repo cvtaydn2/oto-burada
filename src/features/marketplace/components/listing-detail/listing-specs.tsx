@@ -24,13 +24,13 @@ export function ListingSpecs({ year, mileage, fuelType, transmission }: ListingS
   ];
 
   return (
-    <div className="mb-6 sm:mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+    <div className="mb-5 grid grid-cols-2 gap-2.5 sm:mb-6 sm:grid-cols-4 sm:gap-3 lg:gap-4">
       {specs.map(({ icon: Icon, label, value }) => (
         <div
           key={label}
-          className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center shadow-sm"
+          className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-3 text-center shadow-sm sm:p-4"
         >
-          <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+          <div className="mb-2 flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground sm:size-10">
             <Icon size={18} />
           </div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

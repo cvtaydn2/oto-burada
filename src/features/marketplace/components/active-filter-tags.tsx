@@ -27,134 +27,140 @@ export function ActiveFilterTags({
   if (activeFiltersCount === 0) return null;
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-3">
-      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest pl-1">
-        Aktif Süzgeçler:
-      </span>
+    <div className="rounded-2xl border border-border/70 bg-card/70 p-3 sm:p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="pl-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          Aktif Süzgeçler · {activeFiltersCount}
+        </span>
+        <Button
+          onClick={handleReset}
+          className="text-[10px] font-bold uppercase tracking-widest text-destructive hover:underline"
+        >
+          Temizle
+        </Button>
+      </div>
 
-      {filters.brand && (
-        <FilterTag
-          label={filters.brand}
-          onRemove={() => {
-            const nextFilters = {
-              ...filters,
-              brand: undefined,
-              carTrim: undefined,
-              model: undefined,
-              page: 1,
-            };
-            setFilters(nextFilters);
-            applyFilters(nextFilters, true);
-          }}
-        />
-      )}
-      {filters.model && (
-        <FilterTag label={filters.model} onRemove={() => handleFilterChange("model", undefined)} />
-      )}
-      {filters.carTrim && (
-        <FilterTag
-          label={filters.carTrim}
-          onRemove={() => handleFilterChange("carTrim", undefined)}
-        />
-      )}
-      {filters.city && (
-        <FilterTag
-          label={filters.city}
-          onRemove={() => {
-            const nextFilters = { ...filters, city: undefined, district: undefined, page: 1 };
-            setFilters(nextFilters);
-            applyFilters(nextFilters, true);
-          }}
-        />
-      )}
-      {filters.district && (
-        <FilterTag
-          label={filters.district}
-          onRemove={() => handleFilterChange("district", undefined)}
-        />
-      )}
-      {filters.fuelType && (
-        <FilterTag
-          label={
-            filters.fuelType === "benzin"
-              ? "Benzin"
-              : filters.fuelType === "dizel"
-                ? "Dizel"
-                : filters.fuelType
-          }
-          onRemove={() => handleFilterChange("fuelType", undefined)}
-        />
-      )}
-      {filters.transmission && (
-        <FilterTag
-          label={
-            filters.transmission === "otomatik"
-              ? "Otomatik"
-              : filters.transmission === "manuel"
-                ? "Manuel"
-                : "Yarı Otomatik"
-          }
-          onRemove={() => handleFilterChange("transmission", undefined)}
-        />
-      )}
-      {(filters.minPrice || filters.maxPrice) && (
-        <FilterTag
-          label={`${filters.minPrice ? formatTL(filters.minPrice) : "0"} — ${filters.maxPrice ? formatTL(filters.maxPrice) : "∞"}`}
-          onRemove={() => {
-            const f = { ...filters, minPrice: undefined, maxPrice: undefined, page: 1 };
-            setFilters(f);
-            applyFilters(f, true);
-          }}
-        />
-      )}
-      {(filters.minYear || filters.maxYear) && (
-        <FilterTag
-          label={`Model ${filters.minYear ?? "eski"}-${filters.maxYear ?? "güncel"}`}
-          onRemove={() => {
-            const nextFilters = { ...filters, minYear: undefined, maxYear: undefined, page: 1 };
-            setFilters(nextFilters);
-            applyFilters(nextFilters, true);
-          }}
-        />
-      )}
-      {filters.maxMileage !== undefined && (
-        <FilterTag
-          label={`Max ${filters.maxMileage.toLocaleString("tr-TR")} km`}
-          onRemove={() => handleFilterChange("maxMileage", undefined)}
-        />
-      )}
-      {filters.maxTramer !== undefined && (
-        <FilterTag
-          label={`Max ${filters.maxTramer.toLocaleString("tr-TR")} TL tramer`}
-          onRemove={() => handleFilterChange("maxTramer", undefined)}
-        />
-      )}
-      {filters.query && (
-        <FilterTag
-          label={`"${filters.query}"`}
-          onRemove={() => handleFilterChange("query", undefined)}
-        />
-      )}
-      {filters.hasExpertReport && (
-        <FilterTag
-          label="Ekspertizli"
-          onRemove={() => handleFilterChange("hasExpertReport", undefined)}
-        />
-      )}
-
-      <Button
-        onClick={handleReset}
-        className="text-[10px] font-bold text-destructive hover:underline uppercase tracking-widest pl-2"
-      >
-        Temizle
-      </Button>
+      <div className="flex flex-wrap items-center gap-2.5">
+        {filters.brand && (
+          <FilterTag
+            label={filters.brand}
+            onRemove={() => {
+              const nextFilters = {
+                ...filters,
+                brand: undefined,
+                carTrim: undefined,
+                model: undefined,
+                page: 1,
+              };
+              setFilters(nextFilters);
+              applyFilters(nextFilters, true);
+            }}
+          />
+        )}
+        {filters.model && (
+          <FilterTag
+            label={filters.model}
+            onRemove={() => handleFilterChange("model", undefined)}
+          />
+        )}
+        {filters.carTrim && (
+          <FilterTag
+            label={filters.carTrim}
+            onRemove={() => handleFilterChange("carTrim", undefined)}
+          />
+        )}
+        {filters.city && (
+          <FilterTag
+            label={filters.city}
+            onRemove={() => {
+              const nextFilters = { ...filters, city: undefined, district: undefined, page: 1 };
+              setFilters(nextFilters);
+              applyFilters(nextFilters, true);
+            }}
+          />
+        )}
+        {filters.district && (
+          <FilterTag
+            label={filters.district}
+            onRemove={() => handleFilterChange("district", undefined)}
+          />
+        )}
+        {filters.fuelType && (
+          <FilterTag
+            label={
+              filters.fuelType === "benzin"
+                ? "Benzin"
+                : filters.fuelType === "dizel"
+                  ? "Dizel"
+                  : filters.fuelType
+            }
+            onRemove={() => handleFilterChange("fuelType", undefined)}
+          />
+        )}
+        {filters.transmission && (
+          <FilterTag
+            label={
+              filters.transmission === "otomatik"
+                ? "Otomatik"
+                : filters.transmission === "manuel"
+                  ? "Manuel"
+                  : "Yarı Otomatik"
+            }
+            onRemove={() => handleFilterChange("transmission", undefined)}
+          />
+        )}
+        {(filters.minPrice || filters.maxPrice) && (
+          <FilterTag
+            label={`${filters.minPrice ? formatTL(filters.minPrice) : "0"} — ${filters.maxPrice ? formatTL(filters.maxPrice) : "∞"}`}
+            onRemove={() => {
+              const f = { ...filters, minPrice: undefined, maxPrice: undefined, page: 1 };
+              setFilters(f);
+              applyFilters(f, true);
+            }}
+          />
+        )}
+        {(filters.minYear || filters.maxYear) && (
+          <FilterTag
+            label={`Model ${filters.minYear ?? "eski"}-${filters.maxYear ?? "güncel"}`}
+            onRemove={() => {
+              const nextFilters = { ...filters, minYear: undefined, maxYear: undefined, page: 1 };
+              setFilters(nextFilters);
+              applyFilters(nextFilters, true);
+            }}
+          />
+        )}
+        {filters.maxMileage !== undefined && (
+          <FilterTag
+            label={`Max ${filters.maxMileage.toLocaleString("tr-TR")} km`}
+            onRemove={() => handleFilterChange("maxMileage", undefined)}
+          />
+        )}
+        {filters.maxTramer !== undefined && (
+          <FilterTag
+            label={`Max ${filters.maxTramer.toLocaleString("tr-TR")} TL tramer`}
+            onRemove={() => handleFilterChange("maxTramer", undefined)}
+          />
+        )}
+        {filters.query && (
+          <FilterTag
+            label={`"${filters.query}"`}
+            onRemove={() => handleFilterChange("query", undefined)}
+          />
+        )}
+        {filters.hasExpertReport && (
+          <FilterTag
+            label="Ekspertizli"
+            onRemove={() => handleFilterChange("hasExpertReport", undefined)}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <div className="group flex items-center gap-2 rounded-xl border border-border bg-card pl-3 pr-1.5 py-1.5 text-[10px] font-bold text-foreground uppercase tracking-widest shadow-sm hover:border-foreground/30 transition-all">
+    <div className="group flex items-center gap-2 rounded-xl border border-border bg-background pl-3 pr-1.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-foreground shadow-sm transition-all hover:border-foreground/30">
       <span>{label}</span>
       <Button
         onClick={onRemove}

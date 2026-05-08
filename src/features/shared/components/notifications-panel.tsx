@@ -179,36 +179,38 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-card border border-border/60 p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Bildirimler</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {unreadCount} okunmamış bildirimin var
+      <section className="flex flex-col gap-4 rounded-3xl border border-border/60 bg-card p-5 shadow-sm sm:p-7 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Bildirimler</h1>
+          <p className="text-sm text-muted-foreground">
+            {unreadCount > 0
+              ? `${unreadCount} okunmamış bildirimin var.`
+              : "Tüm bildirimlerin güncel. Yeni hareketler burada görünecek."}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
           <Button
             onClick={() => setShowUnreadOnly((current) => !current)}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+              "h-10 rounded-xl px-4 text-sm font-medium transition-all",
               showUnreadOnly
                 ? "bg-indigo-100 text-indigo-700"
                 : "bg-muted text-muted-foreground hover:bg-slate-200"
             )}
           >
-            {showUnreadOnly ? "Tümü" : "Okunmamış"}
+            {showUnreadOnly ? "Tüm bildirimler" : "Sadece okunmamışlar"}
           </Button>
           <Button
             onClick={() => void markAllAsRead()}
             disabled={activeAction === "mark-all" || unreadCount === 0}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 text-sm font-medium text-white transition-all hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {activeAction === "mark-all" ? (
               <LoaderCircle size={16} className="animate-spin" />
             ) : (
               <Check size={16} />
             )}
-            Tümünü Oku
+            Tümünü okundu yap
           </Button>
         </div>
       </section>
@@ -219,7 +221,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
         </p>
       ) : null}
 
-      <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
         {filteredItems.length > 0 ? (
           filteredItems.map((notif, idx) => {
             const isLast = idx === filteredItems.length - 1;
@@ -230,75 +232,83 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
               <div
                 key={notif.id}
                 className={cn(
-                  "flex gap-4 p-5 transition-all hover:bg-muted/30 sm:p-6",
+                  "flex flex-col gap-4 p-4 transition-all hover:bg-muted/30 sm:p-5 lg:flex-row lg:items-start",
                   !isLast && "border-b border-border/50",
                   !notif.read && "bg-indigo-50/50"
                 )}
               >
-                <div
-                  className={cn(
-                    "flex size-12 shrink-0 items-center justify-center rounded-2xl",
-                    getIconColor(notif.type)
-                  )}
-                >
-                  {getIconForType(notif.type)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <h4
-                        className={cn(
-                          "truncate pr-4 text-base",
-                          !notif.read
-                            ? "font-bold text-foreground"
-                            : "font-semibold text-muted-foreground"
-                        )}
-                      >
-                        {notif.title}
-                      </h4>
-                      <span className="mt-1 block shrink-0 whitespace-nowrap text-xs font-medium text-muted-foreground/70">
-                        {formatDate(notif.createdAt)}
-                      </span>
-                    </div>
+                <div className="flex items-start gap-3 sm:gap-4 lg:min-w-0 lg:flex-1">
+                  <div
+                    className={cn(
+                      "flex size-11 shrink-0 items-center justify-center rounded-2xl sm:size-12",
+                      getIconColor(notif.type)
+                    )}
+                  >
+                    {getIconForType(notif.type)}
                   </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                      <div className="min-w-0">
+                        <h4
+                          className={cn(
+                            "text-base leading-snug sm:pr-4",
+                            !notif.read
+                              ? "font-bold text-foreground"
+                              : "font-semibold text-muted-foreground"
+                          )}
+                        >
+                          {notif.title}
+                        </h4>
+                        <span className="mt-1 block text-xs font-medium text-muted-foreground/70">
+                          {formatDate(notif.createdAt)}
+                        </span>
+                      </div>
+                    </div>
 
-                  <p className="text-sm text-muted-foreground leading-relaxed">{notif.message}</p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{notif.message}</p>
 
-                  {notif.href ? (
-                    <Link
-                      href={notif.href}
-                      className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline"
-                    >
-                      Detayı aç
-                    </Link>
-                  ) : null}
+                    {notif.href ? (
+                      <Link
+                        href={notif.href}
+                        className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline"
+                      >
+                        Detayı aç
+                      </Link>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className="flex items-center gap-2 lg:ml-auto lg:pt-0.5">
                   {!notif.read ? (
                     <Button
                       type="button"
                       onClick={() => void markSingleAsRead(notif.id)}
                       disabled={isReading || isDeleting}
-                      className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                      className="h-10 rounded-xl px-3 text-muted-foreground/70 transition-all hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
                       title="Okundu olarak işaretle"
                     >
                       {isReading ? (
                         <LoaderCircle size={16} className="animate-spin" />
                       ) : (
-                        <Check size={16} />
+                        <>
+                          <Check size={16} />
+                          <span className="ml-2 text-xs font-medium">Okundu</span>
+                        </>
                       )}
                     </Button>
                   ) : null}
                   <Button
                     onClick={() => void deleteNotification(notif.id)}
                     disabled={isReading || isDeleting}
-                    className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-red-500 hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-10 rounded-xl px-3 text-muted-foreground/70 transition-all hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
                     title="Sil"
                   >
                     {isDeleting ? (
                       <LoaderCircle size={16} className="animate-spin" />
                     ) : (
-                      <Trash2 size={16} />
+                      <>
+                        <Trash2 size={16} />
+                        <span className="ml-2 text-xs font-medium">Sil</span>
+                      </>
                     )}
                   </Button>
                 </div>
@@ -306,13 +316,14 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
             );
           })
         ) : (
-          <div className="p-12 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+          <div className="px-6 py-12 text-center sm:px-8">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
               <Bell size={32} className="text-muted-foreground/70" />
             </div>
-            <h3 className="text-lg font-bold text-foreground mb-2">Bildirim yok</h3>
-            <p className="text-muted-foreground">
-              Favori, moderasyon ve rapor olayları burada görünecek.
+            <h3 className="mb-2 text-lg font-bold text-foreground">Bildirim yok</h3>
+            <p className="mx-auto max-w-md text-sm leading-6 text-muted-foreground">
+              Favori, moderasyon ve rapor akışları hazır olduğunda tüm güncellemeler burada
+              görünecek.
             </p>
           </div>
         )}
