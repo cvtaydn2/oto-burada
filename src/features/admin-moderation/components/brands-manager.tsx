@@ -1,7 +1,4 @@
-"use client";
-
 import {
-  AlertTriangle,
   Car,
   CheckCircle2,
   ChevronRight,
@@ -34,9 +31,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/features/ui/components/dropdown-menu";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
 
+import {
+  AddBrandModal,
+  AddModelModal,
+  DeleteBrandModal,
+  EditBrandModal,
+} from "./brands/brand-modals";
 import { ModelsManager } from "./models-manager";
 
 interface Brand {
@@ -57,10 +58,10 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
   const router = useRouter();
   const [brands, setBrands] = useState(initialBrands);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [addBrandModal, setAddBrandModal] = useState(false);
+  const [addBrandModalOpen, setAddBrandModalOpen] = useState(false);
   const [newBrandName, setNewBrandName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [addModelModal, setAddModelModal] = useState<Brand | null>(null);
+  const [addModelModalBrand, setAddModelModalBrand] = useState<Brand | null>(null);
   const [newModelName, setNewModelName] = useState("");
   const [isAddingModel, setIsAddingModel] = useState(false);
   const [selectedBrandForModels, setSelectedBrandForModels] = useState<Brand | null>(null);
@@ -123,13 +124,12 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       toast.error("Marka adı gereklidir");
       return;
     }
-
     setIsAdding(true);
     try {
       await addBrand(newBrandName.trim());
       toast.success(`${newBrandName} markası eklendi`);
       setNewBrandName("");
-      setAddBrandModal(false);
+      setAddBrandModalOpen(false);
       router.refresh();
     } catch (err) {
       captureError(err, "handleAddBrand");
@@ -139,18 +139,17 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
     }
   };
 
-  const handleAddModel = async (brand: Brand) => {
-    if (!newModelName.trim()) {
+  const handleAddModel = async () => {
+    if (!addModelModalBrand || !newModelName.trim()) {
       toast.error("Model adı gereklidir");
       return;
     }
-
     setIsAddingModel(true);
     try {
-      await createModel(brand.id, newModelName.trim());
+      await createModel(addModelModalBrand.id, newModelName.trim());
       toast.success(`${newModelName} modeli eklendi`);
       setNewModelName("");
-      setAddModelModal(null);
+      setAddModelModalBrand(null);
     } catch (err) {
       captureError(err, "handleAddModel");
       toast.error("Model eklenemedi");
@@ -195,8 +194,8 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
+                <td className="px-6 py-5 text-xs font-bold text-slate-400 italic">
+                  <div className="flex items-center gap-2">
                     /{brand.slug}
                     <ExternalLink
                       size={12}
@@ -258,15 +257,13 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                         onClick={() => setEditingBrand(brand)}
                         className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
                       >
-                        <Edit size={14} />
-                        DÜZENLE
+                        <Edit size={14} /> DÜZENLE
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setAddModelModal(brand)}
+                        onClick={() => setAddModelModalBrand(brand)}
                         className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
                       >
-                        <Plus size={14} />
-                        MODEL EKLE
+                        <Plus size={14} /> MODEL EKLE
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-slate-50" />
                       <DropdownMenuItem
@@ -286,10 +283,9 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                       <DropdownMenuSeparator className="bg-slate-50" />
                       <DropdownMenuItem
                         onClick={() => setDeleteId(brand.id)}
-                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50 transition-all font-bold"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50 transition-all"
                       >
-                        <Trash2 size={14} />
-                        SİL
+                        <Trash2 size={14} /> SİL
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -300,118 +296,53 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
         </table>
       </div>
 
-      {/* Add Brand Button - Only show when not in table-only mode */}
       {!showTableOnly && (
         <div className="p-6 border-t border-slate-100">
           <Button
-            onClick={() => setAddBrandModal(true)}
+            onClick={() => setAddBrandModalOpen(true)}
             className="w-full rounded-xl border border-dashed border-slate-200 bg-slate-50 text-slate-500 font-bold hover:bg-white hover:border-blue-300 hover:text-blue-600 transition-all py-6"
           >
-            <Plus size={18} className="mr-2" />
-            YENİ MARKA EKLE
+            <Plus size={18} className="mr-2" /> YENİ MARKA EKLE
           </Button>
         </div>
       )}
 
-      {/* Add Brand Modal */}
-      {addBrandModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                <Plus size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Yeni Marka Ekle</h3>
-                <p className="text-sm text-slate-500">Araç veritabanına yeni marka ekleyin</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Marka Adı
-                </Label>
-                <Input
-                  value={newBrandName}
-                  onChange={(e) => setNewBrandName(e.target.value)}
-                  placeholder="Örn: Tesla"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl border-slate-200 font-bold"
-                onClick={() => {
-                  setAddBrandModal(false);
-                  setNewBrandName("");
-                }}
-              >
-                İptal
-              </Button>
-              <Button
-                className="flex-1 rounded-xl bg-blue-600 font-bold hover:bg-blue-700"
-                onClick={handleAddBrand}
-                disabled={isAdding}
-              >
-                {isAdding ? <Loader2 className="animate-spin" size={18} /> : "Ekle"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddBrandModal
+        isOpen={addBrandModalOpen}
+        onClose={() => {
+          setAddBrandModalOpen(false);
+          setNewBrandName("");
+        }}
+        onAdd={handleAddBrand}
+        name={newBrandName}
+        setName={setNewBrandName}
+        loading={isAdding}
+      />
+      <EditBrandModal
+        brand={editingBrand}
+        onClose={() => setEditingBrand(null)}
+        onUpdate={handleUpdateBrand}
+        onChangeName={(val) => editingBrand && setEditingBrand({ ...editingBrand, name: val })}
+        loading={isAdding}
+      />
+      <DeleteBrandModal
+        id={deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDeleteBrandConfirmed}
+        loading={isDeleting}
+      />
+      <AddModelModal
+        brand={addModelModalBrand}
+        onClose={() => {
+          setAddModelModalBrand(null);
+          setNewModelName("");
+        }}
+        onAdd={handleAddModel}
+        name={newModelName}
+        setName={setNewModelName}
+        loading={isAddingModel}
+      />
 
-      {/* Add Model Modal */}
-      {addModelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                <Car size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Yeni Model Ekle</h3>
-                <p className="text-sm text-slate-500">{addModelModal.name} için yeni model</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Model Adı
-                </Label>
-                <Input
-                  value={newModelName}
-                  onChange={(e) => setNewModelName(e.target.value)}
-                  placeholder="Örn: Model S"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl border-slate-200 font-bold"
-                onClick={() => {
-                  setAddModelModal(null);
-                  setNewModelName("");
-                }}
-              >
-                İptal
-              </Button>
-              <Button
-                className="flex-1 rounded-xl bg-blue-600 font-bold hover:bg-blue-700"
-                onClick={() => handleAddModel(addModelModal)}
-                disabled={isAddingModel}
-              >
-                {isAddingModel ? <Loader2 className="animate-spin" size={18} /> : "Ekle"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Models Slide Panel Overlay */}
       {selectedBrandForModels && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div
@@ -423,88 +354,6 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
               brand={selectedBrandForModels}
               onClose={() => setSelectedBrandForModels(null)}
             />
-          </div>
-        </div>
-      )}
-      {/* Edit Brand Modal */}
-      {editingBrand && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                <Edit size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Markayı Düzenle</h3>
-                <p className="text-sm text-slate-500">
-                  {editingBrand.name} bilgilerini güncelleyin
-                </p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Marka Adı
-                </Label>
-                <Input
-                  value={editingBrand.name}
-                  onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })}
-                  placeholder="Marka adı"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl border-slate-200 font-bold"
-                onClick={() => setEditingBrand(null)}
-              >
-                İptal
-              </Button>
-              <Button
-                className="flex-1 rounded-xl bg-blue-600 font-bold hover:bg-blue-700 text-white"
-                onClick={handleUpdateBrand}
-                disabled={isAdding}
-              >
-                {isAdding ? <Loader2 className="animate-spin" size={18} /> : "Güncelle"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center gap-4 text-rose-600">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100">
-                <AlertTriangle size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Markayı Sil?</h3>
-                <p className="text-sm text-slate-500">
-                  Bu işlem geri alınamaz ve markaya bağlı her şey (modeller vb.) etkilenebilir.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl border-slate-200 font-bold"
-                onClick={() => setDeleteId(null)}
-              >
-                İptal
-              </Button>
-              <Button
-                className="flex-1 rounded-xl bg-rose-600 font-bold hover:bg-rose-700 text-white"
-                onClick={handleDeleteBrandConfirmed}
-                disabled={isDeleting}
-              >
-                {isDeleting ? <Loader2 className="animate-spin" size={18} /> : "SİL"}
-              </Button>
-            </div>
           </div>
         </div>
       )}

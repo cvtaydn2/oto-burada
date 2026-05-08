@@ -1,5 +1,3 @@
-"use client";
-
 import { Check, ChevronDown, Info, RotateCcw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
@@ -11,6 +9,8 @@ import {
   carPartLabels,
   carParts,
 } from "@/lib/domain";
+
+import { CarDiagram } from "./damage/car-diagram";
 
 interface DamageSelectorProps {
   value: Record<string, string>;
@@ -58,7 +58,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
   const handleStatusChange = (part: string, status: string) => {
     const newValue = { ...value, [part]: status };
     if (status === "orijinal") {
-      delete newValue[part]; // Default to original by removing from record
+      delete newValue[part];
     }
     onChange(newValue);
     setActivePart(null);
@@ -99,199 +99,12 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Visual Car Diagram */}
         <div className="relative flex items-center justify-center rounded-2xl border border-border/50 bg-muted/50 p-6 sm:p-10">
-          <svg viewBox="0 0 240 460" className="h-auto w-full max-w-[220px] drop-shadow-sm">
-            {/* Base Car Body Shadow */}
-            <path
-              d="M50,40 Q50,20 120,20 Q190,20 190,40 L195,100 L200,300 Q200,440 120,440 Q40,440 40,300 L45,100 Z"
-              fill="rgba(0,0,0,0.05)"
-            />
-
-            {/* Part: Kaput */}
-            <path
-              d="M60,65 Q60,40 120,40 Q180,40 180,65 L185,130 Q120,135 55,130 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("kaput") !== "orijinal"
-                  ? statusColors[getStatus("kaput")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("kaput")}
-            />
-
-            {/* Part: On Tampon */}
-            <path
-              d="M60,30 Q120,25 180,30 L185,45 Q120,40 55,45 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("on_tampon") !== "orijinal"
-                  ? statusColors[getStatus("on_tampon")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("on_tampon")}
-            />
-
-            {/* Side Mirrors (Aesthetics) */}
-            <path d="M40,140 Q30,140 30,150 L35,165" fill="none" stroke="#cbd5e1" strokeWidth="2" />
-            <path
-              d="M200,140 Q210,140 210,150 L205,165"
-              fill="none"
-              stroke="#cbd5e1"
-              strokeWidth="2"
-            />
-
-            {/* Part: Sol On Camurluk */}
-            <path
-              d="M45,100 L55,100 L55,180 L45,180 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_on_camurluk") !== "orijinal"
-                  ? statusColors[getStatus("sol_on_camurluk")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sol_on_camurluk")}
-            />
-
-            {/* Part: Sag On Camurluk */}
-            <path
-              d="M185,100 L195,100 L195,180 L185,180 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_on_camurluk") !== "orijinal"
-                  ? statusColors[getStatus("sag_on_camurluk")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sag_on_camurluk")}
-            />
-
-            {/* Part: Sol On Kapi */}
-            <path
-              d="M48,185 L58,185 L58,260 L48,260 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_on_kapi") !== "orijinal"
-                  ? statusColors[getStatus("sol_on_kapi")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sol_on_kapi")}
-            />
-
-            {/* Part: Sag On Kapi */}
-            <path
-              d="M182,185 L192,185 L192,260 L182,260 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_on_kapi") !== "orijinal"
-                  ? statusColors[getStatus("sag_on_kapi")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sag_on_kapi")}
-            />
-
-            {/* Part: Sol Arka Kapi */}
-            <path
-              d="M48,265 L58,265 L58,340 L48,340 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_arka_kapi") !== "orijinal"
-                  ? statusColors[getStatus("sol_arka_kapi")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sol_arka_kapi")}
-            />
-
-            {/* Part: Sag Arka Kapi */}
-            <path
-              d="M182,265 L192,265 L192,340 L182,340 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_arka_kapi") !== "orijinal"
-                  ? statusColors[getStatus("sag_arka_kapi")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sag_arka_kapi")}
-            />
-
-            {/* Part: Sol Arka Camurluk */}
-            <path
-              d="M46,345 L56,345 L56,410 Q46,410 46,345 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_arka_camurluk") !== "orijinal"
-                  ? statusColors[getStatus("sol_arka_camurluk")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sol_arka_camurluk")}
-            />
-
-            {/* Part: Sag Arka Camurluk */}
-            <path
-              d="M184,345 L194,345 L194,410 Q184,410 184,345 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_arka_camurluk") !== "orijinal"
-                  ? statusColors[getStatus("sag_arka_camurluk")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("sag_arka_camurluk")}
-            />
-
-            {/* Part: Tavan */}
-            <rect
-              x="65"
-              y="150"
-              width="110"
-              height="180"
-              rx="20"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("tavan") !== "orijinal"
-                  ? statusColors[getStatus("tavan")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("tavan")}
-            />
-
-            {/* Interior Details (Aesthetics) */}
-            <path d="M75,165 L165,165" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
-            <path d="M75,315 L165,315" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
-
-            {/* Part: Bagaj */}
-            <path
-              d="M65,340 L175,340 L180,410 Q120,420 60,410 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("bagaj") !== "orijinal"
-                  ? statusColors[getStatus("bagaj")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("bagaj")}
-            />
-
-            {/* Part: Arka Tampon */}
-            <path
-              d="M60,425 Q120,435 180,425 L185,440 Q120,450 55,440 Z"
-              className={cn(
-                "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("arka_tampon") !== "orijinal"
-                  ? statusColors[getStatus("arka_tampon")].fill
-                  : "fill-white stroke-slate-300"
-              )}
-              strokeWidth="2"
-              onClick={() => !isDisabled && setActivePart("arka_tampon")}
-            />
-          </svg>
+          <CarDiagram
+            getStatus={getStatus}
+            onPartClick={(part) => setActivePart(part)}
+            isDisabled={isDisabled}
+            statusColors={statusColors}
+          />
 
           {/* Active Overlay Tooltip */}
           {activePart && (

@@ -1,35 +1,17 @@
 "use client";
 
-import {
-  Archive,
-  CheckSquare,
-  FileSpreadsheet,
-  Loader2,
-  Plus,
-  Rocket,
-  Square,
-  X,
-} from "lucide-react";
+import { Plus, Rocket, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useListingActions } from "@/features/marketplace/hooks/use-listing-actions";
 import { EmptyState } from "@/features/shared/components/empty-state";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/features/ui/components/alert-dialog";
 import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 import { DashboardListingCard } from "./dashboard-listing-card";
 import { ListingPagination } from "./listing-pagination";
+import { MyListingsAlerts } from "./my-listings-alerts";
+import { MyListingsBulkActions } from "./my-listings-bulk-actions";
 
 interface MyListingsPanelProps {
   activeEditId?: string;
@@ -38,8 +20,6 @@ interface MyListingsPanelProps {
   userId?: string;
   children?: React.ReactNode;
 }
-
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
 export function MyListingsPanel({
   activeEditId,
@@ -80,7 +60,10 @@ export function MyListingsPanel({
   }, [currentPage, pageSize, clearSelection]);
 
   useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages); // eslint-disable-line react-hooks/set-state-in-effect
+    if (currentPage > totalPages) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentPage(totalPages);
+    }
   }, [currentPage, totalPages]);
 
   useEffect(() => {
@@ -89,15 +72,19 @@ export function MyListingsPanel({
   }, []);
 
   useEffect(() => {
-    setShowForm(Boolean(activeEditId) || initialShowForm); // eslint-disable-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setShowForm(Boolean(activeEditId) || initialShowForm);
   }, [activeEditId, initialShowForm]);
 
   const pageIds = paginatedListings.map((l) => l.id);
   const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
 
   const toggleSelectAll = () => {
-    if (allPageSelected) setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
-    else setSelectedIds((prev) => [...new Set([...prev, ...pageIds])]);
+    if (allPageSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => [...new Set([...prev, ...pageIds])]);
+    }
   };
 
   const exportCsv = () => {
@@ -146,23 +133,17 @@ export function MyListingsPanel({
     link.click();
     document.body.removeChild(link);
 
-    // ── PERFORMANCE FIX: Issue #FRONT-02 - Memory Leak ─────
-    // Clean up the object URL to free memory, especially for large lists
     setTimeout(() => URL.revokeObjectURL(url), 100);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
   };
 
   return (
     <div className="space-y-6">
-      {archiveError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-700 font-bold shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
-          {archiveError}
-        </div>
-      )}
-      {bumpMessage && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-sm text-emerald-700 font-bold shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
-          {bumpMessage}
-        </div>
-      )}
+      <MyListingsAlerts archiveError={archiveError} bumpMessage={bumpMessage} />
 
       {showForm && children && (
         <div className="rounded-3xl border border-primary/10 bg-primary/[0.02] p-8 shadow-sm animate-in fade-in zoom-in-95 duration-500">
@@ -218,107 +199,18 @@ export function MyListingsPanel({
 
       {listings.length > 0 && (
         <div className="space-y-6">
-          <div className="flex flex-col gap-4 bg-muted/30 p-2 rounded-2xl border border-border/40">
-            <div className="flex flex-wrap items-center justify-between gap-4 px-3 py-2">
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={toggleSelectAll}
-                  className="flex items-center gap-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest hover:text-primary transition-colors"
-                >
-                  {allPageSelected ? (
-                    <CheckSquare size={20} className="text-primary" />
-                  ) : (
-                    <Square size={20} className="text-border" />
-                  )}
-                  Tümünü Seç ({paginatedListings.length})
-                </Button>
-
-                {selectedIds.length > 0 && (
-                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
-                    <span className="w-px h-4 bg-border mx-1" />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBulkArchive}
-                      disabled={isBulkArchiving}
-                      className="h-9 px-4 text-[10px] font-bold uppercase tracking-widest bg-slate-900 border-slate-800 text-white hover:bg-black rounded-xl"
-                    >
-                      {isBulkArchiving ? (
-                        <Loader2 className="size-3 animate-spin mr-2" />
-                      ) : (
-                        <Archive size={14} className="mr-2" />
-                      )}
-                      Arşivle ({selectedIds.length})
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          disabled={isBulkArchiving}
-                          className="h-9 px-4 text-[10px] font-bold uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
-                        >
-                          SİL
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-3xl border-none p-8">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-2xl font-bold tracking-tight">
-                            İlanları Kalıcı Sil
-                          </AlertDialogTitle>
-                          <AlertDialogDescription className="font-medium text-muted-foreground mt-2">
-                            {selectedIds.length} ilanı kalıcı olarak silmek istediğinize emin
-                            misiniz? Arşivlenmiş olmayan ilanlar silinemez.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-8">
-                          <AlertDialogCancel className="rounded-xl h-12 px-6">
-                            Vazgeç
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-rose-600 hover:bg-rose-700 rounded-xl h-12 px-6"
-                            onClick={handleBulkDelete}
-                          >
-                            Kalıcı Sil
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 h-10 shadow-sm">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                    Sayfa:
-                  </span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="bg-transparent text-xs font-bold text-foreground outline-none cursor-pointer"
-                  >
-                    {PAGE_SIZE_OPTIONS.map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={exportCsv}
-                  className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest border-border rounded-xl bg-card hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
-                >
-                  <FileSpreadsheet size={16} className="mr-2 text-primary" />
-                  Excel İndir
-                </Button>
-              </div>
-            </div>
-          </div>
+          <MyListingsBulkActions
+            allPageSelected={allPageSelected}
+            paginatedCount={paginatedListings.length}
+            selectedCount={selectedIds.length}
+            isBulkArchiving={isBulkArchiving}
+            pageSize={pageSize}
+            toggleSelectAll={toggleSelectAll}
+            handleBulkArchive={handleBulkArchive}
+            handleBulkDelete={handleBulkDelete}
+            setPageSize={handlePageSizeChange}
+            exportCsv={exportCsv}
+          />
 
           <div className="grid gap-4">
             {paginatedListings.map((listing) => (

@@ -61,3 +61,33 @@ export async function retrieveCheckoutResultAction(token: string) {
 
   return retrievePaymentResult(token, user.id);
 }
+
+/**
+ * Get payment details by iyzico token securely on the server
+ *
+ * @param token - Iyzico checkout token
+ * @returns Payment record details
+ */
+export async function getPaymentDetailsAction(token: string) {
+  const { user } = await getAuthContext();
+
+  if (!user) {
+    throw new Error("Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın.");
+  }
+
+  const { createSupabaseServerClient } = await import("@/lib/server");
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("payments")
+    .select("id, amount, status, plan_name, fulfilled_at")
+    .eq("iyzico_token", token)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}

@@ -1,12 +1,4 @@
-import {
-  AlertCircle,
-  ChevronRight,
-  Flag,
-  MapPin,
-  ShieldCheck,
-  TrendingDown,
-  Zap,
-} from "lucide-react";
+import { Flag, MapPin, ShieldCheck, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -24,8 +16,12 @@ import { getAuthContext, getCurrentUser } from "@/features/auth/lib/session";
 import { DamageReportCard } from "@/features/marketplace/components/damage-report-card";
 import { ExpertInspectionCard } from "@/features/marketplace/components/expert-inspection-card";
 import { ExpertPdfButton } from "@/features/marketplace/components/expert-pdf-button";
+import { ListingBreadcrumb } from "@/features/marketplace/components/listing-detail/listing-breadcrumb";
+import { ListingDescriptionSection } from "@/features/marketplace/components/listing-detail/listing-description-section";
+import { ListingInactiveState } from "@/features/marketplace/components/listing-detail/listing-inactive-state";
 // Subcomponents
 import { ListingInfoCard } from "@/features/marketplace/components/listing-detail/listing-info-card";
+import { ListingMarketAnalysis } from "@/features/marketplace/components/listing-detail/listing-market-analysis";
 import { ListingPriceBox } from "@/features/marketplace/components/listing-detail/listing-price-box";
 import { ListingSafetyNotice } from "@/features/marketplace/components/listing-detail/listing-safety-notice";
 import { ListingSellerInfo } from "@/features/marketplace/components/listing-detail/listing-seller-info";
@@ -34,7 +30,6 @@ import { ListingSpecs } from "@/features/marketplace/components/listing-detail/l
 import { ListingGallery } from "@/features/marketplace/components/listing-gallery";
 import { ListingQuestions } from "@/features/marketplace/components/listing-questions";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
-import { PriceAnalysisWidget } from "@/features/marketplace/components/price-analysis-widget";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/listings/utils";
 import { getMarketValuation } from "@/features/marketplace/services/listing-price-history";
 import {
@@ -47,7 +42,6 @@ import { getSellerReviewStats as getSellerRatingSummary } from "@/features/profi
 import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/features/seo/lib";
 import { FraudWarningBanner } from "@/features/shared/components/fraud-warning-banner";
 import { ListingCard } from "@/features/shared/components/listing-card";
-import { cn } from "@/features/shared/lib";
 
 const ListingMap = dynamic(
   () => import("@/features/shared/components/listing-map-wrapper").then((m) => m.ListingMapWrapper),
@@ -62,14 +56,6 @@ const MobileStickyActions = dynamic(() =>
 
 const ReportListingForm = dynamic(() =>
   import("@/features/forms/components/report-listing-form").then((m) => m.ReportListingForm)
-);
-
-const PriceHistoryChart = dynamic(
-  () =>
-    import("@/features/marketplace/components/price-history-chart").then(
-      (m) => m.PriceHistoryChart
-    ),
-  { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
 interface ListingDetailPageProps {
@@ -108,31 +94,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       if (isAdmin || isOwner) {
         listing = storedListing;
       } else if (storedListing.status !== "approved") {
-        return (
-          <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-            <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
-              <AlertCircle className="size-10 text-amber-600" />
-            </div>
-            <h1
-              className="mb-2 text-2xl font-bold text-foreground"
-              data-testid="listing-inactive-heading"
-            >
-              İlan Aktif Değil
-            </h1>
-            <p
-              className="mb-8 max-w-md text-muted-foreground italic"
-              data-testid="listing-inactive-message"
-            >
-              Bu ilan henüz onaylanmamış, reddedilmiş veya yayından kaldırılmış olabilir.
-            </p>
-            <Link
-              href="/listings"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-8 font-bold text-primary-foreground hover:bg-primary/90 transition"
-            >
-              Piyasadaki Diğer İlanlar
-            </Link>
-          </main>
-        );
+        return <ListingInactiveState />;
       }
     }
   }
@@ -190,27 +152,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       <main className="min-h-screen bg-muted/30">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-32 lg:pb-12">
           {/* ── Breadcrumb ── */}
-          <nav
-            aria-label="Breadcrumb"
-            className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar"
-          >
-            {pageBreadcrumbs.map((b, i) => (
-              <div key={b.url} className="flex shrink-0 items-center gap-1.5">
-                <Link
-                  href={b.url}
-                  className={cn(
-                    "text-[10px] font-bold uppercase tracking-widest transition-colors hover:text-primary",
-                    i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {b.name}
-                </Link>
-                {i < pageBreadcrumbs.length - 1 && (
-                  <ChevronRight size={12} className="text-border" />
-                )}
-              </div>
-            ))}
-          </nav>
+          <ListingBreadcrumb items={pageBreadcrumbs} />
 
           {/* ── Fraud Warning Banner ── */}
           <FraudWarningBanner className="mb-6" />
@@ -274,17 +216,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           ══════════════════════════════════════════════════════════════════ */}
           <div className="space-y-6">
             {/* Description */}
-            {cleanDescription && (
-              <section
-                id="aciklama"
-                className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
-              >
-                <h2 className="mb-4 text-lg font-bold text-foreground">İlan Açıklaması</h2>
-                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                  {cleanDescription}
-                </p>
-              </section>
-            )}
+            {cleanDescription && <ListingDescriptionSection description={cleanDescription} />}
 
             {/* Expert Inspection */}
             <section
@@ -320,48 +252,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               />
             </section>
 
-            {/* Price History Chart */}
-            <section
-              id="fiyat"
-              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
-            >
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <TrendingDown size={20} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-foreground">Piyasa Analizi</h2>
-                  <p className="text-xs text-muted-foreground">
-                    İlanın fiyat geçmişi ve piyasa karşılaştırması
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
-                <PriceHistoryChart listingId={listing.id} currentPrice={listing.price} />
-
-                <div className="space-y-4">
-                  <PriceAnalysisWidget
-                    currentPrice={listing.price}
-                    avgPrice={marketValuation.avgPrice!}
-                    minPrice={marketValuation.minPrice!}
-                    maxPrice={marketValuation.maxPrice!}
-                    status={marketValuation.status}
-                  />
-
-                  <div className="rounded-xl bg-muted/30 p-4">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                      Veri Analizi
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {marketValuation.listingCount
-                        ? `${marketValuation.listingCount} benzer ilan baz alınarak hesaplanmıştır.`
-                        : "Henüz yeterli piyasa verisi bulunmamaktadır."}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+            {/* Price History Chart & Valuation */}
+            <ListingMarketAnalysis
+              listingId={listing.id}
+              listingPrice={listing.price}
+              marketValuation={marketValuation}
+            />
 
             {/* Questions Section */}
             <section
@@ -425,7 +321,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
                   >
                     Tümünü Gör
-                    <ChevronRight size={14} />
                   </Link>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
