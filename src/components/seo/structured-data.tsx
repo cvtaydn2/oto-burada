@@ -23,7 +23,7 @@ export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProp
             name: item.name,
             item: item.url,
           })),
-        }),
+        }).replace(/</g, "\\u003c"),
       }}
     />
   );
@@ -48,7 +48,7 @@ export function ListingStructuredData({ listings, url }: ListingStructuredDataPr
             url: `${url}/listing/${listing.slug}`,
             name: `${listing.brand} ${listing.model} ${listing.year}`,
           })),
-        }),
+        }).replace(/</g, "\\u003c"),
       }}
     />
   );
@@ -83,7 +83,7 @@ export function ListingDetailStructuredData({
             seller: sellerName ? { "@type": "Organization", name: sellerName } : undefined,
           },
           url: `${url}/listing/${listing.slug}`,
-        }),
+        }).replace(/</g, "\\u003c"),
       }}
     />
   );
@@ -118,7 +118,7 @@ export function OrganizationStructuredData({
             contactType: "customer service",
             availableLanguage: "Turkish",
           },
-        }),
+        }).replace(/</g, "\\u003c"),
       }}
     />
   );
@@ -146,7 +146,7 @@ export function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
             },
             "query-input": "required name=search_term_string",
           },
-        }),
+        }).replace(/</g, "\\u003c"),
       }}
     />
   );
