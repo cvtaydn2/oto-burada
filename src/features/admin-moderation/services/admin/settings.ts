@@ -46,7 +46,7 @@ export const getPlatformSettings = unstable_cache(
       }
 
       const settings: Partial<PlatformSettings> = {};
-      (data as PlatformSettingRow[] | null)?.forEach((item) => {
+      (data as unknown as PlatformSettingRow[] | null)?.forEach((item) => {
         if (item.key === "general_appearance") {
           settings.general_appearance = item.value as PlatformSettings["general_appearance"];
         }

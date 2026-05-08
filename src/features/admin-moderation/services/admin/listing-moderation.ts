@@ -32,15 +32,6 @@ function buildDefaultModerationNote(listing: Listing, action: ListingModerationD
     : `${listing.title} ilanı reddedildi.`;
 }
 
-type AtomicModerationRpc = (args: {
-  p_admin_id: string;
-  p_listing_id: string;
-  p_note: string;
-  p_notification_payload: Record<string, unknown>;
-  p_outbox_payload: Record<string, unknown>;
-  p_status: string;
-}) => Promise<{ data: AtomicModerateListingResult | null; error: { message?: string } | null }>;
-
 export async function moderateListingWithSideEffects({
   action,
   adminUserId,
@@ -110,18 +101,15 @@ export async function moderateListingWithSideEffects({
   };
 
   // 4. Execute atomic transaction via RPC
-  const atomicModerateListing = admin.rpc.bind(
-    admin,
-    "atomic_moderate_listing" as never
-  ) as unknown as AtomicModerationRpc;
-  const { data: moderationResult, error } = await atomicModerateListing({
+  const { data: moderationResultData, error } = await admin.rpc("atomic_moderate_listing", {
     p_listing_id: listingId,
     p_status: status,
     p_admin_id: adminUserId,
     p_note: note || buildDefaultModerationNote(listing as unknown as Listing, action),
-    p_outbox_payload: outboxPayload,
-    p_notification_payload: notificationPayload,
+    p_outbox_payload: outboxPayload as import("@/types/supabase").Json,
+    p_notification_payload: notificationPayload as import("@/types/supabase").Json,
   });
+  const moderationResult = moderationResultData as unknown as AtomicModerateListingResult | null;
 
   if (error || !moderationResult?.success) {
     logger.admin.error("Atomic moderation RPC failed", error, { listingId });

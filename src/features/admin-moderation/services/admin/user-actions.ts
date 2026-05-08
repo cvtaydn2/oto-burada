@@ -23,7 +23,7 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
       // Use atomic RPC to ensure profile update and listing rejection happen together
       const { data: result, error: rpcError } = await admin.rpc("ban_user_atomic", {
         p_user_id: validatedUserId,
-        p_reason: !currentStatus ? "Admin tarafından yasaklandı" : null,
+        p_reason: !currentStatus ? "Admin tarafından yasaklandı" : "",
         p_preserve_metadata: true,
       });
 
@@ -45,9 +45,11 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
         revalidatePath(`/galeri/${profile.business_slug}`);
       }
 
+      const typedResult = result as { listings_rejected?: number } | null;
+
       return {
         newStatus: !currentStatus,
-        listingsRejected: result?.listings_rejected || 0,
+        listingsRejected: typedResult?.listings_rejected || 0,
       };
     },
     {
@@ -157,7 +159,6 @@ export async function handleVerificationReview(
     .from("profiles")
     .update({
       verification_status: status,
-      verification_feedback: feedback || null,
       verification_reviewed_at: new Date().toISOString(),
       verification_reviewed_by: adminUserId || null,
       verified_business: status === "approved",

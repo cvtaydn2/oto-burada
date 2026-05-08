@@ -1,5 +1,30 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 54. Supabase Schema Alignment Checkpoint (Phase 1)
+
+**Date**: 2026-05-08
+**Status**: 🟡 CHECKPOINT TAKEN
+**Scope**: Supabase MCP erişimi ile canlı proje şemasını yeniden temel almak, eksik runtime objeleri için migration hazırlamak, canlı DB'ye uygulamak ve generated tipleri yeni gerçekliğe göre yenilemek.
+
+### 54.1 Uygulananlar
+- [`0002_add_missing_runtime_objects.sql`](database/migrations/0002_add_missing_runtime_objects.sql) oluşturuldu.
+- [`.active-migrations.txt`](database/migrations/.active-migrations.txt) güncellenerek yeni migration aktif listeye eklendi.
+- Migration içeriği Supabase projesine MCP üzerinden uygulandı.
+- [`src/types/supabase.ts`](src/types/supabase.ts) canlı veritabanından yeniden üretildi.
+- Bazı admin, notification, audit, contact ve cron akışları yeni tip gerçekliğine göre kısmen hizalandı.
+
+### 54.2 Açık Kalan Ana Backlog
+- `listing_status` ile uygulamadaki `pending_ai_review` / `flagged` statülerinin tek kaynağa bağlanması.
+- [`listing-limits.ts`](src/features/marketplace/services/listings/listing-limits.ts) için gerçek RPC/lock stratejisinin netleştirilmesi.
+- [`listing-price-history.ts`](src/features/marketplace/services/listings/listing-price-history.ts) ile `market_stats` kolon sözleşmesinin hizalanması.
+- [`outbox-processor.ts`](src/features/shared/services/system/outbox-processor.ts) ve [`compensating-processor.ts`](src/features/shared/services/system/compensating-processor.ts) için DB tablo/RPC sözleşmesi uyumu.
+- `server-only` / App Router boundary sızıntılarının ayrıca kapatılması.
+
+### 54.3 Doğrulama Durumu
+- Güvenli checkpoint commit ve push alındı.
+- Repo bu checkpoint anında tam `typecheck` / `build` yeşil değildir; ikinci faz gereklidir.
+
+
 ## 53. Frontend Rules Optimization and Free-Tier Quota Guard Pass
 
 **Date**: 2026-05-08

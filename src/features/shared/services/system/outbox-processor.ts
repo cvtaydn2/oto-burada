@@ -41,7 +41,7 @@ export async function processOutboxQueue() {
   const { data: queue, error: fetchError } = await supabase
     .from("transaction_outbox")
     .select(
-      "id, event_type, payload, status, retry_count, next_attempt_at, is_poison_pill, hard_deadline, last_error, processed_at, created_at"
+      "id, event_type, payload, status, retry_count, next_attempt_at, is_poison_pill, hard_deadline, error_message, processed_at, created_at"
     )
     .eq("status", "pending")
     .eq("is_poison_pill", false) // ── PILL: Issue 2 - Skip toxic messages
@@ -104,7 +104,7 @@ export async function processOutboxQueue() {
               retry_count: retryCount,
               next_attempt_at: nextAttempt.toISOString(),
               is_poison_pill: status === "failed",
-              last_error: (err as Error).message,
+              error_message: (err as Error).message,
             })
             .eq("id", item.id);
 

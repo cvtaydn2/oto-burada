@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { captureServerError } from "@/lib/telemetry-server";
+import { Database } from "@/types/supabase";
 
 interface SupportTicketRow {
   created_at: string;
@@ -51,7 +52,10 @@ export async function updateTicketStatus(id: string, status: string) {
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("tickets")
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({
+      status: status as Database["public"]["Enums"]["ticket_status"],
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", id);
 
   if (error) throw error;

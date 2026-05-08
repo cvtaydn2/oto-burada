@@ -1,6 +1,8 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
@@ -929,6 +931,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      listing_dopings: {
+        Row: {
+          created_at: string;
+          doping_type: string;
+          expires_at: string;
+          id: string;
+          is_active: boolean;
+          listing_id: string;
+          started_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          doping_type: string;
+          expires_at: string;
+          id?: string;
+          is_active?: boolean;
+          listing_id: string;
+          started_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          doping_type?: string;
+          expires_at?: string;
+          id?: string;
+          is_active?: boolean;
+          listing_id?: string;
+          started_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listing_dopings_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       listing_images: {
         Row: {
           created_at: string;
@@ -1309,6 +1349,8 @@ export type Database = {
           car_trim: string | null;
           id: string;
           listing_count: number;
+          max_price: number | null;
+          min_price: number | null;
           model: string;
           year: number;
         };
@@ -1319,6 +1361,8 @@ export type Database = {
           car_trim?: string | null;
           id?: string;
           listing_count: number;
+          max_price?: number | null;
+          min_price?: number | null;
           model: string;
           year: number;
         };
@@ -1329,6 +1373,8 @@ export type Database = {
           car_trim?: string | null;
           id?: string;
           listing_count?: number;
+          max_price?: number | null;
+          min_price?: number | null;
           model?: string;
           year?: number;
         };
@@ -1877,6 +1923,7 @@ export type Database = {
           business_slug: string | null;
           city: string;
           created_at: string;
+          email_verified: boolean;
           full_name: string;
           id: string;
           identity_number: string | null;
@@ -1896,6 +1943,8 @@ export type Database = {
           updated_at: string;
           user_type: Database["public"]["Enums"]["user_type"];
           verification_requested_at: string | null;
+          verification_reviewed_at: string | null;
+          verification_reviewed_by: string | null;
           verification_status: Database["public"]["Enums"]["verification_status"];
           verified_business: boolean;
           website_url: string | null;
@@ -1916,6 +1965,7 @@ export type Database = {
           business_slug?: string | null;
           city?: string;
           created_at?: string;
+          email_verified?: boolean;
           full_name?: string;
           id: string;
           identity_number?: string | null;
@@ -1935,6 +1985,8 @@ export type Database = {
           updated_at?: string;
           user_type?: Database["public"]["Enums"]["user_type"];
           verification_requested_at?: string | null;
+          verification_reviewed_at?: string | null;
+          verification_reviewed_by?: string | null;
           verification_status?: Database["public"]["Enums"]["verification_status"];
           verified_business?: boolean;
           website_url?: string | null;
@@ -1955,6 +2007,7 @@ export type Database = {
           business_slug?: string | null;
           city?: string;
           created_at?: string;
+          email_verified?: boolean;
           full_name?: string;
           id?: string;
           identity_number?: string | null;
@@ -1974,11 +2027,28 @@ export type Database = {
           updated_at?: string;
           user_type?: Database["public"]["Enums"]["user_type"];
           verification_requested_at?: string | null;
+          verification_reviewed_at?: string | null;
+          verification_reviewed_by?: string | null;
           verification_status?: Database["public"]["Enums"]["verification_status"];
           verified_business?: boolean;
           website_url?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "profiles_verification_reviewed_by_fkey";
+            columns: ["verification_reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profiles_verification_reviewed_by_fkey";
+            columns: ["verification_reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       realized_sales: {
         Row: {
@@ -2611,6 +2681,16 @@ export type Database = {
       };
     };
     Functions: {
+      expire_dopings_atomic: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      pg_advisory_xact_lock: {
+        Args: {
+          key: number | string | bigint;
+        };
+        Returns: undefined;
+      };
       activate_doping: {
         Args: {
           p_listing_id: string;
@@ -2830,6 +2910,14 @@ export type Database = {
           total_amount: number;
         }[];
       };
+      get_user_listing_stats: {
+        Args: {
+          p_start_of_month: string;
+          p_start_of_year: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
       increment_compensating_retry: {
         Args: { p_error: string; p_id: string };
         Returns: undefined;
@@ -2840,6 +2928,10 @@ export type Database = {
           target_viewer_id?: string;
           target_viewer_ip?: string;
         };
+        Returns: undefined;
+      };
+      increment_listing_view_buffered: {
+        Args: { p_listing_id: string };
         Returns: undefined;
       };
       increment_outbox_retry: {
@@ -2944,7 +3036,14 @@ export type Database = {
     };
     Enums: {
       fuel_type: "benzin" | "dizel" | "lpg" | "hibrit" | "elektrik";
-      listing_status: "draft" | "pending" | "approved" | "rejected" | "archived";
+      listing_status:
+        | "draft"
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "archived"
+        | "pending_ai_review"
+        | "flagged";
       moderation_action:
         | "approve"
         | "reject"
@@ -2997,11 +3096,9 @@ export type Database = {
   };
 };
 
-export type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-export type DefaultSchema = DatabaseWithoutInternals[Extract<
-  keyof DatabaseWithoutInternals,
-  "public"
->];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -3013,7 +3110,9 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -3037,14 +3136,18 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Insert: infer I }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
       ? I
       : never
     : never;
@@ -3058,14 +3161,18 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Update: infer U }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
       ? U
       : never
     : never;
@@ -3074,10 +3181,14 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -3092,7 +3203,9 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
@@ -3102,7 +3215,15 @@ export const Constants = {
   public: {
     Enums: {
       fuel_type: ["benzin", "dizel", "lpg", "hibrit", "elektrik"],
-      listing_status: ["draft", "pending", "approved", "rejected", "archived"],
+      listing_status: [
+        "draft",
+        "pending",
+        "approved",
+        "rejected",
+        "archived",
+        "pending_ai_review",
+        "flagged",
+      ],
       moderation_action: [
         "approve",
         "reject",

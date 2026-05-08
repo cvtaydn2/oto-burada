@@ -1,6 +1,6 @@
 # OtoBurada — Production Runbook
 
-> Last updated: 2026-05-06
+> Last updated: 2026-05-08
 > Stack: Next.js 16 · Supabase · Vercel · Upstash Redis · Sentry · Resend
 
 ---
@@ -93,28 +93,27 @@ Vercel üzerindeki ortam değişkenlerini (API anahtarları vb.) yerel makineniz
 ### Migration Files Location
 
 ```
-scripts/migrations/
-├── add-analytics-rpc-functions.sql
-├── add-doping-expiry-cron.sql
-├── add-missing-indexes.sql
-├── add-phone-reveal-logs.sql
-├── add-published-at-and-expiry.sql
-├── add-rate-limit-rpc-and-indexes.sql   ← rate limiting RPC
-├── fix-chats-rls.sql
-├── fix-security-performance-advisor.sql
-├── fix-storage-bucket-policies.sql      ← storage RLS
-└── ...
+database/migrations/
+├── 0001_consolidated_baseline.sql
+├── 0002_add_missing_runtime_objects.sql
+└── .active-migrations.txt
 ```
+
+Aktif migration çalıştırma listesi [`database/migrations/.active-migrations.txt`](database/migrations/.active-migrations.txt) dosyasıdır. Yeni migration eklendiğinde bu liste de güncellenmelidir.
 
 ### Applying a Migration
 
-```sql
--- In Supabase Dashboard → SQL Editor:
--- 1. Open the migration file
--- 2. Review it carefully
--- 3. Run it
--- 4. Verify with the check queries at the bottom of the file
-```
+Tercih sırası:
+
+1. MCP/Supabase yönetimli uygulama
+2. `npm run db:migrate` (yalnız `psql` erişimi olan ortamlarda)
+3. Gerekirse Supabase Dashboard SQL Editor ile kontrollü manuel uygulama
+
+Önemli notlar:
+
+- Bu projede `database/schema.snapshot.sql` şemanın kaynağıdır.
+- Yeni değişiklikler ayrıca `database/migrations/00XX_name.sql` dosyasında tutulur.
+- Migration uygulandıktan sonra tipler yeniden üretilmeli ve ardından `lint`, `typecheck`, `build` tekrar koşulmalıdır.
 
 ### Migration Order for Fresh Environment
 

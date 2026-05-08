@@ -4,3 +4,4 @@
 
 0001_consolidated_baseline.sql
 0002_add_missing_runtime_objects.sql
+0003_expand_listing_status_and_runtime_contracts.sql

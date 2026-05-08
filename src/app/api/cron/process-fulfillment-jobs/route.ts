@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
       if (payments) {
         payments.forEach((p) => {
-          paymentsMap.set(p.id, { plan_id: p.plan_id, user_id: p.user_id });
+          paymentsMap.set(p.id, { plan_id: p.plan_id, user_id: p.user_id || "" });
         });
 
         const planIds = Array.from(

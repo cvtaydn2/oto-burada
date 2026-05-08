@@ -182,7 +182,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
       id: t.id,
       amount: t.amount,
       type: t.transaction_type,
-      description: t.description,
+      description: t.description || "",
       createdAt: t.created_at,
     })),
     dopingHistory: dopingHistory.map(

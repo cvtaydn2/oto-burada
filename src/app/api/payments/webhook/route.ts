@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       const { data: result, error: rpcError } = await admin.rpc("process_payment_webhook", {
         p_token: token,
         p_status: status,
-        p_iyzico_payment_id: body.paymentId,
+        p_iyzico_payment_id: body.paymentId ?? "",
       });
       const webhookResult = result as unknown as ProcessPaymentWebhookResult | null;
 

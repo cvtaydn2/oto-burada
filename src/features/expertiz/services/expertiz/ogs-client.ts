@@ -116,7 +116,7 @@ export async function saveVehicleHistory(listingId: string, vin: string, queryRe
       tramer_score: queryResult.data.tramerScore,
       tramer_last_query: new Date().toISOString(),
       last_inspection_date: queryResult.data.lastInspection
-        ? new Date(queryResult.data.lastInspection)
+        ? new Date(queryResult.data.lastInspection).toISOString()
         : null,
     })
     .eq("id", listingId);
@@ -137,7 +137,7 @@ export async function getVehicleHistoryByListing(listingId: string) {
     return null;
   }
 
-  return data.query_result as VehicleHistory;
+  return data.query_result as unknown as VehicleHistory;
 }
 
 export function calculateTramerScore(

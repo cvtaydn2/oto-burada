@@ -4,18 +4,16 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 
 ## Genel durum
 
-Bu repo şu anda local ortamda başarıyla:
+Bu repo şu anda mimari olarak aktif geliştirme altındadır ve son güvenli checkpoint commit'i alınmıştır. Ancak depo bu an itibarıyla tam yeşil kalite kapısında değildir.
 
-- `npm run lint`
-- `npm run typecheck`
-- `npm run build`
-- `npm run test:unit` (ortam izinlerine bağlı)
-- `npm run test:int` (ortam izinlerine bağlı)
+Şu anki doğrulanmış durum:
 
-Not: E2E testleri çevresel bağımlılıklara (Supabase erişimi, test data, local network) duyarlıdır.
-Production readiness için her release öncesi smoke koşusu önerilir.
+- `npm run lint`: büyük ölçüde temiz tutuluyor, ancak her değişiklik sonrası yeniden doğrulama gerekir.
+- `npm run typecheck`: şu anda tamamen temiz değildir; Supabase şema-tip drift'i ve ikinci faz refactor işleri devam etmektedir.
+- `npm run build`: typecheck ve server/client boundary işleri tamamlanmadan temiz kabul edilmez.
+- `npm run test:unit` / `npm run test:int`: ortam izinleri ve veri bağımlılıklarına göre değerlendirilmelidir.
 
-komutlarını geçecek durumda stabilize edilmiştir.
+Not: E2E testleri çevresel bağımlılıklara (Supabase erişimi, test data, local network) duyarlıdır. Production readiness için her release öncesi smoke koşusu önerilir.
 
 ## Tek komutla çalıştırma
 
