@@ -3,21 +3,25 @@ trigger: always_on
 ---
 
 # BACKEND / API / DATABASE AI CONSTITUTION
-## Enterprise Araç Alım-Satım Platformu İçin Backend Kuralları
+## OtoBurada İçin Next.js + Supabase Backend Kuralları
 
-Bu doküman bir yapay zekanın backend, API ve database geliştirirken uyması gereken zorunlu kuralları tanımlar.
+Bu doküman bir yapay zekanın backend, API, server action, route handler ve database geliştirirken uyması gereken zorunlu kuralları tanımlar.
 
 Bu kurallar:
 - öneri değildir,
 - opsiyonel değildir,
 - her zaman uygulanmalıdır.
 
+Bu doküman [`AGENTS.md`](AGENTS.md) ile uyumlu olacak şekilde yazılmıştır.
+Çelişki durumunda nihai kaynak [`AGENTS.md`](AGENTS.md) kabul edilir.
+
 AI:
 - tüm backend kodlarını bu kurallara göre üretmelidir,
-- performans,
 - güvenlik,
+- sürdürülebilirlik,
+- performans,
 - ölçeklenebilirlik,
-- sürdürülebilirlik
+- gözlemlenebilirlik
 önceliklerine göre hareket etmelidir.
 
 ---
@@ -29,12 +33,23 @@ AI:
 Backend aşağıdaki öncelik sırasına göre tasarlanmalıdır:
 
 1. Security
-2. Scalability
-3. Maintainability
+2. Maintainability
+3. Reliability
 4. Performance
-5. Reliability
+5. Scalability
 6. Observability
-7. Modularity
+7. Simplicity
+
+## Ürün ve Mimari Gerçeği
+
+Bu proje:
+- tek bir full-stack Next.js kod tabanı kullanır,
+- App Router kullanır,
+- backend için route handlers + server actions kullanır,
+- primary backend platform olarak Supabase kullanır,
+- ayrı Express veya NestJS backend kullanmaz,
+- microservice mimarisi kullanmaz,
+- modular monolith olarak ilerler.
 
 ---
 
@@ -43,128 +58,208 @@ Backend aşağıdaki öncelik sırasına göre tasarlanmalıdır:
 ## Zorunlu Teknolojiler
 
 ```txt
-Node.js
+Next.js App Router
 TypeScript
-NestJS veya Express + Clean Architecture
-PostgreSQL
-Redis
-Prisma ORM
-JWT Authentication
-Docker
+Route Handlers
+Server Actions
+Supabase Auth
+Supabase Postgres
+Supabase Storage
+Supabase Row Level Security
+Zod
+Redis / Upstash (opsiyonel cache / rate limit / replay protection)
 ```
 
----
+## Yasaklar
+
+```txt
+Ayrı Express backend
+Ayrı NestJS backend
+Prisma zorunlu varsayımı
+Service role key'i client bundle'a sızdırmak
+RLS bypass eden client-side erişim
+```
 
 ## Opsiyonel Ama Önerilen
 
 ```txt
-Kafka
-RabbitMQ
-ElasticSearch
-S3 Compatible Storage
+pg_cron
+Postgres RPC
+Outbox / fulfillment jobs
+Sentry
+OpenTelemetry / telemetry events
 ```
 
 ---
 
 # 3. ARCHITECTURE RULES
 
-## 3.1 Clean Architecture Zorunlu
+## 3.1 Tek Kod Tabanı Zorunlu
 
-Katmanlar birbirinden ayrılmalıdır.
+Backend akışı aynı Next.js repo içinde yaşamalıdır.
 
-### Zorunlu Katmanlar
+### DO
 
-- Controller Layer
-- Service Layer
-- Repository Layer
-- Domain Layer
-- Validation Layer
+```txt
+src/app/api/**/route.ts
+src/app/**/actions.ts
+src/domain/**
+src/features/**/services/**
+src/lib/**
+```
+
+### DON'T
+
+```txt
+backend/
+api-server/
+express-server/
+nest-app/
+```
 
 ---
 
-## 3.2 Business Logic Controller İçinde Yazılamaz
+## 3.2 Route Handler İnce Kalmalı
+
+Route handler:
+- auth,
+- authorization,
+- CSRF,
+- rate limit,
+- input parsing,
+- response mapping
+işlerini yapmalıdır.
+
+Business logic route içinde büyümemelidir.
+
+### DO
+
+```txt
+Route Handler -> Security Wrapper -> Validation -> Domain/Service Logic -> Response Mapper
+```
 
 ### DON'T
 
 ```ts
-app.post("/vehicle", async (req, res) => {
-  // business logic
-})
-```
-
-### DO
-
-```txt
-Controller -> Service -> Repository
+export async function POST(req: Request) {
+  // burada 200+ satır business logic, query orchestration, ödeme ve fulfillment
+}
 ```
 
 ---
 
-## 3.3 Feature-Based Structure Zorunlu
+## 3.3 Service / Domain Ayrımı Zorunlu
+
+Aşağıdaki ayrım korunmalıdır:
+
+- Route Layer
+- Action Layer
+- Domain Layer
+- Data Access Layer
+- Validation Layer
+- Shared Infrastructure Layer
+
+### Kabul Edilen Dosya Kalıpları
+
+```txt
+*-actions.ts   -> server actions / orchestration entrypoints
+*-logic.ts     -> business logic
+*-records.ts   -> database/data access
+*-client.ts    -> third-party API wrappers
+```
+
+### Yasaklar
+
+```txt
+class-based god service
+route içinde doğrudan karmaşık business logic
+aynı iş kuralının birden fazla route içine kopyalanması
+```
+
+---
+
+## 3.4 Feature-Based Structure Zorunlu
+
+Backend kodu feature etrafında organize edilmelidir.
 
 ### DO
 
 ```txt
-src/
-  modules/
-    vehicle/
-    auth/
-    payment/
+src/features/marketplace/
+src/features/payments/
+src/features/profile/
+src/features/admin-moderation/
+src/features/shared/
+src/domain/
+src/lib/
 ```
 
 ### DON'T
 
 ```txt
 controllers/
-services/
 routes/
+repositories/
+services/
 ```
+
+tek başına üst seviye domain dışı klasörleşme.
 
 ---
 
 # 4. API DESIGN RULES
 
-## 4.1 REST Standards Zorunlu
+## 4.1 Route Handler Standardı
 
-API:
-- predictable,
-- versioned,
-- stateless
-olmalıdır.
-
----
-
-## 4.2 API Versioning Zorunlu
+API route'ları Next.js route handler olarak yazılmalıdır.
 
 ### DO
 
 ```txt
-/api/v1/vehicles
+src/app/api/listings/route.ts
+src/app/api/listings/[id]/route.ts
+src/app/api/payments/webhook/route.ts
 ```
 
 ---
 
-## 4.3 HTTP Status Standards
+## 4.2 REST-benzeri ve Tahmin Edilebilir Tasarım
 
-### Zorunlu
+API:
+- predictable,
+- stateless,
+- güvenli,
+- resource-oriented
+olmalıdır.
+
+## 4.3 Versiyonlama Kuralı
+
+Bu projede mevcut canonical yapı `/api/...` şeklindedir.
+AI:
+- var olan route yüzeyini bozacak şekilde zorla `/api/v1/...` eklememelidir,
+- ancak yeni public API versiyonlama stratejisi resmi olarak alınırsa buna uymalıdır.
+
+Yani mevcut repo için:
+
+### DO
 
 ```txt
-200 OK
-201 Created
-400 Bad Request
-401 Unauthorized
-403 Forbidden
-404 Not Found
-409 Conflict
-422 Validation Error
-500 Internal Server Error
+/ api / listings
+/ api / payments / webhook
+/ api / admin / users / export
+```
+
+### DON'T
+
+```txt
+Mevcut tüm route'ları plansız şekilde /api/v1 altına taşımak
 ```
 
 ---
 
 ## 4.4 Response Standardization
 
-Tüm API response’ları standart formatta olmalıdır.
+Mümkün olan her yerde ortak response helper'ları kullanılmalıdır.
 
 ### Success
 
@@ -172,7 +267,7 @@ Tüm API response’ları standart formatta olmalıdır.
 {
   "success": true,
   "data": {},
-  "message": "Vehicle created"
+  "message": "OK"
 }
 ```
 
@@ -188,428 +283,530 @@ Tüm API response’ları standart formatta olmalıdır.
 }
 ```
 
+### Kural
+
+- tercihen ortak helper kullan: `apiSuccess`, `apiError`
+- ham `NextResponse.json` sadece gerçekten gerekli düşük seviyeli durumlarda kullanılmalı
+- aynı feature içinde response formatı keyfi değişmemeli
+
+---
+
+## 4.5 HTTP Status Standards
+
+### Zorunlu
+
+```txt
+200 OK
+201 Created
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+404 Not Found
+409 Conflict
+413 Payload Too Large
+422 Validation Error (gerektiğinde)
+429 Rate Limited
+500 Internal Server Error
+503 Service Unavailable
+```
+
 ---
 
 # 5. VALIDATION RULES
 
-## Validation Zorunlu
+## 5.1 Validation Zorunlu
 
 Tüm inputlar validate edilmelidir.
 
+- request body
+- query params
+- route params
+- webhook payloads
+- cron trigger inputs
+
 ---
 
-## ASLA
+## 5.2 ASLA
 
 ```txt
-Raw request body kullanma
+Raw request body ile doğrudan business logic çalıştırma
 ```
 
 ---
 
-## Kullan
+## 5.3 Kullan
 
 ```txt
 Zod
-Joi
-Class Validator
+shared validators
+feature validators
 ```
 
----
-
-## Validation Katmanı Ayrı Olmalı
+## 5.4 Validation Ayrı Katmanda Olmalı
 
 Validation:
-- controller içinde yazılmamalı,
-- reusable olmalı.
+- route handler içinde dağınık olmamalı,
+- reusable olmalı,
+- merkezi validator katmanında tutulmalı,
+- frontend ile mümkün olduğunca shared contract kullanmalıdır.
 
 ---
 
 # 6. AUTHENTICATION RULES
 
-## JWT Authentication Zorunlu
+## 6.1 Supabase Auth Zorunlu
+
+Authentication için canonical kaynak Supabase Auth'tur.
 
 ### Kullan
 
-- Access Token
-- Refresh Token
+- session / cookie tabanlı auth context
+- server-side user resolution
+- request-scoped auth access
 
 ---
 
-## Token Security
+## 6.2 Auth Kontrolleri Route Girişinde Yapılmalı
 
-### Zorunlu
+Auth kontrolü:
+- route handler başında,
+- server action başında,
+- security wrapper üzerinden
+çalışmalıdır.
 
-- expiration
-- rotation
-- secure storage
-- invalidation support
-
----
-
-## ASLA
+### Tercih Edilen Wrapper'lar
 
 ```txt
-Plain password saklama
+withUserRoute
+withUserAndCsrf
+withAdminRoute
+withCronRoute
+withCronOrAdmin
 ```
 
 ---
 
-## Password Rules
+## 6.3 Token Security
 
-### Kullan
+### Zorunlu
+
+- secure cookie/session handling
+- invalid session handling
+- stale JWT verisine kör güvenmeme
+- kritik yetkilerde DB profile doğrulaması
+
+---
+
+## 6.4 ASLA
 
 ```txt
-bcrypt veya argon2
+Plain password saklama
+client içinde service role auth kullanma
 ```
 
 ---
 
 # 7. AUTHORIZATION RULES
 
-## Role-Based Access Control Zorunlu
+## 7.1 RBAC Zorunlu
 
-### Örnek Roller
-
+Örnek roller:
 - user
-- dealer
 - admin
-- moderator
+- moderator / staff benzeri genişletilebilir roller
 
----
-
-## Permissions Middleware Kullan
+## 7.2 Authorization Merkezi Olmalı
 
 Authorization:
-- merkezi yönetilmeli,
-- route içinde hardcoded olmamalı.
+- route içinde hardcoded dağılmamalı,
+- wrapper / helper / domain check üzerinden yönetilmeli,
+- ownership check reusable olmalı.
+
+## 7.3 Ban / Restriction Kontrolü
+
+JWT tek başına yeterli kabul edilmemelidir.
+Taze DB profile üzerinden:
+- ban status
+- role
+- restriction state
+kontrolü yapılmalıdır.
 
 ---
 
 # 8. DATABASE RULES
 
-## 8.1 PostgreSQL Zorunlu
+## 8.1 Supabase Postgres Zorunlu
 
-Primary relational database PostgreSQL olmalıdır.
+Primary relational database Supabase Postgres'tir.
 
----
+## 8.2 Schema Source of Truth
 
-## 8.2 Database Normalization
+Schema yönetimi şu kurallara göre yapılmalıdır:
+- full schema source of truth: `database/schema.snapshot.sql`
+- baseline: `database/schema.base.sql`
+- yeni değişiklikler: `database/migrations/00XX_name.sql`
+- migration takibi: `npm run db:migrate`
 
-### Minimum
+## 8.3 RLS First
 
-3NF standardı uygulanmalıdır.
+Her yeni tablo için:
+- schema,
+- policies,
+- access model
+aynı değişiklik seti içinde düşünülmelidir.
 
----
+### Zorunlu
 
-## 8.3 Indexing Zorunlu
+- tüm uygun tablolarda RLS
+- client erişiminde RLS bypass etmeme
+- policy içinde mümkünse `(SELECT auth.uid())` kullanımı
+- `SECURITY DEFINER` fonksiyonlarında `search_path = public`
+
+## 8.4 Indexing Zorunlu
 
 Aşağıdaki alanlar indexlenmelidir:
-
 - foreign keys
-- search fields
-- filters
-- sorting columns
+- arama alanları
+- filtre alanları
+- sorting alanları
+- join hot-path kolonları
 
----
+## 8.5 Soft Delete Standardı
 
-## 8.4 Soft Delete Standardı
-
-Hard delete kullanılmamalıdır.
+Hard delete default davranış olmamalıdır.
 
 ### Kullan
 
 ```txt
 deleted_at
+archived / inactive flags
+soft delete RPC / helper
 ```
 
----
+## 8.6 Audit Fields
 
-## 8.5 Audit Fields Zorunlu
-
-Tüm tablolar şunları içermelidir:
+Mümkün olan her tabloda şu alanlar düşünülmelidir:
 
 ```txt
 created_at
 updated_at
-deleted_at
+deleted_at (uygunsa)
 ```
 
 ---
 
-# 9. ORM RULES
+# 9. DATA ACCESS RULES
 
-## Prisma Kullan
+## 9.1 Canonical Access Layer
 
-### Zorunlu
+Database erişimi tercihen `*-records.ts`, `*-logic.ts` veya iyi ayrıştırılmış data-access helpers içinde yapılmalıdır.
 
-- typed queries
-- migrations
-- schema management
-
----
-
-## ASLA
+## 9.2 ASLA
 
 ```txt
-Raw SQL everywhere
+Aynı SQL / query zincirini farklı route'larda kopyalama
+route handler içinde dağınık ve tekrarlı query yazma
 ```
 
----
+## 9.3 Raw SQL Kullanımı
 
-## Ancak
+Raw SQL serbesttir ancak sadece şu durumlarda tercih edilmelidir:
+- migration
+- RPC / Postgres function
+- reporting
+- performance-critical query
+- concurrency-safe atomic operations
 
-Complex reporting ve optimization durumlarında raw SQL kullanılabilir.
+Raw SQL kullanımı:
+- bilinçli,
+- gerekçeli,
+- testlenmiş,
+- güvenlik açısından gözden geçirilmiş
+olmalıdır.
+
+Bu projede Prisma zorunlu değildir.
+Supabase client + RPC + SQL migration canonical yaklaşımdır.
 
 ---
 
 # 10. PERFORMANCE RULES
 
-## Performance First Yaklaşımı
+## 10.1 Performance First
 
-Backend:
-yük altında stabil çalışmalıdır.
-
----
-
-## 10.1 Pagination Zorunlu
-
-### ASLA
-
-10.000 kayıt tek request ile dönme.
-
----
+Backend yük altında stabil çalışmalıdır.
 
 ## 10.2 Query Optimization
 
 ### Zorunlu
 
-- select only needed fields
-- avoid N+1 queries
-- proper joins
-- indexing
+- sadece gereken alanları seç
+- N+1 query'den kaçın
+- doğru join kullan
+- doğru index kullan
+- hot path'te `SELECT *` kullanma
 
----
+## 10.3 Pagination Zorunlu
 
-## 10.3 Caching Zorunlu
+### ASLA
+
+10.000 kayıt tek request ile dönme.
+
+## 10.4 Cache ve Degrade Mode
 
 ### Kullan
 
 ```txt
-Redis
+Redis / Upstash
+in-memory fallback (gerektiğinde)
+edge-safe cache helpers
 ```
 
----
-
-## Cache Kullanılacak Alanlar
-
-- vehicle listings
-- filters
-- search results
+Cache kullanılabilecek alanlar:
+- listing search sonuçları
+- suggestion endpointleri
 - metadata
+- read-heavy aggregate veriler
+
+## 10.5 Background Work Ayrımı
+
+Aşağıdaki işler request-response kritik yolunda bloklanmamalıdır:
+- email
+- notification
+- reconciliation
+- fulfillment
+- cleanup
+- heavy analytics
 
 ---
 
-# 11. SEARCH RULES
+# 11. PAYMENT / WEBHOOK / JOB RULES
 
-## Advanced Search Required
+## 11.1 Fail-Closed Güvenlik
 
-Araç platformlarında arama sistemi kritik öneme sahiptir.
+Kritik doğrulama başarısız olursa işlem durmalıdır.
 
----
+Örnek:
+- webhook signature invalid
+- callback URL invalid
+- authorization failed
+- payment ownership mismatch
 
-## Search Özellikleri
+## 11.2 Transaction İçinde Harici Ağ Çağrısı Yasak
 
-- full text search
-- filtering
-- sorting
-- pagination
-
----
-
-## Büyük Sistemlerde
-
-### Kullan
+### ASLA
 
 ```txt
-ElasticSearch
+DB transaction içindeyken email gönderme
+DB transaction içindeyken ödeme sağlayıcı çağrısı bekleme
+DB transaction içindeyken webhook fulfillment tamamlama
 ```
+
+## 11.3 Outbox / Fulfillment / Job Ayrımı
+
+Yan etkiler tercihen job/outbox pattern ile yürütülmelidir.
+
+### Kullanım Alanları
+
+- payment fulfillment
+- email sending
+- push/notification
+- reconciliation
+- cleanup workers
+
+## 11.4 Idempotency Zorunlu
+
+Aşağıdaki akışlar idempotent tasarlanmalıdır:
+- webhook processing
+- payment callbacks
+- cron reruns
+- outbox processing
+- storage cleanup retries
 
 ---
 
 # 12. FILE STORAGE RULES
 
-## File Upload Standardı
+## 12.1 Supabase Storage Zorunlu
 
-### Kullan
+Dosya yükleme için canonical storage Supabase Storage'dır.
 
-```txt
-S3 compatible storage
-```
-
----
-
-## ASLA
+## 12.2 ASLA
 
 ```txt
-Image dosyalarını backend server içinde saklama
+Görselleri uygulama sunucusunun local diskinde kalıcı saklama
+client'a kontrolsüz path accept etme
 ```
 
----
-
-## Upload Validation
+## 12.3 Upload Validation
 
 ### Zorunlu
 
 - mime type validation
 - file size validation
-- secure file naming
+- secure path generation
+- ownership / authorization check
+- gerektiğinde magic-byte doğrulaması
 
 ---
 
 # 13. SECURITY RULES
 
-## Güvenlik Önceliklidir
+## 13.1 Güvenlik Önceliklidir
 
----
-
-## Zorunlu Güvenlik Önlemleri
+### Zorunlu Önlemler
 
 - rate limiting
-- helmet
-- CORS policy
-- input sanitization
-- SQL injection prevention
-- XSS prevention
 - CSRF protection
+- origin validation
+- input sanitization
+- XSS prevention
+- SQL injection prevention
+- secrets isolation
+- ownership checks
+- admin route hardening
+- cron secret validation
 
----
+## 13.2 Service Role Kullanımı
 
-## Secrets Management
+### Zorunlu
+
+- service role sadece server tarafında
+- `server-only` boundary ile korunmalı
+- client bundle'a asla sızmamalı
+
+## 13.3 Secrets Management
 
 ### ASLA
 
 ```txt
 Secret key hardcode etme
+service role key'i browser'a gönderme
 ```
 
----
-
-## Kullan
+### Kullan
 
 ```txt
 .env
-secret manager
-vault systems
+platform secrets
+server-only modules
 ```
+
+## 13.4 Abuse Protection
+
+Aşağıdaki yüzeylerde rate limit zorunludur:
+- auth
+- mutation endpoints
+- admin routes
+- cron/admin dual endpoints
+- public expensive endpoints
 
 ---
 
 # 14. ERROR HANDLING RULES
 
-## Global Error Handler Zorunlu
+## 14.1 Merkezi Hata Yönetimi
 
-Tüm hatalar merkezi yönetilmelidir.
+Tüm kritik backend hataları:
+- loglanmalı,
+- normalize edilmeli,
+- kullanıcıya güvenli mesaj dönmeli,
+- internal detail sızdırmamalıdır.
 
----
-
-## ASLA
+## 14.2 ASLA
 
 ```txt
 Raw stack trace dönme
+sensitive DB / secret içeriğini response'a koyma
 ```
 
----
+## 14.3 Error Mapping
 
-## Error Logging
+Beklenen iş hataları uygun HTTP status'a map edilmelidir.
 
-Tüm kritik hatalar loglanmalıdır.
+Örnek:
+- validation -> 400 / 422
+- unauthorized -> 401
+- forbidden -> 403
+- missing resource -> 404
+- concurrency conflict -> 409
+- rate limit -> 429
+- unavailable dependency -> 503
 
 ---
 
 # 15. LOGGING RULES
 
-## Structured Logging Zorunlu
+## 15.1 Structured Logging Zorunlu
 
-### Kullan
+Structured, context-aware logging kullanılmalıdır.
 
-```txt
-Winston
-Pino
-```
-
----
-
-## Log Türleri
+### Log Türleri
 
 - info
 - warn
 - error
 - audit
+- security
 
----
-
-## Hassas Veri Loglama
+## 15.2 Hassas Veri Loglama
 
 ### ASLA
 
 ```txt
 password
 token
-credit card
+service role key
+credit card raw payload
+csrf raw token
 ```
+
+## 15.3 Sanitization
+
+Log'a giren string veriler log forging ve control-character riskine karşı sanitize edilmelidir.
 
 ---
 
 # 16. OBSERVABILITY RULES
 
-## Monitoring Zorunlu
+## 16.1 Monitoring Zorunlu
 
 ### Kullan
 
 ```txt
 Sentry
-Prometheus
-Grafana
-OpenTelemetry
+telemetry events
+performance tracking
+structured logs
 ```
 
----
-
-## İzlenmesi Gerekenler
+## 16.2 İzlenmesi Gerekenler
 
 - response time
-- memory usage
-- CPU usage
 - failed requests
-- database performance
+- cron/job failures
+- webhook failures
+- database query issues
+- rate limit degradation
+- cache degradation
 
 ---
 
-# 17. EVENT DRIVEN RULES
+# 17. CRON / SCHEDULER RULES
 
-## Büyük Ölçekli Sistemlerde
+## 17.1 Cron Güvenliği Zorunlu
 
-Asenkron işlemler event-driven olmalıdır.
+Cron endpointleri:
+- `CRON_SECRET` ile korunmalı,
+- gerektiğinde admin fallback ile ayrıştırılmalı,
+- public erişime açık bırakılmamalıdır.
 
----
+## 17.2 Cron İşleri İdempotent Olmalı
 
-## Kullanılabilecek Sistemler
+Cron tekrar çalışsa da veri bozulmamalıdır.
 
-```txt
-Kafka
-RabbitMQ
-BullMQ
-```
+## 17.3 Uzun Süren İşler
 
----
-
-## Queue Kullanılacak Alanlar
-
-- email sending
-- notifications
-- image processing
-- analytics
-- background jobs
+Uzun işler parçalara ayrılmalı veya job/outbox mantığıyla işlenmelidir.
 
 ---
 
@@ -619,9 +816,11 @@ BullMQ
 
 ### Uygula
 
-- IP based limits
-- user based limits
+- IP-based limits
+- user-based limits
 - auth endpoint protection
+- admin mutation protection
+- fail-open / fail-closed kararını endpoint kritikliğine göre bilinçli ver
 
 ---
 
@@ -635,109 +834,93 @@ BullMQ
 - integration tests
 - e2e tests
 
----
-
 ## Kritik Senaryolar
 
-- login
-- payment
-- vehicle creation
+- login / auth
+- listing creation
+- listing moderation
+- payment flow
+- webhook flow
 - authorization
 - upload system
+- cron safety
+
+## Build Health
+
+Aşağıdakiler sürekli temiz kalmalıdır:
+- lint
+- typecheck
+- build
 
 ---
 
-# 20. CI/CD RULES
+# 20. CI / DEPLOYMENT RULES
 
 ## Deployment Pipeline Zorunlu
 
 ### İçermeli
 
 - lint
-- type check
+- typecheck
 - tests
-- security scan
-- docker build
+- build
+- mümkünse security checks
+
+## Değişiklik Kalitesi
+
+Yeni backend işi tamamlandı sayılmaz eğer:
+- build kırılıyorsa,
+- typecheck kırılıyorsa,
+- lint kırılıyorsa,
+- route contract bozuluyorsa.
 
 ---
 
-# 21. DOCKER RULES
+# 21. SCALABILITY RULES
 
-## Containerization Zorunlu
-
-### Backend:
-
-- stateless olmalı
-- scalable olmalı
-
----
-
-## Multi-stage Build Kullan
-
----
-
-# 22. MICROSERVICE RULES
-
-## Gereksiz Microservice Kullanma
-
-Başlangıç:
-- modular monolith olmalı.
-
-Microservice:
-- gerçekten ihtiyaç olduğunda ayrılmalı.
-
----
-
-# 23. SCALABILITY RULES
-
-## Backend Horizontal Scale Desteklemeli
+## Horizontal Scale Dostu Olmalı
 
 ### Zorunlu
 
-- stateless architecture
-- shared cache
-- distributed session support
+- stateless request handling
+- shared cache where needed
+- idempotent background processing
+- retry-safe webhook / cron behavior
 
----
-
-# 24. DATABASE SCALABILITY RULES
-
-## Büyük Ölçekte
+## Database Scalability
 
 ### Kullan
 
-- read replicas
 - connection pooling
-- query optimization
+- indexed queries
+- efficient joins
+- RPC for atomic multi-step operations where justified
 
 ---
 
-# 25. FORBIDDEN PATTERNS
+# 22. FORBIDDEN PATTERNS
 
 ## ASLA YAPMA
 
 ```txt
-business logic in controller
-massive god services
-raw SQL everywhere
+business logic in route handler
+service role key in client code
+RLS bypass in browser code
 unvalidated input
-plain password storage
 hardcoded secrets
-no pagination
-blocking operations
-sync heavy tasks
-duplicate business logic
-huge database transactions
-deep nested queries
+no pagination on large lists
+blocking heavy side effects in request path
+webhook signature doğrulamadan işlem yapmak
+aynı business logic'i birden fazla endpoint'e kopyalamak
+harici network call'ı DB transaction içine koymak
 ```
 
 ---
 
-# 26. FINAL REQUIREMENTS
+# 23. FINAL REQUIREMENTS
 
 AI aşağıdaki özelliklere sahip backend üretmelidir:
 
-- scalable
 - secure
 - maintainable
 - modular
@@ -746,7 +929,10 @@ AI aşağıdaki özelliklere sahip backend üretmelidir:
 - strongly typed
 - high performance
 - fault tolerant
+- Supabase-native
+- Next.js App Router ile uyumlu
 
 Kod:
 - kısa vadeli değil,
-- uzun vadeli sürdürülebilir olmalıdır.
+- uzun vadeli sürdürülebilir olmalıdır,
+- [`AGENTS.md`](AGENTS.md) içindeki Next.js + Supabase mimarisini bozmayacak şekilde üretilmelidir.

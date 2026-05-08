@@ -14,10 +14,10 @@
  * No silent fallbacks - all errors are thrown for proper error handling.
  */
 
-import { notificationSchema } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/server";
+import { notificationSchema } from "@/lib/validators/notification";
 import type { NotificationType } from "@/types";
 
 interface NotificationRow {
