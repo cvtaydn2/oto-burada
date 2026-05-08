@@ -26,6 +26,45 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: fetchError?.message }, { status: 500 });
     }
 
+    // Pre-fetch data for credit_add jobs to avoid N+1 query problem
+    const creditAddJobs = jobs.filter((job) => job.job_type === "credit_add");
+    const paymentIds = Array.from(
+      new Set(creditAddJobs.map((job) => job.payment_id).filter(Boolean))
+    );
+
+    const paymentsMap = new Map<string, { plan_id: string | null; user_id: string }>();
+    const plansMap = new Map<string, { credits: number }>();
+
+    if (paymentIds.length > 0) {
+      const { data: payments } = await admin
+        .from("payments")
+        .select("id, plan_id, user_id")
+        .in("id", paymentIds);
+
+      if (payments) {
+        payments.forEach((p) => {
+          paymentsMap.set(p.id, { plan_id: p.plan_id, user_id: p.user_id });
+        });
+
+        const planIds = Array.from(
+          new Set(payments.map((p) => p.plan_id).filter(Boolean))
+        ) as string[];
+
+        if (planIds.length > 0) {
+          const { data: plans } = await admin
+            .from("pricing_plans")
+            .select("id, credits")
+            .in("id", planIds);
+
+          if (plans) {
+            plans.forEach((p) => {
+              plansMap.set(p.id, { credits: p.credits });
+            });
+          }
+        }
+      }
+    }
+
     const results = { success: 0, failed: 0 };
 
     for (const job of jobs) {
@@ -36,19 +75,11 @@ export async function GET(request: Request) {
         // 3. Logic based on job type
         if (job.job_type === "credit_add") {
           // B14 FIX: Get credits from pricing_plan instead of using payment amount directly
-          const { data: payment } = await admin
-            .from("payments")
-            .select("plan_id, user_id")
-            .eq("id", job.payment_id)
-            .single();
+          const payment = paymentsMap.get(job.payment_id);
 
           let credits = 0;
           if (payment?.plan_id) {
-            const { data: plan } = await admin
-              .from("pricing_plans")
-              .select("credits")
-              .eq("id", payment.plan_id)
-              .single();
+            const plan = plansMap.get(payment.plan_id);
             credits = plan?.credits ?? 0;
           }
 
