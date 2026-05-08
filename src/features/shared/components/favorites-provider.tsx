@@ -208,7 +208,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
 
     // Real-time synchronization
     const supabase = createSupabaseBrowserClient();
-    const channelId = `favorites-realtime-${userId}-${Math.random().toString(36).slice(2, 9)}`;
+    const channelId = `favorites-realtime-${userId}-${crypto.randomUUID()}`;
     const channel = supabase
       .channel(channelId)
       .on(
