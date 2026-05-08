@@ -120,7 +120,8 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 outline-none focus:border-blue-400"
+            aria-label="Sıralama seçeneği"
+            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 outline-none focus:border-blue-400 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>

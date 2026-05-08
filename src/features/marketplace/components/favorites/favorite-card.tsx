@@ -107,7 +107,11 @@ export function FavoriteCard({ listing, priority, onRemove }: FavoriteCardProps)
         </div>
 
         {/* Specs */}
-        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-muted/30 p-2.5">
+        <div
+          role="list"
+          aria-label="Araç Özellikleri"
+          className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-muted/30 p-2.5"
+        >
           <SpecItem icon={<Gauge size={12} />} value={`${formatNumber(listing.mileage)} km`} />
           <SpecItem
             icon={<Settings2 size={12} />}
@@ -124,6 +128,7 @@ export function FavoriteCard({ listing, priority, onRemove }: FavoriteCardProps)
           </span>
           <Link
             href={`/listing/${listing.slug}`}
+            aria-label={`${listing.brand} ${listing.model} ilanını detaylı incele`}
             className="flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-600 transition hover:bg-blue-100"
           >
             İncele
@@ -137,7 +142,7 @@ export function FavoriteCard({ listing, priority, onRemove }: FavoriteCardProps)
 
 function SpecItem({ icon, value }: { icon: React.ReactNode; value: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5">
+    <div role="listitem" className="flex flex-col items-center gap-0.5">
       <span className="text-muted-foreground/70">{icon}</span>
       <span className="text-center text-[10px] font-bold text-muted-foreground capitalize leading-tight">
         {value}
