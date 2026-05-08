@@ -408,7 +408,7 @@ export function buildListingBaseQuery(
   }
 ): any {
   const countOption = options?.countOnly || options?.withCount ? "exact" : undefined;
-  let query = client
+  let query: any = client
     .from("listings")
     .select(
       selectClause,
