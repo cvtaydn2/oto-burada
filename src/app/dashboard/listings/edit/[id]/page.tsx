@@ -2,7 +2,7 @@ import { ChevronLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { requireUser } from "@/features/auth/lib/session";
+import { getUserRole, requireUser } from "@/features/auth/lib/session";
 import { ListingCreateForm } from "@/features/forms/components/listing-create-form";
 import { getListingById } from "@/features/marketplace/services/marketplace-listings";
 import { getStoredProfileById } from "@/features/profile/services/profile-records";
@@ -19,10 +19,8 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   if (!listing) notFound();
 
-  // Security: verify ownership using app_metadata (server-signed, not user-editable)
-  // user_metadata CAN be updated by the user — do not use it for role checks.
-  const appMetadata = user.app_metadata as { role?: string } | undefined;
-  const isAdmin = appMetadata?.role === "admin";
+  // Security: verify ownership using centralized trusted role resolution.
+  const isAdmin = getUserRole(user) === "admin";
 
   if (listing.sellerId !== user.id && !isAdmin) {
     redirect("/dashboard/listings");

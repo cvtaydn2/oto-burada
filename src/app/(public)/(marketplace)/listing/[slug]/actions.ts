@@ -1,6 +1,6 @@
 "use server";
 
-import { getCurrentUser } from "@/features/auth/lib/session";
+import { getAuthContext, getCurrentUser } from "@/features/auth/lib/session";
 import { createExpertDocumentSignedUrl } from "@/features/marketplace/services/listing-documents";
 import {
   getMarketplaceListingBySlug,
@@ -29,7 +29,8 @@ export async function generateExpertDocumentSignedUrl(slug: string): Promise<str
       return null;
     }
 
-    const isAdmin = currentUser.user_metadata?.role === "admin";
+    const { dbProfile } = await getAuthContext();
+    const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
     const isOwner = currentUser.id === storedListing.sellerId;
 
     if (!isAdmin && !isOwner) {

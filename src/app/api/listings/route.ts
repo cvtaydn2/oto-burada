@@ -21,7 +21,7 @@ import { logger } from "@/lib/logger";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
-import { withUserAndCsrfToken } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 import { captureServerError, trackServerEvent } from "@/lib/telemetry-server";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 
@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const security = await withUserAndCsrfToken(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.listingCreate,
     rateLimitKey: "listings:create",

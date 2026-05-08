@@ -1,10 +1,10 @@
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
-import { withUserAndCsrfToken } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 
 export async function POST(request: Request) {
-  const security = await withUserAndCsrfToken(request);
+  const security = await withUserAndCsrf(request);
   if (!security.ok) return security.response;
 
   try {

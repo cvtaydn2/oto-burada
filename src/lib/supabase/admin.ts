@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // ── SECURITY FIX: Issue #21 - Prevent Client Bundle Leakage ─────────────
 // This import ensures that if this module is accidentally imported in a client
 // component, the build will fail with a clear error message instead of silently
@@ -8,6 +7,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 import { getSupabaseAdminEnv } from "@/lib/env";
+import type { Database } from "@/types/supabase";
 export { uuidSchema } from "@/lib/admin-validators";
 
 /**
@@ -29,7 +29,7 @@ export { uuidSchema } from "@/lib/admin-validators";
  */
 export function createSupabaseAdminClient() {
   const { serviceRoleKey, url } = getSupabaseAdminEnv();
-  return createClient<any>(url, serviceRoleKey, {
+  return createClient<Database>(url, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
-import { getCurrentUser } from "@/features/auth/lib/session";
+import { getAuthContext } from "@/features/auth/lib/session";
 import { GalleryHeader } from "@/features/layout/components/gallery-header";
 import { getGalleryBySlug, recordGalleryView } from "@/features/marketplace/services";
 import { ListingCard } from "@/features/shared/components/listing-card";
@@ -18,8 +18,8 @@ interface GalleryPageProps {
 
 export async function generateMetadata({ params }: GalleryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const currentUser = await getCurrentUser();
-  const isAdmin = currentUser?.user_metadata?.role === "admin";
+  const { dbProfile } = await getAuthContext();
+  const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
 
   // We don't know if they are the owner yet, so we fetch basic first
   const data = await getGalleryBySlug(slug, {
@@ -39,8 +39,8 @@ export async function generateMetadata({ params }: GalleryPageProps): Promise<Me
 
 export default async function GalleryPage({ params }: GalleryPageProps) {
   const { slug } = await params;
-  const currentUser = await getCurrentUser();
-  const isAdmin = currentUser?.user_metadata?.role === "admin";
+  const { user: currentUser, dbProfile } = await getAuthContext();
+  const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
 
   // First try public fetch
   let data = await getGalleryBySlug(slug);

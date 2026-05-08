@@ -7,12 +7,12 @@ import { savedSearchCreateSchema } from "@/lib";
 import { issuesToFieldErrors } from "@/lib/helpers";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/security";
+import { withUserAndCsrf, withUserRoute } from "@/lib/security";
 import { captureServerEvent } from "@/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting
-  const security = await withAuth(request, {
+  const security = await withUserRoute(request, {
     ipRateLimit: rateLimitProfiles.general,
     rateLimitKey: "saved-searches:list",
   });
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.general,
     rateLimitKey: "saved-searches:create",

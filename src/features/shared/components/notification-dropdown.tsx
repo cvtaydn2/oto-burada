@@ -11,6 +11,7 @@ import { useState } from "react";
 import { Button } from "@/features/ui/components/button";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn, formatDate } from "@/lib";
+import { ApiClient } from "@/lib/api/client";
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
@@ -21,10 +22,14 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   // Mark as read mutation
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/notifications/${id}`, { method: "PATCH" });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.success) {
-        throw new Error(payload?.error?.message || "Bildirim okundu olarak işaretlenemedi");
+      const payload = await ApiClient.request<{
+        notification: {
+          id: string;
+        };
+      }>(`/api/notifications/${id}`, { method: "PATCH" });
+
+      if (!payload.success) {
+        throw new Error(payload.error?.message || "Bildirim okundu olarak işaretlenemedi");
       }
     },
     onSuccess: () => {
@@ -39,10 +44,12 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   // Mark all as read mutation
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/notifications", { method: "PATCH" });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.success) {
-        throw new Error(payload?.error?.message || "Tüm bildirimler okundu olarak işaretlenemedi");
+      const payload = await ApiClient.request<{ updated: true }>("/api/notifications", {
+        method: "PATCH",
+      });
+
+      if (!payload.success) {
+        throw new Error(payload.error?.message || "Tüm bildirimler okundu olarak işaretlenemedi");
       }
     },
     onSuccess: () => {

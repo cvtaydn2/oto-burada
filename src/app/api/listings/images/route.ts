@@ -16,7 +16,7 @@ import {
 } from "@/lib/registry";
 import { createRequestSizeErrorMessage, REQUEST_SIZE_LIMITS } from "@/lib/request-size";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
-import { withAuthAndCsrf } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 import { createSupabaseServerClient } from "@/lib/server";
 import { captureServerError } from "@/lib/telemetry-server";
 import { UPLOAD_POLICY } from "@/lib/upload-policy";
@@ -46,7 +46,7 @@ function mapUploadValidationError(message: string) {
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.imageUpload,
     rateLimitKey: "images:upload",
@@ -241,7 +241,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   // Security checks: CSRF + Auth
-  const security = await withAuthAndCsrf(request);
+  const security = await withUserAndCsrf(request);
 
   if (!security.ok) return security.response;
 

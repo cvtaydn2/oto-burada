@@ -223,30 +223,29 @@ src/app/dashboard/favorites/
 
 ### ⚠️ Pending Migrations
 
-The following services still use legacy patterns and should be migrated:
+The architecture has moved from top-level `src/services/*` ownership to a feature-first structure where service code also lives under `src/features/*/services/*`. Because of that transition, the old pending list below is no longer reliable as a file-path inventory and should be treated as a migration theme list instead of a literal file checklist.
 
-1. **Listing Service** (`src/services/listings/listing-service.ts`)
-   - Pattern: Class-based service
+Current migration themes still worth auditing:
+
+1. **Marketplace listing query layer**
+   - Current area: `src/features/marketplace/services/listings/`
+   - Risk: mixed legacy query-builder patterns, admin/public branching, and localized `any` usage in hot paths.
+   - Priority: High
+
+2. **Chat service surface**
+   - Current area: `src/features/chat/services/chat/`
+   - Risk: feature is operational but still carries preservation tests referencing historical paths.
    - Priority: Medium
-   - Estimated effort: 2-3 hours
 
-2. **Chat Service** (`src/services/chat/chat-service.ts`)
-   - Pattern: Class-based service
-   - Priority: Low (feature is secondary for MVP)
-   - Estimated effort: 2-3 hours
-
-3. **Support Service** (`src/services/support/support-service.ts`)
-   - Pattern: Class-based service
+3. **Support/ticket service surface**
+   - Current area: `src/features/support/services/support/`
+   - Risk: some flows are modernized, but the documentation previously pointed to removed top-level service paths.
    - Priority: Medium
-   - Estimated effort: 1-2 hours
 
-4. **Client Service Files**
-   - `src/services/profile/client-service.ts`
-   - `src/services/reports/client-service.ts`
-   - `src/services/auth/client-service.ts`
-   - `src/services/notifications/client-service.ts`
-   - Priority: Low (can be migrated incrementally)
-   - Estimated effort: 1 hour each
+4. **Client-side API abstractions**
+   - Current area: shared wrappers such as `src/lib/api/client.ts` and feature hooks/components that still call REST endpoints directly.
+   - Risk: inconsistent client mutation patterns and duplicated error handling.
+   - Priority: Medium
 
 ## Migration Checklist
 

@@ -9,12 +9,12 @@ import { issuesToFieldErrors } from "@/lib/helpers";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { sanitizeDescription } from "@/lib/sanitize";
-import { withAuthAndCsrf } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 import { captureServerEvent } from "@/lib/telemetry-server";
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.reportCreate,
     rateLimitKey: "reports:create",

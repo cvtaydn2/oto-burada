@@ -1,6 +1,6 @@
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/features/shared/lib/env";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
 import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ listingId: string }> }
 ) {
-  const security = await withAuthAndCsrf(request);
+  const security = await withUserAndCsrf(request);
   if (!security.ok) return security.response;
   const user = security.user!;
 

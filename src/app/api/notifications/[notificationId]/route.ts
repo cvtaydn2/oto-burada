@@ -4,14 +4,14 @@ import {
 } from "@/features/notifications/services/notification-records";
 import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ notificationId: string }> }
 ) {
   // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.general,
     rateLimitKey: "notifications:update",
@@ -19,7 +19,7 @@ export async function PATCH(
 
   if (!security.ok) return security.response;
 
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!; // Guaranteed by withUserAndCsrf
 
   const { notificationId } = await context.params;
   const notification = await markDatabaseNotificationRead(user.id, notificationId);
@@ -36,14 +36,14 @@ export async function DELETE(
   context: { params: Promise<{ notificationId: string }> }
 ) {
   // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     rateLimitKey: "notifications:delete",
   });
 
   if (!security.ok) return security.response;
 
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!; // Guaranteed by withUserAndCsrf
 
   const { notificationId } = await context.params;
   const deleted = await deleteDatabaseNotification(user.id, notificationId);

@@ -14,7 +14,7 @@ export function createApiResponseSchema<T extends z.ZodTypeAny>(dataSchema: T) {
       .object({
         message: z.string(),
         code: z.string().optional(),
-        details: z.any().optional(),
+        details: z.unknown().optional(),
       })
       .optional(),
   });

@@ -20,7 +20,7 @@ import {
 } from "@/components/seo/structured-data";
 import { getCleanDescription, getListingBreadcrumbs } from "@/domain/logic/listing-factory";
 import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
-import { getCurrentUser } from "@/features/auth/lib/session";
+import { getAuthContext, getCurrentUser } from "@/features/auth/lib/session";
 import { DamageReportCard } from "@/features/marketplace/components/damage-report-card";
 import { ExpertInspectionCard } from "@/features/marketplace/components/expert-inspection-card";
 import { ExpertPdfButton } from "@/features/marketplace/components/expert-pdf-button";
@@ -101,7 +101,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     const storedListing = await getStoredListingBySlug(slug, { includeBanned: true });
 
     if (storedListing) {
-      const isAdmin = currentUser.user_metadata?.role === "admin";
+      const { dbProfile } = await getAuthContext();
+      const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
       const isOwner = currentUser.id === storedListing.sellerId;
 
       if (isAdmin || isOwner) {

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { markChatMessagesAsRead } from "@/features/chat/services/chat-logic";
 import { logger } from "@/features/shared/lib/logger";
 import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
-import { withUserAndCsrfToken } from "@/features/shared/lib/security";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
 
 function mapChatReadRouteError(error: unknown, fallbackMessage: string) {
   const message = error instanceof Error ? error.message : fallbackMessage;
@@ -30,13 +30,13 @@ async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>,
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const security = await withUserAndCsrfToken(req);
+  const security = await withUserAndCsrf(req);
   if (!security.ok) return security.response;
   return handleMarkRead(req, params, security.user!.id);
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const security = await withUserAndCsrfToken(req);
+  const security = await withUserAndCsrf(req);
   if (!security.ok) return security.response;
   return handleMarkRead(req, params, security.user!.id);
 }

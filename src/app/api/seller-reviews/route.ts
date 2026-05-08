@@ -14,7 +14,7 @@ import { z } from "zod";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { sanitizeText } from "@/lib/sanitize";
-import { withAuthAndCsrf } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 import { createSupabaseServerClient } from "@/lib/server";
 
 const reviewSchema = z.object({
@@ -28,7 +28,7 @@ const reviewSchema = z.object({
 const REVIEW_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: Request) {
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: REVIEW_RATE_LIMIT,
     rateLimitKey: "seller-reviews:create",

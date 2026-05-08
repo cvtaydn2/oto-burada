@@ -2,7 +2,7 @@ import { bulkListingActionSchema } from "@/lib";
 import { logger } from "@/lib/logger";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
-import { withAuthAndCsrf } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 import { createSupabaseServerClient } from "@/lib/server";
 import { captureServerEvent } from "@/lib/telemetry-server";
 
@@ -10,7 +10,7 @@ import { captureServerEvent } from "@/lib/telemetry-server";
 const BULK_DRAFT_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 export async function POST(req: Request) {
-  const security = await withAuthAndCsrf(req, {
+  const security = await withUserAndCsrf(req, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: BULK_DRAFT_RATE_LIMIT,
     rateLimitKey: "listings:bulk-draft",

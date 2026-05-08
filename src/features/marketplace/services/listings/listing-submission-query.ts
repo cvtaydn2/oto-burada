@@ -284,6 +284,7 @@ seller:profiles!inner!seller_id(id, full_name, is_verified, business_name, busin
 `;
 
 type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
+
 let preferLegacyListingSchema = false;
 let preferLegacyMarketplaceSchema = false;
 

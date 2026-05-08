@@ -83,6 +83,29 @@ export function getTelemetryServer() {
   };
 }
 
+type LoggerCategory = {
+  error: (message: string, error?: unknown, data?: Record<string, unknown>) => void;
+  warn: (message: string, data?: Record<string, unknown>, error?: unknown) => void;
+};
+
+function getLoggerCategory(context: string): LoggerCategory {
+  const loggerRecord = logger as Record<string, unknown>;
+  const candidate = loggerRecord[context];
+
+  if (
+    candidate &&
+    typeof candidate === "object" &&
+    "error" in candidate &&
+    typeof (candidate as { error?: unknown }).error === "function" &&
+    "warn" in candidate &&
+    typeof (candidate as { warn?: unknown }).warn === "function"
+  ) {
+    return candidate as LoggerCategory;
+  }
+
+  return logger.system;
+}
+
 export function captureServerError(
   message: string,
   context: string,
@@ -90,8 +113,7 @@ export function captureServerError(
   data?: Record<string, unknown>,
   ...args: unknown[]
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const logCategory = (logger as Record<string, any>)[context] || logger.system;
+  const logCategory = getLoggerCategory(context);
 
   if (error && isSentryEnabled) {
     Sentry.captureException(error, {
@@ -113,8 +135,7 @@ export function captureServerWarning(
   data?: Record<string, unknown>,
   ...args: unknown[]
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const logCategory = (logger as Record<string, any>)[context] || logger.system;
+  const logCategory = getLoggerCategory(context);
 
   if (isSentryEnabled) {
     Sentry.captureMessage(message, {

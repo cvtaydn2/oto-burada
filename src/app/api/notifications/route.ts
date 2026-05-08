@@ -4,12 +4,12 @@ import {
 } from "@/features/notifications/services/notification-records";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/security";
+import { withUserAndCsrf, withUserRoute } from "@/lib/security";
 import { captureServerError } from "@/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting
-  const security = await withAuth(request, {
+  const security = await withUserRoute(request, {
     ipRateLimit: rateLimitProfiles.general,
     rateLimitKey: "notifications:list",
   });
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.general,
     rateLimitKey: "notifications:mark-all-read",

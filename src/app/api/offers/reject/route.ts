@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 
 import { respondToOffer } from "@/features/offers/services/offer-service";
 import { logger } from "@/lib/logger";
-import { withUserAndCsrfToken } from "@/lib/security";
+import { withUserAndCsrf } from "@/lib/security";
 
 export async function POST(request: Request) {
-  const security = await withUserAndCsrfToken(request);
+  const security = await withUserAndCsrf(request);
   if (!security.ok) return security.response;
   const user = security.user!;
 
