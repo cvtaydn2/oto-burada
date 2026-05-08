@@ -1,5 +1,21 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 52. Build-Time Circular Dependency Remediation Pass
+
+**Date**: 2026-05-08
+**Status**: ✅ COMPLETED
+**Scope**: Resolve Turbopack build-time `ReferenceError: Cannot access '<var>' before initialization` failures affecting API routes by removing eager imports that created circular module initialization chains during static data collection.
+
+### 52.1 Applied Fixes
+- **Chat API lazy loading ([route.ts](src/app/api/chats/route.ts)):** Replaced eager imports of security, rate-limit, logger, response helpers, and chat service functions with route-scoped dynamic imports so [`/api/chats`](src/app/api/chats/route.ts) no longer triggers build-time circular initialization.
+- **Cron reservations lazy loading ([route.ts](src/app/api/cron/expire-reservations/route.ts)):** Deferred [`withCronRoute()`](src/lib/api/security.ts:282), [`expireReservations()`](src/features/reservations/services/reservations/reservation-service.ts:240), and logger resolution until request execution to eliminate another server chunk initialization cycle.
+- **Validator enum decoupling:** Replaced `z.enum()` definitions that depended on imported runtime constant arrays with local schema enums inside [`feedback.ts`](src/lib/validators/feedback.ts), [`admin.ts`](src/lib/validators/admin.ts), [`notification.ts`](src/lib/validators/notification.ts), [`auth.ts`](src/lib/validators/auth.ts), [`inspection.ts`](src/lib/validators/listing/inspection.ts), [`marketplace.ts`](src/lib/validators/marketplace.ts), [`fields.ts`](src/lib/validators/listing/fields.ts), and [`index.ts`](src/lib/validators/listing/index.ts). This broke the circular dependency path passing through bundled validator/domain chunks during build.
+
+### 52.2 Validation
+- **ESLint (`npm run lint`)**: Passed with **0 errors**.
+- **TypeScript (`npm run typecheck`)**: Passed with **0 errors**.
+- **Production Build (`npm run build`)**: Passed successfully; all app and API routes completed page data collection and static generation.
+
 ## 51. Homepage Modularization and Rule 4.1 Size Limit Compliance Pass
 
 **Date**: 2026-05-08

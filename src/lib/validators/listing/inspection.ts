@@ -1,25 +1,27 @@
 import { z } from "zod";
 
-import { expertInspectionGrades, expertInspectionStatuses } from "@/lib/domain";
 import type { ExpertInspection } from "@/types";
 
 import { emptyStringToUndefined, invalidMessage, optionalTrimmedString } from "../shared";
 
+const expertInspectionGradeEnum = z.enum(["a", "b", "c", "d", "e"]);
+const expertInspectionStatusEnum = z.enum(["var", "yok", "bilinmiyor"]);
+
 export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
   hasInspection: z.boolean(),
   inspectionDate: optionalTrimmedString,
-  overallGrade: z.enum(expertInspectionGrades).optional(),
+  overallGrade: expertInspectionGradeEnum.optional(),
   totalScore: z.coerce.number().int().min(0).max(100).optional(),
-  damageRecord: z.enum(expertInspectionStatuses),
-  bodyPaint: z.enum(expertInspectionStatuses),
-  engine: z.enum(expertInspectionStatuses),
-  transmission: z.enum(expertInspectionStatuses),
-  suspension: z.enum(expertInspectionStatuses),
-  brakes: z.enum(expertInspectionStatuses),
-  electrical: z.enum(expertInspectionStatuses),
-  interior: z.enum(expertInspectionStatuses),
-  tires: z.enum(expertInspectionStatuses),
-  acHeating: z.enum(expertInspectionStatuses),
+  damageRecord: expertInspectionStatusEnum,
+  bodyPaint: expertInspectionStatusEnum,
+  engine: expertInspectionStatusEnum,
+  transmission: expertInspectionStatusEnum,
+  suspension: expertInspectionStatusEnum,
+  brakes: expertInspectionStatusEnum,
+  electrical: expertInspectionStatusEnum,
+  interior: expertInspectionStatusEnum,
+  tires: expertInspectionStatusEnum,
+  acHeating: expertInspectionStatusEnum,
   notes: optionalTrimmedString,
   inspectedBy: optionalTrimmedString,
   documentUrl: z.preprocess(

@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { userRoles } from "@/lib/domain";
-
 import {
   emptyStringToUndefined,
   invalidMessage,
@@ -10,6 +8,8 @@ import {
   timestampSchema,
   trimmedRequiredString,
 } from "./shared";
+
+const userRoleEnum = z.enum(["user", "admin"]);
 
 export const profileSchema = z.object({
   id: trimmedRequiredString,
@@ -27,7 +27,7 @@ export const profileSchema = z.object({
   isWalletVerified: z.boolean().optional(),
   userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
-  role: z.enum(userRoles),
+  role: userRoleEnum,
 
   // Corporate Fields
   businessName: z.string().trim().nullable().optional(),

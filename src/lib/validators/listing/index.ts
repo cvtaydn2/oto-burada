@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-import {
-  fuelTypes,
-  listingStatuses,
-  maximumCarYear,
-  maximumMileage,
-  minimumCarYear,
-  transmissionTypes,
-} from "@/lib/domain";
+import { maximumCarYear, maximumMileage, minimumCarYear } from "@/lib/domain";
 import { vehicleCategories } from "@/lib/vehicle-categories";
 import type { Listing } from "@/types";
 
@@ -29,6 +22,18 @@ export * from "./fields";
 export * from "./images";
 export * from "./inspection";
 
+const fuelTypeEnum = z.enum(["benzin", "dizel", "lpg", "hibrit", "elektrik"]);
+const transmissionTypeEnum = z.enum(["manuel", "otomatik", "yari_otomatik"]);
+const listingStatusEnum = z.enum([
+  "draft",
+  "pending",
+  "pending_ai_review",
+  "approved",
+  "rejected",
+  "flagged",
+  "archived",
+]);
+
 export const listingSchema: z.ZodType<Listing> = z.object({
   id: trimmedRequiredString,
   slug: trimmedRequiredString,
@@ -44,8 +49,8 @@ export const listingSchema: z.ZodType<Listing> = z.object({
     .min(minimumCarYear, invalidMessage)
     .max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
-  fuelType: z.enum(fuelTypes),
-  transmission: z.enum(transmissionTypes),
+  fuelType: fuelTypeEnum,
+  transmission: transmissionTypeEnum,
   price: positiveCurrencySchema,
   city: trimmedRequiredString,
   district: trimmedRequiredString,
@@ -85,7 +90,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   fraudReason: z.string().nullable().optional(),
   viewCount: z.coerce.number().int().min(0).optional().default(0),
   version: z.coerce.number().int().min(0).optional().default(0),
-  status: z.enum(listingStatuses),
+  status: listingStatusEnum,
   images: z.array(listingImageSchema),
   featured: z.boolean(),
   featuredUntil: z.string().nullable().optional(),

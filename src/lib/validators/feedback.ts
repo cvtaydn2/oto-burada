@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { reportReasons, reportStatuses } from "@/lib/domain";
 import type { Report, ReportCreateInput } from "@/types";
 
 import {
@@ -10,18 +9,29 @@ import {
   trimmedRequiredString,
 } from "./shared";
 
+const reportReasonEnum = z.enum([
+  "fake_listing",
+  "wrong_info",
+  "spam",
+  "price_manipulation",
+  "invalid_verification",
+  "other",
+]);
+
+const reportStatusEnum = z.enum(["open", "reviewing", "resolved", "dismissed"]);
+
 export const reportSchema: z.ZodType<Report> = z.object({
   id: optionalTrimmedString,
   listingId: trimmedRequiredString,
   reporterId: trimmedRequiredString,
-  reason: z.enum(reportReasons),
+  reason: reportReasonEnum,
   description: z
     .preprocess(
       emptyStringToUndefined,
       z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional()
     )
     .optional(),
-  status: z.enum(reportStatuses),
+  status: reportStatusEnum,
   createdAt: timestampSchema,
   updatedAt: z
     .preprocess(
@@ -33,7 +43,7 @@ export const reportSchema: z.ZodType<Report> = z.object({
 
 export const reportCreateSchema: z.ZodType<ReportCreateInput> = z.object({
   listingId: trimmedRequiredString,
-  reason: z.enum(reportReasons),
+  reason: reportReasonEnum,
   description: z
     .preprocess(
       emptyStringToUndefined,

@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { createNewChat, getUserChats } from "@/features/chat/services/chat-logic";
 import { CSRF_COOKIE_HASH_NAME_CLIENT } from "@/lib/csrf";
-import { logger } from "@/lib/logger";
-import { rateLimitProfiles } from "@/lib/rate-limit";
-import { API_ERROR_CODES, apiError } from "@/lib/response";
-import { withUserAndCsrf, withUserRoute } from "@/lib/security";
 
 const createChatSchema = z.object({
   listingId: z.string().uuid(),
   sellerId: z.string().uuid(),
 });
 
-function mapChatRouteError(error: unknown, fallbackMessage: string) {
+async function mapChatRouteError(error: unknown, fallbackMessage: string) {
+  const { API_ERROR_CODES, apiError } = await import("@/lib/response");
   const message = error instanceof Error ? error.message : fallbackMessage;
 
   if (message.includes("erişim izniniz yok") || message.includes("bulunamadı")) {
@@ -33,6 +29,11 @@ function mapChatRouteError(error: unknown, fallbackMessage: string) {
 
 export async function GET(req: NextRequest) {
   // SECURITY: Apply authentication and rate limiting for read operations
+  const [{ withUserRoute }, { rateLimitProfiles }] = await Promise.all([
+    import("@/lib/security"),
+    import("@/lib/rate-limit"),
+  ]);
+
   const security = await withUserRoute(req, {
     userRateLimit: rateLimitProfiles.general,
     rateLimitKey: "chats:list",
@@ -47,9 +48,11 @@ export async function GET(req: NextRequest) {
   const archived = searchParams.get("archived") === "true";
 
   try {
+    const { getUserChats } = await import("@/features/chat/services/chat-logic");
     const result = await getUserChats(user.id, archived);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
+    const { logger } = await import("@/lib/logger");
     logger.messages.error("[API:CHATS:GET] Failed to fetch chat list", error, { userId: user.id });
     return mapChatRouteError(error, "Chat listesi alınamadı.");
   }
@@ -57,12 +60,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   // SECURITY: Apply authentication, CSRF protection, and rate limiting for mutations
+  const { withUserAndCsrf } = await import("@/lib/security");
+
   const security = await withUserAndCsrf(req, {
     userRateLimit: { limit: 20, windowMs: 60 * 60 * 1000 }, // 20 chats per hour
     rateLimitKey: "chats:create",
   });
 
   if (!security.ok) {
+    const { logger } = await import("@/lib/logger");
     logger.auth.warn("[API:CHATS:POST] Security check failed", {
       hasCsrfHeader: Boolean(req.headers.get("x-csrf-token")),
       hasOrigin: Boolean(req.headers.get("origin")),
@@ -87,6 +93,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { createNewChat } = await import("@/features/chat/services/chat-logic");
     const result = await createNewChat({
       listingId: listingId,
       buyerId: user.id,
@@ -99,6 +106,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
     }
 
+    const { logger } = await import("@/lib/logger");
     logger.messages.error("[API:CHATS:POST] Failed to create chat", error, { userId: user.id });
     return mapChatRouteError(error, "Chat oluşturulamadı.");
   }

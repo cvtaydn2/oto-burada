@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { notificationTypes } from "@/lib/domain";
 import type { Notification, SavedSearch, SavedSearchCreateInput } from "@/types";
 
 import { listingFiltersSchema } from "./marketplace";
@@ -12,10 +11,12 @@ import {
   trimmedRequiredString,
 } from "./shared";
 
+const notificationTypeEnum = z.enum(["favorite", "moderation", "report", "system", "question"]);
+
 export const notificationSchema: z.ZodType<Notification> = z.object({
   id: trimmedRequiredString,
   userId: trimmedRequiredString,
-  type: z.enum(notificationTypes),
+  type: notificationTypeEnum,
   title: trimmedRequiredString.max(160, "Baslik en fazla 160 karakter olabilir"),
   message: trimmedRequiredString.max(1000, "Mesaj en fazla 1000 karakter olabilir"),
   href: z.preprocess(

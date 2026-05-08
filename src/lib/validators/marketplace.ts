@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-import {
-  fuelTypes,
-  listingSortOptions,
-  maximumCarYear,
-  maximumMileage,
-  minimumCarYear,
-  transmissionTypes,
-} from "@/lib/domain";
+import { maximumCarYear, maximumMileage, minimumCarYear } from "@/lib/domain";
 import { vehicleCategories } from "@/lib/vehicle-categories";
 import type { ListingFilters } from "@/types";
 
@@ -17,6 +10,19 @@ import {
   nonNegativeNumberSchema,
   optionalTrimmedString,
 } from "./shared";
+
+const fuelTypeEnum = z.enum(["benzin", "dizel", "lpg", "hibrit", "elektrik"]);
+const transmissionTypeEnum = z.enum(["manuel", "otomatik", "yari_otomatik"]);
+const listingSortOptionEnum = z.enum([
+  "newest",
+  "price_asc",
+  "price_desc",
+  "mileage_asc",
+  "mileage_desc",
+  "year_desc",
+  "year_asc",
+  "oldest",
+]);
 
 export const listingFilterRecoveryFieldNames = [
   "query",
@@ -107,11 +113,9 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
         z.boolean().optional()
       )
       .optional(),
-    fuelType: z.preprocess(emptyStringToUndefined, z.enum(fuelTypes).optional()).optional(),
-    transmission: z
-      .preprocess(emptyStringToUndefined, z.enum(transmissionTypes).optional())
-      .optional(),
-    sort: z.preprocess(emptyStringToUndefined, z.enum(listingSortOptions).optional()).optional(),
+    fuelType: z.preprocess(emptyStringToUndefined, fuelTypeEnum.optional()).optional(),
+    transmission: z.preprocess(emptyStringToUndefined, transmissionTypeEnum.optional()).optional(),
+    sort: z.preprocess(emptyStringToUndefined, listingSortOptionEnum.optional()).optional(),
     page: z
       .preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional())
       .optional(),
