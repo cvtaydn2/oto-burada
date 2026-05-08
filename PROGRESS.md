@@ -1,5 +1,20 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 58. Phase 1 Accessibility Audit Pass (Palette)
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Perform targeted, high-impact accessibility and semantic HTML audits across core marketplace features, including favorites view-actions, cards, and custom controls, following WCAG 2.2 AA standards.
+
+### 58.1 Applied Fixes
+- **Select Keyboard/Screen Reader Labeling ([favorites-page-client.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/marketplace/components/favorites-page-client.tsx)):** Added explicit `aria-label="Sıralama seçeneği"` to the listing sort select element. Added `focus-visible` styling rings for accessible keyboard navigation.
+- **Custom Radio Interactive Support ([favorites-price-alerts.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/marketplace/components/favorites-price-alerts.tsx)):** Added `peer-focus-visible` ring-highlights to the custom price threshold radio selection circles to allow keyboard-first users to visually distinguish focused options.
+- **Semantic Lists & Custom Card Labeling ([favorite-card.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/marketplace/components/favorites/favorite-card.tsx)):** Decorated vehicle attribute badges with `role="list"` and `role="listitem"` spec structures for clear screen-reader traversal. Added customized dynamic `aria-label` tags (`brand + model + ilanını detaylı incele`) to listing action Links.
+
+### 58.2 Validation
+- **Lint Verification (`npm run lint`):** Passed with **0 warnings and 0 errors**.
+- **Typecheck Verification (`npm run typecheck`):** Passed with **0 errors**.
+
 ## 57. Admin Brands Manager Modularization & Rule 4.1 Size Limit Compliance Pass
 
 **Date**: 2026-05-08

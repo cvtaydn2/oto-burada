@@ -97,7 +97,7 @@ export function FavoritesPriceAlerts() {
                       onChange={() => handleThresholdChange(option.value)}
                       className="peer sr-only"
                     />
-                    <div className="h-5 w-5 rounded-full border-2 border-border peer-checked:border-blue-500 peer-checked:bg-blue-500 after:absolute after:left-1.5 after:top-1.5 after:h-2 after:w-2 after:rounded-full after:bg-card peer-checked:after:bg-card" />
+                    <div className="h-5 w-5 rounded-full border-2 border-border peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-400 peer-focus-visible:ring-offset-2 transition-all after:absolute after:left-1.5 after:top-1.5 after:h-2 after:w-2 after:rounded-full after:bg-card peer-checked:after:bg-card" />
                   </div>
                   <span className="text-sm font-medium text-foreground/90">{option.label}</span>
                 </Label>
