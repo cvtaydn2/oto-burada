@@ -19,12 +19,7 @@ const supabaseHostname = getSupabaseHostname();
 
 const nextConfig: NextConfig = {
   images: {
-    // TODO: Set to false when upgrading to Vercel Pro for automatic image optimization
-    // FREE TIER: Prevents Vercel 1000 image optimization quota exhaustion.
-    // In production, we keep it true to save quota. In preview/local, we can leave it false if needed.
-    // Keep optimization enabled by default across prod/preview.
-    // Allow explicit opt-out only when FORCE flag is not set.
-    unoptimized: process.env.NEXT_PUBLIC_FORCE_OPTIMIZED_IMAGES === "false",
+    unoptimized: false,
     remotePatterns: [
       // Only add Supabase pattern when the env var is configured
       ...(supabaseHostname
