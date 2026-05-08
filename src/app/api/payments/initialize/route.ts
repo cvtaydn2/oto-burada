@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 
-import { getClientIp } from "@/lib/api/ip";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf } from "@/lib/api/security";
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { initiatePaymentSchema } from "@/lib/validators/payment";
-import { initializePaymentCheckout } from "@/services/payments/payment-logic";
+import { initializePaymentCheckout } from "@/features/payments/services/payment-logic";
+import { DOPING_PACKAGES } from "@/lib/doping";
+import { getClientIp } from "@/lib/ip";
+import { logger } from "@/lib/logger";
+import { initiatePaymentSchema } from "@/lib/payment";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrf } from "@/lib/security";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export async function POST(req: NextRequest) {
   // SECURITY: Apply authentication, CSRF protection, and rate limiting
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     // Get user profile for buyer info
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, phone, city, identity_number, business_address")
+      .select("full_name, phone, city, business_address")
       .eq("id", user.id)
       .single();
 
@@ -90,6 +91,23 @@ export async function POST(req: NextRequest) {
     const clientIp = await getClientIp();
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const callbackUrl = `${baseUrl}/api/payments/callback`;
+
+    // API-P1-02 hardening: callback URL must be same-origin and HTTPS in production
+    let parsedCallback: URL;
+    try {
+      parsedCallback = new URL(callbackUrl);
+    } catch {
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme callback URL geçersiz.", 500);
+    }
+
+    if (process.env.NODE_ENV === "production" && parsedCallback.protocol !== "https:") {
+      return apiError(
+        API_ERROR_CODES.INTERNAL_ERROR,
+        "Production ortamında callback URL HTTPS olmalıdır.",
+        500
+      );
+    }
 
     // SECURITY: Generate idempotency key to prevent double processing
     // PILL: Issue C-1 - Idempotency
@@ -112,15 +130,21 @@ export async function POST(req: NextRequest) {
           price: pkg.price,
         },
       ],
-      callbackUrl: `${baseUrl}/api/payments/callback`,
+      callbackUrl,
       listingId,
       idempotencyKey,
     });
 
     return apiSuccess(result);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Ödeme başlatılamadı.";
-    console.error("[PaymentInitialize] Error:", error);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, message, 500);
+    logger.payments.error("Payment initialize failed", error, {
+      userId: user.id,
+    });
+
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Ödeme başlatılamadı. Lütfen kısa süre sonra tekrar deneyin.",
+      500
+    );
   }
 }

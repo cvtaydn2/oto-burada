@@ -10,6 +10,8 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next", "tests", "src/**/*.int.test.{ts,tsx}"],
+    maxWorkers: process.env.CI ? 3 : 2,
+    minWorkers: 1,
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],
@@ -40,3 +42,4 @@ export default defineConfig({
     },
   },
 });
+

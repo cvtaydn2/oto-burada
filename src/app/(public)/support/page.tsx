@@ -1,8 +1,10 @@
-import { FaqAccordion } from "@/components/shared/faq-accordion";
-import { TicketForm } from "@/components/support/ticket-form";
-import { TicketList } from "@/components/support/ticket-list";
-import { getCurrentUser } from "@/lib/auth/session";
-import { getUserTickets } from "@/services/support/ticket-service";
+import Link from "next/link";
+
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { FaqAccordion } from "@/features/shared/components/faq-accordion";
+import { TicketForm } from "@/features/support/components/ticket-form";
+import { TicketList } from "@/features/support/components/ticket-list";
+import { getUserTickets } from "@/features/support/services/ticket-service";
 
 const FAQ_CATEGORIES = [
   {
@@ -47,7 +49,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: "Hesap güvenliği",
-        a: "Güçlü bir şifre kullanın ve iki faktörlü doğrulamayı etkinleştirin.",
+        a: "Güçlü bir şifre kullanın, e-posta doğrulamanızı tamamlayın ve giriş bağlantılarınızı yalnızca resmi OtoBurada sayfalarından açın.",
       },
     ],
   },
@@ -126,17 +128,31 @@ export default async function SupportPage() {
 
       <section className="space-y-6">
         <div className="rounded-xl border border-border bg-card p-8">
-          <h2 className="text-xl font-bold text-foreground mb-6">Yeni Destek Talebi Oluştur</h2>
+          <div className="mb-6 space-y-2">
+            <h2 className="text-xl font-bold text-foreground">Yeni Destek Talebi Oluştur</h2>
+            <p className="text-sm text-muted-foreground">
+              Teknik sorunlar, ilan moderasyonu veya hesap erişimiyle ilgili taleplerini bu formdan
+              iletebilirsin.
+            </p>
+          </div>
           {user ? (
             <TicketForm />
           ) : (
-            <p className="text-sm text-muted-foreground font-medium">
-              Destek talebi oluşturmak için{" "}
-              <a href="/login?next=%2Fsupport" className="text-primary font-bold hover:underline">
-                giriş yapmanız
-              </a>{" "}
-              gerekmektedir.
-            </p>
+            <div className="space-y-3 text-sm text-muted-foreground font-medium">
+              <p>
+                Destek talebi oluşturmak ve mevcut taleplerini görmek için giriş yapman gerekiyor.
+              </p>
+              <Link
+                href="/login?next=%2Fsupport"
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Giriş yap ve destek talebi oluştur
+              </Link>
+              <p className="text-xs text-muted-foreground">
+                Giriş yaptıktan sonra önceki sayfaya geri dönerek destek formunu kayıpsız şekilde
+                tamamlayabilirsin.
+              </p>
+            </div>
           )}
         </div>
       </section>

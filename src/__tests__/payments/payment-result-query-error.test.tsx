@@ -21,8 +21,8 @@ vi.mock("next/navigation", () => ({
   useSearchParams: vi.fn(() => ({ get: mockGet })),
 }));
 
-// ── PostHog stub ───────────────────────────────────────────────────────────────
-vi.mock("@/lib/monitoring/posthog-client", () => ({
+// ── Telemetry stub ───────────────────────────────────────────────────────────────
+vi.mock("@/lib/telemetry-client", () => ({
   captureClientException: vi.fn(),
 }));
 
@@ -31,7 +31,7 @@ const { mockMaybeSingle } = vi.hoisted(() => ({
   mockMaybeSingle: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/browser", () => ({
+vi.mock("@/lib/browser", () => ({
   createSupabaseBrowserClient: vi.fn(() => ({
     auth: {
       getUser: vi.fn().mockResolvedValue({
@@ -48,7 +48,7 @@ vi.mock("@/lib/supabase/browser", () => ({
 }));
 
 import PaymentResultPage from "@/app/dashboard/payments/result/page";
-import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { captureClientException } from "@/lib/telemetry-client";
 
 // Polling interval in the component is 1500ms, max 5 attempts.
 // We use real timers but advance them via vi.advanceTimersByTimeAsync.

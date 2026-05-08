@@ -1,10 +1,10 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { bulkListingActionSchema } from "@/lib/validators";
-import { archiveDatabaseListing } from "@/services/listings/listing-submissions";
+import { archiveDatabaseListing } from "@/features/marketplace/services/listing-submissions";
+import { bulkListingActionSchema } from "@/lib";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAuthAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 // Bulk archive: 20 operations per hour per user
 const BULK_ARCHIVE_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
@@ -37,9 +37,21 @@ export async function POST(req: Request) {
 
   const { ids } = validation.data;
 
-  // Archive each listing individually using the version-checked archiveDatabaseListing,
-  // which applies optimistic concurrency control (OCC) to prevent lost updates.
-  const results = await Promise.all(ids.map((id) => archiveDatabaseListing(id, user.id)));
+  // Archive each listing individually with bounded concurrency using the
+  // version-checked archiveDatabaseListing (OCC) to prevent lost updates.
+  const CONCURRENCY = 5;
+  const results: Awaited<ReturnType<typeof archiveDatabaseListing>>[] = [];
+
+  for (let i = 0; i < ids.length; i += CONCURRENCY) {
+    const batch = ids.slice(i, i + CONCURRENCY);
+    const settled = await Promise.allSettled(
+      batch.map((id) => archiveDatabaseListing(id, user.id))
+    );
+
+    for (const item of settled) {
+      results.push(item.status === "fulfilled" ? item.value : null);
+    }
+  }
 
   const affectedCount = results.filter(
     (r): r is { data: NonNullable<typeof r extends { data: infer D } ? D : never> } =>

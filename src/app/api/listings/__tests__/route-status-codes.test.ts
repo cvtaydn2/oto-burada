@@ -7,19 +7,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withUserAndCsrfToken } from "@/lib/api/security";
+import { withUserAndCsrfToken } from "@/lib/security";
 
-vi.mock("@/lib/api/security", () => ({
+vi.mock("@/lib/security", () => ({
   withUserAndCsrfToken: vi.fn(),
   withSecurity: vi.fn(),
 }));
 
-vi.mock("@/lib/security/turnstile", () => ({
+vi.mock("@/lib/turnstile", () => ({
   verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
 }));
 
-vi.mock("@/lib/api/handler-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/api/handler-utils")>();
+vi.mock("@/lib/handler-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/handler-utils")>();
   return {
     ...actual,
     validateRequestBody: vi.fn(async () => ({
@@ -29,54 +29,54 @@ vi.mock("@/lib/api/handler-utils", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/rate-limiting/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", () => ({
   rateLimitProfiles: { general: {}, listingCreate: {} },
 }));
 
-vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limit-middleware", () => ({
   enforceRateLimit: vi.fn(() => null),
   getRateLimitKey: vi.fn(() => "key"),
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   captureServerError: vi.fn(),
   trackServerEvent: vi.fn(),
 }));
 
-vi.mock("@/lib/logging/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: { listings: { error: vi.fn(), info: vi.fn() }, system: { error: vi.fn() } },
 }));
 
 vi.mock("@vercel/functions", () => ({ waitUntil: vi.fn() }));
 
-vi.mock("@/services/listings/listing-filters", () => ({
+vi.mock("@/features/marketplace/services/listing-filters", () => ({
   parseListingFiltersFromSearchParams: vi.fn(() => ({})),
 }));
 
-vi.mock("@/services/listings/marketplace-listings", () => ({
+vi.mock("@/features/marketplace/services/marketplace-listings", () => ({
   getFilteredMarketplaceListings: vi.fn(() => ({ listings: [] })),
 }));
 
-vi.mock("@/services/listings/listing-limits", () => ({
+vi.mock("@/features/marketplace/services/listing-limits", () => ({
   checkListingLimit: vi.fn(),
 }));
 
-vi.mock("@/services/listings/listing-submission-moderation", () => ({
+vi.mock("@/features/marketplace/services/listing-submission-moderation", () => ({
   performAsyncModeration: vi.fn(),
   runListingTrustGuards: vi.fn(),
 }));
 
-vi.mock("@/services/listings/listing-submissions", () => ({
+vi.mock("@/features/marketplace/services/listing-submissions", () => ({
   createDatabaseListing: vi.fn(),
 }));
 
-vi.mock("@/services/notifications/notification-records", () => ({
+vi.mock("@/features/notifications/services/notification-records", () => ({
   createDatabaseNotification: vi.fn(),
 }));
 
 const mockExecuteListingCreation = vi.fn();
 vi.mock("@/domain/usecases/listing-create", () => ({
-  executeListingCreation: (...args: any[]) => mockExecuteListingCreation(...args),
+  executeListingCreation: (...args: unknown[]) => mockExecuteListingCreation(...args),
 }));
 
 const mockUser = { id: "user-1" };

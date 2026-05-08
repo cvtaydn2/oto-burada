@@ -1,18 +1,18 @@
 import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
+import { createAdminModerationAction } from "@/features/admin-moderation/services/moderation-actions";
 import {
   performAsyncModeration,
   runListingTrustGuards,
-} from "@/services/listings/listing-submission-moderation";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
+} from "@/features/marketplace/services/listing-submission-moderation";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
+import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { logger } from "@/features/shared/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 const adminEditSchema = z.object({
   title: z.string().min(5).max(200).optional(),
@@ -24,7 +24,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { id: listingId } = await params;
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
-  const user = security.user!;
+  const adminUser = security.user!;
 
   if (!hasSupabaseAdminEnv()) {
     captureServerEvent(
@@ -44,12 +44,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     captureServerEvent(
       "admin_listing_edit_failed",
       {
-        adminUserId: user.id,
+        adminUserId: adminUser.id,
         listingId,
         reason: "invalid_payload",
         responseStatus: 400,
       },
-      user.id
+      adminUser.id
     );
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz düzenleme verisi.", 400);
   }
@@ -60,12 +60,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     captureServerEvent(
       "admin_listing_edit_failed",
       {
-        adminUserId: user.id,
+        adminUserId: adminUser.id,
         listingId,
         reason: "empty_payload",
         responseStatus: 400,
       },
-      user.id
+      adminUser.id
     );
     return apiError(API_ERROR_CODES.BAD_REQUEST, "En az bir alan düzenlenmelidir.", 400);
   }
@@ -75,12 +75,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     captureServerEvent(
       "admin_listing_edit_failed",
       {
-        adminUserId: user.id,
+        adminUserId: adminUser.id,
         listingId,
         reason: "listing_not_found",
         responseStatus: 404,
       },
-      user.id
+      adminUser.id
     );
     return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
   }
@@ -145,12 +145,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     captureServerEvent(
       "admin_listing_edit_failed",
       {
-        adminUserId: user.id,
+        adminUserId: adminUser.id,
         listingId,
         reason: "listing_not_found",
         responseStatus: 404,
       },
-      user.id
+      adminUser.id
     );
     return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
   }
@@ -161,10 +161,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       "admin",
       updateError,
       {
-        adminUserId: user.id,
+        adminUserId: adminUser.id,
         listingId,
       },
-      user.id
+      adminUser.id
     );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan düzenlenemedi.", 500);
   }
@@ -172,7 +172,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const changedFields = Object.keys(updates).join(", ");
   await createAdminModerationAction({
     action: "review",
-    adminUserId: user.id,
+    adminUserId: adminUser.id,
     note: `Admin düzenleme: ${changedFields} güncellendi`,
     targetId: listingId,
     targetType: "listing",
@@ -181,11 +181,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   captureServerEvent(
     "admin_listing_edited",
     {
-      adminUserId: user.id,
+      adminUserId: adminUser.id,
       listingId,
       changedFields,
     },
-    user.id
+    adminUser.id
   );
 
   if (criticalFieldsChanged) {
@@ -196,7 +196,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       performAsyncModeration(listingId, updatedListingForModeration ?? undefined).catch((error) => {
         logger.listings.error("Async moderation failed in background", error, {
           listingId,
-          adminUserId: user.id,
+          adminUserId: adminUser.id,
         });
         return Promise.resolve();
       })

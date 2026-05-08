@@ -17,7 +17,7 @@ import {
   markChatMessagesAsRead,
   sendChatMessage,
   toggleChatArchive,
-} from "@/services/chat/chat-logic";
+} from "@/features/chat/services/chat-logic";
 import type {
   Chat,
   ChatWithLastMessage,

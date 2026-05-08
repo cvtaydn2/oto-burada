@@ -1,13 +1,14 @@
 import { Search } from "lucide-react";
+import Link from "next/link";
 
-import { InventoryTable } from "@/components/admin/inventory-table";
-import { SimplePagination } from "@/components/admin/simple-pagination";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InventoryTable } from "@/features/admin-moderation/components/inventory-table";
 import { ListingsModeration } from "@/features/admin-moderation/components/listings-moderation";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAdminInventory } from "@/services/admin/inventory";
+import { SimplePagination } from "@/features/admin-moderation/components/simple-pagination";
+import { getAdminInventory } from "@/features/admin-moderation/services/inventory";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { Input } from "@/features/ui/components/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/features/ui/components/tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,8 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const adminUser = await requireAdminUser();
   const { q, page, status = "pending" } = await searchParams;
   const currentPage = Number(page) || 1;
+  const normalizedStatus =
+    status === "pending" || status === "approved" || status === "history" ? status : "approved";
 
   // Tüm count'ları ve asıl listeyi paralel çek
   const [
@@ -30,7 +33,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
     getAdminInventory({ status: "pending", limit: 1 }),
     getAdminInventory({ status: "approved", limit: 1 }),
     getAdminInventory({ status: "history", limit: 1 }),
-    getAdminInventory({ query: q, status, page: currentPage }),
+    getAdminInventory({ query: q, status: normalizedStatus, page: currentPage }),
   ]);
 
   const totalPages = Math.ceil(total / (limit || 12));
@@ -71,7 +74,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
           </form>
         </div>
 
-        <Tabs defaultValue={status === "all" ? "approved" : status} className="w-full">
+        <Tabs value={normalizedStatus} className="w-full">
           <div className="px-6 border-b border-border/50 bg-card overflow-x-auto">
             <TabsList className="h-20 bg-transparent gap-10 p-0 flex">
               <TabsTrigger
@@ -79,7 +82,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                 asChild
                 className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
               >
-                <a href={`?status=pending${q ? `&q=${q}` : ""}`}>
+                <Link href={`?status=pending${q ? `&q=${q}` : ""}`}>
                   Onay Bekleyen
                   <Badge
                     variant="secondary"
@@ -87,14 +90,14 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                   >
                     {pendingCount}
                   </Badge>
-                </a>
+                </Link>
               </TabsTrigger>
               <TabsTrigger
                 value="approved"
                 asChild
                 className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
               >
-                <a href={`?status=approved${q ? `&q=${q}` : ""}`}>
+                <Link href={`?status=approved${q ? `&q=${q}` : ""}`}>
                   Yayında Olanlar
                   <Badge
                     variant="secondary"
@@ -102,14 +105,14 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                   >
                     {approvedCount}
                   </Badge>
-                </a>
+                </Link>
               </TabsTrigger>
               <TabsTrigger
                 value="history"
                 asChild
                 className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
               >
-                <a href={`?status=history${q ? `&q=${q}` : ""}`}>
+                <Link href={`?status=history${q ? `&q=${q}` : ""}`}>
                   Arşiv & Ret
                   <Badge
                     variant="secondary"
@@ -117,7 +120,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                   >
                     {historyCount}
                   </Badge>
-                </a>
+                </Link>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -133,15 +136,6 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
           <TabsContent value="history" className="m-0">
             <InventoryTable listings={listings} adminUserId={adminUser.id} />
           </TabsContent>
-
-          {status === "all" && (
-            <div className="p-8">
-              <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-foreground">Arama Sonuçları ({total})</h3>
-              </div>
-              <InventoryTable listings={listings} adminUserId={adminUser.id} />
-            </div>
-          )}
 
           <div className="p-4 border-t border-border/50 bg-card">
             <SimplePagination currentPage={currentPage} totalPages={totalPages} />

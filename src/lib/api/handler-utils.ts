@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getUserFacingError } from "@/config/user-messages";
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
+import { API_ERROR_CODES, apiError } from "@/lib/response";
 
 /**
  * Parses request JSON and validates it against a Zod schema.
@@ -24,11 +24,11 @@ export async function validateRequestBody<T>(
 
   const result = schema.safeParse(body);
   if (!result.success) {
+    // Normalize zod field errors into expected `Record<string, string[]>` format
+    const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[]>;
     return {
       success: false,
-      response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz veri formatı.", 400, {
-        errors: result.error.flatten().fieldErrors,
-      }),
+      response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz veri formatı.", 400, fieldErrors),
     };
   }
 

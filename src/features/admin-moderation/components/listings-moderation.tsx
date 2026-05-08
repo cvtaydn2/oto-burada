@@ -2,11 +2,12 @@
 
 import { TriangleAlert } from "lucide-react";
 
-import { AppErrorBoundary } from "@/components/shared/error-boundary";
 import { BulkActions } from "@/features/admin-moderation/components/bulk-actions";
 import { ModerationCard } from "@/features/admin-moderation/components/moderation-card";
 // Admin Moderation Feature Components/Hooks
 import { useModerationLogic } from "@/features/admin-moderation/hooks/use-moderation-logic";
+import { AppErrorBoundary } from "@/features/shared/components/error-boundary";
+import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 interface ListingsModerationProps {
@@ -49,7 +50,7 @@ export function ListingsModeration({ pendingListings }: ListingsModerationProps)
 
       {/* Tabs */}
       <div className="mt-6 flex border-b border-border">
-        <button
+        <Button
           type="button"
           onClick={() => {
             actions.setActiveTab("all");
@@ -62,8 +63,8 @@ export function ListingsModeration({ pendingListings }: ListingsModerationProps)
           }`}
         >
           Tümü ({pendingListings.length})
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => {
             actions.setActiveTab("ai_flagged");
@@ -86,7 +87,7 @@ export function ListingsModeration({ pendingListings }: ListingsModerationProps)
             ).length
           }
           )
-        </button>
+        </Button>
       </div>
 
       {state.errorMessage && (

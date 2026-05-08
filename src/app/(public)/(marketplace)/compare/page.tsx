@@ -1,11 +1,11 @@
 import { BarChart3, ChevronLeft, SearchX } from "lucide-react";
 import Link from "next/link";
 
-import { CompareRemoveButton } from "@/components/listings/compare-remove-button";
-import { CompareShareButton } from "@/components/listings/compare-share-button";
-import { ListingCard } from "@/components/shared/listing-card";
-import { formatNumber, formatPrice } from "@/lib/utils";
-import { getMarketplaceListingsByIds } from "@/services/listings/marketplace-listings";
+import { CompareRemoveButton } from "@/features/marketplace/components/compare-remove-button";
+import { CompareShareButton } from "@/features/marketplace/components/compare-share-button";
+import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
+import { ListingCard } from "@/features/shared/components/listing-card";
+import { formatNumber, formatPrice } from "@/lib";
 import type { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";

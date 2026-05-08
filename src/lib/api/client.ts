@@ -8,12 +8,12 @@
  * - Uniform error shape matching ApiResponse<T>
  *
  * Do NOT use this directly from components — import from the
- * specific service module instead (e.g. `@/services/favorites/client-service`).
+ * specific service module instead (e.g. `@/features/favorites/services/client-service`).
  */
 
 import { z } from "zod";
 
-import { createApiResponseSchema } from "@/lib/validators/api-responses";
+import { createApiResponseSchema } from "@/lib/api-responses";
 import type { ApiResponse } from "@/types/errors";
 
 export class ApiClient {
@@ -22,13 +22,11 @@ export class ApiClient {
     options?: RequestInit & { schema?: z.ZodTypeAny }
   ): Promise<ApiResponse<T>> {
     try {
-      // Automatic CSRF Token Injection (Double Submit Cookie)
+      // Automatic CSRF Token Injection (Synchronizer Token Pattern)
       let csrfToken: string | undefined;
       if (typeof document !== "undefined") {
-        csrfToken = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("csrf_token="))
-          ?.split("=")[1];
+        csrfToken =
+          document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || undefined;
       }
 
       const res = await fetch(path, {
@@ -39,6 +37,16 @@ export class ApiClient {
           ...(options?.headers || {}),
         },
       });
+
+      // Update CSRF token if a new one is provided in the response headers (Rotation)
+      const newToken =
+        typeof res.headers?.get === "function" ? res.headers.get("x-csrf-token") : null;
+      if (newToken && typeof document !== "undefined") {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) {
+          meta.setAttribute("content", newToken);
+        }
+      }
 
       // ── BUG FIX: Issue BUG-04 - JSON Parse Error Handling ─────────────
       // Catch JSON parse errors separately to provide meaningful error messages
@@ -62,10 +70,19 @@ export class ApiClient {
           res.status === 401 &&
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/login") &&
+          !window.location.pathname.startsWith("/auth") &&
           !sessionStorage.getItem(REDIRECT_FLAG_KEY)
         ) {
+          // Prevent multiple simultaneous redirects across tabs
           sessionStorage.setItem(REDIRECT_FLAG_KEY, "1");
-          window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+
+          // Also set in localStorage for cross-tab coordination
+          localStorage.setItem(REDIRECT_FLAG_KEY, Date.now().toString());
+
+          // Small delay to allow other tabs to pick up the flag
+          setTimeout(() => {
+            window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+          }, 100);
         }
 
         const errorData = json.error as

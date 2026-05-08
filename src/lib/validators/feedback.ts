@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { reportReasons, reportStatuses } from "@/lib/constants/domain";
 import type { Report, ReportCreateInput } from "@/types";
 
 import {
@@ -10,30 +9,47 @@ import {
   trimmedRequiredString,
 } from "./shared";
 
+const reportReasonEnum = z.enum([
+  "fake_listing",
+  "wrong_info",
+  "spam",
+  "price_manipulation",
+  "invalid_verification",
+  "other",
+]);
+
+const reportStatusEnum = z.enum(["open", "reviewing", "resolved", "dismissed"]);
+
 export const reportSchema: z.ZodType<Report> = z.object({
   id: optionalTrimmedString,
   listingId: trimmedRequiredString,
   reporterId: trimmedRequiredString,
-  reason: z.enum(reportReasons),
-  description: z.preprocess(
-    emptyStringToUndefined,
-    z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional()
-  ),
-  status: z.enum(reportStatuses),
+  reason: reportReasonEnum,
+  description: z
+    .preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional()
+    )
+    .optional(),
+  status: reportStatusEnum,
   createdAt: timestampSchema,
-  updatedAt: z.preprocess(
-    emptyStringToUndefined,
-    z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional()
-  ),
+  updatedAt: z
+    .preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional()
+    )
+    .optional(),
 });
 
 export const reportCreateSchema: z.ZodType<ReportCreateInput> = z.object({
   listingId: trimmedRequiredString,
-  reason: z.enum(reportReasons),
-  description: z.preprocess(
-    emptyStringToUndefined,
-    z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional()
-  ),
+  reason: reportReasonEnum,
+  description: z
+    .preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional()
+    )
+    .optional(),
 });
 
 export const contactFormSchema = z.object({
@@ -59,7 +75,6 @@ export const contactFormSchema = z.object({
     .trim()
     .min(10, "Mesaj en az 10 karakter olmalıdır.")
     .max(2000, "Mesaj en fazla 2000 karakter olabilir."),
-  /** Honeypot — must be empty. Bots fill this; humans don't see it. */
   _hp: z.string().max(0, "Bot detected").optional(),
   turnstileToken: z.string().optional(),
 });

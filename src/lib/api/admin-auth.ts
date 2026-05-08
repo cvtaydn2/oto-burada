@@ -12,9 +12,9 @@
 
 import "server-only";
 
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import { getAuthContext, getUserRole } from "@/lib/auth/session";
-import { logger } from "@/lib/logging/logger";
+import { getAuthContext, getUserRole } from "@/features/auth/lib/session";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError } from "@/lib/response";
 
 export interface AdminAuthResult {
   ok: true;

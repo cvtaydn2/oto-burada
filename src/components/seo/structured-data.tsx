@@ -1,78 +1,4 @@
-import { headers } from "next/headers";
-
-import { buildAbsoluteUrl } from "@/lib/seo";
-import { safeJsonLd } from "@/lib/seo/json-ld";
 import type { Listing } from "@/types";
-
-async function getCspNonce() {
-  return (await headers()).get("x-nonce") ?? undefined;
-}
-
-function JsonLdScript({ nonce, schema }: { nonce?: string; schema: Record<string, unknown> }) {
-  return (
-    <script
-      suppressHydrationWarning
-      nonce={nonce}
-      type="application/ld+json"
-      // eslint-disable-next-line react/no-danger -- JSON-LD structured data requires dangerouslySetInnerHTML, content is sanitized via safeJsonLd()
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
-    />
-  );
-}
-
-interface ListingStructuredDataProps {
-  listings: Listing[];
-  url: string;
-}
-
-export async function ListingStructuredData({ listings, url }: ListingStructuredDataProps) {
-  const nonce = await getCspNonce();
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "OtoBurada - İkinci El ve Sıfır Araç İlanları",
-    description:
-      "Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul.",
-    url: url,
-    numberOfItems: listings.length,
-    itemListElement: listings.slice(0, 10).map((listing, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      item: {
-        "@type": "Car",
-        name: listing.title,
-        description: `${listing.year} model, ${listing.mileage.toLocaleString("tr-TR")} km, ${listing.fuelType}, ${listing.transmission}`,
-        brand: { "@type": "Brand", name: listing.brand },
-        model: listing.model,
-        modelDate: listing.year.toString(),
-        mileageFromOdometer: {
-          "@type": "QuantitativeValue",
-          value: listing.mileage,
-          unitCode: "KMT",
-        },
-        image: listing.images[0]?.url,
-        url: buildAbsoluteUrl(`/listing/${listing.slug}`),
-        offers: {
-          "@type": "Offer",
-          price: listing.price,
-          priceCurrency: "TRY",
-          availability: "https://schema.org/InStock",
-          url: buildAbsoluteUrl(`/listing/${listing.slug}`),
-        },
-        availableAtOrFrom: {
-          "@type": "Place",
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: listing.city,
-            addressCountry: "TR",
-          },
-        },
-      },
-    })),
-  };
-
-  return <JsonLdScript nonce={nonce} schema={schema} />;
-}
 
 interface BreadcrumbItem {
   name: string;
@@ -83,54 +9,49 @@ interface BreadcrumbStructuredDataProps {
   items: BreadcrumbItem[];
 }
 
-export async function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProps) {
-  const nonce = await getCspNonce();
-  const itemListElement = items.map((item, index) => ({
-    "@type": "ListItem",
-    position: index + 1,
-    name: item.name,
-    item: item.url,
-  }));
-
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: itemListElement,
-  };
-
-  return <JsonLdScript nonce={nonce} schema={schema} />;
+export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProps) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: items.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item.name,
+            item: item.url,
+          })),
+        }),
+      }}
+    />
+  );
 }
 
-interface OrganizationStructuredDataProps {
-  name: string;
+interface ListingStructuredDataProps {
+  listings: Listing[];
   url: string;
-  logo?: string;
-  description: string;
 }
 
-export async function OrganizationStructuredData({
-  name,
-  url,
-  logo,
-  description,
-}: OrganizationStructuredDataProps) {
-  const nonce = await getCspNonce();
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: name,
-    url: url,
-    logo: logo,
-    description: description,
-    sameAs: [],
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "customer service",
-      availableLanguage: "Turkish",
-    },
-  };
-
-  return <JsonLdScript nonce={nonce} schema={schema} />;
+export function ListingStructuredData({ listings, url }: ListingStructuredDataProps) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: listings.map((listing, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            url: `${url}/listing/${listing.slug}`,
+            name: `${listing.brand} ${listing.model} ${listing.year}`,
+          })),
+        }),
+      }}
+    />
+  );
 }
 
 interface ListingDetailStructuredDataProps {
@@ -139,112 +60,123 @@ interface ListingDetailStructuredDataProps {
   sellerName?: string;
 }
 
-export async function ListingDetailStructuredData({
+export function ListingDetailStructuredData({
   listing,
   url,
   sellerName,
 }: ListingDetailStructuredDataProps) {
-  const nonce = await getCspNonce();
-  const coverImage = listing.images.find((img) => img.isCover) ?? listing.images[0];
-  const allImageUrls = listing.images.map((img) => img.url).filter(Boolean);
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: `${listing.brand} ${listing.model} ${listing.year}`,
+          description: listing.description || undefined,
+          image: listing.images?.[0] || undefined,
+          offers: {
+            "@type": "Offer",
+            price: listing.price,
+            priceCurrency: "TRY",
+            availability: "https://schema.org/InStock",
+            seller: sellerName ? { "@type": "Organization", name: sellerName } : undefined,
+          },
+          url: `${url}/listing/${listing.slug}`,
+        }),
+      }}
+    />
+  );
+}
 
-  // Map Turkish fuel types to schema.org values
-  const fuelTypeMap: Record<string, string> = {
-    benzin: "Gasoline",
-    dizel: "Diesel",
-    lpg: "LPG",
-    hibrit: "Hybrid",
-    elektrik: "Electric",
-  };
+interface OrganizationStructuredDataProps {
+  name: string;
+  url: string;
+  description: string;
+}
 
-  // Map Turkish transmission types to schema.org values
-  const transmissionMap: Record<string, string> = {
-    manuel: "ManualTransmission",
-    otomatik: "AutomaticTransmission",
-    yari_otomatik: "SemiAutomaticTransmission",
-  };
-
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Car",
-    name: listing.title,
-    description: listing.description,
-    url: url,
-    brand: {
-      "@type": "Brand",
-      name: listing.brand,
-    },
-    model: listing.model,
-    ...(listing.carTrim ? { vehicleModelDate: listing.carTrim } : {}),
-    modelDate: listing.year.toString(),
-    productionDate: listing.year.toString(),
-    vehicleModelDate: listing.year.toString(),
-    mileageFromOdometer: {
-      "@type": "QuantitativeValue",
-      value: listing.mileage,
-      unitCode: "KMT",
-      unitText: "km",
-    },
-    fuelType: fuelTypeMap[listing.fuelType] ?? listing.fuelType,
-    vehicleTransmission: transmissionMap[listing.transmission] ?? listing.transmission,
-    ...(listing.vin ? { vehicleIdentificationNumber: listing.vin } : {}),
-    itemCondition: "https://schema.org/UsedCondition",
-    image: allImageUrls.length > 0 ? allImageUrls : undefined,
-    thumbnail: coverImage?.url,
-    offers: {
-      "@type": "Offer",
-      price: listing.price,
-      priceCurrency: "TRY",
-      availability: "https://schema.org/InStock",
-      url: url,
-      ...(() => {
-        const d = listing.updatedAt ? new Date(listing.updatedAt) : null;
-        const isValid = d && !isNaN(d.getTime());
-        return isValid ? { priceValidUntil: d.toISOString().split("T")[0] } : {};
-      })(),
-      seller: {
-        "@type": sellerName ? "Person" : "Organization",
-        name: sellerName ?? "OtoBurada",
-      },
-    },
-    seller: {
-      "@type": sellerName ? "Person" : "Organization",
-      name: sellerName ?? "OtoBurada",
-    },
-    availableAtOrFrom: {
-      "@type": "Place",
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: listing.city,
-        addressRegion: listing.district,
-        addressCountry: "TR",
-      },
-    },
-  };
-
-  return <JsonLdScript nonce={nonce} schema={schema} />;
+export function OrganizationStructuredData({
+  name,
+  url,
+  description,
+}: OrganizationStructuredDataProps) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name,
+          url,
+          logo: `${url}/logo.png`,
+          description,
+          sameAs: ["https://www.instagram.com/otoburada/", "https://www.facebook.com/otoburada/"],
+          contactPoint: {
+            "@type": "ContactPoint",
+            telephone: "+90-850-XXX-XXXX",
+            contactType: "customer service",
+            availableLanguage: "Turkish",
+          },
+        }),
+      }}
+    />
+  );
 }
 
 interface WebSiteStructuredDataProps {
   url: string;
 }
 
-export async function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
-  const nonce = await getCspNonce();
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "OtoBurada",
-    url: url,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${url}/listings?query={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
-  };
+export function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "OtoBurada",
+          url,
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${url}/listings?q={search_term_string}`,
+            },
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      }}
+    />
+  );
+}
 
-  return <JsonLdScript nonce={nonce} schema={schema} />;
+export function buildAbsoluteUrl(path: string, baseUrl?: string): string {
+  const base = baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://otoburada.com";
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
+}
+
+export function buildListingsMetadata(_filters?: Record<string, unknown>) {
+  if (_filters) {
+  }
+  return {
+    title: "Satılık Arabalar - Türkiye'nin En Büyük Araç İlan Pazarı",
+    description:
+      "Türkiye'nin en güvenilir satılık araba ilanları. Binlerce satılık araç ilanı, en uygun fiyatlar ve güvenli alışveriş.",
+    url: buildAbsoluteUrl("/listings"),
+  };
+}
+
+export function buildListingDetailMetadata(listing: Listing) {
+  return {
+    title: `${listing.brand} ${listing.model} - Satılık | OtoBurada`,
+    description: `${listing.brand} ${listing.model} ${listing.year} satılık ilanı. ${listing.price ? `${listing.price.toLocaleString("tr-TR")} TL` : ""}`,
+    url: buildAbsoluteUrl(`/listing/${listing.slug}`),
+  };
+}
+
+export function getAppUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || "https://otoburada.com";
 }

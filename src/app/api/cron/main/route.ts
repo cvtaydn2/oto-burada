@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { withCronOrAdmin } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { applyDopingPackage } from "@/services/payments/doping-logic";
-import { expireReservations } from "@/services/reservations/reservation-service";
-import { processCompensatingActions } from "@/services/system/compensating-processor";
-import { processComplianceVacuum } from "@/services/system/compliance-vacuum";
-import { processOutboxQueue } from "@/services/system/outbox-processor";
-import { processReconciliation } from "@/services/system/reconciliation-worker";
-import { triggerSavedSearchNotifications } from "@/services/system/saved-search-notifier";
+import { applyDopingPackage } from "@/features/payments/services/doping-logic";
+import { expireReservations } from "@/features/reservations/services/reservation-service";
+import { processCompensatingActions } from "@/features/shared/services/compensating-processor";
+import { processComplianceVacuum } from "@/features/shared/services/compliance-vacuum";
+import { processOutboxQueue } from "@/features/shared/services/outbox-processor";
+import { processReconciliation } from "@/features/shared/services/reconciliation-worker";
+import { triggerSavedSearchNotifications } from "@/features/shared/services/saved-search-notifier";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { withCronOrAdmin } from "@/lib/security";
 
 import { expireListings } from "../expire-listings/route";
 

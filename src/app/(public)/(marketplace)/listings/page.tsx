@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 
-import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import {
   BreadcrumbStructuredData,
   ListingStructuredData,
   OrganizationStructuredData,
 } from "@/components/seo/structured-data";
-import { buildAbsoluteUrl, buildListingsMetadata } from "@/lib/seo";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import type { BrandCatalogItem, CityOption, ListingFilters, ListingSortOption } from "@/types";
+import { ListingsPageClient } from "@/features/marketplace/components/listings-page-client";
+import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
+import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
+import { createSupabaseServerClient } from "@/lib/server";
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {
   const match = brands.find((b) => b.slug.toLowerCase() === slug.toLowerCase());
@@ -32,13 +32,11 @@ interface ListingsPageProps {
 export async function generateMetadata({ searchParams }: ListingsPageProps): Promise<Metadata> {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const filters = parseListingFiltersFromSearchParams(resolvedSearchParams);
-  return buildListingsMetadata(filters);
+  return buildListingsMetadata(filters as unknown as Record<string, unknown>);
 }
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const brandSlug = resolvedSearchParams?.brand;
-  const citySlug = resolvedSearchParams?.city;
 
   const [references, { data: authData }] = await Promise.all([
     getLiveMarketplaceReferenceData(),
@@ -46,23 +44,14 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   ]);
   const user = authData?.user;
 
+  const parsedFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
+  const brandSlug = resolvedSearchParams?.brand;
+  const citySlug = resolvedSearchParams?.city;
+
   const initialFilters: ListingFilters = {
-    sort: (resolvedSearchParams?.sort as ListingSortOption) || "newest",
-    page: Number(resolvedSearchParams?.page) || 1,
-    limit: 12,
+    ...parsedFilters,
     ...(brandSlug ? { brand: resolveBrandSlugToName(references.brands, String(brandSlug)) } : {}),
     ...(citySlug ? { city: resolveCitySlugToName(references.cities, String(citySlug)) } : {}),
-    ...(resolvedSearchParams?.query ? { query: String(resolvedSearchParams.query) } : {}),
-    ...(resolvedSearchParams?.model ? { model: String(resolvedSearchParams.model) } : {}),
-    ...(resolvedSearchParams?.minPrice ? { minPrice: Number(resolvedSearchParams.minPrice) } : {}),
-    ...(resolvedSearchParams?.maxPrice ? { maxPrice: Number(resolvedSearchParams.maxPrice) } : {}),
-    ...(resolvedSearchParams?.minYear ? { minYear: Number(resolvedSearchParams.minYear) } : {}),
-    ...(resolvedSearchParams?.maxYear ? { maxYear: Number(resolvedSearchParams.maxYear) } : {}),
-    ...(resolvedSearchParams?.fuelType ? { fuelType: String(resolvedSearchParams.fuelType) } : {}),
-    ...(resolvedSearchParams?.transmission
-      ? { transmission: String(resolvedSearchParams.transmission) }
-      : {}),
-    ...(resolvedSearchParams?.hasExpertReport ? { hasExpertReport: true } : {}),
   };
 
   const result = await getPublicMarketplaceListings(initialFilters);

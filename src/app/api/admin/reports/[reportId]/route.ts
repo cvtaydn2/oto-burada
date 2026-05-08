@@ -1,40 +1,30 @@
-import { headers } from "next/headers";
+import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
-import { sanitizeText } from "@/lib/sanitization/sanitize";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
+import { createAdminModerationAction } from "@/features/admin-moderation/services/moderation-actions";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
+import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
+import { updateDatabaseReportStatus } from "@/features/reports/services/report-submissions";
+import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { sanitizeText } from "@/features/shared/lib/sanitize";
+import { withAdminRoute } from "@/features/shared/lib/security";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 import type { ReportStatus } from "@/types";
-
-async function getClientIp() {
-  const headersList = await headers();
-  const forwarded = headersList.get("x-forwarded-for");
-  const realIp = headersList.get("x-real-ip");
-  return forwarded?.split(",")[0]?.trim() || realIp || "unknown";
-}
 
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];
 
+const reportUpdateSchema = z.object({
+  note: z.string().trim().max(2000).optional(),
+  status: z.enum(allowedStatuses),
+});
+
 export async function PATCH(request: Request, context: { params: Promise<{ reportId: string }> }) {
-  const security = await withAdminRoute(request);
+  const security = await withAdminRoute(request, {
+    ipRateLimit: rateLimitProfiles.adminModerate,
+    rateLimitKey: "admin:reports",
+  });
   if (!security.ok) return security.response;
   const adminUser = security.user!;
-
-  const clientIp = await getClientIp();
-  const ipRateLimit = await checkRateLimit(
-    `admin:reports:${clientIp}`,
-    rateLimitProfiles.adminModerate
-  );
-
-  if (!ipRateLimit.allowed) {
-    return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla rapor isteği. Lütfen bekle.", 429);
-  }
 
   let body: unknown;
 
@@ -44,17 +34,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Rapor güncelleme isteği okunamadı.", 400);
   }
 
-  const status =
-    typeof body === "object" && body !== null && "status" in body ? String(body.status ?? "") : "";
-  const rawNote =
-    typeof body === "object" && body !== null && "note" in body
-      ? String(body.note ?? "").trim()
-      : "";
-  const note = rawNote ? sanitizeText(rawNote) : "";
+  const parsed = reportUpdateSchema.safeParse(body);
 
-  if (!allowedStatuses.includes(status as ReportStatus)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz rapor durumu.", 400);
+  if (!parsed.success) {
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      parsed.error.issues[0]?.message ?? "Rapor güncelleme alanlarını kontrol et.",
+      400
+    );
   }
+
+  const status = parsed.data.status;
+  const note = parsed.data.note ? sanitizeText(parsed.data.note) : "";
 
   if (note.length > 0 && note.length < 3) {
     return apiError(
@@ -65,7 +56,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
   }
 
   const { reportId } = await context.params;
-  const persistedReport = await updateDatabaseReportStatus(reportId, status as ReportStatus);
+  const persistedReport = await updateDatabaseReportStatus(reportId, status);
 
   if (!persistedReport) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Güncellenecek rapor bulunamadı.", 404);
@@ -95,7 +86,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
   });
 
   captureServerEvent(
-    "admin_report_resolved",
+    "admin_report_status_updated",
     {
       adminUserId: adminUser.id,
       reportId,

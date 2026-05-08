@@ -1,9 +1,9 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { enforceRateLimit, getUserRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/features/shared/lib/logger";
+import { enforceRateLimit, getUserRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withUserAndCsrf } from "@/features/shared/lib/security";
+import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 import type { ListingStatus } from "@/types";
 
 const BUMP_RATE_LIMIT = { limit: 3, windowMs: 24 * 60 * 60 * 1000 };
@@ -19,10 +19,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const supabase = await createSupabaseServerClient();
 
   const rateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "api:listings:bump"),
+    getUserRateLimitKey(request, user.id, "api:listings:bump"),
     BUMP_RATE_LIMIT
   );
-  if (rateLimit) return rateLimit.response;
+  if (rateLimit.response) return rateLimit.response;
 
   try {
     const { data: listing, error: fetchError } = await supabase

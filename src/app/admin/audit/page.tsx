@@ -6,13 +6,14 @@ import {
   Search,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { requireAdminUser } from "@/lib/auth/session";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { cn } from "@/lib/utils";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { Button } from "@/features/ui/components/button";
+import { Input } from "@/features/ui/components/input";
+import { cn } from "@/lib";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 const PAGE_SIZE = 50;
 
@@ -212,31 +213,49 @@ export default async function AdminAuditPage({
                 variant="outline"
                 size="sm"
                 disabled={currentPage <= 1}
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  if (q) params.set("q", q);
-                  params.set("page", String(currentPage - 1));
-                  window.location.href = `?${params.toString()}`;
-                }}
+                asChild
                 className="h-9 rounded-xl border-border font-bold"
               >
-                <ChevronLeft size={16} className="mr-1" />
-                Önceki
+                {currentPage <= 1 ? (
+                  <span>
+                    <ChevronLeft size={16} className="mr-1" />
+                    Önceki
+                  </span>
+                ) : (
+                  <Link
+                    href={`?${new URLSearchParams({
+                      ...(q ? { q } : {}),
+                      page: String(currentPage - 1),
+                    }).toString()}`}
+                  >
+                    <ChevronLeft size={16} className="mr-1" />
+                    Önceki
+                  </Link>
+                )}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 disabled={currentPage >= totalPages}
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  if (q) params.set("q", q);
-                  params.set("page", String(currentPage + 1));
-                  window.location.href = `?${params.toString()}`;
-                }}
+                asChild
                 className="h-9 rounded-xl border-border font-bold"
               >
-                Sonraki
-                <ChevronRight size={16} className="ml-1" />
+                {currentPage >= totalPages ? (
+                  <span>
+                    Sonraki
+                    <ChevronRight size={16} className="ml-1" />
+                  </span>
+                ) : (
+                  <Link
+                    href={`?${new URLSearchParams({
+                      ...(q ? { q } : {}),
+                      page: String(currentPage + 1),
+                    }).toString()}`}
+                  >
+                    Sonraki
+                    <ChevronRight size={16} className="ml-1" />
+                  </Link>
+                )}
               </Button>
             </div>
           </div>

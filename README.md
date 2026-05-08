@@ -9,9 +9,11 @@ Bu repo şu anda local ortamda başarıyla:
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
-- `npm run test:unit`
-- `npm run test:int`
-- `npm run test:e2e:chromium`
+- `npm run test:unit` (ortam izinlerine bağlı)
+- `npm run test:int` (ortam izinlerine bağlı)
+
+Not: E2E testleri çevresel bağımlılıklara (Supabase erişimi, test data, local network) duyarlıdır.
+Production readiness için her release öncesi smoke koşusu önerilir.
 
 komutlarını geçecek durumda stabilize edilmiştir.
 
@@ -59,8 +61,9 @@ SUPABASE_DEMO_USER_PASSWORD=test-123456
 Notlar:
 
 - Turnstile local geliştirmede zorunlu değildir. `NEXT_PUBLIC_TURNSTILE_SITE_KEY` ve `TURNSTILE_SECRET_KEY` boş kalabilir.
-- Redis, Resend, PostHog ve Iyzico local boot için zorunlu değildir.
+- Redis, Resend, Sentry ve Iyzico local boot için zorunlu değildir.
 - Bu opsiyonel servisler tanımlı değilse uygulama degrade modda çalışır.
+- Analytics/telemetry tarafında runtime hata takibi için yalnızca Sentry kullanılır; ayrı ürün analitik servisi gerekmez.
 
 ### 3) Bağımlılıkları kur
 
@@ -164,6 +167,66 @@ Bu hesabın seed sırasında oluşmuş olması gerekir.
 
 ## Env açıklamaları
 
+## Güven skoru (Trust Score)
+
+[`TrustScoreCalculator.calculate()`](src/domain/logic/trust-score-calculator.ts:14) aşağıdaki deterministik kurallarla çalışır:
+
+- başlangıç puanı: `50`
+- e-posta doğrulandıysa: `+10`
+- temel kimlik/doğrulama tamamlandıysa (`isVerified`): `+20`
+- ek cüzdan/doğrulama tamamlandıysa (`isWalletVerified`): `+20`
+- profesyonel satıcıysa: `+10`
+- kullanıcı banlıysa: skor doğrudan `0`
+- kullanıcı `restricted_review` durumundaysa: skor en fazla `30`
+
+Bu skor MVP aşamasında açıklanabilirlik ve moderasyon sadeliği için bilinçli olarak lineer tutulur.
+
+## API: Listing Create Contract
+
+The `POST /api/listings` endpoint accepts a JSON body matching the `ListingCreateInput` contract.
+Important notes:
+
+- `price` should be sent as full TL amount (example: `1500000` for 1.500.000 TL). The server stores price as kurus (integer) — internally multiplied by 100.
+- `images` must be an array of image objects with at least 3 items when creating a listing. Each image object should contain `storagePath` and `url` (returned by `/api/listings/images`). Example:
+
+```json
+{
+   "title": "2019 Honda Civic",
+   "brand": "Honda",
+   "model": "Civic",
+   "year": 2019,
+   "price": 1500000,
+   "mileage": 45000,
+   "fuelType": "benzin",
+   "transmission": "manuel",
+   "city": "İstanbul",
+   "district": "Beşiktaş",
+   "description": "Araç temiz, hasar kaydı ...",
+   "whatsappPhone": "+905xxxxxxxxx",
+   "vin": "1HGCM82633A004352",
+   "images": [
+      { "storagePath": "user-id/abcd.webp", "url": "https://.../abcd.webp" },
+      { "storagePath": "user-id/efgh.webp", "url": "https://.../efgh.webp" },
+      { "storagePath": "user-id/ijkl.webp", "url": "https://.../ijkl.webp" }
+   ]
+}
+```
+
+On success the endpoint returns a minimal listing reference:
+
+```json
+{
+   "success": true,
+   "data": {
+      "message": "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
+      "listing": { "id": "...", "slug": "...", "status": "pending" }
+   }
+}
+```
+
+Validation errors are returned in `error.details` as a mapping of field names to arrays of short messages (e.g. `{ "price": ["Fiyat en az 1 TL olmalıdır"] }`). This is safe for production and suitable for displaying field-level errors on the frontend.
+
+
 ### Zorunlu çekirdek değişkenler
 
 - `NEXT_PUBLIC_APP_URL`: Public app origin
@@ -189,8 +252,13 @@ Bu hesabın seed sırasında oluşmuş olması gerekir.
 - `IYZICO_SECRET_KEY`: Ödeme secret key
 - `IYZICO_BASE_URL`: Sandbox/production base URL
 - `CRON_SECRET`: Cron endpoint koruması
-- `POSTHOG_WEBHOOK_SECRET`: PostHog webhook doğrulaması
+- `NEXT_PUBLIC_SENTRY_DSN`: İstemci ve sunucu tarafı Sentry hata takibi
+- `SENTRY_AUTH_TOKEN`: Sentry source map upload / build entegrasyonu
+- `SENTRY_ORG`: Sentry organizasyon adı
+- `SENTRY_PROJECT`: Sentry proje adı
 - `INTERNAL_API_SECRET`: Internal API çağrıları
+- `SENTRY_ORG`: Sentry organizasyon adı, build/report otomasyonlarında gerekebilir
+- `SENTRY_PROJECT`: Sentry proje adı, build/report otomasyonlarında gerekebilir
 
 ### Feature flag'ler
 
@@ -214,7 +282,7 @@ Bu genelde opsiyonel env eksikliğidir. Local geliştirmede aşağıdakiler eksi
 - Redis
 - Turnstile
 - Resend
-- PostHog
+- Sentry
 - Iyzico
 
 Çekirdek akışlar yine çalışmalıdır.
@@ -373,6 +441,7 @@ vercel logs -n 100            # Son 100 log
 
 ## Dokümantasyon
 
+- `docs/INDEX.md`: dokümantasyon navigasyon başlangıç noktası
 - `AGENTS.md`: ürün ve mimari kurallar
 - `TASKS.md`: backlog ve kabul kriterleri
 - `PROGRESS.md`: yapılan işler ve doğrulama geçmişi

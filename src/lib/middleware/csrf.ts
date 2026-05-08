@@ -1,7 +1,9 @@
 import { type NextRequest } from "next/server";
 
-import { classifyRoute } from "@/lib/middleware/routes";
-import { csrfMiddleware as baseCsrfMiddleware } from "@/lib/security/csrf";
+import { csrfMiddleware as baseCsrfMiddleware } from "@/lib/csrf";
+import { classifyRoute } from "@/lib/routes";
+
+const PROXY_CSRF_EXCLUDED_API_PATHS = new Set(["/api/listings/view"]);
 
 /**
  * CSRF Middleware Wrapper.
@@ -12,13 +14,11 @@ export async function csrfMiddleware(request: NextRequest) {
   const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
   const route = classifyRoute(pathname);
 
-  // ── SECURITY FIX: Removed CSRF skip for /api/favorites
-  // Favorites are user-specific state-changing operations that require CSRF protection.
-  // Skipping CSRF allowed attackers to add/remove favorites via cross-site request forgery.
-
-  // Protected/admin API routes already enforce CSRF in route handlers.
-  // Skipping proxy-level rejection here preserves proper 401 responses for unauthenticated calls.
   if (route.isApiRoute && isMutation && (route.isProtectedApi || route.isAdminApi)) {
+    return null;
+  }
+
+  if (route.isApiRoute && isMutation && PROXY_CSRF_EXCLUDED_API_PATHS.has(pathname)) {
     return null;
   }
 
@@ -29,4 +29,4 @@ export {
   generateCsrfToken,
   setCsrfTokenCookie as setCsrfCookie,
   validateCsrfToken,
-} from "@/lib/security/csrf";
+} from "@/lib/csrf";

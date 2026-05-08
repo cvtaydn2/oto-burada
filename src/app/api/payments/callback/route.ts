@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { applyDopingPackage } from "@/services/payments/doping-logic";
-import { retrievePaymentResult } from "@/services/payments/payment-logic";
+import { applyDopingPackage } from "@/features/payments/services/doping-logic";
+import { retrievePaymentResult } from "@/features/payments/services/payment-logic";
+import { DOPING_PACKAGES } from "@/lib/doping";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 /**
  * Payment Callback Handler
@@ -167,14 +167,21 @@ async function handleCallback(token: string, req: NextRequest) {
           listingId: existingPayment.listing_id,
           packageId,
         });
+        return NextResponse.redirect(new URL("/dashboard/payments?status=success", req.url));
       } catch (dopingError) {
-        // If doping fails, log but don't fail the callback
+        // If doping fails, log and notify user about partial success
         // The webhook will retry or admin can manually fix
         logger.api.error("Doping application failed in callback", {
           paymentId: existingPayment.id,
           error: dopingError instanceof Error ? dopingError.message : String(dopingError),
         });
-        // Don't rollback fulfilled_at - webhook will handle retry
+        // User paid but doping not activated - inform them
+        return NextResponse.redirect(
+          new URL(
+            "/dashboard/payments?status=partial_success&message=Doping+aktifleme+bekleniyor",
+            req.url
+          )
+        );
       }
     }
 

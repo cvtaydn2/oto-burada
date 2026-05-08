@@ -1,4 +1,4 @@
-import { getMembershipYears, getMemberSinceYear } from "@/lib/listings/utils";
+import { getMembershipYears, getMemberSinceYear } from "@/features/marketplace/lib/utils";
 
 /**
  * Domain logic for Profile/Seller entities.

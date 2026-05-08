@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
-import { isValidRequestOrigin } from "@/lib/security";
-import { getDisposableEmailMessage, isDisposableEmail } from "@/lib/security/email-validation";
-import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/security/turnstile";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { contactFormSchema } from "@/lib/validators/domain";
-import { createPublicTicket } from "@/services/support/ticket-service";
+import { createPublicTicket } from "@/features/support/services/ticket-service";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { isValidRequestOrigin } from "@/lib/csrf";
+import { contactFormSchema } from "@/lib/domain";
+import { getDisposableEmailMessage, isDisposableEmail } from "@/lib/email-validation";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitize";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
+import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/turnstile";
 
 // ── Spam heuristics ───────────────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     getRateLimitKey(request, "api:contact:create"),
     rateLimitProfiles.contactCreate
   );
-  if (ipLimit) {
+  if (ipLimit.response) {
     await logAbuse("", clientIp, "rate_limit", userAgent);
     return ipLimit.response;
   }

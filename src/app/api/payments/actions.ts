@@ -9,11 +9,11 @@
  * Migration: Phase 28.5 - Legacy Service Patterns Migration
  */
 
-import { getAuthContext } from "@/lib/auth/session";
+import { getAuthContext } from "@/features/auth/lib/session";
 import {
   initializePaymentCheckout,
   retrievePaymentResult,
-} from "@/services/payments/payment-logic";
+} from "@/features/payments/services/payment-logic";
 
 /**
  * Initialize a payment checkout form with Iyzico

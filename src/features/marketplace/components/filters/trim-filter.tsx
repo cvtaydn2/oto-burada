@@ -1,5 +1,6 @@
 "use client";
 
+import { Label } from "@/features/ui/components/label";
 import type { BrandCatalogItem } from "@/types";
 
 import { FilterSelect } from "./filter-select";
@@ -24,9 +25,9 @@ export function TrimFilter({ brands, brand, model, value, onChange, hideLabel }:
   return (
     <div className="space-y-1.5 w-full">
       {!hideLabel && (
-        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
           Paket
-        </label>
+        </Label>
       )}
       <FilterSelect
         value={value || "all"}

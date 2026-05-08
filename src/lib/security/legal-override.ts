@@ -1,4 +1,4 @@
-import { logger } from "@/lib/logging/logger";
+import { logger } from "@/lib/logger";
 
 /**
  * World-Class Compliance: Legal Override Protocol (Issue 7)

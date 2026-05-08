@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { withCronOrAdmin } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { withCronRoute } from "@/lib/security";
 
 /**
  * ── PILL: Issue 9 - Batch View Sync Cron ──────────────────────────────────
@@ -10,7 +10,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
  * Prevents table bloating and improves disk I/O performance.
  */
 export async function GET(request: Request) {
-  const security = await withCronOrAdmin(request);
+  const security = await withCronRoute(request);
   if (!security.ok) return security.response;
 
   const admin = createSupabaseAdminClient();

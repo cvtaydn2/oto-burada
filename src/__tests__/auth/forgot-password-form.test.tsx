@@ -15,7 +15,7 @@ vi.mock("react", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/auth/actions", () => ({
+vi.mock("@/features/auth/lib/actions", () => ({
   forgotPasswordAction: vi.fn(),
 }));
 
@@ -25,7 +25,7 @@ vi.mock("next/navigation", () => ({
 
 import { useActionState } from "react";
 
-import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
+import { ForgotPasswordForm } from "@/features/forms/components/forgot-password-form";
 
 const mockUseActionState = vi.mocked(useActionState);
 

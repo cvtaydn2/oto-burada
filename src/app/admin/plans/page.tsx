@@ -1,10 +1,14 @@
 import { CreditCard, ShoppingBag, TrendingUp, Users } from "lucide-react";
 
-import { PlansTable } from "@/components/admin/plans-table";
-import { Badge } from "@/components/ui/badge";
-import { requireAdminUser } from "@/lib/auth/session";
-import { formatCurrency, safeFormatDate } from "@/lib/utils";
-import { getAdminPricingPlans, getPlanPurchases, getPlanStats } from "@/services/admin/plans";
+import { PlansTable } from "@/features/admin-moderation/components/plans-table";
+import {
+  getAdminPricingPlans,
+  getPlanPurchases,
+  getPlanStats,
+} from "@/features/admin-moderation/services/plans";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { formatCurrency, safeFormatDate } from "@/lib";
 
 export const dynamic = "force-dynamic";
 

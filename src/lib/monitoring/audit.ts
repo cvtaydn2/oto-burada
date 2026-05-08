@@ -1,5 +1,5 @@
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
 
 /**
  * ── PILL: Issue 5 - BOLA / Audit Logging ──────────────────────────

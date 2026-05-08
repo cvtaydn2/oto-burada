@@ -1,9 +1,9 @@
 import { Heart } from "lucide-react";
 
-import { FavoritesPageClient } from "@/components/listings/favorites-page-client";
-import { requireUser } from "@/lib/auth/session";
-import { getDatabaseFavoriteIds } from "@/services/favorites/favorite-records";
-import { getMarketplaceListingsByIds } from "@/services/listings/marketplace-listings";
+import { requireUser } from "@/features/auth/lib/session";
+import { getDatabaseFavoriteIds } from "@/features/favorites/services/favorite-records";
+import { FavoritesPageClient } from "@/features/marketplace/components/favorites-page-client";
+import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
 
 export const dynamic = "force-dynamic";
 

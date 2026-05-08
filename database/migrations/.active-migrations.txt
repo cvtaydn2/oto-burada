@@ -1,0 +1,5 @@
+# OtoBurada active migrations list
+# Keep this file sorted. One filename per line.
+# Migration manager will apply only files listed here when file exists.
+
+0001_consolidated_baseline.sql

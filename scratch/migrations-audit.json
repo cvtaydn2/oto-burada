@@ -1,0 +1,1064 @@
+[
+  {
+    "file": "0001_add-analytics-rpc-functions.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0002_add-doping-expiry-cron.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0003_add-missing-indexes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0004_add-payments-webhook-support.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0005_add-phone-reveal-logs.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0006_add-price-history-and-market-features.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0007_add-published-at-and-expiry.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0008_add-rate-limit-rpc-and-indexes.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0009_audit-recommendations.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0010_check-columns.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0011_check-db-schema.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0012_check-functions.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0013_check-tables.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0014_drop-old-check-api-rate-limit.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0015_enable-rls-api-rate-limits.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0016_fix-chats-rls.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0017_fix-duplicate-rls-policies.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0018_fix-performance-warnings-2.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0019_fix-performance-warnings.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0020_fix-price-history-trigger.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0021_fix-security-performance-advisor--rollback.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0022_fix-security-performance-advisor.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0023_fix-security-warnings.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0024_fix_critical_payment_issues.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0025_fix-supabase-advisors.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0026_add-plan-id-to-payments.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0027_remove_eids_and_phone_verification.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0028_billing_audit_hardening.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0029_fix-storage-bucket-policies.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0038_secure_profiles_and_listings.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0039_contact_abuse_tracking.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0040_secure_public_ticket_creation.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0041_payment_state_machine_and_financial_security.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0042_fulfillment_jobs_and_retry_mechanism.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0043_custom_roles_table.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0044_atomic_credit_adjustment.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0045_storage_metadata_registry.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0047_harden_db_relations.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0048_production_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0049_realtime_security_and_system_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0050_database_hardening_indexes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0051_enterprise_hardening_phase2.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0052_concurrency_and_locking.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0053_expert_hardening_phase3.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0054_hyper_scale_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0055_decacorn_architecture_hardening.sql",
+    "hasRLS": true,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0056_indestructible_architecture_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0057_ultimate_indestructible_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0058_god_tier_architecture_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0059_business_verification_workflow.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0060_harden_verification_audit.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0061_add_verification_status_column.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0062_add_package_id_to_payments.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0063_add_identity_number_to_profiles.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0064_add_identity_number_to_profiles.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0065_brand_image_urls.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0066_atomic_free_plan_activation.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0067_doping_tables.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0068_chat_infrastructure_phase2.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0069_doping_activation_functions.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0070_example_new_migration_pattern.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0071_atomic_doping_expiry.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0072_payment_webhook_idempotency.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0073_fix_profile_visibility_for_marketplace.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0074_trust_guard_and_rate_limit_hardening.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0075_stale_payment_cleanup_index.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0076_vehicle_doping_catalog_and_categories.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0077_listing_expiry_management.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0078_reservations_escrow.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0079_seller_reviews.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0080_exchange_offers.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0081_gallery_portal.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0082_expertiz_ogs.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0083_offers_negotiation.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0084_fix_payment_schema_and_doping_sync.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0085_chat_extra_features.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0086_chat_atomic_fixes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0090_fix_public_profile_access.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0091_listing_quota_atomic_check.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0092_payment_webhook_audit_hardening.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0093_security_advisor_fixes.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0094_performance_and_security_polish.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0095_idempotent_doping_activation.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0101_analytics_perf_rpcs.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0102_marketplace_composite_indexes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0103_atomic_payment_webhook_processing.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0104_atomic_quota_and_performance_indexes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": true
+  },
+  {
+    "file": "0105_optimized_listing_stats.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0106_payment_webhook_idempotency.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0107_atomic_listing_delete.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0108_secure_profiles_rls.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0109_critical_performance_indexes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0110_listing_questions.sql",
+    "hasRLS": true,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0111_add_min_max_to_market_stats.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0112_monetization_tiers_and_corporate_plan.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0113_advanced_marketplace_indexes.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0114_add_next_attempt_at_to_outbox.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0115_ensure_listing_doping_columns.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0116_add_listing_quota_to_pricing_plans.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0117_fix_payment_confirmation_race_condition.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0118_add_verification_requested_at.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0119_fix_public_profiles_security_definer.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0120_fix_security_and_performance_lints.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0121_fix_remaining_lints.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0122_add_search_vector_gin_index.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0123_listing_image_rpc_consolidation.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0124_harden_payment_and_doping_security.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0125_restore_essential_rpc_permissions.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0130_grant_is_admin.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0131_harden_listing_questions.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0132_harden_infrastructure_security.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0133_atomic_moderation_outbox.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0134_chat_rate_limit_trigger.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0135_atomic_ban_user.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": true,
+    "hasFunctionOrRPC": true,
+    "hasIndex": false
+  },
+  {
+    "file": "0136_infrastructure_security_performance.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": true,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": true
+  },
+  {
+    "file": "0137_admin_user_actions_audit_logging.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0138_admin_grant_actions_audit_logging.sql",
+    "hasRLS": false,
+    "hasPolicy": false,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  },
+  {
+    "file": "0139_repair_duplicate_identity_number_migrations.sql",
+    "hasRLS": false,
+    "hasPolicy": true,
+    "hasSecurityDefiner": false,
+    "hasSearchPathPublic": false,
+    "hasFunctionOrRPC": false,
+    "hasIndex": false
+  }
+]

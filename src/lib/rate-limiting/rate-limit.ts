@@ -35,10 +35,10 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
-import { logger } from "@/lib/logging/logger";
-import { redis } from "@/lib/redis";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { redis } from "@/lib/redis/client";
 
 const inMemoryStore = new Map<string, RateLimitEntry>();
 
@@ -62,8 +62,10 @@ function cleanupInMemory() {
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
 
-  // Schedule cleanup as micro-task to avoid blocking event loop
-  setImmediate(() => {
+  // ── ARCHITECTURE FIX: Issue #EDGE-01 - Edge Compatibility ─────
+  // Schedule cleanup using setTimeout(..., 0) which is supported in both
+  // Node.js and Edge Runtime. setImmediate is not available in Edge.
+  setTimeout(() => {
     let scannedCount = 0;
     let deletedCount = 0;
 
@@ -97,7 +99,7 @@ function cleanupInMemory() {
     if (deletedCount > 0) {
       logger.api.debug(`In-memory rate limit cleanup: deleted ${deletedCount} expired entries.`);
     }
-  });
+  }, 0);
 }
 
 /**
@@ -253,6 +255,16 @@ export async function checkRateLimit(
 export const rateLimitProfiles = {
   /** Auth attempts: 10 per 15 minutes per IP - FAIL-CLOSED */
   auth: { limit: 10, windowMs: 15 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
+
+  /** Forgot password: 3 per hour per email - FAIL-CLOSED (prevent enumeration) */
+  forgotPassword: {
+    limit: 3,
+    windowMs: 60 * 60 * 1000,
+    failClosed: true,
+  } satisfies RateLimitConfig,
+
+  /** Auth failures: 5 failures per 15 minutes per IP - FAIL-CLOSED (brute-force protection) */
+  authFailure: { limit: 5, windowMs: 15 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
   /** Listing creation: 10 per hour per user - FAIL-CLOSED (prevent spam) */
   listingCreate: {

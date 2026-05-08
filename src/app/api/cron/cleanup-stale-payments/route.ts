@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { withCronOrAdmin } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { withCronRoute } from "@/lib/security";
 
 const STALE_PAYMENT_HOURS = 24;
 
 export async function GET(request: Request) {
-  const security = await withCronOrAdmin(request);
+  const security = await withCronRoute(request);
   if (!security.ok) return security.response;
 
   const admin = createSupabaseAdminClient();

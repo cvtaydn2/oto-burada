@@ -1,16 +1,16 @@
 import { ShieldCheck, UserCog } from "lucide-react";
 import Link from "next/link";
 
-import { SimplePagination } from "@/components/admin/simple-pagination";
-import { UserActionMenu } from "@/components/admin/user_action_menu";
-import { UserHeaderActions } from "@/components/admin/user-header-actions";
-import { UserSearch } from "@/components/admin/user-search";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { requireAdminUser } from "@/lib/auth/session";
-import { trust } from "@/lib/constants/ui-strings";
-import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib/utils";
-import { getAllUsers } from "@/services/admin/user-list";
+import { SimplePagination } from "@/features/admin-moderation/components/simple-pagination";
+import { UserActionMenu } from "@/features/admin-moderation/components/user_action_menu";
+import { UserHeaderActions } from "@/features/admin-moderation/components/user-header-actions";
+import { UserSearch } from "@/features/admin-moderation/components/user-search";
+import { getAllUsers } from "@/features/admin-moderation/services/user-list";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { Button } from "@/features/ui/components/button";
+import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default async function AdminUserManagementPage({
   const totalPages = Math.ceil(total / limit);
 
   // Tüm DB'den gerçek sayılar — sadece mevcut sayfa değil
-  const admin = (await import("@/lib/supabase/admin")).createSupabaseAdminClient();
+  const admin = (await import("@/lib/admin")).createSupabaseAdminClient();
   const [{ count: totalActive }, { count: totalProfessional }, { count: totalBanned }] =
     await Promise.all([
       admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", false),
@@ -209,7 +209,9 @@ export default async function AdminUserManagementPage({
                         </td>
                         <td className="p-6">
                           <span className="text-xs font-bold text-muted-foreground/70">
-                            {safeFormatDistanceToNow(userWithLogin.lastSignInAt)}
+                            {userWithLogin.lastSignInAt
+                              ? safeFormatDistanceToNow(userWithLogin.lastSignInAt)
+                              : "—"}
                           </span>
                         </td>
                         <td className="p-6">

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { minimumListingImages } from "@/lib/constants/domain";
+import { minimumListingImages } from "@/lib/domain";
 import type { ListingCreateFormValues } from "@/types";
 
 import { baseListingFields } from "./fields";
@@ -11,16 +11,14 @@ export const listingCreateSchema = z.object({
   ...baseListingFields,
   images: z.array(listingImageSchema).min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
   expertInspection: expertInspectionSchema.optional(),
-  turnstileToken: z.string().trim().optional(),
+  turnstileToken: z.string().trim().min(1, "Güvenlik doğrulaması gerekli"),
 });
 
 // Lazy initialized schema for expensive superRefine blocks
 let _listingCreateFormSchema: z.ZodType<ListingCreateFormValues> | null = null;
 export const getListingCreateFormSchema = () => {
   if (!_listingCreateFormSchema) {
-    _listingCreateFormSchema = z.object({
-      ...baseListingFields,
-      expertInspection: expertInspectionSchema.optional(),
+    _listingCreateFormSchema = listingCreateSchema.extend({
       images: z
         .array(
           z.object({

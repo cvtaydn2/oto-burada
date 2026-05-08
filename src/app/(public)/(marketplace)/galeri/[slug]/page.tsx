@@ -3,12 +3,12 @@ import { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
-import { GalleryHeader } from "@/components/layout/gallery-header";
-import { ListingCard } from "@/components/shared/listing-card";
-import { Badge } from "@/components/ui/badge";
-import { getCurrentUser } from "@/lib/auth/session";
-import { logger } from "@/lib/logging/logger";
-import { getGalleryBySlug, recordGalleryView } from "@/services/gallery";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { GalleryHeader } from "@/features/layout/components/gallery-header";
+import { getGalleryBySlug, recordGalleryView } from "@/features/marketplace/services";
+import { ListingCard } from "@/features/shared/components/listing-card";
+import { logger } from "@/features/shared/lib/logger";
+import { Badge } from "@/features/ui/components/badge";
 
 interface GalleryPageProps {
   params: Promise<{

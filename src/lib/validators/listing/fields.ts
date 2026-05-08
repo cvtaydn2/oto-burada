@@ -1,15 +1,13 @@
 import { z } from "zod";
 
 import {
-  fuelTypes,
   maximumCarYear,
   maximumDescriptionLength,
   maximumListingPrice,
   maximumMileage,
   minimumCarYear,
-  transmissionTypes,
-} from "@/lib/constants/domain";
-import { vehicleCategories } from "@/lib/constants/vehicle-categories";
+} from "@/lib/domain";
+import { vehicleCategories } from "@/lib/vehicle-categories";
 
 import {
   invalidMessage,
@@ -18,6 +16,9 @@ import {
   positiveCurrencySchema,
   trimmedRequiredString,
 } from "../shared";
+
+const fuelTypeEnum = z.enum(["benzin", "dizel", "lpg", "hibrit", "elektrik"]);
+const transmissionTypeEnum = z.enum(["manuel", "otomatik", "yari_otomatik"]);
 
 export const baseListingFields = {
   title: trimmedRequiredString.max(200, "Başlık en fazla 200 karakter olabilir"),
@@ -31,8 +32,8 @@ export const baseListingFields = {
     .min(minimumCarYear, invalidMessage)
     .max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
-  fuelType: z.enum(fuelTypes),
-  transmission: z.enum(transmissionTypes),
+  fuelType: fuelTypeEnum,
+  transmission: transmissionTypeEnum,
   price: positiveCurrencySchema.max(
     maximumListingPrice,
     `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`

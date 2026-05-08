@@ -13,8 +13,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
+} from "@/features/ui/components/alert-dialog";
+import { Button } from "@/features/ui/components/button";
+import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 import type { Listing } from "@/types";
 
 interface ModerationDecisionProps {
@@ -48,9 +50,9 @@ export function ModerationDecision({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               MODERASYON NOTU VE KARAR
-            </label>
+            </Label>
             {!notesByListingId[listing.id] && (
               <span className="text-[9px] font-bold text-rose-500 animate-pulse">
                 ! KARAR İÇİN NOT GEREKLİ OLABİLİR
@@ -59,7 +61,7 @@ export function ModerationDecision({
           </div>
           <div className="flex flex-wrap gap-2 justify-end">
             {quickTags.map((tag) => (
-              <button
+              <Button
                 key={tag.label}
                 onClick={() => setNotesByListingId((c) => ({ ...c, [listing.id]: tag.label }))}
                 className={cn(
@@ -70,7 +72,7 @@ export function ModerationDecision({
                 )}
               >
                 {tag.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -110,7 +112,7 @@ export function ModerationDecision({
         <div className="flex items-center gap-3">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button
+              <Button
                 disabled={actionBusy}
                 className="h-12 px-8 rounded-2xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -120,7 +122,7 @@ export function ModerationDecision({
                   <XCircle className="size-4" />
                 )}
                 REDDET
-              </button>
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-background border-border">
               <AlertDialogHeader>
@@ -143,7 +145,7 @@ export function ModerationDecision({
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button
+              <Button
                 disabled={actionBusy}
                 className="h-12 px-8 rounded-2xl bg-primary text-white text-xs font-bold uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -153,7 +155,7 @@ export function ModerationDecision({
                   <CheckCircle2 className="size-4" />
                 )}
                 ONAYLA
-              </button>
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-background border-border">
               <AlertDialogHeader>

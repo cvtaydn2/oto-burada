@@ -24,6 +24,6 @@ export function isFileTooLarge(size: number, type: UploadPolicyType): boolean {
 }
 
 export function isMimeTypeAllowed(mime: string, type: UploadPolicyType): boolean {
-  // @ts-expect-error - indexing with dynamic key
-  return UPLOAD_POLICY[type].ALLOWED_MIME_TYPES.includes(mime);
+  const allowedMimeTypes = UPLOAD_POLICY[type].ALLOWED_MIME_TYPES as readonly string[];
+  return allowedMimeTypes.includes(mime.toLowerCase());
 }

@@ -1,19 +1,33 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { withAdminRoute } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { withAdminRoute } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 const banSchema = z.object({
   ip: z.string().refine((val) => {
-    // IPv4 or IPv6 validation
+    // IPv4 validation
     const ipv4Regex =
       /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-    return ipv4Regex.test(val) || ipv6Regex.test(val);
+
+    // IPv6 validation (full, compressed, and IPv4-mapped formats)
+    const ipv6FullRegex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+    const ipv6CompressedRegex =
+      /^(([0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4})?::(([0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4})?$/;
+    const ipv6MixedRegex = /^([0-9a-fA-F]{1,4}:){1,7}:$/;
+    const ipv4MappedRegex =
+      /^::ffff:((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$/;
+
+    return (
+      ipv4Regex.test(val) ||
+      ipv6FullRegex.test(val) ||
+      ipv6CompressedRegex.test(val) ||
+      ipv6MixedRegex.test(val) ||
+      ipv4MappedRegex.test(val)
+    );
   }, "Invalid IP address"),
   reason: z.string().min(5).max(500),
 });
@@ -21,7 +35,7 @@ const banSchema = z.object({
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
-  const user = security.user!;
+  const adminUser = security.user!;
 
   if (!hasSupabaseAdminEnv()) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
@@ -55,7 +69,7 @@ export async function POST(request: Request) {
     const { error } = await admin.from("ip_banlist").insert({
       ip_address: ip,
       reason,
-      banned_by: user.id,
+      banned_by: adminUser.id,
       banned_at: new Date().toISOString(),
       expires_at: null, // Permanent ban
     });
@@ -63,19 +77,22 @@ export async function POST(request: Request) {
     if (error) {
       // Duplicate key error (IP already banned)
       if (error.code === "23505") {
-        logger.admin.warn("IP already banned", { ip, adminId: user.id });
-        return NextResponse.redirect(new URL("/admin/security", request.url));
+        logger.admin.warn("IP already banned", { ip, adminId: adminUser.id });
+        return NextResponse.json(
+          { error: "Bu IP adresi zaten yasaklı", alreadyBanned: true },
+          { status: 409 }
+        );
       }
       throw error;
     }
 
-    logger.admin.info("IP banned", { ip, reason, adminId: user.id });
-    captureServerEvent("ip_banned", { ip, reason }, user.id);
+    logger.admin.info("IP banned", { ip, reason, adminId: adminUser.id });
+    captureServerEvent("ip_banned", { ip, reason }, adminUser.id);
 
     // Redirect back to security page
     return NextResponse.redirect(new URL("/admin/security", request.url));
   } catch (error) {
-    logger.admin.error("Failed to ban IP", error, { ip, adminId: user.id });
+    logger.admin.error("Failed to ban IP", error, { ip, adminId: adminUser.id });
     return NextResponse.json({ error: "Failed to ban IP" }, { status: 500 });
   }
 }

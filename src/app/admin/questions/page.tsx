@@ -1,15 +1,19 @@
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   QuestionsModeration,
   QuestionWithDetails,
 } from "@/features/admin-moderation/components/questions-moderation";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAllQuestions, getPendingQuestions } from "@/services/admin/questions";
+import {
+  getAllQuestions,
+  getPendingQuestions,
+} from "@/features/admin-moderation/services/questions";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { Badge } from "@/features/ui/components/badge";
+import { Input } from "@/features/ui/components/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/features/ui/components/tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +27,7 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
   const currentPage = Number(page) || 1;
   const limit = 50;
   const offset = (currentPage - 1) * limit;
+  const normalizedStatus = status === "all" || status === "pending" ? status : "pending";
 
   // Parallel fetch counts and main list
   const pendingQuestions = await getPendingQuestions(100);
@@ -64,7 +69,7 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
           </form>
         </div>
 
-        <Tabs defaultValue={status} className="w-full">
+        <Tabs value={normalizedStatus} className="w-full">
           <div className="px-6 border-b border-border/50 bg-card overflow-x-auto">
             <TabsList className="h-20 bg-transparent gap-10 p-0 flex">
               <TabsTrigger
@@ -72,7 +77,7 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
                 asChild
                 className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-amber-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-amber-600"
               >
-                <a href={`?status=pending${q ? `&q=${q}` : ""}`}>
+                <Link href={`?status=pending${q ? `&q=${q}` : ""}`}>
                   Onay Bekleyen
                   <Badge
                     variant="secondary"
@@ -80,14 +85,14 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
                   >
                     {pendingQuestions.length}
                   </Badge>
-                </a>
+                </Link>
               </TabsTrigger>
               <TabsTrigger
                 value="all"
                 asChild
                 className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-amber-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-amber-600"
               >
-                <a href={`?status=all${q ? `&q=${q}` : ""}`}>Tüm Sorular</a>
+                <Link href={`?status=all${q ? `&q=${q}` : ""}`}>Tüm Sorular</Link>
               </TabsTrigger>
             </TabsList>
           </div>

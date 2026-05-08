@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { userRoles } from "@/lib/constants/domain";
-
 import {
   emptyStringToUndefined,
   invalidMessage,
@@ -10,6 +8,8 @@ import {
   timestampSchema,
   trimmedRequiredString,
 } from "./shared";
+
+const userRoleEnum = z.enum(["user", "admin"]);
 
 export const profileSchema = z.object({
   id: trimmedRequiredString,
@@ -27,7 +27,7 @@ export const profileSchema = z.object({
   isWalletVerified: z.boolean().optional(),
   userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
-  role: z.enum(userRoles),
+  role: userRoleEnum,
 
   // Corporate Fields
   businessName: z.string().trim().nullable().optional(),
@@ -81,16 +81,52 @@ export const corporateProfileSchema = z.object({
   ),
 });
 
+const PASSWORD_MIN_LENGTH = 8;
+
+function strongPassword(value: string): boolean {
+  const hasUpperCase = /[A-Z]/.test(value);
+  const hasLowerCase = /[a-z]/.test(value);
+  const hasNumber = /[0-9]/.test(value);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+  return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+}
+
+const passwordSchema = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, `Şifre en az ${PASSWORD_MIN_LENGTH} karakter olmalıdır`)
+  .refine(strongPassword, {
+    message: "Şifre en az 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir",
+  });
+
 export const loginSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
+  // Login akışında mevcut hesapların legacy şifreleri de kabul edilmelidir.
+  // Güçlü şifre kuralı sadece kayıt/şifre sıfırlama aşamasında zorunlu olmalı.
+  password: z.string().min(1, "Şifre gereklidir"),
 });
 
-export const registerSchema = z.object({
-  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
-  fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
-});
+export const registerSchema = z
+  .object({
+    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
+    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Şifreler eşleşmiyor",
+    path: ["confirmPassword"],
+  });
+
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirm: passwordSchema,
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Şifreler eşleşmiyor",
+    path: ["confirm"],
+  });
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

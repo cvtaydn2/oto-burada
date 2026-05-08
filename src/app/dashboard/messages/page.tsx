@@ -1,37 +1,107 @@
 "use client";
 
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ChatList } from "@/components/chat/chat-list";
-import { ChatWindow } from "@/components/chat/chat-window";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { ChatList } from "@/features/chat/components/chat-list";
+import { ChatWindow } from "@/features/chat/components/chat-window";
+import { useAuthUser } from "@/features/shared/components/auth-provider";
+import { Button } from "@/features/ui/components/button";
+import { Card } from "@/features/ui/components/card";
+import { useCreateChat } from "@/hooks/use-chat-queries";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useSupabase } from "@/lib/supabase/client";
+import { API_ROUTES } from "@/lib/api-routes";
+import { ApiClient } from "@/lib/client";
+import type { ChatWithLastMessage } from "@/types/chat";
 
 export default function MessagesPage() {
-  const supabase = useSupabase();
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const searchParams = useSearchParams();
+  const { userId, isReady: isAuthResolved, isAuthenticated } = useAuthUser();
+
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const createChatMutation = useCreateChat();
+  const hasHandledPrefillRef = useRef(false);
+
+  // Stable callback for chat selection - prevents unnecessary re-renders of ChatList
+  const handleChatSelect = useCallback((chatId: string) => {
+    setSelectedChatId(chatId);
+  }, []);
+
+  // Stable callback for back navigation
+  const handleBack = useCallback(() => {
+    setSelectedChatId(null);
+  }, []);
 
   useEffect(() => {
-    supabase.auth
-      .getUser()
-      .then(({ data }: { data: { user: { id: string } | null } }) => setUser(data.user))
-      .catch(() => setUser(null));
-  }, [supabase]);
+    if (!isAuthResolved || !userId || hasHandledPrefillRef.current) {
+      return;
+    }
+
+    const listingId = searchParams.get("new");
+    const sellerId = searchParams.get("seller");
+
+    if (!listingId || !sellerId) {
+      hasHandledPrefillRef.current = true;
+      return;
+    }
+
+    hasHandledPrefillRef.current = true;
+
+    void createChatMutation
+      .mutateAsync({
+        listingId,
+        sellerId,
+        buyerId: userId,
+      })
+      .then((chat) => {
+        if (chat?.id) {
+          setSelectedChatId(chat.id);
+        }
+      })
+      .catch(async () => {
+        // Eğer chat zaten varsa create hatası alabiliriz.
+        // Bu durumda mevcut chat'i bulup paneli aç.
+        const existingChatResponse = await ApiClient.request<ChatWithLastMessage[]>(
+          API_ROUTES.CHATS.BASE
+        );
+
+        if (!Array.isArray(existingChatResponse)) {
+          return;
+        }
+
+        const existingChat = existingChatResponse.find(
+          (chat) => chat.listingId === listingId && chat.sellerId === sellerId
+        );
+
+        if (existingChat?.id) {
+          setSelectedChatId(existingChat.id);
+        }
+      });
+  }, [isAuthResolved, userId, searchParams, createChatMutation]);
+
   // Show chat list on desktop, or when no chat selected on mobile
   const showChatList = !isMobile || !selectedChatId;
   const showChatWindow = !isMobile || selectedChatId;
 
-  if (!user) {
+  if (!isAuthResolved) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex min-h-[50vh] items-center justify-center">
         <Card className="p-8 text-center">
-          <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Lütfen giriş yapın.</p>
+          <MessageCircle className="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
+          <p className="text-muted-foreground">Mesajlar yükleniyor...</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !userId) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Card className="p-8 text-center">
+          <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <p className="text-muted-foreground">Oturum bulunamadı. Lütfen yeniden giriş yapın.</p>
         </Card>
       </div>
     );
@@ -48,8 +118,8 @@ export default function MessagesPage() {
           </div>
           <div className="h-[calc(100vh-14rem)] overflow-hidden">
             <ChatList
-              userId={user.id}
-              onChatSelect={setSelectedChatId}
+              userId={userId}
+              onChatSelect={handleChatSelect}
               selectedChatId={selectedChatId || undefined}
             />
           </div>
@@ -62,17 +132,13 @@ export default function MessagesPage() {
         >
           {isMobile && selectedChatId && (
             <div className="p-4 border-b">
-              <Button variant="ghost" size="icon" onClick={() => setSelectedChatId(null)}>
+              <Button variant="ghost" size="icon" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </div>
           )}
           {selectedChatId ? (
-            <ChatWindow
-              chatId={selectedChatId}
-              userId={user.id}
-              onBack={() => setSelectedChatId(null)}
-            />
+            <ChatWindow chatId={selectedChatId} userId={userId} onBack={handleBack} />
           ) : (
             <div className="flex items-center justify-center h-full text-center p-4">
               <div className="max-w-md">

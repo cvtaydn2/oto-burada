@@ -1,17 +1,17 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-import { ListingCreateForm } from "@/components/forms/listing-create-form";
-import { MyListingsPanel } from "@/components/listings/my-listings-panel";
-import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
-import { requireUser } from "@/lib/auth/session";
-import { cn } from "@/lib/utils";
-import { getStoredUserListings } from "@/services/listings/listing-submissions";
-import { getStoredProfileById } from "@/services/profile/profile-records";
+import { requireUser } from "@/features/auth/lib/session";
+import { ListingCreateForm } from "@/features/forms/components/listing-create-form";
+import { MyListingsPanel } from "@/features/marketplace/components/my-listings-panel";
+import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
+import { getStoredProfileById } from "@/features/profile/services/profile-records";
+import { AccountTrustNotice } from "@/features/shared/components/account-trust-notice";
 import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
-} from "@/services/reference/live-reference-data";
+} from "@/features/shared/services/live-reference-data";
+import { cn } from "@/lib";
 import { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -34,23 +34,34 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const hasRequestedCreate = resolvedSearchParams?.create === "true";
-  const hasRequestedEdit = Boolean(resolvedSearchParams?.edit);
+  const editId = resolvedSearchParams?.edit;
+  const hasRequestedEdit = Boolean(editId);
   const hasCreatedPendingListing = resolvedSearchParams?.created === "pending";
   const hasUpdatedListing = resolvedSearchParams?.updated === "true";
 
   // Paralel fetch
   // PERFORMANCE FIX: Explicit limit to avoid loading too many listings in dashboard overview
-  const [listingsResult, references, profile] = await Promise.all([
+  // UX FIX: Explicitly fetch the listing being edited to avoid state loss if it's not in the first 20.
+  const [listingsResult, references, profile, specificListing] = await Promise.all([
     getStoredUserListings(user.id, 1, 20), // Limit to 20 listings for dashboard
     getLiveMarketplaceReferenceData(),
     getStoredProfileById(user.id),
+    editId
+      ? import("@/features/marketplace/services/queries/get-listings").then((m) =>
+          m.getStoredListingById(editId)
+        )
+      : Promise.resolve(null),
   ]);
 
   const storedListings = listingsResult.listings;
 
-  const selectedListing = resolvedSearchParams?.edit
-    ? (storedListings.find((l: Listing) => l.id === resolvedSearchParams.edit) ?? null)
-    : null;
+  // UX FIX: Priority given to specificListing if it belongs to the user
+  const selectedListing =
+    specificListing && specificListing.sellerId === user.id
+      ? specificListing
+      : editId
+        ? (storedListings.find((l: Listing) => l.id === editId) ?? null)
+        : null;
   const mergedBrands = references.brands.some((item) => item.brand === selectedListing?.brand)
     ? references.brands
     : selectedListing?.brand

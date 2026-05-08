@@ -1,34 +1,55 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getAuthContext } from "@/lib/auth/session";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { getAuthContext } from "@/features/auth/lib/session";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 
 import { GET } from "../route";
 
-vi.mock("@/lib/auth/session", () => ({
+vi.mock("@/features/auth/lib/session", () => ({
   getAuthContext: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
   hasSupabaseEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/lib/supabase/admin", () => ({
+const mockDbQuery = {
+  select() {
+    return this;
+  },
+  eq() {
+    return this;
+  },
+  not() {
+    return this;
+  },
+  is() {
+    return this;
+  },
+  delete() {
+    return this;
+  },
+  insert() {
+    return Promise.resolve({ data: null, error: null });
+  },
+  maybeSingle() {
+    return Promise.resolve({ data: null, error: null });
+  },
+  then(resolve: (value: { data: unknown[]; error: null }) => void) {
+    resolve({ data: [], error: null });
+  },
+};
+
+vi.mock("@/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
-        })),
-        maybeSingleAndMore: vi.fn(), // for future
-      })),
-    })),
+    from: vi.fn(() => mockDbQuery),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   })),
 }));
 
 // Mock logger to avoid spam
-vi.mock("@/lib/logging/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     market: {
       error: vi.fn(),

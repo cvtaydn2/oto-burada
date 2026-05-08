@@ -1,7 +1,7 @@
 # OtoBurada — Production Runbook
 
-> Last updated: 2026-04-17  
-> Stack: Next.js 16 · Supabase · Vercel · Upstash Redis · PostHog · Resend
+> Last updated: 2026-05-06
+> Stack: Next.js 16 · Supabase · Vercel · Upstash Redis · Sentry · Resend
 
 ---
 
@@ -17,6 +17,8 @@
 8. [Incident Response](#incident-response)
 9. [Feature Flags](#feature-flags)
 10. [Secrets Rotation](#secrets-rotation)
+11. [Quality Gates (Current)](#quality-gates-current)
+12. [RLS Runtime Audit Backlog](#rls-runtime-audit-backlog)
 
 ---
 
@@ -152,10 +154,13 @@ Before running any migration in production:
 
 ### Required in Production
 
-| Variable                            | Description                                   |
-| ----------------------------------- | --------------------------------------------- |
-| `CRON_SECRET`                       | Cron job auth secret (`openssl rand -hex 32`) |
-| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog analytics token                       |
+| Variable                  | Description                                               |
+| ------------------------- | --------------------------------------------------------- |
+| `CRON_SECRET`             | Cron job auth secret (`openssl rand -hex 32`)             |
+| `NEXT_PUBLIC_SENTRY_DSN`  | Sentry error monitoring DSN                               |
+| `SENTRY_AUTH_TOKEN`       | Sentry build/source-map upload token                      |
+| `SENTRY_ORG`              | Sentry organization slug                                  |
+| `SENTRY_PROJECT`          | Sentry project slug                                       |
 
 ### Optional (features degrade gracefully without these)
 
@@ -225,18 +230,19 @@ Configure your uptime monitor (BetterUptime, UptimeRobot, etc.) to:
 - **Function Logs**: Vercel Dashboard → Functions → Logs
 - **Build Logs**: Vercel Dashboard → Deployments → [deployment] → Build Logs
 
-### PostHog
+### Sentry
 
-- **Error Tracking**: PostHog → Error Tracking → All Errors
-- **User Sessions**: PostHog → Session Replay
-- **Funnels**: PostHog → Insights → Funnels
+- **Error Tracking**: Sentry → Issues / Error Tracking
+- **Performance**: Sentry → Performance
+- **Releases**: Sentry → Releases
+- **Session Replay**: Kullanılmıyor. Ücretsiz plan ve veri minimizasyonu için kapalı tutulur.
 
-Key events to monitor:
-| Event | Alert threshold |
-|-------|----------------|
-| `$exception` | > 10/hour |
-| `listing_created` | < 1/day (platform health) |
-| `server_warning` | > 50/hour |
+Key signals to monitor:
+| Signal | Threshold |
+|-------|-----------|
+| Unhandled exception rate | > 10/hour |
+| Repeated payment/listing errors | > 3/hour |
+| Server warning spikes | > 50/hour |
 
 ### Supabase
 
@@ -252,6 +258,48 @@ Key events to monitor:
 - **RLS Policy Performance**: Check `EXPLAIN ANALYZE` on slow queries
 
 ---
+
+## Quality Gates (Current)
+
+### Required before merge to `main`
+
+- [`npm run lint`](package.json:10)
+- [`npm run typecheck`](package.json:11)
+- [`npm run build`](package.json:8)
+
+### Hedefli test kapısı (aktif çalışma seti)
+
+Aşağıdaki paketler stabil/tekrarlanabilir olarak doğrulanır:
+
+- [`src/lib/api/__tests__/client.test.ts`](src/lib/api/__tests__/client.test.ts)
+- [`src/lib/middleware/__tests__/middleware-logic.test.ts`](src/lib/middleware/__tests__/middleware-logic.test.ts)
+- [`src/lib/auth/__tests__/actions.test.ts`](src/lib/auth/__tests__/actions.test.ts)
+- [`src/__tests__/auth/register-action.test.ts`](src/__tests__/auth/register-action.test.ts)
+- [`src/services/admin/__tests__/listing-moderation.test.ts`](src/services/admin/__tests__/listing-moderation.test.ts)
+- [`src/features/marketplace/hooks/__tests__/use-unified-filters.test.tsx`](src/features/marketplace/hooks/__tests__/use-unified-filters.test.tsx)
+- [`src/features/marketplace/components/__tests__/listing-view-tracker.test.tsx`](src/features/marketplace/components/__tests__/listing-view-tracker.test.tsx)
+- [`src/components/listings/__tests__/contact-actions.test.tsx`](src/components/listings/__tests__/contact-actions.test.tsx)
+- [`src/__tests__/security/api-security-audit.test.ts`](src/__tests__/security/api-security-audit.test.ts)
+- [`src/__tests__/services/listing-filters-recovery.test.ts`](src/__tests__/services/listing-filters-recovery.test.ts)
+
+### Performance guard (Vercel Insight odaklı)
+
+- Öncelik metrikleri: `TTFB`, `FCP`, `LCP`
+- Kritik rotalar: [`/`](src/app/(public)/(marketplace)/page.tsx), [`/contact`](src/app/(public)/contact/page.tsx), [`/maintenance`](src/app/maintenance/page.tsx)
+- Middleware kuralı: public sayfaları gereksiz `no-cache` ile bozma; cache-sensitive akışları daralt.
+
+---
+
+## RLS Runtime Audit Backlog
+
+MCP yetkisi olmadan statik analiz tamamlandı; canlı doğrulama için aşağıdaki adımlar beklemede:
+
+- Supabase MCP auth doğrulaması (`list_projects` başarılı olmalı)
+- Security advisors çalıştırma (project bazlı)
+- Policy runtime smoke SQL:
+  - anon/authenticated rol bazlı SELECT/INSERT/UPDATE izin matrisi
+  - `public.public_profiles` view davranışı (`security_invoker`) teyidi
+- Fark varsa migration patch + hedefli test + build
 
 ## Rollback Procedures
 
@@ -324,7 +372,7 @@ Vercel Dashboard → Cron Jobs → [job] → Logs
 If a cron job fails:
 
 1. Check Vercel function logs for the error
-2. Check PostHog for `$exception` events from `server` distinct ID
+2. Check Sentry issues and traces for the failing route
 3. Manually trigger to verify fix: `curl -X GET ... -H "Authorization: Bearer $CRON_SECRET"`
 
 ### Adding a New Cron Job
@@ -418,7 +466,7 @@ if (!features.payments) {
 
 1. Set the env var in Vercel Project Settings → Environment Variables
 2. Redeploy (or wait for next deploy)
-3. Verify via `/api/health` or PostHog events
+3. Verify via `/api/health` or Sentry events
 
 ---
 
@@ -449,12 +497,12 @@ openssl rand -hex 32
 3. Redeploy
 4. Rate limiting will fall back to in-memory briefly during transition
 
-### PostHog Token
+### Sentry Token
 
-1. PostHog → Project Settings → API Keys → Rotate
-2. Update `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` in Vercel
+1. Sentry → Project Settings → API Keys → Rotate
+2. Update `NEXT_PUBLIC_SENTRY_DSN` in Vercel
 3. Redeploy
-4. Verify events appear in PostHog
+4. Verify events appear in Sentry
 
 ---
 

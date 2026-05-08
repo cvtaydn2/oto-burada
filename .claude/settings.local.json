@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git submodule *)",
+      "Bash(git config *)",
+      "Bash(git rm *)",
+      "Bash(rm -rf .git/modules/lib/ruflo)",
+      "Bash(git fsck *)",
+      "Bash(git restore *)",
+      "Bash(npx vitest *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(bash *)",
+      "Bash(git push *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "vercel",
+    "supabase"
+  ],
+  "spinnerTipsEnabled": true
+}

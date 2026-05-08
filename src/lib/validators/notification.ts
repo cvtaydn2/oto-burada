@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { notificationTypes } from "@/lib/constants/domain";
 import type { Notification, SavedSearch, SavedSearchCreateInput } from "@/types";
 
 import { listingFiltersSchema } from "./marketplace";
@@ -12,10 +11,12 @@ import {
   trimmedRequiredString,
 } from "./shared";
 
+const notificationTypeEnum = z.enum(["favorite", "moderation", "report", "system", "question"]);
+
 export const notificationSchema: z.ZodType<Notification> = z.object({
   id: trimmedRequiredString,
   userId: trimmedRequiredString,
-  type: z.enum(notificationTypes),
+  type: notificationTypeEnum,
   title: trimmedRequiredString.max(160, "Baslik en fazla 160 karakter olabilir"),
   message: trimmedRequiredString.max(1000, "Mesaj en fazla 1000 karakter olabilir"),
   href: z.preprocess(
@@ -38,15 +39,17 @@ export const savedSearchSchema: z.ZodType<SavedSearch> = z.object({
 });
 
 export const savedSearchCreateSchema: z.ZodType<SavedSearchCreateInput> = z.object({
-  title: z.preprocess(
-    emptyStringToUndefined,
-    z
-      .string()
-      .trim()
-      .min(1, requiredMessage)
-      .max(120, "Baslik en fazla 120 karakter olabilir")
-      .optional()
-  ),
+  title: z
+    .preprocess(
+      emptyStringToUndefined,
+      z
+        .string()
+        .trim()
+        .min(1, requiredMessage)
+        .max(120, "Baslik en fazla 120 karakter olabilir")
+        .optional()
+    )
+    .optional(),
   filters: listingFiltersSchema,
   notificationsEnabled: z.boolean().optional(),
 });

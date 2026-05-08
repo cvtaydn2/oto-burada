@@ -6,15 +6,13 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import { headers } from "next/headers";
 
-import { RootProviders } from "@/components/providers/root-providers";
-import { CookieConsent } from "@/components/shared/cookie-consent";
-import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
-import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
-import { getCurrentUser } from "@/lib/auth/session";
-import { getAppUrl } from "@/lib/seo";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { RootProviders } from "@/features/providers/components/root-providers";
+import { getAppUrl } from "@/features/seo/lib";
+import { LazyClientWidgets } from "@/features/shared/components/lazy-client-widgets";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Default behavior is preferred for better performance and Speed Insights
+// Individual pages should define their dynamic behavior if needed
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -105,25 +103,33 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? undefined;
+  const csrfToken = headersList.get("x-csrf-token") ?? undefined;
+  const isProd = process.env.NODE_ENV === "production";
+  const analyticsEnabled = process.env.NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS !== "false";
+  const speedInsightsEnabled = process.env.NEXT_PUBLIC_ENABLE_VERCEL_SPEED_INSIGHTS !== "false";
 
   return (
     <html
       lang="tr"
       className={`${inter.variable} ${outfit.variable}`}
-      suppressHydrationWarning // Required by next-themes to avoid mismatch when injecting theme class on the client
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
     >
       <head>
+        <meta name="csrf-token" content={csrfToken} />
         <link rel="preconnect" href="https://images.unsplash.com" />
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <link rel="preconnect" href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin} />
+        )}
       </head>
       <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary/10 selection:text-primary">
-        <RootProviders user={user} nonce={nonce}>
+        <RootProviders user={user} nonce={nonce} csrfToken={csrfToken}>
           {children}
-          <Analytics />
-          <SpeedInsights />
-          <CookieConsent />
-          <PWAInstallPrompt />
-          <WhatsAppSupport />
+          {isProd && analyticsEnabled ? <Analytics /> : null}
+          {isProd && speedInsightsEnabled ? <SpeedInsights /> : null}
+          <LazyClientWidgets />
         </RootProviders>
       </body>
     </html>

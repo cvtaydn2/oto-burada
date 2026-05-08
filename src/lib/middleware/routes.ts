@@ -4,7 +4,8 @@ export const authRoutes = ["/login", "/register", "/forgot-password", "/reset-pa
 
 // API Security Config
 export const protectedApiPrefixes = [
-  "/api/listings",
+  // NOTE: /api/listings GET is intentionally public marketplace search.
+  // Auth-required listing operations are protected at route-level wrappers.
   "/api/dashboard",
   "/api/profile",
   "/api/chats",
@@ -33,7 +34,9 @@ export function classifyRoute(pathname: string) {
     pathname.startsWith("/fonts") ||
     pathname.startsWith("/icons") ||
     pathname.startsWith("/favicon") ||
-    pathname.match(/\.(ico|png|jpg|jpeg|svg|webp|gif|woff|woff2|ttf|eot|css|js|map)$/);
+    pathname.match(
+      /\.(ico|png|jpg|jpeg|svg|webp|gif|woff|woff2|ttf|eot|css|js|map|webmanifest|json)$/
+    );
 
   const isProtectedRoute = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
   const isAdminRoute = adminPrefixes.some((prefix) => pathname.startsWith(prefix));

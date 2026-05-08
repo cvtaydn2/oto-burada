@@ -1,9 +1,9 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { getCachedData, setCachedData } from "@/lib/redis/client";
-import { estimateVehiclePrice } from "@/services/market/price-estimation";
+import { estimateVehiclePrice } from "@/features/marketplace/services/price-estimation";
+import { getCachedData, setCachedData } from "@/lib/client";
+import { logger } from "@/lib/logger";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { captureServerError } from "@/lib/telemetry-server";
 
 // Rate limit: 30 per minute per IP
 const ESTIMATE_RATE_LIMIT = { limit: 30, windowMs: 60 * 1000 };
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     getRateLimitKey(request, "api:market:estimate"),
     ESTIMATE_RATE_LIMIT
   );
-  if (rateLimit) return rateLimit.response;
+  if (rateLimit.response) return rateLimit.response;
 
   const { searchParams } = new URL(request.url);
   const brand = searchParams.get("brand");

@@ -1,14 +1,15 @@
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
-import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
-import { createTicket } from "@/services/support/ticket-service";
+import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
+import { createTicket } from "@/features/support/services/ticket-service";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitize";
+import { withUserAndCsrf, withUserRoute } from "@/lib/security";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 
+// Import types from service - single source of truth
 const VALID_CATEGORIES: TicketCategory[] = [
   "listing",
   "account",
@@ -28,15 +29,14 @@ const ticketCreateSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  // Security checks: CSRF + Auth + Rate limiting
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.ticketCreate,
     rateLimitKey: "tickets:create",
   });
 
   if (!security.ok) return security.response;
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!;
 
   let body: unknown;
   try {
@@ -49,15 +49,23 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek formatı.", 400);
   }
 
-  const validated = ticketCreateSchema.parse(body);
+  const validated = ticketCreateSchema.safeParse(body);
+
+  if (!validated.success) {
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      validated.error.issues[0]?.message ?? "Destek talebi alanlarını kontrol et.",
+      400
+    );
+  }
 
   try {
     const ticket = await createTicket(user.id, {
-      subject: sanitizeText(validated.subject),
-      description: sanitizeDescription(validated.description),
-      category: validated.category ?? "other",
-      priority: validated.priority ?? "medium",
-      listingId: validated.listingId,
+      subject: sanitizeText(validated.data.subject),
+      description: sanitizeDescription(validated.data.description),
+      category: validated.data.category ?? "other",
+      priority: validated.data.priority ?? "medium",
+      listingId: validated.data.listingId,
     });
 
     captureServerEvent(
@@ -65,7 +73,7 @@ export async function POST(request: Request) {
       {
         userId: user.id,
         ticketId: ticket.id,
-        category: validated.category ?? "other",
+        category: validated.data.category ?? "other",
       },
       user.id
     );
@@ -83,17 +91,16 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  // Security checks: Auth + Rate limiting
-  const security = await withAuth(request, {
+  const security = await withUserRoute(request, {
     ipRateLimit: rateLimitProfiles.general,
     rateLimitKey: "tickets:list",
   });
 
   if (!security.ok) return security.response;
-  const user = security.user!; // Guaranteed by withAuth
+  const user = security.user!;
 
   try {
-    const { getUserTickets } = await import("@/services/support/ticket-service");
+    const { getUserTickets } = await import("@/features/support/services/ticket-service");
     const tickets = await getUserTickets(user.id);
     return apiSuccess(tickets);
   } catch (error) {

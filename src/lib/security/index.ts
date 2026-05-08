@@ -1,7 +1,7 @@
 /**
  * Security utilities — single entry point for all request-hardening helpers.
  *
- * Import from `@/lib/security` instead of reaching into individual utility
+ * Import from `@/lib` instead of reaching into individual utility
  * files. This keeps security concerns discoverable and co-located.
  *
  * Contents:
@@ -17,12 +17,7 @@ export { isValidRequestOrigin } from "./csrf";
 
 // ── Sanitization ─────────────────────────────────────────────────────────────
 
-export {
-  escapeHtml,
-  sanitizeDescription,
-  sanitizeForMeta,
-  sanitizeText,
-} from "@/lib/sanitization/sanitize";
+export { escapeHtml, sanitizeDescription, sanitizeForMeta, sanitizeText } from "@/lib/sanitize";
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 
@@ -31,13 +26,17 @@ export {
   type RateLimitConfig,
   rateLimitProfiles,
   type RateLimitResult,
-} from "@/lib/rate-limiting/rate-limit";
+} from "@/lib/rate-limit";
 export {
   enforceRateLimit,
   getRateLimitKey,
   getUserRateLimitKey,
-} from "@/lib/rate-limiting/rate-limit-middleware";
+} from "@/lib/rate-limit-middleware";
 
 // ── IP extraction ─────────────────────────────────────────────────────────────
 
-export { getClientIp } from "@/lib/api/ip";
+export { getClientIp } from "@/lib/ip";
+
+// ── Ownership / IDOR Protection ──────────────────────────────────────────────
+
+export { assertOwnership, isOwner, type OwnershipOptions } from "./ownership";

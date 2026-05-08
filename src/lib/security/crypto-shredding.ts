@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 /**
  * World-Class Privacy: Crypto-Shredding (Issue 4)

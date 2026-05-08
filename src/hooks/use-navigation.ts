@@ -1,36 +1,28 @@
 "use client";
 
-import { useMemo } from "react";
+import { useAuthUser } from "@/features/shared/components/auth-provider";
 
-import { getFilteredNavigation } from "@/components/layout/public-navigation";
-import { useAuthUser } from "@/components/shared/auth-provider";
+export interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+}
 
-/**
- * SOLID: Separation of Concerns
- * This hook encapsulates all navigation filtering logic.
- * UI components just consume the result.
- */
 export function useNavigation() {
-  const auth = useAuthUser();
+  const { user, isReady } = useAuthUser();
+  const authLoading = !isReady;
 
-  // Auth durumu tam yüklenene kadar (isReady) sadece herkese açık item'ları dön
-  const allItems = useMemo(() => {
-    return getFilteredNavigation({
-      isAuthenticated: auth.isAuthenticated,
-      isAdmin: auth.isAdmin,
-      isReady: auth.isReady,
-    });
-  }, [auth.isAuthenticated, auth.isAdmin, auth.isReady]);
-
-  const bottomNavItems = useMemo(() => allItems.filter((item) => item.showInBottomNav), [allItems]);
+  const allItems: NavItem[] = [];
+  const bottomNavItems: NavItem[] = [];
+  const isAuthenticated = !!user;
+  const isLoading = authLoading;
 
   return {
     allItems,
+    isAuthenticated,
+    isLoading,
     bottomNavItems,
-    isReady: auth.isReady,
-    isAdmin: auth.isAdmin,
-    isAuthenticated: auth.isAuthenticated,
-    user: auth.user,
-    isLoading: !auth.isReady, // Daha açık bir flag
+    isReady,
+    user,
   };
 }

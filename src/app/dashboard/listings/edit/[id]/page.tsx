@@ -2,11 +2,11 @@ import { ChevronLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { ListingCreateForm } from "@/components/forms/listing-create-form";
-import { requireUser } from "@/lib/auth/session";
-import { getListingById } from "@/services/listings/marketplace-listings";
-import { getStoredProfileById } from "@/services/profile/profile-records";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { requireUser } from "@/features/auth/lib/session";
+import { ListingCreateForm } from "@/features/forms/components/listing-create-form";
+import { getListingById } from "@/features/marketplace/services/marketplace-listings";
+import { getStoredProfileById } from "@/features/profile/services/profile-records";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
 interface EditListingPageProps {
   params: Promise<{ id: string }>;

@@ -1,11 +1,12 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
-import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { Button } from "@/features/ui/components/button";
+import { captureClientException } from "@/lib/telemetry-client";
 
 export default function GlobalError({
   error,
@@ -15,6 +16,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     captureClientException(error, "global-error", { digest: error.digest });
   }, [error, error.digest]);
 

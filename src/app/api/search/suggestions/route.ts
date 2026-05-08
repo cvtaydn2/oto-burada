@@ -1,7 +1,7 @@
-import { apiSuccess } from "@/lib/api/response";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
-import { getCachedData, setCachedData } from "@/lib/redis/client";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCachedData, setCachedData } from "@/lib/client";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { apiSuccess } from "@/lib/response";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     getRateLimitKey(request, "api:search:suggestions"),
     SUGGESTIONS_RATE_LIMIT
   );
-  if (rateLimit) return rateLimit.response;
+  if (rateLimit.response) return rateLimit.response;
 
   const { searchParams } = new URL(request.url);
   const rawQ = searchParams.get("q") ?? "";
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
     return apiSuccess(result);
   } catch (error) {
     // Non-critical — but capture for observability
-    const { captureServerError } = await import("@/lib/monitoring/posthog-server");
+    const { captureServerError } = await import("@/lib/telemetry-server");
     captureServerError("Search suggestions query failed", "search", error, { query: q });
     return apiSuccess({ brands: [], models: [] });
   }

@@ -13,8 +13,8 @@
 
 import { Redis } from "@upstash/redis";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAdminRoute } from "@/lib/api/security";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAdminRoute } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 

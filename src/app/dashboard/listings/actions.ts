@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 import { archiveListingUseCase } from "@/domain/usecases/listing-archive";
 import { bumpListingUseCase } from "@/domain/usecases/listing-bump";
 import { publishListingUseCase } from "@/domain/usecases/listing-publish";
-import { getCurrentUser } from "@/lib/auth/session";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { createSupabaseServerClient } from "@/lib/server";
 import { ListingStatus } from "@/types";
 
 export async function archiveListingAction(listingId: string, currentStatus: ListingStatus) {
@@ -49,12 +49,14 @@ export async function revealListingPhone(listingId: string) {
     "unknown";
 
   // ── Distributed Rate Limit (F-03 Protection) ──
-  const { checkGlobalRateLimit } = await import("@/lib/rate-limiting/distributed-rate-limit");
+  const { checkGlobalRateLimit } = await import("@/lib/distributed-rate-limit");
 
-  // Higher limit for authenticated users, stricter for guests
+  // Combined IP + UserID protection: prevents bypassing by switching IPs or accounts
   const limit = user ? 20 : 5;
   const windowMs = 60 * 60 * 1000; // 1 hour
-  const rateLimitKey = user ? `reveal-phone:u:${user.id}` : `reveal-phone:ip:${clientIp}`;
+  const rateLimitKey = user
+    ? `reveal-phone:ip:${clientIp}:u:${user.id}`
+    : `reveal-phone:ip:${clientIp}:guest`;
 
   const rateLimitResult = await checkGlobalRateLimit(rateLimitKey, {
     limit,
@@ -69,17 +71,25 @@ export async function revealListingPhone(listingId: string) {
     );
   }
 
-  const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+  const { createSupabaseAdminClient } = await import("@/lib/admin");
   const admin = createSupabaseAdminClient();
 
   // Fetch phone and verify status
   const { data: listing, error: fetchErr } = await admin
     .from("listings")
-    .select("whatsapp_phone, status")
+    .select(
+      `
+      whatsapp_phone,
+      status,
+      seller:profiles!listings_seller_id_fkey(is_banned)
+    `
+    )
     .eq("id", listingId)
     .single();
 
-  if (fetchErr || !listing || listing.status !== "approved") {
+  const seller = Array.isArray(listing?.seller) ? listing.seller[0] : listing?.seller;
+
+  if (fetchErr || !listing || listing.status !== "approved" || seller?.is_banned === true) {
     throw new Error("İlan bulunamadı veya iletişim bilgileri kapalı.");
   }
 
@@ -111,18 +121,42 @@ export async function publishListingAction(listingId: string, currentStatus: Lis
   return result;
 }
 
+async function getOwnedListingIds(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  ids: string[],
+  sellerId: string
+) {
+  const { data, error } = await supabase
+    .from("listings")
+    .select("id")
+    .in("id", ids)
+    .eq("seller_id", sellerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((row) => row.id);
+}
+
 export async function bulkArchiveListingAction(ids: string[]) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
   const supabase = await createSupabaseServerClient();
+  const ownedIds = await getOwnedListingIds(supabase, ids, user.id);
+
+  if (ownedIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
   const { error, data } = await supabase
     .from("listings")
     .update({
       status: "archived",
       updated_at: new Date().toISOString(),
     })
-    .in("id", ids)
+    .in("id", ownedIds)
     .eq("seller_id", user.id)
     .select("id");
 
@@ -137,16 +171,21 @@ export async function bulkDeleteListingAction(ids: string[]) {
   if (!user) throw new Error("Unauthorized");
 
   const supabase = await createSupabaseServerClient();
+  const ownedIds = await getOwnedListingIds(supabase, ids, user.id);
 
-  // 1. Delete associated data
-  await supabase.from("listing_images").delete().in("listing_id", ids);
-  await supabase.from("favorites").delete().in("listing_id", ids);
+  if (ownedIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  // 1. Delete associated data (only for caller-owned listings)
+  await supabase.from("listing_images").delete().in("listing_id", ownedIds);
+  await supabase.from("favorites").delete().in("listing_id", ownedIds);
 
   // 2. Delete listings
   const { error, data } = await supabase
     .from("listings")
     .delete()
-    .in("id", ids)
+    .in("id", ownedIds)
     .eq("seller_id", user.id)
     .select("id");
 

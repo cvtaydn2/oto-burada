@@ -6,8 +6,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { AuthForm } from "@/components/forms/auth-form";
-import type { AuthActionState } from "@/lib/auth/actions";
+import type { AuthActionState } from "@/features/auth/lib/actions";
+import { AuthForm } from "@/features/forms/components/auth-form";
 
 // Stub Next.js navigation
 vi.mock("next/navigation", () => ({
@@ -46,7 +46,7 @@ describe("AuthForm — mode-specific behavior", () => {
 
     it("renders password field with login autocomplete", () => {
       render(<AuthForm {...loginProps} />);
-      const passwordInput = screen.getByLabelText(/şifre/i);
+      const passwordInput = screen.getByLabelText(/^şifre$/i);
       expect(passwordInput).toHaveAttribute("autocomplete", "current-password");
     });
 
@@ -74,7 +74,7 @@ describe("AuthForm — mode-specific behavior", () => {
 
     it("renders password field with new-password autocomplete", () => {
       render(<AuthForm {...registerProps} />);
-      const passwordInput = screen.getByLabelText(/şifre/i);
+      const passwordInput = screen.getByLabelText(/^şifre$/i);
       expect(passwordInput).toHaveAttribute("autocomplete", "new-password");
     });
 

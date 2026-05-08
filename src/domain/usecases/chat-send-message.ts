@@ -1,4 +1,4 @@
-import { sendChatMessage } from "@/services/chat/chat-logic";
+import { sendChatMessage } from "@/features/chat/services/chat-logic";
 import type { SendMessageInput } from "@/types/chat";
 
 /**

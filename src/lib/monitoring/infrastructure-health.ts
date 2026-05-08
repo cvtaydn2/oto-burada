@@ -5,9 +5,9 @@
  * for critical production operations.
  */
 
-import { logger } from "@/lib/logging/logger";
-import { redis } from "@/lib/redis";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { redis } from "@/lib/redis/client";
 
 export interface HealthCheckResult {
   healthy: boolean;

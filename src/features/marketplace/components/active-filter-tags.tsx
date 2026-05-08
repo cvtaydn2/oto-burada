@@ -1,6 +1,7 @@
 "use client";
 
-import { formatTL } from "@/lib/utils";
+import { Button } from "@/features/ui/components/button";
+import { formatTL } from "@/lib";
 import { type ListingFilters } from "@/types";
 
 interface ActiveFilterTagsProps {
@@ -141,12 +142,12 @@ export function ActiveFilterTags({
         />
       )}
 
-      <button
+      <Button
         onClick={handleReset}
         className="text-[10px] font-bold text-destructive hover:underline uppercase tracking-widest pl-2"
       >
         Temizle
-      </button>
+      </Button>
     </div>
   );
 }
@@ -155,9 +156,9 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
   return (
     <div className="group flex items-center gap-2 rounded-xl border border-border bg-card pl-3 pr-1.5 py-1.5 text-[10px] font-bold text-foreground uppercase tracking-widest shadow-sm hover:border-foreground/30 transition-all">
       <span>{label}</span>
-      <button
+      <Button
         onClick={onRemove}
-        className="size-5 rounded-lg bg-muted text-muted-foreground flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
+        className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
       >
         <svg
           className="size-2.5"
@@ -168,7 +169,7 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
         >
           <path d="M18 6 6 18M6 6l12 12" />
         </svg>
-      </button>
+      </Button>
     </div>
   );
 }

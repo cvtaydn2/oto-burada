@@ -36,29 +36,45 @@ export function apiSuccess<T>(data: T, message?: string, status = 200, headers?:
 /**
  * Standard error response builder.
  */
-export function apiError(code: string, message: string, status = 400, details?: unknown) {
+export function apiError(
+  code: string,
+  message: string,
+  status = 400,
+  details?: unknown,
+  headers?: HeadersInit
+) {
   const body: ApiErrorResponse = {
     success: false,
     error: { code, message },
   };
 
   if (details) {
-    if (process.env.NODE_ENV === "production") {
-      // In production, only expose generic keys or nothing if it's too complex
-      // For validation errors, we can send field keys but strip internal messages
-      if (typeof details === "object" && details !== null) {
-        const sanitizedDetails: Record<string, string[]> = {};
-        for (const key of Object.keys(details as Record<string, unknown>)) {
-          sanitizedDetails[key] = ["Geçersiz değer"]; // Generic message
+    // Standardize details format to `Record<string, string[]>` for frontend compatibility.
+    if (typeof details === "object" && details !== null) {
+      const src = details as Record<string, unknown>;
+      const sanitizedDetails: Record<string, string[]> = {};
+
+      for (const key of Object.keys(src)) {
+        const val = src[key];
+        // If Zod-like field errors (array of strings), pick first message.
+        if (Array.isArray(val) && val.length > 0 && typeof val[0] === "string") {
+          // Truncate to avoid leaking long internal messages
+          sanitizedDetails[key] = [String(val[0]).slice(0, 200)];
+        } else if (typeof val === "string") {
+          sanitizedDetails[key] = [val.slice(0, 200)];
+        } else {
+          sanitizedDetails[key] = ["Geçersiz değer"];
         }
-        body.error.details = sanitizedDetails;
       }
+
+      body.error.details = sanitizedDetails;
     } else {
-      body.error.details = details;
+      // Non-object details: convert to generic structure
+      body.error.details = { _general: [String(details).slice(0, 200)] };
     }
   }
 
-  return NextResponse.json(body, { status });
+  return NextResponse.json(body, { status, headers });
 }
 
 /**

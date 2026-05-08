@@ -1,7 +1,7 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withUserAndCsrfToken } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrfToken } from "@/lib/security";
 
 export async function POST(request: Request) {
   const security = await withUserAndCsrfToken(request);

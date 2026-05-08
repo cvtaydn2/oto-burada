@@ -2,8 +2,8 @@
 
 import { Rocket } from "lucide-react";
 
-import { SafeImage } from "@/components/shared/safe-image";
-import { cn, supabaseImageUrl } from "@/lib/utils";
+import { SafeImage } from "@/features/shared/components/safe-image";
+import { cn, supabaseImageUrl } from "@/lib";
 import type { Listing } from "@/types";
 
 interface ModerationImageGalleryProps {

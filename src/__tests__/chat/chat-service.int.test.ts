@@ -4,8 +4,7 @@ import { createSupabaseAdminClient } from "../../lib/supabase/admin";
 import { getChatMessages, getUserChats } from "../../services/chat/chat-logic";
 
 describe("ChatService Integration Tests", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let testUser: any;
+  let testUser: Record<string, unknown>;
 
   beforeAll(async () => {
     const admin = createSupabaseAdminClient();

@@ -40,3 +40,31 @@ export async function safeRun<T>(fn: () => Promise<T>): Promise<Result<T>> {
     return err(message);
   }
 }
+
+interface ExecuteServerActionOptions {
+  revalidatePaths?: string[];
+  logContext?: Record<string, unknown>;
+}
+
+export async function executeServerAction<T>(
+  name: string,
+  fn: () => Promise<T>,
+  _options?: ExecuteServerActionOptions
+): Promise<T> {
+  const start = Date.now();
+  try {
+    const result = await fn();
+    const duration = Date.now() - start;
+    if (duration > 5000) {
+      console.warn(`[executeServerAction] ${name} took ${duration}ms`);
+    }
+    if (_options) {
+      // options can be used for logging/revalidation
+    }
+    return result;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error(`[executeServerAction] ${name} failed:`, message);
+    throw e;
+  }
+}

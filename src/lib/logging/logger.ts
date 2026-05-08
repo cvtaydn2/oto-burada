@@ -8,7 +8,7 @@
  * warn/error levels.
  *
  * Usage:
- *   import { logger } from "@/lib/logging/logger";
+ *   import { logger } from "@/lib/logger";
  *   logger.db.error("Query failed", error, { table: "listings" });
  */
 
@@ -58,8 +58,11 @@ function formatEntry(entry: LogEntry): string {
  * Prevents Log Forging attacks by stripping control characters from input strings.
  */
 function sanitizeLogString(str: string): string {
-  // Replace newlines and carriage returns to prevent multi-line log injection
-  return str.replace(/[\r\n]/g, " ").trim();
+  return str
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .trim();
 }
 
 function createLogEntry(

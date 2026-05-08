@@ -22,6 +22,7 @@ const SECURITY_WRAPPERS = [
   "withUserAndCsrfToken",
   "withAdminRoute",
   "withCronOrAdmin",
+  "withCronRoute",
   "withCsrfToken",
   "withAuth",
   "withAuthAndCsrf",

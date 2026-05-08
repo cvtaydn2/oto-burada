@@ -1,6 +1,6 @@
 import "server-only";
 
-import { logger } from "@/lib/logging/logger";
+import { logger } from "@/lib/logger";
 
 /**
  * World-Class Security: Least Privilege Secrets (Issue 10)

@@ -9,13 +9,13 @@
  * Vercel automatically sends this header when CRON_SECRET env var is set.
  */
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { getRequiredAppUrl } from "@/lib/environment/env";
-import { logger } from "@/lib/logging/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
+import { createDatabaseNotificationsBulk } from "@/features/notifications/services/notification-records";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { getRequiredAppUrl } from "@/lib/env";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { captureServerError } from "@/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/features/shared/lib/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
+import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 

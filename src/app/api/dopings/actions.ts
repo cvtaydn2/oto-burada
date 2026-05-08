@@ -9,7 +9,10 @@
  * Migration: Phase 28.5 - Legacy Service Patterns Migration
  */
 
-import { applyDopingPackage, getActiveDopingsForListing } from "@/services/payments/doping-logic";
+import {
+  applyDopingPackage,
+  getActiveDopingsForListing,
+} from "@/features/payments/services/doping-logic";
 
 /**
  * Apply a doping package to a listing

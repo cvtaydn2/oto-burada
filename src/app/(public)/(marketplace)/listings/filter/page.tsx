@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { AdvancedFilterPage } from "@/components/listings/advanced-filter-page";
-import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { AdvancedFilterPage } from "@/features/marketplace/components/advanced-filter-page";
+import { getFilteredMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {

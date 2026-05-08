@@ -1,5 +1,17 @@
 import type { Profile } from "@/types";
 
+/**
+ * Trust score algorithm (0-100):
+ * - Base score: 50
+ * - Email verified: +10
+ * - Identity / primary verification (`isVerified`): +20
+ * - Wallet / secondary verification (`isWalletVerified`): +20
+ * - Professional seller: +10
+ * - Banned users: forced to 0
+ * - `restricted_review`: capped to 30
+ *
+ * This logic is intentionally simple and deterministic for MVP moderation UX.
+ */
 export class TrustScoreCalculator {
   static calculate(profile: Partial<Profile>): number {
     let score = 50; // Base score

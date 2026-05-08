@@ -516,3 +516,19 @@
     --tw-exit-translate-x: calc(--value(--translate-*, [percentage], [length]) * -1);
   }
 }
+
+/* Custom ripple animation for touch feedback */
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(20);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.6s ease-out;
+}

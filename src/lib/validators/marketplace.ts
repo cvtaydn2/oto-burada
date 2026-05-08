@@ -1,14 +1,7 @@
 import { z } from "zod";
 
-import {
-  fuelTypes,
-  listingSortOptions,
-  maximumCarYear,
-  maximumMileage,
-  minimumCarYear,
-  transmissionTypes,
-} from "@/lib/constants/domain";
-import { vehicleCategories } from "@/lib/constants/vehicle-categories";
+import { maximumCarYear, maximumMileage, minimumCarYear } from "@/lib/domain";
+import { vehicleCategories } from "@/lib/vehicle-categories";
 import type { ListingFilters } from "@/types";
 
 import {
@@ -17,6 +10,19 @@ import {
   nonNegativeNumberSchema,
   optionalTrimmedString,
 } from "./shared";
+
+const fuelTypeEnum = z.enum(["benzin", "dizel", "lpg", "hibrit", "elektrik"]);
+const transmissionTypeEnum = z.enum(["manuel", "otomatik", "yari_otomatik"]);
+const listingSortOptionEnum = z.enum([
+  "newest",
+  "price_asc",
+  "price_desc",
+  "mileage_asc",
+  "mileage_desc",
+  "year_desc",
+  "year_asc",
+  "oldest",
+]);
 
 export const listingFilterRecoveryFieldNames = [
   "query",
@@ -54,59 +60,68 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     carTrim: optionalTrimmedString,
     city: optionalTrimmedString,
     district: optionalTrimmedString,
-    category: z.preprocess(emptyStringToUndefined, z.enum(vehicleCategories).optional()),
-    minPrice: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce.number().finite().min(0, invalidMessage).optional()
-    ),
-    maxPrice: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce.number().finite().min(0, invalidMessage).optional()
-    ),
-    minYear: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce
-        .number()
-        .int()
-        .min(minimumCarYear, invalidMessage)
-        .max(maximumCarYear, invalidMessage)
-        .optional()
-    ),
-    maxYear: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce
-        .number()
-        .int()
-        .min(minimumCarYear, invalidMessage)
-        .max(maximumCarYear, invalidMessage)
-        .optional()
-    ),
-    maxMileage: z.preprocess(
-      emptyStringToUndefined,
-      nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional()
-    ),
-    maxTramer: z.preprocess(emptyStringToUndefined, nonNegativeNumberSchema.optional()),
-    hasExpertReport: z.preprocess(
-      (value) =>
-        value === "true" || value === true
-          ? true
-          : value === "false" || value === false
-            ? false
-            : undefined,
-      z.boolean().optional()
-    ),
-    fuelType: z.preprocess(emptyStringToUndefined, z.enum(fuelTypes).optional()),
-    transmission: z.preprocess(emptyStringToUndefined, z.enum(transmissionTypes).optional()),
-    sort: z.preprocess(emptyStringToUndefined, z.enum(listingSortOptions).optional()),
-    page: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional()),
-    // ── VALIDATION FIX: Issue #14 - Enforce Limit Bounds with Default ─────
-    // Ensures limit is always between 1-100, with a default of 12 if not provided.
-    // This prevents malicious or accidental override of DEFAULT_LISTING_FILTERS.limit
-    // via spread operator in parseListingFiltersFromSearchParams.
-    limit: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce.number().int().min(1).max(100).default(12)
-    ),
+    category: z.preprocess(emptyStringToUndefined, z.enum(vehicleCategories).optional()).optional(),
+    minPrice: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce.number().finite().min(0, invalidMessage).optional()
+      )
+      .optional(),
+    maxPrice: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce.number().finite().min(0, invalidMessage).optional()
+      )
+      .optional(),
+    minYear: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce
+          .number()
+          .int()
+          .min(minimumCarYear, invalidMessage)
+          .max(maximumCarYear, invalidMessage)
+          .optional()
+      )
+      .optional(),
+    maxYear: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce
+          .number()
+          .int()
+          .min(minimumCarYear, invalidMessage)
+          .max(maximumCarYear, invalidMessage)
+          .optional()
+      )
+      .optional(),
+    maxMileage: z
+      .preprocess(
+        emptyStringToUndefined,
+        nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional()
+      )
+      .optional(),
+    maxTramer: z.preprocess(emptyStringToUndefined, nonNegativeNumberSchema.optional()).optional(),
+    hasExpertReport: z
+      .preprocess(
+        (value) =>
+          value === "true" || value === true
+            ? true
+            : value === "false" || value === false
+              ? false
+              : undefined,
+        z.boolean().optional()
+      )
+      .optional(),
+    fuelType: z.preprocess(emptyStringToUndefined, fuelTypeEnum.optional()).optional(),
+    transmission: z.preprocess(emptyStringToUndefined, transmissionTypeEnum.optional()).optional(),
+    sort: z.preprocess(emptyStringToUndefined, listingSortOptionEnum.optional()).optional(),
+    page: z
+      .preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional())
+      .optional(),
+    limit: z
+      .preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).max(100).optional())
+      .optional(),
     citySlug: optionalTrimmedString,
     sellerId: optionalTrimmedString,
     cursor: optionalTrimmedString,

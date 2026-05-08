@@ -1,4 +1,4 @@
-import { bumpListing } from "@/services/listings/listing-submission-persistence";
+import { bumpListing } from "@/features/marketplace/services/listing-submission-persistence";
 import type { Listing } from "@/types";
 
 export interface BumpListingResult {

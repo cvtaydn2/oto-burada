@@ -1,6 +1,6 @@
-import { AdminSettingsForm } from "@/components/forms/admin-settings-form";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getPlatformSettings } from "@/services/admin/settings";
+import { getPlatformSettings } from "@/features/admin-moderation/services/settings";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { AdminSettingsForm } from "@/features/forms/components/admin-settings-form";
 
 export const dynamic = "force-dynamic";
 

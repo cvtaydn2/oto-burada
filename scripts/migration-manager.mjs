@@ -22,6 +22,12 @@ loadLocalEnv();
 
 const databaseUrl = process.env.SUPABASE_DB_URL;
 const migrationsDir = path.resolve(process.cwd(), "database", "migrations");
+const activeMigrationsListPath = path.resolve(
+  process.cwd(),
+  "database",
+  "migrations",
+  ".active-migrations.txt"
+);
 
 if (!databaseUrl) {
   console.error("❌ SUPABASE_DB_URL is required.");
@@ -96,18 +102,23 @@ class MigrationManager {
   }
 
   async loadAppliedMigrations() {
-    const result = await this.runSql(`
-      SELECT name, checksum FROM public._migrations ORDER BY executed_at
-    `);
-    
     this.appliedMigrations.clear();
-    if (result) {
-      result.split("\n").forEach(line => {
-        if (line.trim()) {
-          const [name] = line.split("|");
-          this.appliedMigrations.add(name);
-        }
-      });
+    try {
+      const result = await this.runSql(`
+        SELECT name, checksum FROM public._migrations ORDER BY executed_at
+      `);
+
+      if (result) {
+        result.split("\n").forEach(line => {
+          if (line.trim()) {
+            const [name] = line.split("|");
+            this.appliedMigrations.add(name);
+          }
+        });
+      }
+      return { connected: true };
+    } catch (error) {
+      return { connected: false, error: error instanceof Error ? error.message : String(error) };
     }
   }
 
@@ -116,10 +127,14 @@ class MigrationManager {
       throw new Error(`Migrations directory not found: ${migrationsDir}`);
     }
 
-    this.migrationFiles = fs
+    const allSqlFiles = fs
       .readdirSync(migrationsDir)
       .filter(f => f.endsWith(".sql"))
-      .sort() // Lexicographical sort ensures proper ordering
+      .sort();
+
+    const activeFiles = this.resolveActiveMigrationFiles(allSqlFiles);
+
+    this.migrationFiles = activeFiles
       .map(filename => {
         const filePath = path.join(migrationsDir, filename);
         const content = fs.readFileSync(filePath, "utf8");
@@ -138,6 +153,56 @@ class MigrationManager {
     // ── SECURITY FIX: Issue SEC-MIG-01 - Validate Migration Numbers ──
     // Detect duplicate migration numbers that could cause non-deterministic execution
     this.validateMigrationNumbers();
+  }
+
+  resolveActiveMigrationFiles(allSqlFiles) {
+    if (!fs.existsSync(activeMigrationsListPath)) {
+      return allSqlFiles;
+    }
+
+    const listedFiles = fs
+      .readFileSync(activeMigrationsListPath, "utf8")
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith("#"));
+
+    if (listedFiles.length === 0) {
+      return allSqlFiles;
+    }
+
+    const listedSet = new Set(listedFiles);
+    const unknown = listedFiles.filter(file => !allSqlFiles.includes(file));
+
+    if (unknown.length > 0) {
+      throw new Error(
+        `Active migration list contains unknown files:\n${unknown.map(item => `  - ${item}`).join("\n")}`
+      );
+    }
+
+    return allSqlFiles.filter(file => listedSet.has(file));
+  }
+
+  syncActiveMigrationsList() {
+    if (!fs.existsSync(migrationsDir)) {
+      throw new Error(`Migrations directory not found: ${migrationsDir}`);
+    }
+
+    const sqlFiles = fs
+      .readdirSync(migrationsDir)
+      .filter(f => f.endsWith(".sql"))
+      .sort();
+
+    const content = [
+      "# OtoBurada active migrations list",
+      "# Keep this file sorted. One filename per line.",
+      "# Migration manager will apply only files listed here when file exists.",
+      "",
+      ...sqlFiles,
+      "",
+    ].join("\n");
+
+    fs.writeFileSync(activeMigrationsListPath, content, "utf8");
+    return sqlFiles.length;
   }
 
   validateMigrationNumbers() {
@@ -334,7 +399,7 @@ class MigrationManager {
   }
 
   async getStatus() {
-    await this.loadAppliedMigrations();
+    const dbState = await this.loadAppliedMigrations();
     await this.loadMigrationFiles();
 
     const applied = Array.from(this.appliedMigrations);
@@ -347,7 +412,9 @@ class MigrationManager {
       applied: applied.length,
       pending: pending.length,
       appliedMigrations: applied,
-      pendingMigrations: pending
+      pendingMigrations: pending,
+      databaseConnected: dbState.connected,
+      databaseError: dbState.connected ? null : dbState.error,
     };
   }
 
@@ -413,6 +480,10 @@ async function main() {
         const status = await migrationManager.getStatus();
         console.log("📊 Migration Status");
         console.log("==================");
+        if (!status.databaseConnected) {
+          console.log("⚠️  Database connection unavailable. Showing local migration file status only.");
+          console.log(`   Reason: ${status.databaseError}`);
+        }
         console.log(`Total migrations: ${status.total}`);
         console.log(`Applied: ${status.applied}`);
         console.log(`Pending: ${status.pending}`);
@@ -447,6 +518,14 @@ async function main() {
         }
         break;
 
+      case "sync-active-list":
+        {
+          const count = migrationManager.syncActiveMigrationsList();
+          console.log(`✅ Synced active migration list with ${count} files`);
+          console.log(`📄 ${path.relative(process.cwd(), activeMigrationsListPath)}`);
+        }
+        break;
+
       default:
         console.log("🗃️  OtoBurada Migration Manager");
         console.log("Usage:");
@@ -454,6 +533,7 @@ async function main() {
         console.log("  node migration-manager.mjs status     # Show migration status");
         console.log("  node migration-manager.mjs rollback <name>  # Rollback specific migration");
         console.log("  node migration-manager.mjs validate   # Validate all migrations");
+        console.log("  node migration-manager.mjs sync-active-list   # Regenerate active list");
         break;
     }
   } catch (error) {

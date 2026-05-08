@@ -1,6 +1,8 @@
 import { Hammer, LogIn, MessageSquare } from "lucide-react";
 import Link from "next/link";
 
+export const revalidate = 300;
+
 export default function MaintenancePage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">

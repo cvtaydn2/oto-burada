@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/server";
 
 const ALLOWED_NEXT_PATHS = /^\/[a-zA-Z0-9\-_/?=&%#.]+$/;
 

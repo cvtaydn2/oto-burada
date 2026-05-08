@@ -10,7 +10,7 @@ describe("Favorite Service (Integration)", () => {
   const TEST_USER_ID = "fde3c732-6bdc-4eb4-9c4c-471040b94e7d";
   const TEST_LISTING_ID = "2f240bf5-7e85-4dd7-9df6-2b8bbf3d6dc1";
 
-  it.skip("should toggle favorites and list them (requires real listing in DB)", async () => {
+  it("should toggle favorites and list them (requires real listing in DB)", async () => {
     // This test requires a real listing to exist in the database
     // Skip in CI/CD environments where DB may not have test data
 

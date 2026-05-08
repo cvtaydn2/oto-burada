@@ -8,12 +8,12 @@
  * Security: admin auth OR CRON_SECRET header.
  */
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withCronOrAdmin } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withCronOrAdmin } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
 async function handleSync(request: Request) {
   const security = await withCronOrAdmin(request);
   if (!security.ok) return security.response;
+  const adminUser = security.user; // Might be null if it's a cron job
 
   if (!hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
@@ -35,26 +36,46 @@ async function handleSync(request: Request) {
 
   const admin = createSupabaseAdminClient();
 
-  // Get all unique brand/model/year segments from approved listings
-  const { data: segments, error: segErr } = await admin
+  // PERF: fetch approved listings once and aggregate in-memory
+  const { data: approvedListings, error: segErr } = await admin
     .from("listings")
-    .select("brand, model, year")
-    .eq("status", "approved");
+    .select("brand, model, year, price")
+    .eq("status", "approved")
+    .not("price", "is", null);
 
-  if (segErr || !segments) {
-    logger.market.error("Market sync: failed to fetch segments", segErr);
+  if (segErr || !approvedListings) {
+    logger.market.error("Market sync: failed to fetch approved listings", segErr);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Segment verisi alınamadı.", 500);
   }
 
-  // Deduplicate
-  const uniqueSegments = new Map<string, { brand: string; model: string; year: number }>();
-  for (const s of segments) {
-    const key = `${s.brand}|${s.model}|${s.year}`;
-    if (!uniqueSegments.has(key)) {
-      uniqueSegments.set(key, {
-        brand: s.brand as string,
-        model: s.model as string,
-        year: s.year as number,
+  const segmentStats = new Map<
+    string,
+    { brand: string; model: string; year: number; sumPrice: number; count: number }
+  >();
+
+  for (const listing of approvedListings) {
+    const brand = listing.brand as string;
+    const model = listing.model as string;
+    const year = listing.year as number;
+    const price = Number(listing.price);
+
+    if (!brand || !model || !year || !Number.isFinite(price) || price <= 0) {
+      continue;
+    }
+
+    const key = `${brand}|${model}|${year}`;
+    const existing = segmentStats.get(key);
+
+    if (existing) {
+      existing.sumPrice += price;
+      existing.count += 1;
+    } else {
+      segmentStats.set(key, {
+        brand,
+        model,
+        year,
+        sumPrice: price,
+        count: 1,
       });
     }
   }
@@ -62,33 +83,19 @@ async function handleSync(request: Request) {
   let updated = 0;
   let failed = 0;
 
-  for (const seg of uniqueSegments.values()) {
+  for (const seg of segmentStats.values()) {
     try {
-      // Calculate average price for this segment
-      const { data: prices } = await admin
-        .from("listings")
-        .select("price")
-        .eq("brand", seg.brand)
-        .eq("model", seg.model)
-        .eq("year", seg.year)
-        .eq("status", "approved");
+      const avgPrice = seg.sumPrice / seg.count;
 
-      if (!prices || prices.length === 0) continue;
-
-      const avgPrice = prices.reduce((sum, p) => sum + Number(p.price), 0) / prices.length;
-
-      // Upsert market_stats — partial index üzerinden çalışmaz,
-      // manuel INSERT ... ON CONFLICT kullan
       const { error: upsertErr } = await admin.rpc("upsert_market_stats", {
         p_brand: seg.brand,
         p_model: seg.model,
         p_year: seg.year,
         p_avg_price: avgPrice,
-        p_listing_count: prices.length,
+        p_listing_count: seg.count,
       });
 
       if (upsertErr) {
-        // RPC yoksa fallback: delete + insert
         await admin
           .from("market_stats")
           .delete()
@@ -102,12 +109,11 @@ async function handleSync(request: Request) {
           model: seg.model,
           year: seg.year,
           avg_price: avgPrice,
-          listing_count: prices.length,
+          listing_count: seg.count,
           calculated_at: new Date().toISOString(),
         });
       }
 
-      // Update market_price_index on all listings in this segment
       await admin.rpc("update_listing_price_indices", {
         p_brand: seg.brand,
         p_model: seg.model,
@@ -117,19 +123,28 @@ async function handleSync(request: Request) {
 
       updated++;
     } catch (err) {
-      logger.market.error("Market sync: segment failed", err, seg);
+      logger.market.error("Market sync: segment failed", err, {
+        brand: seg.brand,
+        model: seg.model,
+        year: seg.year,
+      });
       failed++;
     }
   }
 
-  captureServerEvent("market_stats_synced", {
-    totalSegments: uniqueSegments.size,
-    updated,
-    failed,
-  });
+  captureServerEvent(
+    "market_stats_synced",
+    {
+      adminUserId: adminUser?.id ?? "cron",
+      totalSegments: segmentStats.size,
+      updated,
+      failed,
+    },
+    adminUser?.id ?? "server"
+  );
 
   return apiSuccess(
-    { totalSegments: uniqueSegments.size, updated, failed },
+    { totalSegments: segmentStats.size, updated, failed },
     `${updated} segment güncellendi.`
   );
 }

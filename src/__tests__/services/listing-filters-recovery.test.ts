@@ -5,14 +5,14 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/logging/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     listings: { warn: vi.fn() },
     perf: { debug: vi.fn() },
   },
 }));
 
-import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
+import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
 
 describe("parseListingFiltersFromSearchParams — invalid query recovery", () => {
   it("returns default filters for empty params", () => {
@@ -41,8 +41,8 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       minPrice: "not-a-number",
     });
 
-    expect(result.brand).toBeUndefined();
-    expect(result.city).toBeUndefined();
+    expect(result.brand).toBe("Toyota");
+    expect(result.city).toBe("Ankara");
     expect(result.minPrice).toBeUndefined();
     expect(result.validationError).toBeDefined();
   });
@@ -53,47 +53,47 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       sort: "random_invalid_sort",
     });
 
-    expect(result.brand).toBeUndefined();
-    expect(result.sort).toBe("newest"); // falls back to default
+    expect(result.brand).toBe("Honda");
+    expect(result.sort).toBe("newest");
   });
 
   it("drops invalid fuelType but preserves brand", () => {
     const result = parseListingFiltersFromSearchParams({
       brand: "Ford",
-      fuelType: "hydrogen", // invalid
+      fuelType: "hydrogen",
     });
 
-    expect(result.brand).toBeUndefined();
+    expect(result.brand).toBe("Ford");
     expect(result.fuelType).toBeUndefined();
   });
 
   it("drops invalid transmission but preserves city", () => {
     const result = parseListingFiltersFromSearchParams({
       city: "İzmir",
-      transmission: "warp_drive", // invalid
+      transmission: "warp_drive",
     });
 
-    expect(result.city).toBeUndefined();
+    expect(result.city).toBe("İzmir");
     expect(result.transmission).toBeUndefined();
   });
 
   it("preserves cursor when other params are invalid", () => {
     const result = parseListingFiltersFromSearchParams({
       cursor: "eyJpZCI6IjEyMyJ9",
-      minPrice: "abc", // invalid
+      minPrice: "abc",
     });
 
-    expect(result.cursor).toBeUndefined();
+    expect(result.cursor).toBe("eyJpZCI6IjEyMyJ9");
     expect(result.minPrice).toBeUndefined();
   });
 
   it("preserves page when other params are invalid", () => {
     const result = parseListingFiltersFromSearchParams({
       page: "3",
-      maxMileage: "not-a-number", // invalid
+      maxMileage: "not-a-number",
     });
 
-    expect(result.page).toBe(1);
+    expect(result.page).toBe(3);
     expect(result.maxMileage).toBeUndefined();
   });
 
@@ -113,7 +113,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
 
   it("handles array values by using first element when schema remains valid", () => {
     const result = parseListingFiltersFromSearchParams({
-      brand: ["BMW", "Audi"], // array — should use first
+      brand: ["BMW", "Audi"],
     });
 
     expect(result.brand).toBe("BMW");
@@ -121,7 +121,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
 
   it("returns safe defaults when empty array produces invalid input", () => {
     const result = parseListingFiltersFromSearchParams({
-      brand: [], // empty array — should be ignored
+      brand: [],
       city: "Bursa",
     });
 
@@ -131,7 +131,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
   });
 
   it("logs a warning when invalid params are dropped", async () => {
-    const { logger } = await import("@/lib/logging/logger");
+    const { logger } = await import("@/lib/logger");
 
     parseListingFiltersFromSearchParams({
       brand: "BMW",
@@ -139,13 +139,13 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
     });
 
     expect(logger.listings.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Invalid search params, using safe defaults"),
+      expect.stringContaining("Invalid search params detected, dropping invalid filters"),
       expect.any(Object)
     );
   });
 
   it("does not log warning when all params are valid", async () => {
-    const { logger } = await import("@/lib/logging/logger");
+    const { logger } = await import("@/lib/logger");
     vi.mocked(logger.listings.warn).mockClear();
 
     parseListingFiltersFromSearchParams({
@@ -168,7 +168,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       minPrice: "bad",
     });
 
-    expect(result.hasExpertReport).toBeUndefined();
+    expect(result.hasExpertReport).toBe(true);
     expect(result.minPrice).toBeUndefined();
     expect(result.validationError).toBeDefined();
   });

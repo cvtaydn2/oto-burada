@@ -1,22 +1,39 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const baseURL = process.env.BASE_URL || "http://localhost:3000";
+const webServerCommand = process.env.CI
+  ? "npm run build && npm run start"
+  : "npm run dev";
+const webServerReuseExisting = process.env.CI ? false : true;
+const maintenanceBypass =
+  process.env.PLAYWRIGHT_ENABLE_MAINTENANCE === "true"
+    ? process.env.MAINTENANCE_MODE_BYPASS
+    : process.env.MAINTENANCE_MODE_BYPASS || "true";
+const webServerEnv = {
+  ...process.env,
+  ...(maintenanceBypass !== undefined ? { MAINTENANCE_MODE_BYPASS: maintenanceBypass } : {}),
+};
+
 export default defineConfig({
   testDir: ".",
-  testMatch: ["e2e/**/*.spec.ts", "tests/**/*.spec.ts"],
-  fullyParallel: true,
+  testMatch: [
+    "e2e/**/*.spec.ts",
+    "tests/**/*.spec.ts",
+    "tests/api/**/*.spec.ts"
+  ],
+  fullyParallel: process.env.CI ? true : false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 4,
+  workers: process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : process.env.CI ? 2 : 2,
   globalSetup: process.env.E2E_TEST_EMAIL ? "./e2e/auth-setup.ts" : undefined,
   reporter: process.env.CI
     ? [["github"], ["html", { open: "never" }]]
     : [["html", { open: "never" }]],
   use: {
-    baseURL: process.env.BASE_URL || "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    // Consistent locale for Turkish content assertions
     locale: "tr-TR",
     timezoneId: "Europe/Istanbul",
   },
@@ -38,18 +55,14 @@ export default defineConfig({
       use: { ...devices["iPhone 13"] },
     },
   ],
-  // In CI: use pre-built production server (faster, closer to real deployment)
-  // Locally: reuse existing dev server if running
-  webServer: process.env.CI
-    ? {
-        command: "npm run build && npm run start",
-        url: "http://localhost:3000",
-        timeout: 120_000,
-        reuseExistingServer: false,
-      }
-    : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: true,
-      },
+  webServer: {
+    command: webServerCommand,
+    cwd: ".",
+    url: baseURL,
+    timeout: 120_000,
+    reuseExistingServer: webServerReuseExisting,
+    env: webServerEnv,
+  },
 });
+
+

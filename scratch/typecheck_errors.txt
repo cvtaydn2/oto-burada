@@ -1,0 +1,65 @@
+
+> oto-burada@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+src/app/(public)/(marketplace)/seller/[id]/page.tsx(207,15): error TS2322: Type 'TrustTone' is not assignable to type '"amber" | "rose" | "emerald" | "blue" | "slate" | undefined'.
+  Type '"verified"' is not assignable to type '"amber" | "rose" | "emerald" | "blue" | "slate" | undefined'.
+src/app/admin/users/page.tsx(212,54): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | Date'.
+  Type 'null' is not assignable to type 'string | Date'.
+src/app/dashboard/messages/page.tsx(70,35): error TS2339: Property 'success' does not exist on type 'ChatWithLastMessage[]'.
+src/app/dashboard/messages/page.tsx(70,82): error TS2339: Property 'data' does not exist on type 'ChatWithLastMessage[]'.
+src/app/dashboard/messages/page.tsx(74,51): error TS2339: Property 'data' does not exist on type 'ChatWithLastMessage[]'.
+src/features/chat/components/chat-window.tsx(114,16): error TS2554: Expected 0 arguments, but got 1.
+src/features/forms/components/listing-create-form-renderer.tsx(149,75): error TS2349: This expression is not callable.
+  Type '{ status: string; progress: number; message: string; previewUrl?: string | undefined; }' has no call signatures.
+src/features/forms/components/listing-create-form-renderer.tsx(152,66): error TS2349: This expression is not callable.
+  Type '{ status: string; progress: number; message: string; previewUrl?: string | undefined; }' has no call signatures.
+src/features/listing-creation/hooks/use-listing-creation.ts(475,19): error TS2304: Cannot find name 'apiResponseSchemas'.
+src/features/marketplace/components/s/Github/oto-burada/src/components/listings/listing-detail/listing-seller-sidebar.tsx(60,23): error TS2367: This comparison appears to be unintentional because the types 'TrustTone' and '"slate"' have no overlap.
+src/features/marketplace/hooks/use-listing-actions.ts(87,17): error TS2304: Cannot find name 'apiResponseSchemas'.
+src/features/marketplace/hooks/use-listing-actions.ts(169,19): error TS2304: Cannot find name 'apiResponseSchemas'.
+src/features/marketplace/hooks/use-listing-actions.ts(195,19): error TS2304: Cannot find name 'apiResponseSchemas'.
+src/features/marketplace/hooks/use-listing-queries.ts(25,17): error TS2304: Cannot find name 'apiResponseSchemas'.
+src/features/marketplace/hooks/use-listing-queries.ts(41,17): error TS2304: Cannot find name 'apiResponseSchemas'.
+src/features/marketplace/lib/utils.ts(59,24): error TS2698: Spread types may only be created from object types.
+src/features/marketplace/lib/utils.ts(63,27): error TS2698: Spread types may only be created from object types.
+src/features/marketplace/services/listings/listing-submission-query.ts(541,39): error TS2339: Property 'map' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(546,61): error TS2339: Property 'message' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(549,38): error TS2339: Property 'message' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(558,66): error TS2339: Property 'message' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(575,41): error TS2339: Property 'message' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(629,42): error TS2339: Property 'map' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(640,30): error TS2339: Property 'map' does not exist on type '{}'.
+src/features/marketplace/services/listings/listing-submission-query.ts(715,50): error TS2345: Argument of type '(row: ListingRow) => Listing' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => Listing'.
+  Types of parameters 'row' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'ListingRow'.
+src/features/marketplace/services/listings/listing-submission-query.ts(826,9): error TS2322: Type 'PostgrestSingleResponse<ParserError<"Unable to parse renamed field at `seller:profiles!inner!seller_id(id, full_name, is_verified, business_name, business_slug)\n`">[]>' is not assignable to type '{ data: unknown[]; error: unknown; }'.
+  Type 'PostgrestResponseFailure' is not assignable to type '{ data: unknown[]; error: unknown; }'.
+    Types of property 'data' are incompatible.
+      Type 'null' is not assignable to type 'unknown[]'.
+src/features/marketplace/services/listings/listing-submission-query.ts(845,37): error TS2345: Argument of type '(row: ListingRow) => Listing' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => Listing'.
+  Types of parameters 'row' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'ListingRow'.
+src/features/marketplace/services/saved-searches/saved-search-utils.ts(63,30): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/features/marketplace/services/saved-searches/saved-search-utils.ts(82,19): error TS18047: 'normalized.maxPrice' is possibly 'null'.
+src/features/marketplace/services/saved-searches/saved-search-utils.ts(82,54): error TS2554: Expected 0 arguments, but got 1.
+src/features/marketplace/services/saved-searches/saved-search-utils.ts(86,19): error TS18047: 'normalized.maxMileage' is possibly 'null'.
+src/features/marketplace/services/saved-searches/saved-search-utils.ts(86,56): error TS2554: Expected 0 arguments, but got 1.
+src/features/shared/services/system/saved-search-notifier.ts(17,10): error TS2305: Module '"@/lib/env"' has no exported member 'getAppUrlWithFallback'.
+src/features/ui/components/search-with-suggestions.tsx(145,15): error TS2554: Expected 0 arguments, but got 1.
+src/hooks/use-navigation.ts(13,11): error TS2339: Property 'user' does not exist on type 'SupabaseClient<Database, "public", "public", { Tables: { _migrations: { Row: { executed_at: string | null; id: number; name: string; }; Insert: { executed_at?: string | null | undefined; id?: number | undefined; name: string; }; Update: { ...; }; Relationships: []; }; ... 45 more ...; user_read_writes_tracker: { ......'.
+src/hooks/use-navigation.ts(13,17): error TS2339: Property 'isLoading' does not exist on type 'SupabaseClient<Database, "public", "public", { Tables: { _migrations: { Row: { executed_at: string | null; id: number; name: string; }; Insert: { executed_at?: string | null | undefined; id?: number | undefined; name: string; }; Update: { ...; }; Relationships: []; }; ... 45 more ...; user_read_writes_tracker: { ......'.
+src/lib/api/resilience.ts(80,32): error TS2339: Property 'set' does not exist on type 'never'.
+src/lib/api/resilience.ts(89,38): error TS2339: Property 'get' does not exist on type 'never'.
+src/lib/api/resilience.ts(91,21): error TS2339: Property 'del' does not exist on type 'never'.
+src/lib/api/resilience.ts(105,30): error TS2339: Property 'get' does not exist on type 'never'.
+src/lib/api/resilience.ts(109,15): error TS2339: Property 'set' does not exist on type 'never'.
+src/lib/index.ts(16,10): error TS2305: Module '"./environment/env"' has no exported member 'logEnvValidation'.
+src/lib/security/step-up-auth.ts(17,35): error TS2339: Property 'get' does not exist on type 'never'.
+src/lib/security/step-up-auth.ts(20,17): error TS2339: Property 'set' does not exist on type 'never'.
+src/lib/security/step-up-auth.ts(35,23): error TS2339: Property 'exists' does not exist on type 'never'.
+src/lib/security/step-up-auth.ts(41,15): error TS2339: Property 'set' does not exist on type 'never'.
+src/middleware.ts(7,10): error TS2305: Module '"@/lib/rate-limit"' has no exported member 'rateLimitMiddleware'.
+src/scripts/refresh-market-stats.ts(1,42): error TS2307: Cannot find module '../services/market/market-stats' or its corresponding type declarations.

@@ -1,8 +1,8 @@
-import { NotificationPreferencesPanel } from "@/components/shared/notification-preferences-panel";
-import { NotificationsPanel } from "@/components/shared/notifications-panel";
-import { requireUser } from "@/lib/auth/session";
-import { getNotificationPreferences } from "@/services/notifications/notification-preferences";
-import { getStoredNotificationsByUser } from "@/services/notifications/notification-records";
+import { requireUser } from "@/features/auth/lib/session";
+import { getNotificationPreferences } from "@/features/notifications/services/notification-preferences";
+import { getStoredNotificationsByUser } from "@/features/notifications/services/notification-records";
+import { NotificationPreferencesPanel } from "@/features/shared/components/notification-preferences-panel";
+import { NotificationsPanel } from "@/features/shared/components/notifications-panel";
 
 export const dynamic = "force-dynamic";
 

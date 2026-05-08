@@ -1,4 +1,4 @@
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib";
 import type { Listing } from "@/types";
 
 import { ModerationDecision } from "./moderation-card/ModerationDecision";

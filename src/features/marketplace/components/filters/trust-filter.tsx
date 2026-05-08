@@ -1,5 +1,8 @@
 "use client";
 
+import { Input } from "@/features/ui/components/input";
+import { Label } from "@/features/ui/components/label";
+
 interface TrustFilterProps {
   hasExpertReport?: boolean;
   maxTramer?: number;
@@ -19,11 +22,11 @@ export function TrustFilter({
     <div className="grid grid-cols-1 gap-4 w-full">
       <div className="space-y-2">
         {!hideLabel && (
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
             Tramer
-          </label>
+          </Label>
         )}
-        <input
+        <Input
           type="number"
           min={0}
           placeholder="Maks tramer tutarı"
@@ -32,7 +35,7 @@ export function TrustFilter({
           className="h-12 w-full rounded-xl border border-border/40 bg-muted/20 px-4 text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/30 focus:ring-2 focus:ring-primary/20"
         />
       </div>
-      <label className="flex items-center gap-3 rounded-xl border border-border/40 bg-muted/10 px-4 py-3 text-sm font-medium text-foreground cursor-pointer hover:bg-muted/20 transition-colors">
+      <Label className="flex items-center gap-3 rounded-xl border border-border/40 bg-muted/10 px-4 py-3 text-sm font-medium text-foreground cursor-pointer hover:bg-muted/20 transition-colors">
         <input
           type="checkbox"
           checked={hasExpertReport === true}
@@ -40,7 +43,7 @@ export function TrustFilter({
           className="rounded border-border"
         />
         Ekspertiz raporlu ilanlar
-      </label>
+      </Label>
     </div>
   );
 }

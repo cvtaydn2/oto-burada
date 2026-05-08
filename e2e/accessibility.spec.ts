@@ -8,7 +8,6 @@ test.describe("Erişilebilirlik (A11y)", () => {
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      // Color-contrast is tracked separately in visual design QA due dynamic gradients/theming.
       .disableRules(["color-contrast"])
       .analyze();
 
@@ -18,7 +17,6 @@ test.describe("Erişilebilirlik (A11y)", () => {
   test.describe("Ana Sayfa", () => {
     test("skip nav linki mevcut ve odaklanabilir", async ({ page }) => {
       await page.goto("/");
-      // Tab to the first focusable element — should be skip nav
       await page.keyboard.press("Tab");
       const focused = page.locator(":focus");
       await expect(focused).toHaveText(/ana içeriğe geç/i);
@@ -39,39 +37,31 @@ test.describe("Erişilebilirlik (A11y)", () => {
   });
 
   test.describe("İlanlar Sayfası", () => {
-    test("ilan kartlarında tek odak noktası var", async ({ page }) => {
+    test("ilan kartlarında beklenen erişilebilir hedefler bulunur", async ({ page }) => {
       await page.goto("/listings");
       await page.waitForLoadState("networkidle");
 
-      // First card title link focus
-      await page.keyboard.press("Tab"); // skip nav
-      await page.keyboard.press("Tab"); // may be header links...
+      const firstCard = page.locator("article").first();
+      await expect(firstCard).toBeVisible();
 
-      // Let's just find the link and check if only it is focusable within the article
-      const firstCard = page.locator('[role="article"]').first();
-      const links = await firstCard.locator("a").all();
+      await expect(firstCard.locator('a[href^="/listing/"]')).toHaveCount(1);
+      await expect(
+        firstCard.getByRole("button", { name: /favorilere ekle|favorilerden çıkar/i })
+      ).toHaveCount(1);
 
-      let focusableFound = 0;
-      for (const link of links) {
-        const tabIndex = await link.getAttribute("tabindex");
-        if (tabIndex !== "-1") {
-          focusableFound++;
-        }
-      }
-
-      // Only 1 link should be focusable per card (the title link)
-      expect(focusableFound).toBe(1);
+      const focusableTargets = firstCard.locator(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      await expect(focusableTargets).toHaveCount(2);
     });
 
     test("sıralama dropdown Escape ile kapanır", async ({ page }) => {
       await page.goto("/listings");
       await page.waitForLoadState("networkidle");
 
-      // Open sort dropdown
       const sortButton = page.getByRole("button", { name: /sıralama|en yeni/i }).first();
       if ((await sortButton.count()) > 0) {
         await sortButton.click();
-        // Press Escape (component may render as native select or custom popover)
         await page.keyboard.press("Escape");
         await expect(sortButton).toBeVisible();
       }
@@ -92,12 +82,8 @@ test.describe("Erişilebilirlik (A11y)", () => {
   test.describe("Giriş Sayfası", () => {
     test("email ve şifre inputları label ile bağlı", async ({ page }) => {
       await page.goto("/login");
-
-      const emailInput = page.locator("#email");
-      await expect(emailInput).toBeVisible();
-
-      const passwordInput = page.locator("#password");
-      await expect(passwordInput).toBeVisible();
+      await expect(page.locator("#email")).toBeVisible();
+      await expect(page.locator("#password")).toBeVisible();
     });
 
     test("hata mesajı role=alert ile duyurulur", async ({ page }) => {
@@ -127,10 +113,8 @@ test.describe("Erişilebilirlik (A11y)", () => {
   test.describe("Favoriler Sayfası", () => {
     test("geri butonu aria-label içeriyor", async ({ page }) => {
       await page.goto("/favorites");
-      // May redirect to login — that's fine, just check the page loads
       const backLink = page.locator('a[aria-label="Ana sayfaya dön"]').first();
-      // Only check if we're on the favorites page (not redirected)
-      if (await page.url().includes("/favorites")) {
+      if ((await page.url()).includes("/favorites")) {
         await expect(backLink).toBeVisible();
       }
     });
@@ -141,12 +125,10 @@ test.describe("Erişilebilirlik (A11y)", () => {
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
-      // Tab through first few focusable elements
       for (let i = 0; i < 5; i++) {
         await page.keyboard.press("Tab");
       }
 
-      // Should have a focused element
       const focused = page.locator(":focus");
       await expect(focused).toBeVisible();
     });
@@ -156,13 +138,11 @@ test.describe("Erişilebilirlik (A11y)", () => {
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
-      // Mobile nav should have aria-current="page" on active item
-      const activeNavItem = page
-        .locator('nav[aria-label*="navigasyon"] a[aria-current="page"]')
-        .first();
+      const activeNavItem = page.locator('nav[aria-label*="navigasyon"] a[aria-current="page"]').first();
       if ((await activeNavItem.count()) > 0) {
         await expect(activeNavItem).toBeVisible();
       }
     });
   });
 });
+

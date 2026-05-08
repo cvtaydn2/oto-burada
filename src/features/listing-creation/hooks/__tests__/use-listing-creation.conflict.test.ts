@@ -10,7 +10,7 @@ describe("useListingCreation conflict handling", () => {
 
   it("handles conflict responses with a dedicated refresh path", () => {
     expect(sourceCode).toContain('response.error?.code === "CONFLICT"');
-    // After conflict, user is prompted to reload — uses window.location.reload()
-    expect(sourceCode).toContain("window.location.reload()");
+    expect(sourceCode).toContain("showReloadPrompt: true");
+    expect(sourceCode).toContain("Kontrol edip sayfayı yenileyerek tekrar deneyin");
   });
 });

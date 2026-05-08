@@ -63,3 +63,11 @@ export function getSupabaseProjectRef() {
     return null;
   }
 }
+
+export function getRequiredAppUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (url) return url;
+  const ref = getSupabaseProjectRef();
+  if (ref) return `https://${ref}.oto-burada.com`;
+  return "http://localhost:3000";
+}

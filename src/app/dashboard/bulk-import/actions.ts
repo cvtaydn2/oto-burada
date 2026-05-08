@@ -1,13 +1,13 @@
 "use server";
 
-import { requireUser } from "@/lib/auth/session";
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { requireUser } from "@/features/auth/lib/session";
 import {
   buildListingRecord,
   mapListingToDatabaseRow,
-} from "@/services/listings/listing-submissions";
+} from "@/features/marketplace/services/listing-submissions";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import type { ListingCreateInput } from "@/types";
 
 /**

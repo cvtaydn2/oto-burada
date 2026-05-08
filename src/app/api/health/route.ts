@@ -22,9 +22,9 @@
 
 import { NextResponse } from "next/server";
 
-import { withSecurity } from "@/lib/api/security";
-import { checkInfrastructureHealth } from "@/lib/monitoring/infrastructure-health";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
+import { checkInfrastructureHealth } from "@/lib/infrastructure-health";
+import { withSecurity } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 // Short cache — health checks should reflect current state
@@ -57,7 +57,7 @@ export async function GET(request: Request): Promise<NextResponse<HealthResponse
 
   if (hasSupabaseAdminEnv()) {
     try {
-      const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+      const { createSupabaseAdminClient } = await import("@/lib/admin");
       const admin = createSupabaseAdminClient();
       // Lightweight ping: count a single row from a small table
       const { error } = await admin

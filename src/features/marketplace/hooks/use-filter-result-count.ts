@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useEffect, useState } from "react";
 
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
 import { type ListingFilters } from "@/types";
 
 export function useFilterResultCount(filters: ListingFilters, initialCount: number = 0) {

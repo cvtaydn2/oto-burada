@@ -1,10 +1,10 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { bulkListingActionSchema } from "@/lib/validators";
-import { deleteDatabaseListing } from "@/services/listings/listing-submissions";
+import { deleteDatabaseListing } from "@/features/marketplace/services/listing-submissions";
+import { bulkListingActionSchema } from "@/lib";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAuthAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 // Bulk delete: 10 operations per hour per user (stricter due to side effects)
 const BULK_DELETE_RATE_LIMIT = { limit: 10, windowMs: 60 * 60 * 1000 };
@@ -38,8 +38,18 @@ export async function POST(req: Request) {
 
   const { ids } = validation.data;
 
-  // Process deletions (deleteDatabaseListing handles ownership and image cleanup)
-  const results = await Promise.all(ids.map((id) => deleteDatabaseListing(id, user.id)));
+  // Process deletions with bounded concurrency to prevent burst load.
+  const CONCURRENCY = 5;
+  const results: Awaited<ReturnType<typeof deleteDatabaseListing>>[] = [];
+
+  for (let i = 0; i < ids.length; i += CONCURRENCY) {
+    const batch = ids.slice(i, i + CONCURRENCY);
+    const settled = await Promise.allSettled(batch.map((id) => deleteDatabaseListing(id, user.id)));
+
+    for (const item of settled) {
+      results.push(item.status === "fulfilled" ? item.value : null);
+    }
+  }
 
   // Count only genuine successes — null means not found/not archived,
   // { error } means a conflict or DB failure (truthy but not a success).

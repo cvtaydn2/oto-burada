@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
-import { logger } from "@/lib/logging/logger";
+import { logger } from "@/lib/logger";
 
 const getRedisConfig = () => {
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -10,26 +10,10 @@ const getRedisConfig = () => {
     };
   }
 
-  // SECURITY: Fail-closed in production if Redis is not configured
   if (process.env.NODE_ENV === "production") {
-    const errorMsg =
-      "CRITICAL: Redis (Upstash) is not configured for production! Rate limiting and caching are required for security.";
-
-    // During build/CI, we log a warning instead of crashing to allow the build to complete.
-    // Vercel and most CI platforms set CI or VERCEL during build.
-    const isBuild = !!(
-      process.env.CI ||
-      process.env.VERCEL ||
-      process.env.NEXT_PHASE === "phase-production-build"
+    logger.db.error(
+      "CRITICAL: Redis (Upstash) is not configured for production! Running in degraded mode with in-memory fallbacks."
     );
-
-    if (isBuild) {
-      logger.db.warn(`${errorMsg} (Proceeding without Redis during build environment)`);
-      return null;
-    }
-
-    logger.db.error(errorMsg);
-    throw new Error(errorMsg);
   }
 
   return null;

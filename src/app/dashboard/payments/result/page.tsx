@@ -14,15 +14,16 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { logger } from "@/lib/logging/logger";
-import { captureClientException } from "@/lib/monitoring/posthog-client";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { Button } from "@/features/ui/components/button";
+import { Card, CardContent } from "@/features/ui/components/card";
+import { createSupabaseBrowserClient } from "@/lib/browser";
+import { logger } from "@/lib/logger";
+import { captureClientException } from "@/lib/telemetry-client";
 
 type PaymentResultStatus =
   | "failure"
   | "invalid"
+  | "partial_success"
   | "pending"
   | "success"
   | "unverified"
@@ -81,13 +82,27 @@ const PAYMENT_STATUS_MAP: Record<PaymentResultStatus, PaymentStatusInfo> = {
     colorClass: "text-amber-600",
     bgClass: "bg-amber-500",
   },
+  partial_success: {
+    title: "Ödeme Alındı",
+    description:
+      "Ödemeniz başarıldı ancak ek hizmetlerin aktivasyonu zaman alabilir. En kısa sürede aktive edilecektir.",
+    icon: Loader2,
+    colorClass: "text-amber-600",
+    bgClass: "bg-amber-500",
+  },
 };
 
 function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<PaymentResultStatus>("pending");
+  const initialStatus = searchParams.get("status");
+  const isPartialSuccess = initialStatus === "partial_success";
+  const messageParam = searchParams.get("message") || "";
+
+  const [loading, setLoading] = useState(!isPartialSuccess);
+  const [status, setStatus] = useState<PaymentResultStatus>(
+    () => (isPartialSuccess ? "partial_success" : "pending") as PaymentResultStatus
+  );
   const [paymentData, setPaymentData] = useState<{
     id: string;
     amount: number;
@@ -101,6 +116,10 @@ function PaymentResultContent() {
   const token = searchParams.get("token");
 
   useEffect(() => {
+    if (status === "partial_success") {
+      return;
+    }
+
     let cancelled = false;
     let pollTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -222,7 +241,7 @@ function PaymentResultContent() {
         clearTimeout(pollTimeout);
       }
     };
-  }, [token, router, retryNonce]);
+  }, [token, router, retryNonce, status]);
 
   const retryVerification = () => {
     if (requestInFlightRef.current) {
@@ -281,7 +300,9 @@ function PaymentResultContent() {
           <p className="mt-4 text-lg font-bold text-slate-500 leading-relaxed max-w-md mx-auto">
             {isSuccess && paymentData?.plan_name
               ? `${paymentData.plan_name} paketiniz başarıyla tanımlandı. OtoBurada'yı tercih ettiğiniz için teşekkür ederiz.`
-              : info.description}
+              : messageParam && status === "partial_success"
+                ? messageParam
+                : info.description}
           </p>
 
           {paymentData && (
@@ -413,9 +434,8 @@ function PaymentResultContent() {
             ) : isFailure ? (
               <>
                 <Button
-                  asChild
                   className="h-14 rounded-2xl bg-rose-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-rose-500/20 hover:bg-rose-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                  onClick={() => window.history.back()}
+                  onClick={retryVerification}
                 >
                   <span className="inline-flex items-center">
                     Tekrar Dene

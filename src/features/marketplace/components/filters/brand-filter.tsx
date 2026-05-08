@@ -1,5 +1,6 @@
 "use client";
 
+import { Label } from "@/features/ui/components/label";
 import type { BrandCatalogItem } from "@/types";
 
 import { FilterSelect } from "./filter-select";
@@ -20,9 +21,9 @@ export function BrandFilter({ brands, value, onChange, hideLabel }: BrandFilterP
   return (
     <div className="space-y-1.5 w-full">
       {!hideLabel && (
-        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
           Marka
-        </label>
+        </Label>
       )}
       <FilterSelect
         value={value || "all"}

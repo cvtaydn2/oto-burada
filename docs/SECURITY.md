@@ -1,79 +1,29 @@
-# Security Policy
+# Security Guide
 
-## Reporting Security Issues
+Bu doküman, uygulamadaki güvenlik katmanlarının kısa operasyonel özetidir.
 
-If you discover a security vulnerability in this project, please report it by emailing the maintainers directly. Do not create public GitHub issues for security vulnerabilities.
+## 1) API Güvenlik Katmanları
 
-## Security Measures
+- Global origin kontrolü: [`checkApiSecurity()`](../src/lib/middleware/api-security.ts:16)
+- Global CSRF middleware wrapper: [`csrfMiddleware()`](../src/lib/middleware/csrf.ts:12)
+- Route-level güvenlik orkestrasyonu: [`withSecurity()`](../src/lib/api/security.ts:51)
 
-### Authentication & Authorization
+## 2) CSRF Stratejisi
 
-- **Supabase Auth**: Email/password authentication with secure session management
-- **Row Level Security (RLS)**: All database tables protected with RLS policies
-- **Role-Based Access Control**: User roles (user, seller, admin) with appropriate permissions
-- **Admin-Only Routes**: Protected routes for moderation and administrative functions
+- Hash-cookie + header token modeli: [`validateCsrfToken()`](../src/lib/security/csrf.ts:98)
+- Token üretimi/rotasyonu: [`setCsrfTokenCookie()`](../src/lib/security/csrf.ts:161), [`rotateCsrfToken()`](../src/lib/security/csrf.ts:183)
+- Public ama mutation endpoint’lerde minimum koruma: `requireCsrf: true` (origin check)
 
-### Data Protection
+## 3) Auth ve Yetki
 
-- **Environment Variables**: Sensitive credentials stored in `.env.local` (never committed)
-- **Server-Only Modules**: Critical logic marked with `"server-only"` to prevent client-side exposure
-- **Input Validation**: Zod schemas for all user inputs
-- **SQL Injection Prevention**: Parameterized queries via Supabase client
-- **XSS Prevention**: React's built-in escaping + Content Security Policy headers
+- Session + profil bağlamı: [`getAuthContext()`](../src/lib/auth/session.ts:1)
+- Admin kontrolü: [`withAdminRoute()`](../src/lib/api/security.ts:279)
+- Ban kontrolü (DB bazlı): [`withSecurity()`](../src/lib/api/security.ts:159)
 
-### API Security
+## 4) Hızlı İnceleme Checklist
 
-- **Rate Limiting**: IP-based rate limiting on API routes
-- **CSRF Protection**: Next.js built-in CSRF protection for mutations
-- **Webhook Verification**: Iyzico webhook signatures verified with SHA256
-- **CORS Configuration**: Restricted to allowed origins only
-
-### Infrastructure Security
-
-- **HTTPS Only**: All production traffic over HTTPS
-- **Secure Headers**: Security headers configured in `next.config.ts`
-- **Dependency Scanning**: Automated security audits via GitHub Actions
-- **Dependabot**: Weekly dependency updates for security patches
-
-### Content Moderation
-
-- **Admin Moderation**: All listings require admin approval before publication
-- **User Reporting**: Users can report suspicious listings
-- **Ban System**: Admins can ban users and hide their listings
-- **Content Filtering**: Automated checks for prohibited content
-
-## Security Best Practices
-
-### For Developers
-
-1. **Never commit secrets**: Use `.env.local` for sensitive data
-2. **Use `server-only`**: Mark server-side logic with `"server-only"` import
-3. **Validate all inputs**: Use Zod schemas for validation
-4. **Follow RLS patterns**: Always use RLS policies, never bypass with service role key in client code
-5. **Review dependencies**: Check `npm audit` before adding new packages
-6. **Test security**: Include security tests in your PRs
-
-### For Deployment
-
-1. **Rotate credentials**: Rotate all API keys and secrets before production deployment
-2. **Enable monitoring**: Set up error tracking and security monitoring
-3. **Review logs**: Regularly review application and security logs
-4. **Update dependencies**: Keep all dependencies up-to-date
-5. **Backup data**: Regular database backups with encryption
-
-## Security Audit History
-
-For detailed security audit history and resolved issues, see:
-- `docs/archive/security/` - Historical security reports and resolutions
-- `PROGRESS.md` - Recent security improvements and fixes
-
-## Compliance
-
-This application follows security best practices for:
-- OWASP Top 10 protection
-- GDPR data protection principles (for EU users)
-- Secure payment processing (PCI DSS considerations via Iyzico)
-
-## Contact
-
-For security concerns, please contact the project maintainers directly.
+1. Mutation endpoint’te wrapper var mı?
+2. Public endpoint ise en az origin kontrolü var mı?
+3. Client tarafında `service_role` key sızıntısı var mı?
+4. Hata mesajları güvenli ve kullanıcı dostu mu?
+5. Rate-limit profili uygun mu?

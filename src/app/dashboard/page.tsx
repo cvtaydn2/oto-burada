@@ -1,18 +1,21 @@
 import type { User } from "@supabase/supabase-js";
 import { Suspense } from "react";
 
-import { DashboardContentSkeleton } from "@/components/dashboard/dashboard-content-skeleton";
-import { DashboardCreditsCard } from "@/components/dashboard/dashboard-credits-card";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardListingsTable } from "@/components/dashboard/dashboard-listings-table";
-import { DashboardProfessionalCard } from "@/components/dashboard/dashboard-professional-card";
-import { DashboardQuickLinks } from "@/components/dashboard/dashboard-quick-links";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { DashboardVerificationAlert } from "@/components/dashboard/dashboard-verification-alert";
-import { requireUser } from "@/lib/auth/session";
-import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records";
-import { getStoredUserListings } from "@/services/listings/listing-submissions";
-import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
+import { requireUser } from "@/features/auth/lib/session";
+import { DashboardContentSkeleton } from "@/features/dashboard/components/dashboard-content-skeleton";
+import { DashboardCreditsCard } from "@/features/dashboard/components/dashboard-credits-card";
+import { DashboardHeader } from "@/features/dashboard/components/dashboard-header";
+import { DashboardListingsTable } from "@/features/dashboard/components/dashboard-listings-table";
+import { DashboardProfessionalCard } from "@/features/dashboard/components/dashboard-professional-card";
+import { DashboardQuickLinks } from "@/features/dashboard/components/dashboard-quick-links";
+import { DashboardStats } from "@/features/dashboard/components/dashboard-stats";
+import { DashboardVerificationAlert } from "@/features/dashboard/components/dashboard-verification-alert";
+import { getDatabaseFavoriteCount } from "@/features/favorites/services/favorite-records";
+import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
+import {
+  buildProfileFromAuthUser,
+  getStoredProfileById,
+} from "@/features/profile/services/profile-records";
 import type { Listing, Profile } from "@/types";
 
 export const dynamic = "force-dynamic";

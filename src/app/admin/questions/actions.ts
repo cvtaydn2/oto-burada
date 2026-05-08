@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { deleteQuestion, moderateQuestion } from "@/services/admin/questions";
+import { deleteQuestion, moderateQuestion } from "@/features/admin-moderation/services/questions";
 
 export async function approveQuestionAction(questionId: string) {
   try {

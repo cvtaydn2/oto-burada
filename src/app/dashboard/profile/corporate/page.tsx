@@ -9,12 +9,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { CorporateProfileForm } from "@/components/forms/corporate-profile-form";
-import { updateCorporateProfileAction } from "@/lib/auth/profile-actions";
-import { requireUser } from "@/lib/auth/session";
-import { trust } from "@/lib/constants/ui-strings";
-import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
+import { updateCorporateProfileAction } from "@/features/auth/lib/profile-actions";
+import { requireUser } from "@/features/auth/lib/session";
+import { CorporateProfileForm } from "@/features/forms/components/corporate-profile-form";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import {
+  buildProfileFromAuthUser,
+  getStoredProfileById,
+} from "@/features/profile/services/profile-records";
+import { trust } from "@/lib/ui-strings";
 
 export const dynamic = "force-dynamic";
 

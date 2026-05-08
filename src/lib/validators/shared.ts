@@ -12,10 +12,9 @@ export const emptyStringToUndefined = (value: unknown) => {
 
 export const trimmedRequiredString = z.string().trim().min(1, requiredMessage);
 
-export const optionalTrimmedString = z.preprocess(
-  emptyStringToUndefined,
-  z.string().trim().min(1, requiredMessage).optional()
-);
+export const optionalTrimmedString = z
+  .preprocess(emptyStringToUndefined, z.string().trim().min(1, requiredMessage).optional())
+  .optional();
 
 export const positiveCurrencySchema = z.coerce.number().finite().min(1, invalidMessage);
 export const nonNegativeNumberSchema = z.coerce.number().finite().min(0, invalidMessage);

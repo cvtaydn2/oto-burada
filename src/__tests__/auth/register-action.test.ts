@@ -12,32 +12,36 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/lib/monitoring/posthog-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   trackServerEvent: vi.fn(),
   identifyServerUser: vi.fn(),
 }));
 
-vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limit-middleware", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
 }));
 
-vi.mock("@/lib/rate-limiting/rate-limit", () => ({
-  rateLimitProfiles: { auth: {} },
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimitProfiles: { auth: {}, forgotPassword: {} },
 }));
 
-vi.mock("@/lib/security/turnstile", () => ({
+vi.mock("@/lib/distributed-rate-limit", () => ({
+  checkBruteForceLimit: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/turnstile", () => ({
   isTurnstileEnabled: vi.fn(() => false),
   verifyTurnstileToken: vi.fn(),
 }));
 
-vi.mock("@/lib/seo", () => ({
+vi.mock("@/features/seo/lib", () => ({
   getAppUrl: vi.fn(() => "https://otoburada.com"),
 }));
 
 const mockSignUp = vi.fn();
 const mockGetUser = vi.fn();
 
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() =>
     Promise.resolve({
       auth: {
@@ -53,11 +57,11 @@ vi.mock("@/lib/supabase/server", () => ({
   ),
 }));
 
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseEnv: vi.fn(() => true),
 }));
 
-import { registerAction } from "@/lib/auth/actions";
+import { registerAction } from "@/features/auth/lib/actions";
 
 function makeFormData(fields: Record<string, string>): FormData {
   const fd = new FormData();
@@ -78,7 +82,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Ahmet Yılmaz",
     });
 
@@ -101,7 +106,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Fatma Kaya",
     });
 
@@ -123,7 +129,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Ali Demir",
     });
 
@@ -138,7 +145,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "existing@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Mevcut Kullanıcı",
     });
 
@@ -154,7 +162,8 @@ describe("registerAction — success path", () => {
   it("returns validation error when fullName is too short", async () => {
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Al",
     });
 
@@ -165,7 +174,7 @@ describe("registerAction — success path", () => {
   });
 
   it("returns rate-limit error when rate limit is exceeded", async () => {
-    const { checkRateLimit } = await import("@/lib/rate-limiting/rate-limit-middleware");
+    const { checkRateLimit } = await import("@/lib/rate-limit-middleware");
     vi.mocked(checkRateLimit).mockResolvedValueOnce({
       allowed: false,
       remaining: 0,
@@ -175,7 +184,8 @@ describe("registerAction — success path", () => {
 
     const fd = makeFormData({
       email: "test@example.com",
-      password: "password123",
+      password: "Password1!",
+      confirmPassword: "Password1!",
       fullName: "Test Kullanıcı",
     });
 

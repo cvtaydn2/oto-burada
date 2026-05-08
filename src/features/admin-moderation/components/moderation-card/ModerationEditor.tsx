@@ -2,7 +2,10 @@
 
 import { LoaderCircle, Pencil, Save, X } from "lucide-react";
 
-import { formatCurrency } from "@/lib/utils";
+import { Button } from "@/features/ui/components/button";
+import { Input } from "@/features/ui/components/input";
+import { Label } from "@/features/ui/components/label";
+import { formatCurrency } from "@/lib";
 import type { Listing } from "@/types";
 
 interface ModerationEditorProps {
@@ -42,10 +45,10 @@ export function ModerationEditor({
           {isEditing ? (
             <div className="grid gap-4 p-6 rounded-2xl bg-muted/20 border border-dashed border-primary/20">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                   İLAN BAŞLIĞI
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   value={editValues?.title}
                   onChange={(e) =>
@@ -55,11 +58,11 @@ export function ModerationEditor({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                   SATIŞ FİYATI (TL)
-                </label>
+                </Label>
                 <div className="relative">
-                  <input
+                  <Input
                     type="number"
                     value={editValues?.price}
                     onChange={(e) =>
@@ -93,7 +96,7 @@ export function ModerationEditor({
         <div className="flex items-center gap-2 shrink-0">
           {isEditing ? (
             <>
-              <button
+              <Button
                 onClick={handleSaveEdit}
                 disabled={isSavingEdit}
                 className="h-10 px-5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-widest hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
@@ -104,21 +107,21 @@ export function ModerationEditor({
                   <Save className="size-4" />
                 )}
                 KAYDET
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setEditingListingId(null)}
                 className="h-10 px-5 rounded-xl border border-border bg-card text-xs font-bold uppercase tracking-widest hover:bg-muted transition-all flex items-center gap-2"
               >
                 <X className="size-4" /> İPTAL
-              </button>
+              </Button>
             </>
           ) : (
-            <button
+            <Button
               onClick={startEditing}
               className="h-10 px-5 rounded-xl border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2"
             >
               <Pencil className="size-4" /> DÜZENLE
-            </button>
+            </Button>
           )}
         </div>
       </div>

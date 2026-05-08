@@ -12,20 +12,21 @@ import {
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
-import { ReviewForm } from "@/components/reviews/review-form";
-import { ListingCard } from "@/components/shared/listing-card";
-import { TrustBadge } from "@/components/shared/trust-badge";
-import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/auth/session";
-import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { cn } from "@/lib/utils";
+import { getCurrentUser } from "@/features/auth/lib/session";
+import { SellerReviewForm } from "@/features/marketplace/components/seller-review-form";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import {
   getMarketplaceSeller,
   getPublicMarketplaceListings,
-} from "@/services/listings/marketplace-listings";
-import { getSellerTrustSummary } from "@/services/profile/profile-trust";
-import { getSellerReviews, getSellerReviewStats } from "@/services/profile/seller-reviews";
+} from "@/features/marketplace/services/marketplace-listings";
+import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
+import { getSellerTrustSummary } from "@/features/profile/services/profile-trust";
+import { getSellerReviews, getSellerReviewStats } from "@/features/profile/services/seller-reviews";
+import { ListingCard } from "@/features/shared/components/listing-card";
+import { TrustBadge } from "@/features/shared/components/trust-badge";
+import { cn } from "@/features/shared/lib";
+import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 interface SellerProfilePageProps {
@@ -52,7 +53,9 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
   const sellerListings = listingsResult.listings;
   const totalListingsCount = listingsResult.total;
-  const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
+  const featuredListingCount = sellerListings.filter(
+    (listing: Listing) => getListingDopingDisplayItems(listing).length > 0
+  ).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
   const trustUI = getSellerTrustUI(seller);
   const memberSinceDate = seller.createdAt ? new Date(seller.createdAt) : null;
@@ -156,7 +159,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
             { label: "Aktif İlan", value: totalListingsCount, icon: Car },
-            { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
+            { label: "Aktif Vitrin", value: featuredListingCount, icon: CheckCircle2 },
             { label: "Üyelik Yılı", value: memberSinceYear ?? "—", icon: Clock },
           ].map((stat) => (
             <div
@@ -201,7 +204,19 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             <TrustBadge
               badgeLabel={trustUI.label}
               score={seller.trustScore ?? 0}
-              tone={trustUI.tone}
+              tone={
+                trustUI.tone === "verified"
+                  ? "emerald"
+                  : trustUI.tone === "trusted"
+                    ? "blue"
+                    : trustUI.tone === "warning"
+                      ? "amber"
+                      : trustUI.tone === "amber"
+                        ? "amber"
+                        : trustUI.tone === "rose"
+                          ? "rose"
+                          : "slate"
+              }
             />
           </div>
         </div>
@@ -244,12 +259,12 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             )}
           </div>
           {currentUser && currentUser.id !== sellerId && (
-            <ReviewForm sellerId={sellerId}>
+            <SellerReviewForm sellerId={sellerId}>
               <Button size="sm" variant="outline" className="gap-2">
                 <Star size={14} className="fill-amber-400 text-amber-400" />
                 Değerlendir
               </Button>
-            </ReviewForm>
+            </SellerReviewForm>
           )}
         </div>
         {reviews.length > 0 ? (

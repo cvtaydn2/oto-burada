@@ -1,0 +1,57 @@
+{
+  "tasks": {
+    "task-1777674660014-xcer6f": {
+      "taskId": "task-1777674660014-xcer6f",
+      "type": "optimization",
+      "description": "Optimize TTFB and CLS for /contact and home pages",
+      "priority": "normal",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-05-01T22:31:00.014Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1777676509995-62rnrv": {
+      "taskId": "task-1777676509995-62rnrv",
+      "type": "security",
+      "description": "Fix Admin Security Tab: Redirect to home occurs because requireAdminUser fails when SUPABASE_SERVICE_ROLE_KEY is missing in Production. Audit and fix environment variables in Vercel.",
+      "priority": "normal",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-05-01T23:01:49.995Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1777676512456-if2ekr": {
+      "taskId": "task-1777676512456-if2ekr",
+      "type": "implementation",
+      "description": "Implement Step-by-Step fix for Vercel Env Vars: 1. Identify missing production keys. 2. Guide user to add them. 3. Verify connection.",
+      "priority": "normal",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-05-01T23:01:52.456Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1777676518095-oa008s": {
+      "taskId": "task-1777676518095-oa008s",
+      "type": "optimization",
+      "description": "Optimize Vercel Speed Insights: Audit RootLayout for dynamic switches, optimize fonts, and check for heavy client components on homepage.",
+      "priority": "normal",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-05-01T23:01:58.095Z",
+      "startedAt": null,
+      "completedAt": null
+    }
+  },
+  "version": "3.0.0"
+}

@@ -1,40 +1,17 @@
-/**
- * Centralized Query Key Factory for TanStack Query.
- * Ensures consistency and safe invalidation across the app.
- */
-
+// Query keys for TanStack Query
 export const queryKeys = {
   listings: {
     all: ["listings"] as const,
-    lists: () => [...queryKeys.listings.all, "list"] as const,
-    list: (filters: Record<string, unknown>) => [...queryKeys.listings.lists(), filters] as const,
-    details: () => [...queryKeys.listings.all, "detail"] as const,
-    detail: (id: string) => [...queryKeys.listings.details(), id] as const,
-    my: (userId: string) => [...queryKeys.listings.all, "my", userId] as const,
+    my: (userId: string) => ["listings", "my", userId] as const,
+    detail: (id: string) => ["listings", "detail", id] as const,
+  } as {
+    readonly all: readonly ["listings"];
+    readonly my: (userId: string) => readonly ["listings", "my", string];
+    readonly detail: (id: string) => readonly ["listings", "detail", string];
   },
-  chats: {
-    all: ["chats"] as const,
-    lists: () => [...queryKeys.chats.all, "list"] as const,
-    list: (userId: string) => [...queryKeys.chats.lists(), userId] as const,
-    detail: (id: string) => [...queryKeys.chats.all, "detail", id] as const,
-    messages: (chatId: string) => [...queryKeys.chats.all, "messages", chatId] as const,
-  },
-  notifications: {
-    all: ["notifications"] as const,
-    byUser: (userId: string) => [...queryKeys.notifications.all, userId] as const,
-    unreadCount: (userId: string) =>
-      [...queryKeys.notifications.byUser(userId), "unread-count"] as const,
-  },
-  profile: {
-    all: ["profile"] as const,
-    byUserId: (userId: string) => [...queryKeys.profile.all, userId] as const,
-  },
-  favorites: {
-    all: ["favorites"] as const,
-    byUser: (userId: string) => [...queryKeys.favorites.all, userId] as const,
-  },
-  savedSearches: {
-    all: ["saved-searches"] as const,
-    byUser: (userId: string) => [...queryKeys.savedSearches.all, userId] as const,
-  },
+  listing: (id: string) => ["listings", id] as const,
+  favorites: ["favorites"] as const,
+  profile: ["profile"] as const,
+  notifications: ["notifications"] as const,
+  savedSearches: ["saved-searches"] as const,
 } as const;

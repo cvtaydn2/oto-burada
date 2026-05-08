@@ -50,3 +50,9 @@ src/lib/redis/test-*.mjs
 playwright-report/
 test-results/
 .last-run.json
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Roo configurations and local secrets
+.roo/mcp.json

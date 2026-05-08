@@ -7,22 +7,21 @@
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import type { RateLimitConfig } from "@/lib/rate-limiting/rate-limit";
+import { isValidRequestOrigin, validateCsrfToken } from "@/lib/csrf";
+import type { RateLimitConfig } from "@/lib/rate-limit";
 import {
   enforceRateLimit,
   getRateLimitKey,
   getUserRateLimitKey,
-} from "@/lib/rate-limiting/rate-limit-middleware";
-import { isValidRequestOrigin } from "@/lib/security";
-import { validateCsrfToken } from "@/lib/security/csrf";
+} from "@/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError } from "@/lib/response";
 
 export interface SecurityOptions {
   requireAuth?: boolean;
   requireAdmin?: boolean;
   requireCsrf?: boolean;
   requireCsrfToken?: boolean; // New: requires CSRF token header validation
-  requireCron?: boolean;
+  requireCron?: boolean; // Deprecated: Cron auth should use withCronRoute / withCronOrAdmin wrappers.
   ipRateLimit?: RateLimitConfig;
   userRateLimit?: RateLimitConfig;
   rateLimitKey?: string;
@@ -34,11 +33,13 @@ export interface SecurityOptions {
 export interface SecurityResult {
   ok: true;
   user?: User;
+  rateLimitHeaders?: Record<string, string>;
 }
 
 export interface SecurityError {
   ok: false;
   response: NextResponse;
+  rateLimitHeaders?: Record<string, string>;
 }
 
 export type SecurityCheckResult = SecurityResult | SecurityError;
@@ -107,34 +108,31 @@ export async function withSecurity(
   }
 
   // 2. IP-based Rate Limiting
+  let allRateLimitHeaders: Record<string, string> = {};
+
   if (options.ipRateLimit) {
     const key = options.rateLimitKey ? `api:${options.rateLimitKey}` : "api:general";
     const ipLimit = await enforceRateLimit(getRateLimitKey(request, key), options.ipRateLimit);
-    if (ipLimit) return { ok: false, response: ipLimit.response };
+
+    // Always collect headers
+    allRateLimitHeaders = { ...allRateLimitHeaders, ...ipLimit.headers };
+
+    if (ipLimit.response) {
+      return { ok: false, response: ipLimit.response, rateLimitHeaders: ipLimit.headers };
+    }
   }
 
   // 3. Auth & Admin Checks
   let user: User | null = null;
 
-  // ── BUG FIX: Issue BUG-06 - Cron Secret Bypass Admin Check ─────────────
-  // Cron secret validation should not bypass admin checks when requireAdmin is set.
-  // This prevents unauthorized access to admin-only cron endpoints.
-  if (options.requireCron) {
-    const cronSecret = process.env.CRON_SECRET;
-    const authHeader = request.headers.get("authorization");
-
-    // If cron secret matches and admin is NOT required, allow immediately
-    if (cronSecret && authHeader === `Bearer ${cronSecret}` && !options.requireAdmin) {
-      return { ok: true };
-    }
-
-    // If admin is required, continue to admin check even if cron secret is valid
-    // This ensures cron endpoints with requireAdmin still verify admin status
-  }
+  // Cron secret validation is intentionally NOT handled here.
+  // Use explicit wrappers (withCronRoute / withCronOrAdmin) for cron authentication.
 
   if (requiresUserSession) {
-    const { getAuthContext } = await import("@/lib/auth/session");
-    const { user: authUser, dbProfile } = await getAuthContext();
+    const { getAuthContext } = await import("@/features/auth/lib/session");
+    const authContext = await getAuthContext();
+    const authUser = authContext?.user ?? null;
+    const dbProfile = authContext?.dbProfile;
     user = authUser;
 
     if (!user) {
@@ -157,28 +155,17 @@ export async function withSecurity(
     }
 
     if (options.requireAdmin) {
-      // Admin check: uses cached dbProfile from getAuthContext
       if (!dbProfile || dbProfile.role !== "admin") {
         return {
           ok: false,
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403),
         };
       }
-    } else {
-      // Lightweight JWT ban check as fallback if DB profile unavailable
-      const isBannedInJwt = (user.app_metadata as { is_banned?: boolean })?.is_banned === true;
-      if (isBannedInJwt) {
-        return {
-          ok: false,
-          response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
-        };
-      }
     }
 
     // 3.1 Step-up Authentication check (SEC-ATO-01)
     if (options.requireStepUp && user) {
-      const { checkStepUpRequired, isSecuritySessionActive } =
-        await import("@/lib/security/step-up-auth");
+      const { checkStepUpRequired, isSecuritySessionActive } = await import("@/lib/step-up-auth");
 
       // Skip check if user already has an active security session (e.g. just verified)
       const isVerified = await isSecuritySessionActive(user.id);
@@ -211,13 +198,19 @@ export async function withSecurity(
   if (options.userRateLimit && user) {
     const key = options.rateLimitKey ?? "general";
     const userLimit = await enforceRateLimit(
-      getUserRateLimitKey(user.id, key),
+      getUserRateLimitKey(request, user.id, key),
       options.userRateLimit
     );
-    if (userLimit) return { ok: false, response: userLimit.response };
+
+    // Merge user headers
+    allRateLimitHeaders = { ...allRateLimitHeaders, ...userLimit.headers };
+
+    if (userLimit.response) {
+      return { ok: false, response: userLimit.response, rateLimitHeaders: userLimit.headers };
+    }
   }
 
-  return { ok: true, user: user ?? undefined };
+  return { ok: true, user: user ?? undefined, rateLimitHeaders: allRateLimitHeaders };
 }
 
 /**
@@ -248,6 +241,7 @@ export async function withUserAndCsrf(
   });
 }
 
+/** @deprecated Use withUserAndCsrf for canonical mutation wrapper semantics. */
 /** withUserAndCsrfToken: Authenticated + CSRF check (Mutations - Token required) */
 export async function withUserAndCsrfToken(
   request: Request,
@@ -267,7 +261,7 @@ export async function withCsrfToken(
   return withSecurity(request, { ...options, requireCsrfToken: true });
 }
 
-/** withAdminRoute: Strictly for Admin-only operations (Token required) */
+/** withAdminRoute: Strictly for Admin-only operations (Token + Step-Up required) */
 export async function withAdminRoute(
   request: Request,
   options: Omit<
@@ -280,25 +274,92 @@ export async function withAdminRoute(
     requireAdmin: true,
     requireCsrf: true,
     requireCsrfToken: true,
+    requireStepUp: true,
   });
 }
 
-/** withCronOrAdmin: Shared tasks (Sync, Cleanup) triggered by Vercel Cron or Admin UI */
+/** withCronRoute: Strict CRON_SECRET authentication for system-only endpoints */
+export async function withCronRoute(
+  request: Request,
+  options: Omit<
+    SecurityOptions,
+    | "requireAuth"
+    | "requireAdmin"
+    | "requireCron"
+    | "requireCsrf"
+    | "requireCsrfToken"
+    | "requireStepUp"
+  > = {}
+) {
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = request.headers.get("authorization");
+
+  if (!cronSecret) {
+    return {
+      ok: false,
+      response: apiError(
+        API_ERROR_CODES.SERVICE_UNAVAILABLE,
+        "CRON_SECRET yapılandırılmamış.",
+        503
+      ),
+    } as SecurityError;
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return {
+      ok: false,
+      response: apiError(API_ERROR_CODES.UNAUTHORIZED, "Geçersiz cron kimlik doğrulaması.", 401),
+    } as SecurityError;
+  }
+
+  // Cron kimliği doğrulandıktan sonra da canonical güvenlik zinciri çalışır
+  // (body-size ve rate-limit gibi kontroller).
+  const baseSecurity = await withSecurity(request, {
+    ...options,
+    requireAuth: false,
+    requireAdmin: false,
+    requireCsrf: false,
+    requireCsrfToken: false,
+    requireCron: false,
+    requireStepUp: false,
+  });
+
+  if (!baseSecurity.ok) {
+    return baseSecurity;
+  }
+
+  return {
+    ok: true,
+    rateLimitHeaders: baseSecurity.rateLimitHeaders,
+  } as SecurityResult;
+}
+
+/** withCronOrAdmin: Shared tasks (sync/cleanup) triggered by cron token or admin session */
 export async function withCronOrAdmin(
   request: Request,
-  options: Omit<SecurityOptions, "requireCron" | "requireAdmin"> = {}
+  options: Omit<
+    SecurityOptions,
+    | "requireAuth"
+    | "requireAdmin"
+    | "requireCron"
+    | "requireCsrf"
+    | "requireCsrfToken"
+    | "requireStepUp"
+  > = {}
 ) {
-  // OR semantics:
-  // 1) Allow trusted cron calls with a valid CRON_SECRET bearer token.
-  // 2) Otherwise require an authenticated admin session.
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
 
   if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-    return { ok: true } as SecurityResult;
+    return withCronRoute(request, options);
   }
 
-  return withSecurity(request, { ...options, requireAdmin: true });
+  // Admin fallback keeps previous behavior (admin + step-up), without cron bypass.
+  return withSecurity(request, {
+    ...options,
+    requireAdmin: true,
+    requireStepUp: true,
+  });
 }
 
 /** withAuthAndCsrf: Backward-compatible alias with 401-before-CSRF semantics */

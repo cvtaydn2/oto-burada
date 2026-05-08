@@ -5,25 +5,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Redis as unavailable (null) to force in-memory fallback
-vi.mock("@/lib/redis", () => ({ redis: null }));
+vi.mock("@/lib", () => ({ redis: null }));
 
 // Mock Supabase as unavailable to force in-memory fallback
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => false),
 }));
 
-vi.mock("@/lib/supabase/admin", () => ({
+vi.mock("@/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(),
 }));
 
-vi.mock("@/lib/logging/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     api: { warn: vi.fn(), error: vi.fn() },
     db: { warn: vi.fn() },
   },
 }));
 
-import { checkRateLimit } from "@/lib/rate-limiting/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 describe("checkRateLimit — in-memory fallback", () => {
   beforeEach(() => {

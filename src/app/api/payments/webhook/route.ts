@@ -1,20 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 
-import { verifyIyzicoWebhook } from "@/lib/api/iyzico-webhook";
-import { logger } from "@/lib/logging/logger";
-import { secrets } from "@/lib/security/secrets";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { verifyIyzicoWebhook } from "@/lib/iyzico-webhook";
+import { logger } from "@/lib/logger";
+import { secrets } from "@/lib/secrets";
+
+interface IyzicoWebhookPayload {
+  token?: string;
+  iyziEventType?: string;
+  status?: string;
+  paymentId?: string;
+  [key: string]: unknown;
+}
 
 export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();
 
   try {
-    // ── BUG FIX: Issue BUG-08 - JSON Parse Error Handling ─────────────
-    // Catch JSON parse errors to prevent 500 errors on malformed payloads
-    // and avoid unnecessary Iyzico retries
     const rawBody = await req.text();
-    let body: any;
+    let body: IyzicoWebhookPayload;
 
     try {
       body = JSON.parse(rawBody);
@@ -48,20 +52,33 @@ export async function POST(req: NextRequest) {
     // Use upsert with token as unique key for idempotency
     const SAFE_HEADERS = ["content-type", "x-iyzi-event-type", "user-agent"] as const;
     const safeHeaders = Object.fromEntries(
-      [...req.headers.entries()].filter(([key]) => SAFE_HEADERS.includes(key.toLowerCase() as any))
+      [...req.headers.entries()].filter(([key]) =>
+        SAFE_HEADERS.includes(key.toLowerCase() as unknown as (typeof SAFE_HEADERS)[number])
+      )
     );
 
+    // ── BUG FIX: Issue WEBHOOK-01 - Handle Missing Token in Webhook Payload ──
     // Idempotent logging - prevent duplicate logs for retried webhooks
-    await admin.from("payment_webhook_logs").upsert(
-      {
-        token: body.token, // Unique identifier from Iyzico
+    // Only upsert if token exists, otherwise insert without conflict check
+    if (body.token) {
+      await admin.from("payment_webhook_logs").upsert(
+        {
+          token: body.token,
+          payload: body,
+          headers: safeHeaders,
+          status: "received",
+          received_at: new Date().toISOString(),
+        },
+        { onConflict: "token", ignoreDuplicates: false }
+      );
+    } else {
+      await admin.from("payment_webhook_logs").insert({
         payload: body,
         headers: safeHeaders,
         status: "received",
         received_at: new Date().toISOString(),
-      },
-      { onConflict: "token", ignoreDuplicates: false }
-    );
+      });
+    }
 
     // 3. Update payment status with atomic lock for idempotency (F-01)
     if (body.iyziEventType === "PAYMENT_AUTH") {
@@ -102,8 +119,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ status: "ok" });
-  } catch (error: any) {
-    logger.api.error("Payment webhook error", { message: error.message });
+  } catch (error: unknown) {
+    logger.api.error("Payment webhook error", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     // F-08: Return generic message to prevent information disclosure
     return NextResponse.json(
       { status: "error", message: "Webhook processing failed" },

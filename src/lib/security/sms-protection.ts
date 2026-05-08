@@ -1,4 +1,4 @@
-import { checkRateLimit } from "@/lib/rate-limiting/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * ── PILL: Issue 3 - SMS Pumping (Toll Fraud) Protection ──────────

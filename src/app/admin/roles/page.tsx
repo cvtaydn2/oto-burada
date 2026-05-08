@@ -1,6 +1,6 @@
-import { AdminRolesClient } from "@/components/admin/admin-roles-client";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAdminRoles } from "@/services/admin/roles";
+import { AdminRolesClient } from "@/features/admin-moderation/components/admin-roles-client";
+import { getAdminRoles } from "@/features/admin-moderation/services/roles";
+import { requireAdminUser } from "@/features/auth/lib/session";
 
 export const dynamic = "force-dynamic";
 

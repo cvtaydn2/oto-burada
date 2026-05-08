@@ -1,8 +1,8 @@
 /**
  * Migration Consolidation Tool for OtoBurada
  * 
- * Helps consolidate the existing 69+ migrations into a cleaner baseline
- * while preserving the ability to rollback and maintain data integrity.
+ * Helps consolidate a large migration history into a cleaner baseline plan
+ * while preserving production safety.
  */
 
 import { spawnSync } from "node:child_process";
@@ -183,7 +183,7 @@ END $$;`;
   }
 
   async consolidate(options = {}) {
-    const { dryRun = false, keepOriginals = true } = options;
+    const { dryRun = false } = options;
 
     console.log("🗃️  OtoBurada Migration Consolidator");
     console.log("===================================");
@@ -223,7 +223,7 @@ END $$;`;
       console.log("\n📋 Consolidation Plan:");
       console.log(`   - Backup ${this.migrationFiles.length} migrations to: ${backupPath}`);
       console.log(`   - Create baseline migration: ${baseline.filename}`);
-      console.log(`   - ${keepOriginals ? "Keep" : "Remove"} original migration files`);
+      console.log("   - Keep original migration files (non-destructive mode)");
       console.log("\n📄 Baseline migration preview (first 500 chars):");
       console.log(baseline.content.substring(0, 500) + "...");
       return;
@@ -233,34 +233,13 @@ END $$;`;
     fs.writeFileSync(baseline.filePath, baseline.content);
     console.log(`✅ Created baseline migration: ${baseline.filename}`);
 
-    if (!keepOriginals) {
-      // Move original migrations to backup (don't delete, just move)
-      console.log("📦 Moving original migrations to backup...");
-      for (const migration of this.migrationFiles) {
-        fs.unlinkSync(migration.filePath);
-      }
-      console.log(`✅ Moved ${this.migrationFiles.length} original migrations to backup`);
-    }
-
-    // Update migration tracking table
-    console.log("🔄 Updating migration tracking...");
-    
-    // Clear existing migration records
-    await this.runSql("DELETE FROM public._migrations");
-    
-    // Add baseline migration record
-    await this.runSql(`
-      INSERT INTO public._migrations (name, checksum, execution_time_ms) 
-      VALUES ('${baseline.filename}', 'consolidated-baseline', 0)
-    `);
-
     console.log("\n🎉 Migration consolidation completed successfully!");
-    console.log(`📊 Consolidated ${this.migrationFiles.length} migrations into 1 baseline`);
+    console.log(`📊 Generated 1 baseline from ${this.migrationFiles.length} migrations`);
     console.log(`💾 Backup available at: ${backupPath}`);
     console.log("\n📝 Next steps:");
-    console.log("1. Test your application to ensure everything works");
-    console.log("2. Create new migrations using: node scripts/create-migration.mjs");
-    console.log("3. Apply new migrations using: node scripts/migration-manager.mjs migrate");
+    console.log("1. Review baseline SQL and test in a fresh local database");
+    console.log("2. Do NOT delete or rename old applied migrations in production");
+    console.log("3. If adopting baseline, do it in a controlled release plan");
   }
 
   async restore(backupPath) {
@@ -308,8 +287,7 @@ async function main() {
     switch (command) {
       case "consolidate":
         const dryRun = process.argv.includes("--dry-run");
-        const keepOriginals = !process.argv.includes("--remove-originals");
-        await consolidator.consolidate({ dryRun, keepOriginals });
+        await consolidator.consolidate({ dryRun });
         break;
 
       case "restore":
@@ -344,15 +322,13 @@ async function main() {
       default:
         console.log("🗃️  OtoBurada Migration Consolidator");
         console.log("Usage:");
-        console.log("  node consolidate-migrations.mjs consolidate [--dry-run] [--remove-originals]");
+        console.log("  node consolidate-migrations.mjs consolidate [--dry-run]");
         console.log("  node consolidate-migrations.mjs restore <backup-path>");
         console.log("  node consolidate-migrations.mjs status");
         console.log("\nOptions:");
         console.log("  --dry-run           Show what would be done without making changes");
-        console.log("  --remove-originals  Remove original migration files (default: keep)");
         console.log("\nExamples:");
         console.log("  node consolidate-migrations.mjs consolidate --dry-run");
-        console.log("  node consolidate-migrations.mjs consolidate --remove-originals");
         break;
     }
   } catch (error) {

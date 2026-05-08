@@ -1,5 +1,153 @@
 import { CURRENT_YEAR } from "../datetime/date-utils";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://otoburada.com";
+
+export function getAppUrl(): string {
+  return APP_URL;
+}
+
+export function getAppUrlWithFallback(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || "https://otoburada.com";
+}
+
+export function getRequiredAppUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url) {
+    throw new Error("NEXT_PUBLIC_APP_URL is not set");
+  }
+  return url;
+}
+
+export function buildAbsoluteUrl(path: string): string {
+  const base = getAppUrl();
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
+}
+
+export function buildListingsMetadata() {
+  return {
+    title: "Satılık Arabalar - Türkiye'nin En Büyük Araç İlan Pazarı",
+    description:
+      "Türkiye'nin en güvenilir satılık araba ilanları. Binlerce satılık araç ilanı, en uygun fiyatlar ve güvenli alışveriş.",
+    url: buildAbsoluteUrl("/listings"),
+  };
+}
+
+export function buildListingDetailMetadata(listing: {
+  title: string;
+  slug: string;
+  price?: number;
+}) {
+  return {
+    title: `${listing.title} - Satılık | OtoBurada`,
+    description: `${listing.title} satılık ilanı. ${listing.price ? `${listing.price.toLocaleString("tr-TR")} TL` : ""} Fabrika çıkışı, garantili araç ilanları OtoBurada'da.`,
+    url: buildAbsoluteUrl(`/listing/${listing.slug}`),
+  };
+}
+
+export const FEATURES = {
+  chat: true,
+  offers: true,
+  doping: true,
+  favorites: true,
+  savedSearches: true,
+  priceEstimation: true,
+  aiListing: true,
+  expertiz: true,
+  tickets: true,
+  TICKETS: true,
+  PWA: true,
+} as const;
+
+export interface StructuredDataProps {
+  siteName?: string;
+  title: string;
+  description?: string;
+  url?: string;
+  image?: string;
+  price?: number;
+  currency?: string;
+}
+
+export function BreadcrumbStructuredData({ items }: { items: { name: string; url: string }[] }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+export function ListingStructuredData({ items }: { items: StructuredDataProps[] }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: item.url || getAppUrl(),
+      name: item.title,
+      description: item.description,
+      image: item.image,
+    })),
+  };
+}
+
+export function ListingDetailStructuredData(props: StructuredDataProps) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: props.title,
+    description: props.description,
+    image: props.image,
+    offers: {
+      "@type": "Offer",
+      price: props.price,
+      priceCurrency: props.currency || "TRY",
+      availability: "https://schema.org/InStock",
+    },
+  };
+}
+
+export function OrganizationStructuredData() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "OtoBurada",
+    url: getAppUrl(),
+    logo: `${getAppUrl()}/logo.png`,
+    description: "Türkiye'nin en güvenilir satılık araba ilanları platformu",
+    sameAs: ["https://www.instagram.com/otoburada/", "https://www.facebook.com/otoburada/"],
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "+90-850-XXX-XXXX",
+      contactType: "customer service",
+      availableLanguage: "Turkish",
+    },
+  };
+}
+
+export function WebSiteStructuredData() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "OtoBurada",
+    url: getAppUrl(),
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${getAppUrl()}/listings?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
 export const userRoles = ["user", "admin"] as const;
 
 export const listingStatuses = [
@@ -61,6 +209,13 @@ export const moderationActions = [
   "resolve",
   "dismiss",
   "edit",
+  "ban",
+  "unban",
+  "promote",
+  "demote",
+  "delete_user",
+  "credit_grant",
+  "doping_grant",
 ] as const;
 
 export const moderationActionLabels = {
@@ -71,6 +226,13 @@ export const moderationActionLabels = {
   resolve: "Çözüm",
   dismiss: "Kapatma",
   edit: "Düzenleme",
+  ban: "Yasakla",
+  unban: "Yasağı Kaldır",
+  promote: "Yetki Yükselt",
+  demote: "Yetki Düşür",
+  delete_user: "Sil",
+  credit_grant: "Kredi Yükle",
+  doping_grant: "Doping Ver",
 } as const;
 
 export const listingSortOptions = [
@@ -188,3 +350,6 @@ export const userTypeLabels = {
   corporate: "Kurumsal Filo",
   staff: "Personel",
 } as const;
+
+export { contactFormSchema, type ContactFormValues } from "../validators/feedback";
+export { issuesToFieldErrors } from "../validators/helpers";

@@ -1,14 +1,14 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { savedSearchCreateSchema } from "@/lib/validators";
-import { issuesToFieldErrors } from "@/lib/validators/helpers";
 import {
   createOrUpdateDatabaseSavedSearch,
   getStoredSavedSearchesByUser,
-} from "@/services/saved-searches/saved-search-records";
-import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
+} from "@/features/marketplace/services/saved-search-records";
+import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
+import { savedSearchCreateSchema } from "@/lib";
+import { issuesToFieldErrors } from "@/lib/helpers";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAuth, withAuthAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting

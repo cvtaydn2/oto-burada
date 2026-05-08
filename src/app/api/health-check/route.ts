@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseEnv } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -28,13 +28,15 @@ interface HealthCheckResponse {
  * Güvenlik: CRON_SECRET ile korunur (opsiyonel)
  */
 export async function GET(request: Request) {
-  // Cron secret kontrolü (opsiyonel)
+  // SECURITY HARDENING: fail-closed — always require CRON_SECRET for this endpoint.
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const allowPrivilegedChecks = true;
 
   const response: HealthCheckResponse = {
     status: "healthy",
@@ -145,7 +147,15 @@ export async function GET(request: Request) {
   try {
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS;
 
-    if (bucketName) {
+    if (!allowPrivilegedChecks) {
+      response.checks.storage = {
+        status: "degraded",
+        message: "Storage check skipped (requires internal auth)",
+      };
+      if (response.status === "healthy") {
+        response.status = "degraded";
+      }
+    } else if (bucketName) {
       const supabase = createSupabaseAdminClient();
       const { error } = await supabase.storage.getBucket(bucketName);
 
@@ -181,7 +191,15 @@ export async function GET(request: Request) {
 
   // 5. Critical Tables Check
   try {
-    if (hasSupabaseEnv()) {
+    if (!allowPrivilegedChecks) {
+      response.checks.database_tables = {
+        status: "degraded",
+        message: "Critical tables check skipped (requires internal auth)",
+      };
+      if (response.status === "healthy") {
+        response.status = "degraded";
+      }
+    } else if (hasSupabaseEnv()) {
       const supabase = createSupabaseAdminClient();
       const criticalTables = ["profiles", "listings", "favorites"];
       const tableChecks: string[] = [];
@@ -221,7 +239,15 @@ export async function GET(request: Request) {
 
   // 6. Migrations Check
   try {
-    if (hasSupabaseEnv()) {
+    if (!allowPrivilegedChecks) {
+      response.checks.migrations = {
+        status: "degraded",
+        message: "Migrations check skipped (requires internal auth)",
+      };
+      if (response.status === "healthy") {
+        response.status = "degraded";
+      }
+    } else if (hasSupabaseEnv()) {
       const supabase = createSupabaseAdminClient();
       const { count, error } = await supabase
         .from("_migrations")

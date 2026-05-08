@@ -1,16 +1,16 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { sanitizeDescription } from "@/lib/sanitization/sanitize";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { reportCreateSchema } from "@/lib/validators";
-import { issuesToFieldErrors } from "@/lib/validators/helpers";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
 import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
-} from "@/services/reports/report-submissions";
+} from "@/features/reports/services/report-submissions";
+import { reportCreateSchema } from "@/lib";
+import { hasSupabaseEnv } from "@/lib/env";
+import { issuesToFieldErrors } from "@/lib/helpers";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription } from "@/lib/sanitize";
+import { withAuthAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting

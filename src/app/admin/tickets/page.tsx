@@ -1,9 +1,9 @@
 import { MessageSquare } from "lucide-react";
 
-import { AdminTicketList } from "@/components/support/admin-ticket-list";
-import { requireAdminUser } from "@/lib/auth/session";
-import type { TicketStatus } from "@/services/support/ticket-service";
-import { getAllTickets, getTicketCount } from "@/services/support/ticket-service";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { AdminTicketList } from "@/features/support/components/admin-ticket-list";
+import type { TicketStatus } from "@/features/support/services/ticket-service";
+import { getAllTickets, getTicketCount } from "@/features/support/services/ticket-service";
 
 export const dynamic = "force-dynamic";
 

@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: mockUseSearchParams,
 }));
 
-vi.mock("@/lib/supabase/browser", () => ({
+vi.mock("@/lib/browser", () => ({
   createSupabaseBrowserClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({

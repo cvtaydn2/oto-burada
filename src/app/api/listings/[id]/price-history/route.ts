@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getListingPriceHistory } from "@/services/listings/listing-price-history";
+import { getListingPriceHistory } from "@/features/marketplace/services/listing-price-history";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

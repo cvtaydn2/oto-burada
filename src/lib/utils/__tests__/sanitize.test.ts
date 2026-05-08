@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  escapeHtml,
-  sanitizeDescription,
-  sanitizeForMeta,
-  sanitizeText,
-} from "@/lib/sanitization/sanitize";
+import { escapeHtml, sanitizeDescription, sanitizeForMeta, sanitizeText } from "@/lib/sanitize";
 
 describe("sanitize utilities", () => {
   describe("sanitizeText", () => {

@@ -1,6 +1,16 @@
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
+export async function isRequestContext(): Promise<boolean> {
+  try {
+    const { cookies } = await import("next/headers");
+    await cookies();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function handleAuthRedirects(
   request: NextRequest,
   user: User | null,
@@ -32,8 +42,20 @@ export function handleAuthRedirects(
     }
   }
 
+  // 1b. Email Verification Guard (API)
+  if (user && !user.email_confirmed_at && (routeInfo.isProtectedApi || routeInfo.isAdminApi)) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "Forbidden",
+        message: "Devam etmek için e-posta adresinizi doğrulamanız gerekiyor.",
+        code: "EMAIL_NOT_CONFIRMED",
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   // 2. Page Security Guards (Redirects)
-  // Unauthenticated users -> /login
+  // 2a. Unauthenticated users -> /login
   if (!user && routeInfo.isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
@@ -41,23 +63,33 @@ export function handleAuthRedirects(
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Non-admin users -> /dashboard
-  if (user && routeInfo.isAdminRoute) {
-    const isAdmin = (user.app_metadata as { role?: string })?.role === "admin";
-    if (!isAdmin) {
+  // 2b. Unconfirmed users -> /verify-email
+  if (
+    user &&
+    !user.email_confirmed_at &&
+    routeInfo.isProtectedRoute &&
+    pathname !== "/verify-email"
+  ) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/verify-email";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Admin route check is handled by server components (requireAdminUser)
+  // to support database-based role verification which is more reliable than JWT metadata.
+  // We allow the request to proceed here.
+
+  // Authenticated users on auth routes -> /dashboard
+  if (user && routeInfo.isAuthRoute) {
+    const authRouteAllowedWithSession =
+      pathname === "/reset-password" || pathname === "/verify-email";
+
+    if (!authRouteAllowedWithSession) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/dashboard";
       redirectUrl.search = "";
       return NextResponse.redirect(redirectUrl);
     }
-  }
-
-  // Authenticated users on auth routes -> /dashboard
-  if (user && routeInfo.isAuthRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
-    redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
   }
 
   return null;

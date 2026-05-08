@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { favoriteAddUseCase } from "@/domain/usecases/favorite-add";
 import { favoriteRemoveUseCase } from "@/domain/usecases/favorite-remove";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser } from "@/features/auth/lib/session";
 
 export async function toggleFavoriteAction(listingId: string, isFavorited: boolean) {
   const user = await getCurrentUser();

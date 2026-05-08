@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-import { getSupabaseAdminEnv, getSupabaseEnv } from "@/lib/supabase/env";
+import { getSupabaseAdminEnv, getSupabaseEnv } from "@/lib/env";
 
 /**
  * Creates a Supabase client with Service Role (bypasses RLS)

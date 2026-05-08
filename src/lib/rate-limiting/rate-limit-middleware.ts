@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { getNormalizedIp } from "@/lib/api/ip";
-import {
-  checkRateLimit,
-  type RateLimitConfig,
-  type RateLimitResult,
-} from "@/lib/rate-limiting/rate-limit";
+import { getNormalizedIp } from "@/lib/ip";
+import { checkRateLimit, type RateLimitConfig, type RateLimitResult } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError } from "@/lib/response";
 
 export { checkRateLimit };
 
@@ -15,27 +12,39 @@ export { checkRateLimit };
  * SECURITY: Normalizes IPv6 to /64 subnet to prevent lease-based bypass.
  * SECURITY: Prioritizes x-vercel-forwarded-for to prevent header spoofing on Vercel platform.
  */
-export function getRateLimitKey(request: Request, prefix: string) {
+export function getRateLimitKey(request: Request, prefix: string, userId?: string) {
   // Vercel-specific: use x-vercel-forwarded-for first (more trustworthy)
   const vercelForwarded = request.headers.get("x-vercel-forwarded-for");
+  let ip: string;
+
   if (vercelForwarded) {
-    const ip = getNormalizedIp(vercelForwarded.split(",")[0].trim());
-    return `${prefix}:${ip}`;
+    ip = getNormalizedIp(vercelForwarded.split(",")[0].trim());
+  } else {
+    const forwarded = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const rawIp = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+    ip = getNormalizedIp(rawIp);
   }
 
-  const forwarded = request.headers.get("x-forwarded-for");
-  const realIp = request.headers.get("x-real-ip");
-  const rawIp = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+  // ── SECURITY FIX: Issue SEC-RATE-02 - Composite Rate Limit Keys ─────────────
+  // We combine IP and UserID to prevent bypasses where an attacker uses
+  // multiple accounts from a single IP, or a single account from multiple IPs.
+  // Format: prefix:ip:IP_ADDRESS[:user:USER_ID]
+  let key = `${prefix}:ip:${ip}`;
+  if (userId) {
+    key = `${key}:user:${userId}`;
+  }
 
-  const ip = getNormalizedIp(rawIp);
-  return `${prefix}:${ip}`;
+  return key;
 }
 
 /**
- * Build a rate limit key scoped to a specific authenticated user.
+ * Build a rate limit key scoped to a specific authenticated user AND their IP.
+ * This prevents a single user from using multiple IPs to bypass user-level limits,
+ * and also prevents multiple users on the same IP from sharing a single user-level limit.
  */
-export function getUserRateLimitKey(userId: string, prefix: string) {
-  return `${prefix}:user:${userId}`;
+export function getUserRateLimitKey(request: Request, userId: string, prefix: string) {
+  return getRateLimitKey(request, prefix, userId);
 }
 
 /**
@@ -48,49 +57,89 @@ export function getUserRateLimitKey(userId: string, prefix: string) {
 export async function enforceRateLimit(
   key: string,
   config: RateLimitConfig
-): Promise<{ response: NextResponse; result: RateLimitResult } | null> {
+): Promise<{
+  response: NextResponse | null;
+  result: RateLimitResult;
+  headers: Record<string, string>;
+}> {
   try {
     const result = await checkRateLimit(key, config);
+
+    const rateLimitHeaders = {
+      "X-RateLimit-Limit": String(result.limit),
+      "X-RateLimit-Remaining": String(result.remaining),
+      "X-RateLimit-Reset": String(Math.ceil(result.resetAt / 1000)),
+    };
 
     if (!result.allowed) {
       const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
 
-      const response = NextResponse.json(
+      const response = apiError(
+        API_ERROR_CODES.RATE_LIMITED,
+        "Çok fazla istek gönderdin. Lütfen biraz bekle ve tekrar dene.",
+        429,
+        { retryAfterSeconds: retryAfter },
         {
-          message: "Çok fazla istek gönderdin. Lütfen biraz bekle ve tekrar dene.",
-          retryAfterSeconds: retryAfter,
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retryAfter),
-            "X-RateLimit-Limit": String(result.limit),
-            "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(Math.ceil(result.resetAt / 1000)),
-          },
+          "Retry-After": String(retryAfter),
+          ...rateLimitHeaders,
         }
       );
 
-      return { response, result };
+      // Apply security headers to the blocked response
+      const { applySecurityHeaders } = await import("@/lib/headers");
+      applySecurityHeaders(response);
+
+      return { response, result, headers: rateLimitHeaders };
     }
+
+    return { response: null, result, headers: rateLimitHeaders };
   } catch {
-    // If checkRateLimit throws (infrastructure failure)
-    // checkRateLimit itself handles failClosed logic, but we catch it here to
-    // provide a clean fallback for any unexpected logic errors.
     const isProd = process.env.NODE_ENV === "production";
     const shouldFailClosed = config.failClosed ?? isProd;
 
     if (shouldFailClosed) {
+      const result = {
+        allowed: false,
+        limit: config.limit,
+        remaining: 0,
+        resetAt: Date.now() + 60000,
+      };
+      const headers = {
+        "X-RateLimit-Limit": String(config.limit),
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": String(Math.ceil(result.resetAt / 1000)),
+      };
+
+      const response = apiError(
+        API_ERROR_CODES.SERVICE_UNAVAILABLE,
+        "Güvenlik servisi şu an kullanılamıyor. Lütfen az sonra tekrar deneyin.",
+        503,
+        undefined,
+        headers
+      );
+
+      // Apply security headers to the error response
+      const { applySecurityHeaders } = await import("@/lib/headers");
+      applySecurityHeaders(response);
+
       return {
-        response: NextResponse.json(
-          { message: "Güvenlik servisi şu an kullanılamıyor. Lütfen az sonra tekrar deneyin." },
-          { status: 503 }
-        ),
-        result: { allowed: false, limit: config.limit, remaining: 0, resetAt: Date.now() + 60000 },
+        response,
+        result,
+        headers,
       };
     }
-    // Fail-open in dev/test: proceed
-  }
 
-  return null;
+    // Fail-open
+    const result = {
+      allowed: true,
+      limit: config.limit,
+      remaining: config.limit,
+      resetAt: Date.now(),
+    };
+    return {
+      response: null,
+      result,
+      headers: {},
+    };
+  }
 }

@@ -1,396 +1,55 @@
-# Runtime Errors - Hızlı Çözüm
+# Runtime Errors Fix Notes
 
-Bu doküman, production/local ortamda karşılaşılan runtime hatalarını ve çözümlerini içerir.
+## Çözülenler
 
-## 🔴 Sorun 1: Maintenance Mode Aktif (Admin Bile Etkileniyor)
+0. Chat API validation status code iyileştirildi
+- [`POST /api/chats/[id]/messages`](../src/app/api/chats/[id]/messages/route.ts:28) artık `ZodError` için `500` yerine `400` döndürüyor.
 
-### Belirti
-```
-[maintenanceCheck] Path: /dashboard/listings/create, Maintenance: true
-[maintenanceCheck] User: xxx, Admin: true
-```
+1. Listing view CSRF 403 gürültüsü azaltıldı
+- Güncel endpoint koruması: [`route.ts`](../src/app/api/listings/view/route.ts:14)
 
-Admin olsan bile maintenance ekranına yönlendiriliyorsun.
+2. Mesaj sayfası query-prefill bug giderildi
+- Uygulama: [`MessagesPage`](../src/app/dashboard/messages/page.tsx:62)
 
-### Neden
-`platform_settings` tablosunda `maintenance_mode: true` ayarlanmış.
+3. Chat API çağrılarında merkezi istemci kullanımı
+- Uygulama: [`use-chat-queries.ts`](../src/hooks/use-chat-queries.ts:1)
 
-### Çözüm 1: Maintenance Mode'u Kapat (Önerilen)
+4. Chat endpoint validation status-code iyileştirmeleri
+- [`POST /api/chats/[id]/messages`](../src/app/api/chats/[id]/messages/route.ts:28): `ZodError` için `400`
+- [`POST /api/chats/[id]/archive`](../src/app/api/chats/[id]/archive/route.ts:6): body şeması + `ZodError` için `400`
+- [`POST /api/chats`](../src/app/api/chats/route.ts:32): UUID body şeması + `ZodError` için `400`
 
-**Supabase SQL Editor:**
-```sql
--- Maintenance mode'u kapat
-UPDATE platform_settings
-SET value = jsonb_set(value, '{maintenance_mode}', 'false')
-WHERE key = 'general_appearance';
+5. ChatWindow mutation hata yakalama sertleştirmesi
+- [`handleSendMessage()`](../src/components/chat/chat-window.tsx:90), [`handleArchive()`](../src/components/chat/chat-window.tsx:70), [`handleDeleteMessage()`](../src/components/chat/chat-window.tsx:76)
+- Mutation hatalarında unhandled rejection yerine kullanıcıya `toast.error` gösterimi eklendi.
 
--- Kontrol et
-SELECT value->>'maintenance_mode' as maintenance_mode
-FROM platform_settings
-WHERE key = 'general_appearance';
-```
+6. Request context tespiti güçlendirildi (lib/supabase güvenilirliği)
+- [`isRequestContext()`](../src/lib/next-context.ts:15) artık gerçek request-store erişimi (`next/headers`) ile doğrulama yapıyor.
+- [`createSupabaseServerClient()`](../src/lib/supabase/server.ts:7) içinde bu kontrol `await` edilerek yanlış-pozitif request context riski azaltıldı.
 
-### Çözüm 2: Environment Variable ile Bypass (Local Development)
+7. Services reconciliation worker context hardening
+- [`processReconciliation()`](../src/services/system/reconciliation-worker.ts:14) ve [`checkUserSubscriptionStatus()`](../src/services/system/reconciliation-worker.ts:73) artık cron/sistem bağlamı için admin client kullanıyor.
 
-**`.env.local`:**
-```env
-MAINTENANCE_MODE_BYPASS=true
-```
+8. Upload policy + chat sanitization hardening
+- [`isMimeTypeAllowed()`](../src/lib/storage/upload-policy.ts:26) içindeki `@ts-expect-error` kaldırıldı, MIME kontrolü normalize edilerek tip güvenli hale getirildi.
+- [`CHAT_SECURITY_PATTERNS.URL`](../src/lib/sanitization/chat-sanitization.ts:19) allowlist’i `otoburada.com.tr` alan adlarını kapsayacak şekilde genişletildi; false-positive maskeleme riski azaltıldı.
 
-Bu sadece local development için kullanılmalı. Production'da kullanma!
+9. Script güvenlik sertleştirmesi (demo reseed)
+- [`scripts/reseed-marketplace.mjs`](../scripts/reseed-marketplace.mjs) içinde hardcoded demo şifre fallback’i kaldırıldı.
+- Script artık [`SUPABASE_DEMO_USER_PASSWORD`](../scripts/reseed-marketplace.mjs:11) olmadan çalışmıyor (fail-fast).
 
-### Çözüm 3: Admin Olarak Giriş Yap
+10. Middleware log hijyeni (lib/supabase)
+- [`updateSession()`](../src/lib/supabase/middleware.ts:18) içindeki kullanıcı rolü debug `console.log` satırı kaldırıldı.
+- Production log gürültüsü ve gereksiz user-id görünürlüğü azaltıldı.
 
-Kod zaten admin'leri bypass ediyor. Eğer hala sorun varsa:
+11. Components katmanı düşük riskli UX/operasyon patchleri
+- [`FavoritesPageClient`](../src/components/listings/favorites-page-client.tsx:57) pull-to-refresh artık zorunlu tam sayfa yenilemesi yapmıyor; sadece query invalidation ile yeniliyor.
+- [`BrandsManager`](../src/components/admin/brands-manager.tsx:83) update/delete sonrası hard reload kaldırıldı; local state güncellemesiyle UI refresh sağlandı.
+- [`BrandsManager`](../src/components/admin/brands-manager.tsx:123) create sonrası `router.refresh()` eklendi (hard reload yerine App Router uyumlu yenileme).
+- [`PlansTable`](../src/components/admin/plans-table.tsx:244) `PlanForm` başarı callback’inde hard reload kaldırıldı.
 
-1. Logout yap
-2. Admin hesabı ile login yap
-3. `/dashboard` veya `/admin` sayfasına git
+## Not
 
----
-
-## 🟡 Sorun 2: Redis Config Eksik (Rate Limiting Warning)
-
-### Belirti
-```
-CRITICAL: Upstash Redis config missing in production. 
-Rate limiting will FAIL CLOSED.
-```
-
-### Neden
-`UPSTASH_REDIS_REST_URL` ve `UPSTASH_REDIS_REST_TOKEN` tanımlı değil.
-
-### Risk Değerlendirmesi
-- 🟢 **Düşük Risk**: In-memory fallback aktif
-- ✅ **Mitigasyon**: Rate limiting hala çalışıyor (local memory)
-- ⚠️ **Sınırlama**: Distributed rate limiting yok (tek server için OK)
-
-### Çözüm 1: Upstash Redis Ekle (Önerilen - Ücretsiz)
-
-#### Adım 1: Upstash Hesap Aç (2 dakika)
-1. [Upstash Console](https://console.upstash.com/) > Sign Up
-2. GitHub ile giriş yap (ücretsiz)
-
-#### Adım 2: Redis Database Oluştur (1 dakika)
-1. **Create Database**
-2. Ayarlar:
-   ```
-   Name: otoburada-ratelimit
-   Type: Regional
-   Region: eu-west-1 (Ireland - en yakın)
-   Plan: Free (10K requests/day)
-   ```
-3. **Create**
-
-#### Adım 3: Credentials Al (30 saniye)
-1. Database > **REST API** tab
-2. Kopyala:
-   ```
-   UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=AXXXxxx
-   ```
-
-#### Adım 4: Environment Variables Ekle
-
-**Vercel:**
-1. Vercel Dashboard > Settings > Environment Variables
-2. Ekle:
-   ```
-   UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=AXXXxxx
-   ```
-3. **Save** > **Redeploy**
-
-**Local:**
-```env
-# .env.local
-UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AXXXxxx
-```
-
-### Çözüm 2: In-Memory Fallback Kullan (Geçici)
-
-Hiçbir şey yapma! In-memory fallback zaten aktif.
-
-**Sınırlamalar:**
-- Tek server için çalışır (Vercel'de her function ayrı instance)
-- Restart'ta sıfırlanır
-- Distributed değil
-
-**Yeterli mi?**
-- ✅ Küçük/orta trafik için yeterli
-- ✅ Ücretsiz tier için OK
-- ⚠️ Yüksek trafik için Upstash önerilir
-
----
-
-## 🔴 Sorun 3: Database Column Eksik
-
-### Belirti
-```
-column profiles.verification_requested_at does not exist
-```
-
-### Neden
-Database migration uygulanmamış.
-
-### Çözüm: Migration Uygula
-
-#### Yöntem 1: Supabase SQL Editor (Önerilen)
-
-1. Supabase Dashboard > **SQL Editor**
-2. Aşağıdaki SQL'i kopyala ve çalıştır:
-
-```sql
--- Add verification_requested_at column
-ALTER TABLE profiles 
-ADD COLUMN IF NOT EXISTS verification_requested_at TIMESTAMPTZ;
-
--- Add index
-CREATE INDEX IF NOT EXISTS idx_profiles_verification_requested_at 
-ON profiles(verification_requested_at) 
-WHERE verification_requested_at IS NOT NULL;
-
--- Add comment
-COMMENT ON COLUMN profiles.verification_requested_at IS 'Timestamp when business verification was requested';
-```
-
-3. **Run** (Ctrl+Enter)
-4. ✅ "Success. No rows returned"
-
-#### Yöntem 2: Migration Script (psql gerekli)
-
-```bash
-npm run db:migrate
-```
-
-**Not:** Bu yöntem için `psql` kurulu olmalı.
-
-#### Doğrulama
-
-```sql
--- Column var mı kontrol et
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'profiles' 
-AND column_name = 'verification_requested_at';
-```
-
-**Beklenen Sonuç:**
-```
-column_name                  | data_type
------------------------------+---------------------------
-verification_requested_at    | timestamp with time zone
-```
-
----
-
-## 🟡 Sorun 4: Security Definer View Warning
-
-### Belirti
-```
-Security Definer View: View `public.public_profiles` is defined 
-with the SECURITY DEFINER property
-```
-
-### Neden
-View, creator'ın permission'larını kullanıyor (querying user'ın değil).
-
-### Risk Değerlendirmesi
-- 🟡 **Orta Risk**: RLS bypass potansiyeli
-- ✅ **Mitigasyon**: View sadece public field'ları expose ediyor
-- ⚠️ **Best Practice:** SECURITY INVOKER kullanılmalı
-
-### Çözüm: View'ı SECURITY INVOKER ile Yeniden Oluştur
-
-**Supabase SQL Editor:**
-```sql
--- Drop existing view
-DROP VIEW IF EXISTS public.public_profiles;
-
--- Recreate with SECURITY INVOKER (safer)
-CREATE VIEW public.public_profiles 
-WITH (security_invoker = true) AS
-SELECT 
-  id, 
-  full_name, 
-  avatar_url, 
-  city, 
-  role, 
-  user_type, 
-  business_name, 
-  business_logo_url, 
-  is_verified, 
-  is_banned, 
-  ban_reason, 
-  verified_business, 
-  verification_status, 
-  trust_score, 
-  business_slug, 
-  created_at, 
-  updated_at
-FROM public.profiles;
-
--- Grant access
-GRANT SELECT ON public.public_profiles TO anon, authenticated, service_role;
-```
-
-### Doğrulama
-
-```sql
--- View'ın security type'ını kontrol et
-SELECT 
-  schemaname,
-  viewname,
-  CASE 
-    WHEN definition LIKE '%security_invoker%' THEN 'INVOKER ✅'
-    ELSE 'DEFINER ⚠️'
-  END as security_type
-FROM pg_views
-WHERE schemaname = 'public' 
-AND viewname = 'public_profiles';
-```
-
-**Beklenen Sonuç:**
-```
-schemaname | viewname         | security_type
------------+------------------+--------------
-public     | public_profiles  | INVOKER ✅
-```
-
----
-
-## 🎯 Hızlı Kontrol Checklist
-
-### Production'da Sorun Yaşıyorsan
-
-```bash
-# 1. Diagnostic çalıştır
-npm run diagnose
-
-# 2. Vercel logs kontrol et
-vercel logs -n 100 | grep -i error
-
-# 3. Supabase logs kontrol et
-# Dashboard > Logs > Database Logs
-```
-
-### Yaygın Hatalar ve Çözümleri
-
-| Hata | Çözüm | Süre |
-|------|-------|------|
-| Maintenance mode aktif | SQL ile kapat | 1 dakika |
-| Redis config eksik | Upstash ekle | 5 dakika |
-| Column eksik | Migration uygula | 2 dakika |
-| Security Definer View | View'ı SECURITY INVOKER ile yeniden oluştur | 2 dakika |
-| RLS policy hatası | Policy kontrol et | 5 dakika |
-| Auth token invalid | Logout/login | 30 saniye |
-
----
-
-## 📊 Log Seviyeleri
-
-### Kritik (🔴 CRITICAL)
-- **Aksiyon:** Hemen düzelt
-- **Örnek:** Database down, Auth bypass
-
-### Hata (🟠 ERROR)
-- **Aksiyon:** Bu gün düzelt
-- **Örnek:** API call fail, Query error
-
-### Uyarı (🟡 WARNING)
-- **Aksiyon:** Bu hafta düzelt
-- **Örnek:** Redis eksik, Slow query
-
-### Bilgi (🔵 INFO)
-- **Aksiyon:** Gözlemle
-- **Örnek:** User login, API call
-
-### Debug (⚪ DEBUG)
-- **Aksiyon:** Development only
-- **Örnek:** Function call, Variable value
-
----
-
-## 🔧 Troubleshooting Workflow
-
-### Adım 1: Log'ları Topla (2 dakika)
-
-```bash
-# Vercel logs
-vercel logs -n 100 > vercel-logs.txt
-
-# Local logs
-# Terminal output'u kopyala
-```
-
-### Adım 2: Hatayı Kategorize Et (1 dakika)
-
-- 🔴 **Critical:** Hemen düzelt
-- 🟡 **Warning:** Gözlemle
-- 🔵 **Info:** Normal
-
-### Adım 3: Çözümü Uygula (5-10 dakika)
-
-Bu dokümandaki çözümleri takip et.
-
-### Adım 4: Doğrula (2 dakika)
-
-```bash
-# Diagnostic çalıştır
-npm run diagnose
-
-# Logs kontrol et
-vercel logs -n 10
-```
-
----
-
-## 📚 İlgili Dokümanlar
-
-- [`docs/PRODUCTION_TROUBLESHOOTING.md`](PRODUCTION_TROUBLESHOOTING.md) - Detaylı troubleshooting
-- [`docs/PRODUCTION_QUICK_FIX.md`](PRODUCTION_QUICK_FIX.md) - 5 dakikada çözüm
-- [`docs/FREE_TIER_MONITORING.md`](FREE_TIER_MONITORING.md) - Monitoring stratejisi
-- [`docs/KNOWN_SECURITY_ISSUES.md`](KNOWN_SECURITY_ISSUES.md) - Güvenlik sorunları
-
----
-
-## 🆘 Hala Çalışmıyor mu?
-
-### 1. Diagnostic Çalıştır
-```bash
-npm run diagnose
-```
-
-### 2. Logs Kontrol Et
-```bash
-vercel logs --follow
-```
-
-### 3. Supabase Kontrol Et
-- Dashboard > Logs > Database Logs
-- Dashboard > Logs > Auth Logs
-
-### 4. GitHub Issue Aç
-- Log'ları ekle
-- Hata mesajını ekle
-- Adımları açıkla
-
----
-
-## ✅ Özet
-
-**4 Ana Sorun:**
-1. ✅ Maintenance mode → SQL ile kapat
-2. ✅ Redis eksik → Upstash ekle (5 dakika) veya in-memory kullan
-3. ✅ Column eksik → Migration uygula (2 dakika)
-4. ✅ Security Definer View → SECURITY INVOKER ile yeniden oluştur (2 dakika)
-
-**Toplam Süre:** 12 dakika
-
-**İlk Adım:**
-```bash
-npm run diagnose
-```
-
-🚀 **Sorunlar çözüldü!**
+Bu doküman hızlı hatırlatma amaçlıdır. Ana referans:
+- [`PROGRESS.md`](../PROGRESS.md)
+- [`AGENTS.md`](../AGENTS.md)

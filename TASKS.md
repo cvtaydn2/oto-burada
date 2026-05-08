@@ -797,12 +797,13 @@ The MVP is complete when:
 - [x] Resolve lint warnings in `header-mobile-nav.tsx`.
 - [x] Optimize `ListingsPage` server-side filtering logic.
 - [ ] Enable "Leaked Password Protection" in Supabase Auth (Manual Action).
+- [x] Harden database performance with missing indexes and consolidated RLS policies.
 
 #### Acceptance Criteria
 - `/api/health-check` returns 200 Healthy in production.
 - Migration manager reports "All caught up" in production environment.
 - No SECURITY DEFINER functions are executable by anonymous users.
-- Server-side exceptions are visible in PostHog/Vercel logs.
+- Server-side exceptions are visible in Sentry/Vercel logs.
 ---
  
 ## Phase 60 — Marketplace Infrastructure Stabilization & UI Excellence

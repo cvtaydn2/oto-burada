@@ -65,15 +65,15 @@ describe("Preservation: Current Documentation Preserved", () => {
 
     const content = fs.readFileSync(progressPath, "utf-8");
 
-    // Verify key sections exist (flexible matching - file starts with date)
-    expect(content).toMatch(/^# \d{4}-\d{2}-\d{2}/);
+    // Verify current progress document heading exists
+    expect(content).toMatch(/^# PROGRESS — OtoBurada Production Readiness/u);
 
     // Verify content is substantial
     expect(content.length).toBeGreaterThan(100);
   });
 
-  it("should preserve DEPLOYMENT_CHECKLIST.md", () => {
-    const checklistPath = path.join(rootDir, "DEPLOYMENT_CHECKLIST.md");
+  it("should preserve archived DEPLOYMENT_CHECKLIST.md", () => {
+    const checklistPath = path.join(rootDir, "docs/archive/DEPLOYMENT_CHECKLIST.md");
     expect(fs.existsSync(checklistPath)).toBe(true);
 
     const content = fs.readFileSync(checklistPath, "utf-8");
@@ -98,7 +98,7 @@ describe("Preservation: Current Documentation Preserved", () => {
       "README.md",
       "TASKS.md",
       "PROGRESS.md",
-      "DEPLOYMENT_CHECKLIST.md",
+      "docs/archive/DEPLOYMENT_CHECKLIST.md",
       "RUNBOOK.md",
     ];
 
@@ -114,7 +114,7 @@ describe("Preservation: Current Documentation Preserved", () => {
       "README.md",
       "TASKS.md",
       "PROGRESS.md",
-      "DEPLOYMENT_CHECKLIST.md",
+      "docs/archive/DEPLOYMENT_CHECKLIST.md",
       "RUNBOOK.md",
     ];
 

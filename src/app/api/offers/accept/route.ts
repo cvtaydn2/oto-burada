@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { withUserAndCsrf } from "@/lib/api/security";
-import { logger } from "@/lib/logging/logger";
-import { respondToOffer } from "@/services/offers/offer-service";
+import { respondToOffer } from "@/features/offers/services/offer-service";
+import { logger } from "@/lib/logger";
+import { withUserAndCsrf } from "@/lib/security";
 
 export async function POST(request: Request) {
   const security = await withUserAndCsrf(request, {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     // SECURITY: Explicit ownership verification before accepting offer
     // Defense-in-depth: don't rely solely on RLS in service layer
-    const { verifyOfferOwnership } = await import("@/services/offers/offer-service");
+    const { verifyOfferOwnership } = await import("@/features/offers/services/offer-service");
     const ownership = await verifyOfferOwnership(offerId, user.id);
 
     if (!ownership.isOwner) {

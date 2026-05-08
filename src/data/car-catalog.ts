@@ -168,7 +168,7 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Skoda",
-    models: ["Fabia", "Scala", "Octavia", "Superb", "Kodiaq", "Karoq", "Enyaq", "Slik出席"],
+    models: ["Fabia", "Scala", "Octavia", "Superb", "Kodiaq", "Karoq", "Enyaq", "Kamiq"],
   },
   {
     brand: "Seat",

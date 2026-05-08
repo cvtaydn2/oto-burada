@@ -1,9 +1,9 @@
 import { ShieldAlert } from "lucide-react";
 
 import { ReportsModeration } from "@/features/admin-moderation/components/reports-moderation";
-import { requireAdminUser } from "@/lib/auth/session";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getStoredReports } from "@/services/reports/report-submissions";
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { getStoredReports } from "@/features/reports/services/report-submissions";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 

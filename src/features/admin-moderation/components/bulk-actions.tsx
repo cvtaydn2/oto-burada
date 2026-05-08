@@ -2,6 +2,9 @@
 
 import { CheckCircle2, LoaderCircle, Sparkles, XCircle } from "lucide-react";
 
+import { Button } from "@/features/ui/components/button";
+import { Label } from "@/features/ui/components/label";
+
 interface BulkActionsProps {
   selectedCount: number;
   allSelected: boolean;
@@ -44,13 +47,13 @@ export function BulkActions({
             <span className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-foreground">
               {selectedCount} seçili ilan
             </span>
-            <button
+            <Button
               type="button"
               onClick={onToggleAll}
               className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
               {allSelected ? "Seçimi temizle" : "Tümünü seç"}
-            </button>
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground">
             Seçili bekleyen ilanları tek hamlede onayla ya da reddet.
@@ -58,7 +61,7 @@ export function BulkActions({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
+          <Button
             type="button"
             disabled={activeBulkAction !== null || selectedCount === 0}
             onClick={() => onBulkModeration("approve", selectedListingIds)}
@@ -70,8 +73,8 @@ export function BulkActions({
               <CheckCircle2 className="size-4" />
             )}{" "}
             Seçilenleri onayla
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             disabled={activeBulkAction !== null || selectedCount === 0}
             onClick={() => onBulkModeration("reject", selectedListingIds)}
@@ -83,30 +86,30 @@ export function BulkActions({
               <XCircle className="size-4" />
             )}{" "}
             Seçilenleri reddet
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             disabled={activeBulkAction !== null || pendingListingsCount === 0}
             onClick={() => onBulkModeration("approve", allPendingListingIds)}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60"
           >
             <Sparkles className="size-4" /> Tümünü onayla
-          </button>
+          </Button>
         </div>
       </div>
 
       <div className="mt-4">
-        <label className="text-xs font-medium text-muted-foreground">Toplu moderasyon notu</label>
+        <Label className="text-xs font-medium text-muted-foreground">Toplu moderasyon notu</Label>
         <div className="mt-2 flex flex-wrap gap-1.5 overflow-x-auto pb-1">
           {PRESETS.map((preset) => (
-            <button
+            <Button
               key={preset}
               type="button"
               onClick={() => onBulkNoteChange(preset)}
               className="whitespace-nowrap rounded-full border border-border/60 bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
               {preset}
-            </button>
+            </Button>
           ))}
         </div>
         <textarea

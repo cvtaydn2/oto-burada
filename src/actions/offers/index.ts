@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createOffer, respondToOffer } from "@/services/offers/offer-service";
+import { createOffer, respondToOffer } from "@/features/offers/services/offer-service";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export async function submitOfferAction(
   _prevState: unknown,

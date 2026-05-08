@@ -1,4 +1,4 @@
-import { API_ERROR_CODES, apiError } from "@/lib/api/response";
+import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
 
 export async function POST() {
   return apiError(

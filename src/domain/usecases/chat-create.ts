@@ -1,4 +1,4 @@
-import { createNewChat } from "@/services/chat/chat-logic";
+import { createNewChat } from "@/features/chat/services/chat-logic";
 import type { CreateChatInput } from "@/types/chat";
 
 /**

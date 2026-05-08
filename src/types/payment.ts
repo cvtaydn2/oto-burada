@@ -10,6 +10,12 @@ export type DopingType =
   | "bold_frame"
   | "bump";
 
+export interface ActiveDoping {
+  dopingType: DopingType;
+  expiresAt: string | null;
+  packageName: string;
+}
+
 export interface IyzicoConfig {
   apiKey: string;
   secretKey: string;
@@ -22,7 +28,9 @@ export interface DopingPackage {
   price: number;
   durationDays: number;
   type: DopingType;
+  summary: string;
   features: string[];
+  surfaces: string[];
 }
 
 export interface DopingPurchase {
