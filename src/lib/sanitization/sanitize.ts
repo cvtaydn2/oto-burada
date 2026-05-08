@@ -60,6 +60,14 @@ export function sanitizeForMeta(value: string): string {
  * @safe-for HTML attributes, data attributes
  * @use-case When you need to manually construct HTML strings (rare in React)
  */
+/**
+ * Escape string for use in RegExp constructor.
+ * Protects against dynamic regex construction vulnerabilities.
+ */
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 export function escapeHtml(value: string): string {
   const HTML_ENTITY_MAP: Record<string, string> = {
     "&": "&amp;",
@@ -140,7 +148,8 @@ function stripAllHtmlSecure(value: string): string {
   ];
 
   eventHandlers.forEach((handler) => {
-    const regex = new RegExp(`\\s*${handler}\\s*=\\s*[^\\s>]*`, "gi");
+    const escapedHandler = escapeRegExp(handler);
+    const regex = new RegExp(`\\s*${escapedHandler}\\s*=\\s*[^\\s>]*`, "gi");
     cleaned = cleaned.replace(regex, "");
   });
 
