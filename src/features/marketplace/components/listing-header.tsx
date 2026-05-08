@@ -1,8 +1,8 @@
 import { MapPin, Sparkles } from "lucide-react";
 
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
-import { formatPrice } from "@/features/shared/lib";
 import { Badge } from "@/features/ui/components/badge";
+import { formatPrice } from "@/lib";
 import { type Listing } from "@/types";
 
 interface ListingHeaderProps {

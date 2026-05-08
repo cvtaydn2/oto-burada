@@ -11,11 +11,11 @@
 
 import { z } from "zod";
 
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { sanitizeText } from "@/features/shared/lib/sanitize";
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeText } from "@/lib/sanitize";
+import { withAuthAndCsrf } from "@/lib/security";
+import { createSupabaseServerClient } from "@/lib/server";
 
 const reviewSchema = z.object({
   sellerId: z.string().uuid("Geçersiz satıcı ID."),
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    const { captureServerError } = await import("@/features/shared/lib/telemetry-server");
+    const { captureServerError } = await import("@/lib/telemetry-server");
     captureServerError(
       "Seller review upsert failed",
       "reviews",

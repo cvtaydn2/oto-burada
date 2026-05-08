@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { createSellerReview } from "@/features/profile/services/seller-reviews";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export async function submitReviewAction(
   _prevState: unknown,

@@ -13,7 +13,7 @@ import {
 
 import { readFavoriteIds, writeFavoriteIds } from "@/features/favorites/services/favorites-storage";
 import { useAuthUser } from "@/features/shared/components/auth-provider";
-import { createSupabaseBrowserClient } from "@/features/shared/lib/browser";
+import { createSupabaseBrowserClient } from "@/lib/browser";
 
 interface FavoritesContextValue {
   favoriteIds: string[];

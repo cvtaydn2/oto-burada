@@ -1,5 +1,5 @@
 import { getTrustStyles, type TrustTone } from "@/features/marketplace/lib/trust-ui";
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface TrustNoticeProps {
   title: string;
@@ -19,7 +19,7 @@ export function TrustNotice({
   const styles = getTrustStyles(tone);
 
   return (
-    <div className={cn("rounded-xl border p-4", styles.notice, className)}>
+    <div className={cn("rounded-xl border p-4", styles, className)}>
       <div className="flex flex-col gap-1">
         <p className="text-sm font-bold">{title}</p>
         {description && <p className="text-xs font-medium opacity-80">{description}</p>}

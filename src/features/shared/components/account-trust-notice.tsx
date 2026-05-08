@@ -3,9 +3,9 @@
 import { AlertTriangle, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-import { getTrustIconBg, getTrustStyles, isBanned } from "@/features/marketplace/lib/trust-ui";
+import { getTrustIconBg, getTrustStyles } from "@/features/marketplace/lib/trust-ui";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 import { type Profile } from "@/types";
 
 interface AccountTrustNoticeProps {
@@ -19,13 +19,13 @@ export function AccountTrustNotice({ seller, className }: AccountTrustNoticeProp
   if (!trustUI.restrictionState && trustUI.isPremiumVisible) return null;
 
   const styles = getTrustStyles(trustUI.tone);
-  const isUserBanned = isBanned(trustUI.restrictionState);
+  const isUserBanned = trustUI.restrictionState === "banned";
 
   return (
     <div
       className={cn(
         "rounded-2xl border p-4 shadow-sm transition-all animate-in fade-in slide-in-from-top-2",
-        styles.notice,
+        styles,
         className
       )}
     >

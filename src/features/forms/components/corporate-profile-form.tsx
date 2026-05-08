@@ -6,9 +6,9 @@ import { useActionState } from "react";
 
 import type { ProfileActionState } from "@/features/auth/lib/profile-actions";
 import { AuthSubmitButton } from "@/features/forms/components/auth-submit-button";
-import { cn } from "@/features/shared/lib";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 
 interface CorporateProfileFormProps {
   action: (

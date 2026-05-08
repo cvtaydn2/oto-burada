@@ -65,7 +65,7 @@ vi.mock("@/features/profile/services/profile-records", () => ({
   getPublicSellerProfile: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/public-server", () => ({
+vi.mock("@/lib/public-server", () => ({
   createSupabasePublicServerClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({

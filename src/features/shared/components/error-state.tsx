@@ -3,8 +3,8 @@
 import { AlertCircle, ArrowLeft, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 export interface ErrorStateProps {
   title?: string;

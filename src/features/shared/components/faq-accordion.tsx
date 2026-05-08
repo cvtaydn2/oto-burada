@@ -3,8 +3,8 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 interface FaqItem {
   q: string;

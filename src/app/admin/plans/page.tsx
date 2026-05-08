@@ -7,8 +7,8 @@ import {
   getPlanStats,
 } from "@/features/admin-moderation/services/plans";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { formatCurrency, safeFormatDate } from "@/features/shared/lib";
 import { Badge } from "@/features/ui/components/badge";
+import { formatCurrency, safeFormatDate } from "@/lib";
 
 export const dynamic = "force-dynamic";
 

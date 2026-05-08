@@ -4,13 +4,9 @@
  * Covers: formatting, label lookups, badge state derivation, phone masking,
  * and WhatsApp link generation.
  */
-import { formatNumber, formatPrice } from "@/features/shared/lib";
-import {
-  fuelTypeLabels,
-  listingStatusLabels,
-  transmissionTypeLabels,
-} from "@/features/shared/lib/domain";
-import { DOPING_TYPE_LABELS } from "@/features/shared/lib/doping";
+import { formatNumber, formatPrice } from "@/lib";
+import { fuelTypeLabels, listingStatusLabels, transmissionTypeLabels } from "@/lib/domain";
+import { DOPING_TYPE_LABELS } from "@/lib/doping";
 import type { Listing, Profile } from "@/types";
 import type { DopingType } from "@/types/payment";
 

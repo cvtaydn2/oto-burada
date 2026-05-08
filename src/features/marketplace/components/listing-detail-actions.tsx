@@ -7,7 +7,6 @@ import { ReportListingForm } from "@/features/forms/components/report-listing-fo
 import { FavoriteButton } from "@/features/marketplace/components/favorite-button";
 import { ShareButton } from "@/features/marketplace/components/share-button";
 import { useAuthUser } from "@/features/shared/components/auth-provider";
-import { captureClientEvent } from "@/features/shared/lib/telemetry-client";
 import { Button } from "@/features/ui/components/button";
 import {
   Dialog,
@@ -16,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/features/ui/components/dialog";
+import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface ListingDetailActionsProps {
   listingId: string;

@@ -7,12 +7,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatList } from "@/features/chat/components/chat-list";
 import { ChatWindow } from "@/features/chat/components/chat-window";
 import { useAuthUser } from "@/features/shared/components/auth-provider";
-import { API_ROUTES } from "@/features/shared/lib/api-routes";
-import { ApiClient } from "@/features/shared/lib/client";
 import { Button } from "@/features/ui/components/button";
 import { Card } from "@/features/ui/components/card";
 import { useCreateChat } from "@/hooks/use-chat-queries";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { API_ROUTES } from "@/lib/api-routes";
+import { ApiClient } from "@/lib/client";
 import type { ChatWithLastMessage } from "@/types/chat";
 
 export default function MessagesPage() {
@@ -67,11 +67,11 @@ export default function MessagesPage() {
           API_ROUTES.CHATS.BASE
         );
 
-        if (!existingChatResponse.success || !Array.isArray(existingChatResponse.data)) {
+        if (!Array.isArray(existingChatResponse)) {
           return;
         }
 
-        const existingChat = existingChatResponse.data.find(
+        const existingChat = existingChatResponse.find(
           (chat) => chat.listingId === listingId && chat.sellerId === sellerId
         );
 

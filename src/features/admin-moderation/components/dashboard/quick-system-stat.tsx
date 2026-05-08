@@ -1,4 +1,4 @@
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface QuickSystemStatProps {
   icon: React.ReactNode;

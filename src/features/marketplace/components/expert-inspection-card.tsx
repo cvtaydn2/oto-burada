@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn, formatDate } from "@/features/shared/lib";
+import { cn, formatDate } from "@/lib";
 import type { ExpertInspection } from "@/types";
 import { expertInspectionGradeInfo } from "@/types";
 

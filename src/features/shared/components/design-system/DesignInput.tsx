@@ -1,7 +1,7 @@
 import React from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 
 interface DesignInputProps extends React.InputHTMLAttributes<
   HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement

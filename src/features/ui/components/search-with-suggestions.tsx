@@ -4,10 +4,10 @@ import { ArrowRight, History, Search, TrendingUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
+import { useKeyboard } from "@/features/shared/hooks/use-keyboard";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
-import { useKeyboard } from "@/hooks/use-keyboard";
+import { cn } from "@/lib";
 import type { SearchSuggestionItem } from "@/types";
 
 interface SearchSuggestion {

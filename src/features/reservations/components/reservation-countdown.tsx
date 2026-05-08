@@ -3,8 +3,8 @@
 import { Clock, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
-import { reservation as copy } from "@/features/shared/lib/ui-strings";
+import { cn } from "@/lib";
+import { reservation as copy } from "@/lib/ui-strings";
 
 interface ReservationCountdownProps {
   expiresAt: string;

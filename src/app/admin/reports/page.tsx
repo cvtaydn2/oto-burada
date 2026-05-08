@@ -3,7 +3,7 @@ import { ShieldAlert } from "lucide-react";
 import { ReportsModeration } from "@/features/admin-moderation/components/reports-moderation";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { getStoredReports } from "@/features/reports/services/report-submissions";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 

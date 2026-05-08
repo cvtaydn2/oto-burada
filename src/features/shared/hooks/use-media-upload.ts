@@ -4,7 +4,7 @@ import imageCompression from "browser-image-compression";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { createSupabaseBrowserClient } from "@/features/shared/lib/browser";
+import { createSupabaseBrowserClient } from "@/lib/browser";
 
 /**
  * World-Class UX: Background Upload (Issue 1, 2 - "Media Seam")

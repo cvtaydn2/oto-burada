@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from "next/og";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 
 // Node.js runtime — unstable_cache ve Supabase admin client edge'de çalışmaz
 export const runtime = "nodejs";

@@ -11,8 +11,8 @@ import type {
   reportStatuses,
   transmissionTypes,
   userRoles,
-} from "@/features/shared/lib/domain";
-import type { VehicleCategory } from "@/features/shared/lib/vehicle-categories";
+} from "@/lib/domain";
+import type { VehicleCategory } from "@/lib/vehicle-categories";
 
 export type UserRole = (typeof userRoles)[number];
 export type ListingStatus = (typeof listingStatuses)[number];
@@ -93,6 +93,7 @@ export interface AdminModerationAction {
 }
 
 export interface ListingFilters {
+  [key: string]: unknown;
   query?: string;
   brand?: string;
   model?: string;

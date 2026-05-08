@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { withCronRoute } from "@/features/shared/lib/security";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { withCronRoute } from "@/lib/security";
 
 /**
  * ── PILL: Issue 2 - Storage Cleanup Queue (Orphaned Files) ────────────────

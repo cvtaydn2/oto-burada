@@ -4,8 +4,8 @@ import { CheckCircle2, LoaderCircle, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useErrorCapture } from "@/features/shared/hooks/use-error-capture";
 import { Button } from "@/features/ui/components/button";
-import { useErrorCapture } from "@/hooks/use-error-capture";
 
 export function MarketSyncButton() {
   const { captureError } = useErrorCapture("market-sync");

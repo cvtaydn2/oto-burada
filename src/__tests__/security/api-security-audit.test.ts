@@ -331,8 +331,7 @@ describe("API Security Audit", () => {
       if (!hasSecurityImport) {
         violations.push({
           file: filePath.replace(process.cwd(), ""),
-          reason:
-            "Route file should import security middleware from @/features/shared/lib/security",
+          reason: "Route file should import security middleware from @/lib/security",
         });
       }
     }

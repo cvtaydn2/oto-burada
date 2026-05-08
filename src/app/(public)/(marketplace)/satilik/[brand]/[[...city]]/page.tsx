@@ -37,18 +37,16 @@ export async function generateMetadata({ params }: LandingPageProps): Promise<Me
     city,
   };
 
-  const metadata = buildListingsMetadata(filters);
+  const metadata: Metadata = buildListingsMetadata(filters);
 
   // Custom title for landing pages
   const locationText = city ? `${city} ilinde ` : "";
   metadata.title = `Satılık ${locationText}${brand} İlanları - İkinci El ${brand} Fiyatları`;
   metadata.description = `${city ?? "Türkiye"} genelindeki güncel satılık ${brand} ilanlarını incele. En uygun fiyatlı ikinci el ${brand} modelleri OtoBurada'da.`;
 
-  if (metadata.alternates) {
-    metadata.alternates.canonical = buildAbsoluteUrl(
-      `/satilik/${brandSlug}${citySlug ? `/${citySlug}` : ""}`
-    );
-  }
+  metadata.alternates = {
+    canonical: buildAbsoluteUrl(`/satilik/${brandSlug}${citySlug ? `/${citySlug}` : ""}`),
+  };
 
   return metadata;
 }

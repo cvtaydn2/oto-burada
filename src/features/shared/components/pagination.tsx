@@ -2,8 +2,8 @@
 
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 interface PaginationProps {
   currentPage: number;
@@ -16,7 +16,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
   if (totalPages <= 1) return null;
 
   const renderPageNumbers = () => {
-    const pages = [];
+    const pages: (number | string)[] = [];
     const maxVisible = 5;
 
     if (totalPages <= maxVisible) {

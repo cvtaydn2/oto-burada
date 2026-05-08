@@ -5,7 +5,7 @@ const mockWarn = vi.fn();
 const mockError = vi.fn();
 const mockDebug = vi.fn();
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     system: {
       info: (...args: unknown[]) => mockInfo(...args),
@@ -18,7 +18,7 @@ vi.mock("@/features/shared/lib/logger", () => ({
 
 const mockCreateSupabaseAdminClient = vi.fn();
 
-vi.mock("@/features/shared/lib/admin", () => ({
+vi.mock("@/lib/admin", () => ({
   createSupabaseAdminClient: () => mockCreateSupabaseAdminClient(),
 }));
 

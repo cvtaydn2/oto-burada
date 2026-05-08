@@ -2,10 +2,11 @@
 
 import { Car, Check, CheckCircle2, Settings, ShieldCheck } from "lucide-react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface StepIndicatorProps {
   currentStep: number;
+  totalSteps: number;
 }
 
 const stepsConfig = [

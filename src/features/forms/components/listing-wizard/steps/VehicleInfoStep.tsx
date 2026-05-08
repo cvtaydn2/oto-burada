@@ -6,9 +6,9 @@ import { Controller, UseFormReturn } from "react-hook-form";
 import { ChoiceGroup } from "@/features/shared/components/design-system/ChoiceGroup";
 import { DesignInput } from "@/features/shared/components/design-system/DesignInput";
 import { FormSection } from "@/features/shared/components/design-system/FormSection";
-import { maximumCarYear, minimumCarYear } from "@/features/shared/lib/domain";
-import { vehicleCategories, vehicleCategoryLabels } from "@/features/shared/lib/vehicle-categories";
 import { Button } from "@/features/ui/components/button";
+import { maximumCarYear, minimumCarYear } from "@/lib/domain";
+import { vehicleCategories, vehicleCategoryLabels } from "@/lib/vehicle-categories";
 import { BrandCatalogItem, ListingCreateFormValues } from "@/types";
 
 interface VehicleInfoStepProps {

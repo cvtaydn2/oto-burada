@@ -15,9 +15,6 @@ import { toast } from "sonner";
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { OfferPanel } from "@/features/offers/components/offer-panel";
-import { cn } from "@/features/shared/lib";
-import { captureClientEvent } from "@/features/shared/lib/telemetry-client";
-import { trust } from "@/features/shared/lib/ui-strings";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -29,6 +26,9 @@ import {
   AlertDialogTrigger,
 } from "@/features/ui/components/alert-dialog";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
+import { captureClientEvent } from "@/lib/telemetry-client";
+import { trust } from "@/lib/ui-strings";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {

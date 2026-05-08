@@ -5,7 +5,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     listings: { warn: vi.fn() },
     perf: { debug: vi.fn() },
@@ -131,7 +131,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
   });
 
   it("logs a warning when invalid params are dropped", async () => {
-    const { logger } = await import("@/features/shared/lib/logger");
+    const { logger } = await import("@/lib/logger");
 
     parseListingFiltersFromSearchParams({
       brand: "BMW",
@@ -145,7 +145,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
   });
 
   it("does not log warning when all params are valid", async () => {
-    const { logger } = await import("@/features/shared/lib/logger");
+    const { logger } = await import("@/lib/logger");
     vi.mocked(logger.listings.warn).mockClear();
 
     parseListingFiltersFromSearchParams({

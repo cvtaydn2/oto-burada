@@ -12,7 +12,7 @@ import {
   useState,
 } from "react";
 
-import { createSupabaseBrowserClient } from "@/features/shared/lib/browser";
+import { createSupabaseBrowserClient } from "@/lib/browser";
 
 interface AuthContextValue {
   isAdmin: boolean;

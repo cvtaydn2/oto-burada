@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { checkApiSecurity } from "@/features/shared/lib/api-security";
-import { csrfMiddleware } from "@/features/shared/lib/csrf";
-import { updateSession } from "@/features/shared/lib/middleware";
-import { runMiddlewarePipeline } from "@/features/shared/lib/pipeline";
-import { rateLimitMiddleware } from "@/features/shared/lib/rate-limit";
-import { classifyRoute } from "@/features/shared/lib/routes";
+import { checkApiSecurity } from "@/lib/api-security";
+import { csrfMiddleware } from "@/lib/csrf";
+import { updateSession } from "@/lib/middleware";
+import { rateLimitMiddleware } from "@/lib/middleware/rate-limit";
+import { runMiddlewarePipeline } from "@/lib/pipeline";
+import { classifyRoute } from "@/lib/routes";
 
 /**
  * Primary Middleware Entry Point.

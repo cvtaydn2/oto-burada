@@ -1,10 +1,10 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { withCache } from "@/features/shared/lib/cache";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { withCache } from "@/lib/cache";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/telemetry-server";
 
 export interface AdminAnalyticsData {
   kpis: {

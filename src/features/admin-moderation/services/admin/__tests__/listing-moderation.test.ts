@@ -10,7 +10,7 @@ import {
 } from "../listing-moderation";
 import * as moderationActions from "../moderation-actions";
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
@@ -23,7 +23,7 @@ const listingsTable = {
   single: vi.fn(),
 };
 
-vi.mock("@/features/shared/lib/admin", () => ({
+vi.mock("@/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
     from: vi.fn(() => listingsTable),
     rpc: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
@@ -47,7 +47,7 @@ vi.mock("@/features/notifications/services/notification-records", () => ({
   createDatabaseNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/features/shared/lib/client", () => ({
+vi.mock("@/lib/client", () => ({
   invalidateCache: vi.fn().mockResolvedValue(undefined),
 }));
 

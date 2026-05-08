@@ -12,8 +12,8 @@ import {
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { ReviewForm } from "@/components/reviews/review-form";
 import { getCurrentUser } from "@/features/auth/lib/session";
+import { SellerReviewForm } from "@/features/marketplace/components/seller-review-form";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import {
@@ -204,7 +204,19 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             <TrustBadge
               badgeLabel={trustUI.label}
               score={seller.trustScore ?? 0}
-              tone={trustUI.tone}
+              tone={
+                trustUI.tone === "verified"
+                  ? "emerald"
+                  : trustUI.tone === "trusted"
+                    ? "blue"
+                    : trustUI.tone === "warning"
+                      ? "amber"
+                      : trustUI.tone === "amber"
+                        ? "amber"
+                        : trustUI.tone === "rose"
+                          ? "rose"
+                          : "slate"
+              }
             />
           </div>
         </div>
@@ -247,12 +259,12 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             )}
           </div>
           {currentUser && currentUser.id !== sellerId && (
-            <ReviewForm sellerId={sellerId}>
+            <SellerReviewForm sellerId={sellerId}>
               <Button size="sm" variant="outline" className="gap-2">
                 <Star size={14} className="fill-amber-400 text-amber-400" />
                 Değerlendir
               </Button>
-            </ReviewForm>
+            </SellerReviewForm>
           )}
         </div>
         {reviews.length > 0 ? (

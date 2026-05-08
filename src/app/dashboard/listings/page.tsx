@@ -7,11 +7,11 @@ import { MyListingsPanel } from "@/features/marketplace/components/my-listings-p
 import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
 import { getStoredProfileById } from "@/features/profile/services/profile-records";
 import { AccountTrustNotice } from "@/features/shared/components/account-trust-notice";
-import { cn } from "@/features/shared/lib";
 import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
 } from "@/features/shared/services/live-reference-data";
+import { cn } from "@/lib";
 import { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";

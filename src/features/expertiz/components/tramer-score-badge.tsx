@@ -2,9 +2,9 @@
 
 import { AlertTriangle, Car, Clock, ShieldCheck, User } from "lucide-react";
 
-import { cn } from "@/features/shared/lib";
 import { Badge } from "@/features/ui/components/badge";
 import { Card, CardContent } from "@/features/ui/components/card";
+import { cn } from "@/lib";
 
 interface TramerScoreBadgeProps {
   score: number | null;

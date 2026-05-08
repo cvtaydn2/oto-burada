@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
 import { getAppUrl } from "@/features/seo/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 
 export const revalidate = 3600; // Re-generate every hour
 

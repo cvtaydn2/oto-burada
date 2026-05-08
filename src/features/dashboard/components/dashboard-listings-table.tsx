@@ -2,9 +2,9 @@ import { CarFront, ChevronRight, ClipboardList, Eye, Settings } from "lucide-rea
 import Image from "next/image";
 import Link from "next/link";
 
-import { cn } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 
 interface Listing {
   id: string;

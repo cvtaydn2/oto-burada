@@ -24,9 +24,9 @@ export * from "./queries/get-listings";
 export * from "./listing-submission-query";
 export * from "./mappers/listing-row.mapper";
 
-import { listingSchema } from "@/features/shared/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { listingSchema } from "@/lib";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 import type { Listing } from "@/types";
 
 import { createDatabaseListing } from "./commands/create-listing";

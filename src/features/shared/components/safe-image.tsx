@@ -3,7 +3,7 @@
 import Image, { ImageProps } from "next/image";
 import { useRef, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 /**
  * World-Class UX: Safe Image (Issue 10, 6, 7 - "Media Seam")

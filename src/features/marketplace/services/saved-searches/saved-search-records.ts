@@ -19,9 +19,9 @@ import {
   getSavedSearchSignature,
   normalizeSavedSearchFilters,
 } from "@/features/marketplace/services/saved-search-utils";
-import { savedSearchSchema } from "@/features/shared/lib";
-import { hasSupabaseEnv } from "@/features/shared/lib/env";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { savedSearchSchema } from "@/lib";
+import { hasSupabaseEnv } from "@/lib/env";
+import { createSupabaseServerClient } from "@/lib/server";
 import type { ListingFilters, SavedSearchCreateInput } from "@/types";
 
 interface SavedSearchRow {

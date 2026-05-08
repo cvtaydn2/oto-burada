@@ -2,9 +2,9 @@
 
 import React from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 
 interface ChoiceGroupProps<T extends string> {
   options: readonly T[];

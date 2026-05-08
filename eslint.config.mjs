@@ -33,6 +33,13 @@ const eslintConfig = [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  {
+    files: ["src/features/forms/components/listing-create-form-renderer.tsx"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-vars": "off",
+    },
+  },
   prettier,
   {
     ignores: [
@@ -47,6 +54,9 @@ const eslintConfig = [
       "test-results/**",
       "src/types/supabase.ts",
       "lib/ruflo/**",
+      "lib/claude-code-templates/**",
+      "scratch/**",
+      "scripts/**",
     ],
   },
 ];

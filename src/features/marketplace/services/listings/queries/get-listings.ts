@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseServerClient } from "@/lib/server";
 
 import {
   buildListingBaseQuery,

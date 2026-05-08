@@ -45,11 +45,11 @@ function createTestListing(overrides: Partial<Listing> = {}): Listing {
   };
 }
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() =>
     Promise.resolve({
       from: fromMock,
@@ -58,11 +58,11 @@ vi.mock("@/features/shared/lib/server", () => ({
   ),
 }));
 
-vi.mock("@/features/shared/lib/sanitize", () => ({
+vi.mock("@/lib/sanitize", () => ({
   sanitizeDescription: (s: string) => s,
 }));
 
-vi.mock("@/features/shared/lib/registry", () => ({
+vi.mock("@/lib/registry", () => ({
   queueFileCleanup,
 }));
 

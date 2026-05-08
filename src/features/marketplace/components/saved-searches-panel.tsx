@@ -8,9 +8,9 @@ import {
   deleteSavedSearchAction,
   toggleSavedSearchNotificationsAction,
 } from "@/app/dashboard/saved-searches/actions";
-import { formatDate } from "@/features/shared/lib";
-import { captureClientEvent } from "@/features/shared/lib/telemetry-client";
 import { Button } from "@/features/ui/components/button";
+import { formatDate } from "@/lib";
+import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface SavedSearchListItem {
   filtersSummary: string;

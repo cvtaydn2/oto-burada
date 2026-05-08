@@ -1,10 +1,10 @@
 import { FRAUD_SCORE_WEIGHTS, PRICE_ANOMALY_THRESHOLDS } from "@/config/fraud-thresholds";
 import { estimateVehiclePrice } from "@/features/marketplace/services/price-estimation";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { withNextCache } from "@/features/shared/lib/cache";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { withNextCache } from "@/lib/cache";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import { Listing, ListingCreateInput } from "@/types";
 
 const TRUST_GUARD_REJECTION_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -200,7 +200,7 @@ export function calculateFraudScore(
  * Caller should pass listing data when already available.
  */
 export async function performAsyncModeration(listingId: string, listingSnapshot?: Listing) {
-  const { createSupabaseAdminClient } = await import("@/features/shared/lib/admin");
+  const { createSupabaseAdminClient } = await import("@/lib/admin");
   const { getStoredListingById } = await import("./listing-submissions");
   const admin = createSupabaseAdminClient();
 

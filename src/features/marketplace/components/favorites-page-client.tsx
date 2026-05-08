@@ -27,15 +27,9 @@ import { ListingsGridSkeleton } from "@/features/marketplace/components/listings
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import { EmptyState } from "@/features/shared/components/empty-state";
 import { useFavorites } from "@/features/shared/components/favorites-provider";
-import {
-  cn,
-  formatCurrency,
-  formatNumber,
-  formatPrice,
-  supabaseImageUrl,
-} from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib";
 import type { Listing } from "@/types";
 
 interface FavoritesPageClientProps {

@@ -3,8 +3,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 
-import { logger } from "@/features/shared/lib/logger";
-import { checkRateLimit } from "@/features/shared/lib/rate-limit";
+import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export interface PlateLookupResult {
   brand: string;
@@ -60,7 +60,7 @@ export async function lookupVehicleByPlate(
     let supabase = supabaseClient;
 
     if (!supabase) {
-      const { createSupabaseServerClient } = await import("@/features/shared/lib/server");
+      const { createSupabaseServerClient } = await import("@/lib/server");
       supabase = await createSupabaseServerClient();
     }
 

@@ -11,7 +11,7 @@ import {
 
 import type { PersistenceHealth } from "@/features/admin-moderation/services/persistence-health";
 import { DashboardMetricCard } from "@/features/shared/components/dashboard-metric-card";
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface AdminPersistencePanelProps {
   health: PersistenceHealth;

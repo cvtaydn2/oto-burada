@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 type DashboardMetricTone = "indigo" | "emerald" | "amber" | "slate" | "blue" | "rose";
 

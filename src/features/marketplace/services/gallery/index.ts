@@ -1,8 +1,8 @@
 import { getProfileRestrictionState } from "@/features/profile/services/profile-restrictions";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 import { type Listing, type Profile } from "@/types";
 
 export async function getGalleryBySlug(

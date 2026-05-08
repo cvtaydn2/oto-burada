@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface PanelProps {
   children: ReactNode;

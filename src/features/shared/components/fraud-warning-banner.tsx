@@ -3,8 +3,8 @@
 import { ExternalLink, Info, ShieldAlert, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 interface FraudWarningBannerProps {
   className?: string;

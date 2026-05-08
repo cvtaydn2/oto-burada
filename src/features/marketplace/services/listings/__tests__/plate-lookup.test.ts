@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn().mockResolvedValue({
     from: vi.fn().mockImplementation((table: string) => {
       if (table === "brands") {

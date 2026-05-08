@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { createDatabaseNotificationsBulk } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { withAdminRoute } from "@/features/shared/lib/security";
-import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { withAdminRoute } from "@/lib/security";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 
 // Broadcast: 5 per hour (admin-only, but still protect against accidents)
 const BROADCAST_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };

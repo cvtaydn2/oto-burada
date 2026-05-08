@@ -9,11 +9,11 @@ import {
 import Link from "next/link";
 
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { cn } from "@/features/shared/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
+import { cn } from "@/lib";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 const PAGE_SIZE = 50;
 

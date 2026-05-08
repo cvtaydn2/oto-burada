@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/telemetry-server";
 
 interface SupportTicketRow {
   created_at: string;

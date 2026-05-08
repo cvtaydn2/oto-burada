@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrf, withUserRoute } from "@/lib/security";
+import { createSupabaseServerClient } from "@/lib/server";
 
 const profileUpdateSchema = z.object({
   full_name: z.string().min(2).max(100).optional(),

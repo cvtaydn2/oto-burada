@@ -12,10 +12,10 @@ import { useUnifiedFilters } from "@/features/marketplace/hooks/use-unified-filt
 import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
 import { useAuthUser } from "@/features/shared/components/auth-provider";
 import { Panel } from "@/features/shared/components/design-system/Panel";
-import { maximumCarYear } from "@/features/shared/lib/domain";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
+import { maximumCarYear } from "@/lib/domain";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 interface AdvancedFilterPageProps {

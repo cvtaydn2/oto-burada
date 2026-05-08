@@ -14,16 +14,16 @@ import {
 } from "@/features/marketplace/services/listing-submissions";
 import { getFilteredMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { AnalyticsEvent } from "@/features/shared/lib/events";
-import { mapUseCaseError, validateRequestBody } from "@/features/shared/lib/handler-utils";
-import { listingCreateSchema } from "@/features/shared/lib/listing";
-import { logger } from "@/features/shared/lib/logger";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withUserAndCsrfToken } from "@/features/shared/lib/security";
-import { captureServerError, trackServerEvent } from "@/features/shared/lib/telemetry-server";
-import { verifyTurnstileToken } from "@/features/shared/lib/turnstile";
+import { AnalyticsEvent } from "@/lib/events";
+import { mapUseCaseError, validateRequestBody } from "@/lib/handler-utils";
+import { listingCreateSchema } from "@/lib/listing";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrfToken } from "@/lib/security";
+import { captureServerError, trackServerEvent } from "@/lib/telemetry-server";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 // This endpoint now handles ONLY public marketplace search.
 
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   // Use a distributed lock to prevent concurrent listing creation requests
   // from bypassing quota checks.
   const lockKey = `lock:listing_create:${user.id}`;
-  const { redis } = await import("@/features/shared/lib/client");
+  const { redis } = await import("@/lib/redis/client");
 
   if (redis) {
     const lock = await redis.set(lockKey, "LOCKED", { nx: true, ex: 15 });

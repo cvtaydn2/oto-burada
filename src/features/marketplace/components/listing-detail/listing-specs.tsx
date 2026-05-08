@@ -1,6 +1,6 @@
 import { CalendarDays, CircleGauge, Fuel, LucideIcon, Settings2 } from "lucide-react";
 
-import { formatNumber } from "@/features/shared/lib";
+import { formatNumber } from "@/lib";
 
 interface SpecItem {
   icon: LucideIcon;

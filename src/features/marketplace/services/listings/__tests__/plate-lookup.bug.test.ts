@@ -11,7 +11,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // We need to mock the server client used inside lookupVehicleByPlate
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
 
@@ -28,7 +28,7 @@ describe("Bug 3 — plate lookup returns null when brands query is empty (EXPECT
    * Counterexample: lookupVehicleByPlate("34ABC123") → null (is_active filter eliminates all brands)
    */
   it("should return a PlateLookupResult (not null) when brands query returns empty due to is_active filter", async () => {
-    const { createSupabaseServerClient } = await import("@/features/shared/lib/server");
+    const { createSupabaseServerClient } = await import("@/lib/server");
 
     // Simulate: brands table exists but is_active filter returns nothing
     // (either column missing or all records have is_active = false)

@@ -1,9 +1,9 @@
 "use server";
 
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 import { Listing } from "@/types";
 
 import { moderateListingWithSideEffects } from "./listing-moderation";

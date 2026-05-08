@@ -10,9 +10,9 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
-vi.mock("@/features/shared/lib/admin");
+vi.mock("@/lib/admin");
 
 describe("Bug 2 — profiles.email column error (EXPECTED TO FAIL on unfixed code)", () => {
   const mockFrom = vi.fn();

@@ -5,9 +5,9 @@ import {
   buildListingRecord,
   mapListingToDatabaseRow,
 } from "@/features/marketplace/services/listing-submissions";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import type { ListingCreateInput } from "@/types";
 
 /**

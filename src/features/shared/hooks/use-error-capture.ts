@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 
-import { logger } from "@/features/shared/lib/logger";
+import { logger } from "@/lib/logger";
 
 /**
  * Client-side error capture hook.

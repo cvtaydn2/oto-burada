@@ -3,7 +3,7 @@ import {
   type AdminRecentActionItem,
   AdminRecentActions,
 } from "@/features/admin-moderation/components/admin-recent-actions";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 import type { AdminModerationAction, Report } from "@/types";
 
 interface AsyncErrorResult {

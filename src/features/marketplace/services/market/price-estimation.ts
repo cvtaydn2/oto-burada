@@ -1,6 +1,6 @@
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { withCache } from "@/features/shared/lib/cache";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { withCache } from "@/lib/cache";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 
 export interface PriceEstimationResult {
   min: number;

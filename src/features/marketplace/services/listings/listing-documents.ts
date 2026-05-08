@@ -1,7 +1,4 @@
-import {
-  expertDocumentAcceptedMimeTypes,
-  expertDocumentMaxSizeInBytes,
-} from "@/features/shared/lib/domain";
+import { expertDocumentAcceptedMimeTypes, expertDocumentMaxSizeInBytes } from "@/lib/domain";
 
 const mimeTypeSet = new Set<string>(expertDocumentAcceptedMimeTypes);
 
@@ -121,7 +118,7 @@ export async function createExpertDocumentSignedUrl(
     expiresIn?: number;
   }
 ) {
-  const { createSupabaseAdminClient } = await import("@/features/shared/lib/admin");
+  const { createSupabaseAdminClient } = await import("@/lib/admin");
   const admin = createSupabaseAdminClient();
   const bucketName = options?.bucketName ?? process.env.SUPABASE_STORAGE_BUCKET_DOCUMENTS ?? "";
 

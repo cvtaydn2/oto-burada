@@ -11,13 +11,13 @@ const order = vi.fn();
 const select = vi.fn();
 const from = vi.fn();
 
-vi.mock("@/features/shared/lib/admin", () => ({
+vi.mock("@/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
     from,
   })),
 }));
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     admin: {
       error: vi.fn(),

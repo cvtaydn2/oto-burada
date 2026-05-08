@@ -19,8 +19,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 const ADMIN_NAV_ITEMS = [
   {

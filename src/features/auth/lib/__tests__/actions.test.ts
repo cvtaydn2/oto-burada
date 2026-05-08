@@ -9,13 +9,13 @@ vi.mock("next/navigation", () => ({
   redirect: mockRedirect,
 }));
 
-vi.mock("@/features/shared/lib/events", () => ({
+vi.mock("@/lib/events", () => ({
   AnalyticsEvent: {
     SERVER_AUTH_REGISTER: "SERVER_AUTH_REGISTER",
   },
 }));
 
-vi.mock("@/features/shared/lib/telemetry-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   identifyServerUser: vi.fn(),
   trackServerEvent: vi.fn(),
 }));
@@ -24,15 +24,15 @@ vi.mock("@/features/seo/lib", () => ({
   getAppUrl: vi.fn(() => "https://otoburada.test"),
 }));
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: mockCreateSupabaseServerClient,
 }));
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: {
     auth: {
       error: mockAuthError,
@@ -44,17 +44,17 @@ vi.mock("@/features/shared/lib/logger", () => ({
   },
 }));
 
-vi.mock("@/features/shared/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", () => ({
   rateLimitProfiles: {
     auth: {},
   },
 }));
 
-vi.mock("@/features/shared/lib/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limit-middleware", () => ({
   checkRateLimit: mockCheckRateLimit,
 }));
 
-vi.mock("@/features/shared/lib/distributed-rate-limit", () => ({
+vi.mock("@/lib/distributed-rate-limit", () => ({
   checkBruteForceLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 

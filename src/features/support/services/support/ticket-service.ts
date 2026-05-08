@@ -1,8 +1,8 @@
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { getRequiredAppUrl } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
 import { enqueueOutboxEvent } from "@/features/shared/services/outbox-processor";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { getRequiredAppUrl } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "urgent";

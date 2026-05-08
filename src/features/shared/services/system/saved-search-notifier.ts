@@ -12,11 +12,11 @@ import { createSearchParamsFromListingFilters } from "@/features/marketplace/ser
 import { getPublicFilteredDatabaseListings } from "@/features/marketplace/services/listing-submissions";
 import { normalizeSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
 import type { SavedSearchAlertListing } from "@/features/notifications/services/email-templates";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { getAppUrlWithFallback } from "@/features/shared/lib/env";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
 import { enqueueOutboxEvent } from "@/features/shared/services/outbox-processor";
+import { getAppUrlWithFallback } from "@/lib/environment/env";
+import { logger } from "@/lib/logging/logger";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import type { ListingFilters } from "@/types";
 
 // How far back to look for new listings (24 hours)

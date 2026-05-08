@@ -1,6 +1,6 @@
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/features/shared/lib/env";
-import { createSupabasePublicServerClient } from "@/features/shared/lib/public-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
+import { createSupabasePublicServerClient } from "@/lib/public-server";
 
 export interface PriceHistoryPoint {
   price: number;

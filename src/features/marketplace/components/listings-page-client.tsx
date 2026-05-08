@@ -12,11 +12,11 @@ import { MarketplaceSidebar } from "@/features/marketplace/components/marketplac
 import { useMarketplaceLogic } from "@/features/marketplace/hooks/use-marketplace-logic";
 import { EmptyState } from "@/features/shared/components/empty-state";
 import { ListingCard } from "@/features/shared/components/listing-card";
-import { cn } from "@/features/shared/lib";
-import { marketplace } from "@/features/shared/lib/ui-strings";
 import { Button } from "@/features/ui/components/button";
 import { Label } from "@/features/ui/components/label";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { cn } from "@/lib";
+import { marketplace } from "@/lib/ui-strings";
 import { type BrandCatalogItem, type CityOption, type Listing, type ListingFilters } from "@/types";
 
 const QUICK_FILTERS = [

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 const navItems = [{ href: "/listings", label: "İlanlar" }];
 

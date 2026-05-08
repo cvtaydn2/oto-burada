@@ -16,8 +16,8 @@ import Link from "next/link";
 import React from "react";
 
 import { UserProfile } from "@/features/admin-moderation/services/user-details";
-import { cn, safeFormatDate } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn, safeFormatDate } from "@/lib";
 
 interface AdminUserStatsSidebarProps {
   profile: UserProfile;

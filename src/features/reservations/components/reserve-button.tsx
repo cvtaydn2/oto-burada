@@ -5,8 +5,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { createReservationAction } from "@/actions/reservations";
-import { cn } from "@/features/shared/lib";
-import { reservation as copy } from "@/features/shared/lib/ui-strings";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
@@ -19,6 +17,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/features/ui/components/sheet";
+import { cn } from "@/lib";
+import { reservation as copy } from "@/lib/ui-strings";
 
 interface ReserveButtonProps {
   listingId: string;

@@ -5,7 +5,7 @@ import { CompareRemoveButton } from "@/features/marketplace/components/compare-r
 import { CompareShareButton } from "@/features/marketplace/components/compare-share-button";
 import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
 import { ListingCard } from "@/features/shared/components/listing-card";
-import { formatNumber, formatPrice } from "@/features/shared/lib";
+import { formatNumber, formatPrice } from "@/lib";
 import type { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";

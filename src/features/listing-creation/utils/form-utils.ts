@@ -3,7 +3,7 @@ import {
   carParts,
   maximumCarYear,
   minimumListingImages,
-} from "@/features/shared/lib/domain";
+} from "@/lib/domain";
 import { type Listing, type ListingCreateFormValues } from "@/types";
 
 const damageStatusAliases: Record<string, string> = { orjinal: "orijinal" };

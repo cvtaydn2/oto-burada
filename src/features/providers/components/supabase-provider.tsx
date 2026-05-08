@@ -3,7 +3,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useContext, useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/features/shared/lib/browser";
+import { createSupabaseBrowserClient } from "@/lib/browser";
 import type { Database } from "@/types/supabase";
 
 type SupabaseContext = {

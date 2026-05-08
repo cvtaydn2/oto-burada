@@ -1,10 +1,6 @@
 import { useCallback } from "react";
 
-import {
-  AnalyticsEvent,
-  type ClientAnalyticsEvent,
-  type EventPayload,
-} from "@/features/shared/lib/events";
+import { AnalyticsEvent, type ClientAnalyticsEvent, type EventPayload } from "@/lib/events";
 
 /**
  * Type-safe analytics hook.

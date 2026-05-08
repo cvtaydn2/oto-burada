@@ -5,11 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { ContactActions } from "@/features/marketplace/components/contact-actions";
-import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import { getSellerTrustUI } from "@/features/marketplace/lib/listings/trust-ui";
 import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
 import { TrustBadge } from "@/features/shared/components/trust-badge";
-import { cn } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
+import { cn } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 import type { Profile } from "@/types";
 
 interface SellerCardProps {

@@ -1,8 +1,8 @@
 "use server";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
 
 export interface PricingPlan {
   id: string;

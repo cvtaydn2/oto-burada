@@ -4,7 +4,6 @@ import { Menu, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/features/shared/lib";
 import {
   Drawer,
   DrawerContent,
@@ -15,6 +14,7 @@ import {
   DrawerTrigger,
 } from "@/features/ui/components/drawer";
 import { useNavigation } from "@/hooks/use-navigation";
+import { cn } from "@/lib";
 import type { SearchSuggestionItem } from "@/types";
 
 import { HeaderMobileNav } from "./header-mobile-nav";

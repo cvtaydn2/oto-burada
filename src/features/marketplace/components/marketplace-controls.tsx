@@ -3,9 +3,9 @@
 import { ArrowDownUp } from "lucide-react";
 import dynamic from "next/dynamic";
 
-import { cn } from "@/features/shared/lib";
-import { marketplace } from "@/features/shared/lib/ui-strings";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
+import { marketplace } from "@/lib/ui-strings";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 const MobileFilterDrawer = dynamic(() =>

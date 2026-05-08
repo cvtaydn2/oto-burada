@@ -2,12 +2,8 @@
 
 import { Redis } from "@upstash/redis";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import {
-  getSupabaseStorageEnv,
-  hasSupabaseAdminEnv,
-  hasSupabaseStorageEnv,
-} from "@/features/shared/lib/env";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { getSupabaseStorageEnv, hasSupabaseAdminEnv, hasSupabaseStorageEnv } from "@/lib/env";
 
 interface TableHealth {
   count: number;

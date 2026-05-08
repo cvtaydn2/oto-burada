@@ -1,6 +1,6 @@
-import { logger } from "@/features/shared/lib/logger";
-import { sanitizeDescription } from "@/features/shared/lib/sanitize";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { logger } from "@/lib/logger";
+import { sanitizeDescription } from "@/lib/sanitize";
+import { createSupabaseServerClient } from "@/lib/server";
 import { Listing } from "@/types";
 
 import { listingSelect } from "./listing-submission-query";
@@ -142,7 +142,7 @@ export async function createDatabaseListing(
 
       if (classifiedError === "image_persistence_error") {
         const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-        const { queueFileCleanup } = await import("@/features/shared/lib/registry");
+        const { queueFileCleanup } = await import("@/lib/registry");
         const uploadedPaths = currentListing.images.map((img) => img.storagePath).filter(Boolean);
 
         if (uploadedPaths.length > 0) {
@@ -234,7 +234,7 @@ export async function updateDatabaseListing(listing: Listing): Promise<ListingPe
   if (pathsToDelete.length > 0) {
     const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
     const { waitUntil } = await import("@vercel/functions");
-    const { queueFileCleanup } = await import("@/features/shared/lib/registry");
+    const { queueFileCleanup } = await import("@/lib/registry");
 
     waitUntil(
       queueFileCleanup(bucketName, pathsToDelete)

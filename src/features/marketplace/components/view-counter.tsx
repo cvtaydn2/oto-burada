@@ -3,7 +3,7 @@
 import { Eye, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/features/shared/lib/browser";
+import { createSupabaseBrowserClient } from "@/lib/browser";
 
 interface ViewCounterProps {
   listingId: string;

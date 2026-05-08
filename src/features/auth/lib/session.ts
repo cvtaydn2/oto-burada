@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import { hasSupabaseEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { hasSupabaseEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 import type { UserRole } from "@/types";
 
 import { getSessionContext } from "./session-context";
@@ -72,7 +72,7 @@ const getDBProfile = cache(async (userId: string) => {
     const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (hasServiceKey) {
-      const { createSupabaseAdminClient } = await import("@/features/shared/lib/admin");
+      const { createSupabaseAdminClient } = await import("@/lib/admin");
       const adminClient = createSupabaseAdminClient();
       const { data: profile, error } = await adminClient
         .from("profiles")

@@ -9,7 +9,7 @@
  * No silent fallbacks - all errors are thrown for proper error handling.
  */
 
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseServerClient } from "@/lib/server";
 
 interface FavoriteRow {
   listing_id: string;

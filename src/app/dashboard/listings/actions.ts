@@ -6,7 +6,7 @@ import { archiveListingUseCase } from "@/domain/usecases/listing-archive";
 import { bumpListingUseCase } from "@/domain/usecases/listing-bump";
 import { publishListingUseCase } from "@/domain/usecases/listing-publish";
 import { getCurrentUser } from "@/features/auth/lib/session";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseServerClient } from "@/lib/server";
 import { ListingStatus } from "@/types";
 
 export async function archiveListingAction(listingId: string, currentStatus: ListingStatus) {
@@ -49,7 +49,7 @@ export async function revealListingPhone(listingId: string) {
     "unknown";
 
   // ── Distributed Rate Limit (F-03 Protection) ──
-  const { checkGlobalRateLimit } = await import("@/features/shared/lib/distributed-rate-limit");
+  const { checkGlobalRateLimit } = await import("@/lib/distributed-rate-limit");
 
   // Combined IP + UserID protection: prevents bypassing by switching IPs or accounts
   const limit = user ? 20 : 5;
@@ -71,7 +71,7 @@ export async function revealListingPhone(listingId: string) {
     );
   }
 
-  const { createSupabaseAdminClient } = await import("@/features/shared/lib/admin");
+  const { createSupabaseAdminClient } = await import("@/lib/admin");
   const admin = createSupabaseAdminClient();
 
   // Fetch phone and verify status

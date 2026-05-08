@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 export interface AdminRole {
   id: string;

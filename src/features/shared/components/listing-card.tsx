@@ -22,7 +22,7 @@ import {
 } from "@/features/marketplace/lib/utils";
 import { getListingCardInsights } from "@/features/marketplace/services/listing-card-insights";
 import { SafeImage } from "@/features/shared/components/safe-image";
-import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/features/shared/lib";
+import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib";
 import { type Listing } from "@/types";
 
 const cardVariants = cva(

@@ -5,8 +5,8 @@ import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { ListingCard } from "@/features/shared/components/listing-card";
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 import type { Listing } from "@/types";
 
 interface FeaturedCarouselProps {

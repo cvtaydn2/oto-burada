@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight, GripVertical, X } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { SafeImage } from "@/features/shared/components/safe-image";
-import { supabaseImageUrl } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { supabaseImageUrl } from "@/lib";
 import type { ListingImage } from "@/types";
 
 interface ListingGalleryLightboxProps {

@@ -5,7 +5,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { submitOfferAction } from "@/actions/offers";
-import { formatPrice } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
@@ -18,6 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/features/ui/components/sheet";
+import { formatPrice } from "@/lib";
 
 interface OfferFormProps {
   listingId: string;

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { useFavorites } from "@/features/shared/components/favorites-provider";
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 interface FavoriteButtonProps {
   listingId: string;

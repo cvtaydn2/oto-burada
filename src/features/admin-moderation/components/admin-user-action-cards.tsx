@@ -3,10 +3,10 @@
 import { Gift, Loader2, Zap } from "lucide-react";
 import { useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 
 const DOPING_LABELS: Record<string, string> = {
   featured: "Vitrin",

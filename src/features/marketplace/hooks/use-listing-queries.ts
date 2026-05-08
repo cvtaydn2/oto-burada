@@ -2,10 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { apiResponseSchemas } from "@/features/shared/lib/api-responses";
-import { API_ROUTES } from "@/features/shared/lib/api-routes";
-import { ApiClient } from "@/features/shared/lib/client";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/api-routes";
 import { queryKeys } from "@/lib/query-keys";
+import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { Listing } from "@/types";
 
 /**

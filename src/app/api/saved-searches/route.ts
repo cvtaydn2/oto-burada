@@ -3,12 +3,12 @@ import {
   getStoredSavedSearchesByUser,
 } from "@/features/marketplace/services/saved-search-records";
 import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
-import { savedSearchCreateSchema } from "@/features/shared/lib";
-import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withAuth, withAuthAndCsrf } from "@/features/shared/lib/security";
-import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { savedSearchCreateSchema } from "@/lib";
+import { issuesToFieldErrors } from "@/lib/helpers";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAuth, withAuthAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting

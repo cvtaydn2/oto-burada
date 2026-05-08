@@ -15,9 +15,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useAuthUser } from "@/features/shared/components/auth-provider";
-import { cn, formatDate } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
+import { cn, formatDate } from "@/lib";
 
 interface NotificationItem {
   createdAt: string;

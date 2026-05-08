@@ -10,8 +10,6 @@ import {
   getListingDopingDisplayItems,
   getListingDopingStatusTone,
 } from "@/features/marketplace/lib/utils";
-import { cn, formatCurrency, formatNumber, supabaseImageUrl } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
 import { Button } from "@/features/ui/components/button";
 import { Checkbox } from "@/features/ui/components/checkbox";
 import {
@@ -22,6 +20,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/features/ui/components/dialog";
+import { cn, formatCurrency, formatNumber, supabaseImageUrl } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 import type { Listing } from "@/types";
 
 const statusLabelMap: Record<Listing["status"], string> = {

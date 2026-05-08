@@ -22,7 +22,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // ── Telemetry stub ───────────────────────────────────────────────────────────────
-vi.mock("@/features/shared/lib/telemetry-client", () => ({
+vi.mock("@/lib/telemetry-client", () => ({
   captureClientException: vi.fn(),
 }));
 
@@ -31,7 +31,7 @@ const { mockMaybeSingle } = vi.hoisted(() => ({
   mockMaybeSingle: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/browser", () => ({
+vi.mock("@/lib/browser", () => ({
   createSupabaseBrowserClient: vi.fn(() => ({
     auth: {
       getUser: vi.fn().mockResolvedValue({
@@ -48,7 +48,7 @@ vi.mock("@/features/shared/lib/browser", () => ({
 }));
 
 import PaymentResultPage from "@/app/dashboard/payments/result/page";
-import { captureClientException } from "@/features/shared/lib/telemetry-client";
+import { captureClientException } from "@/lib/telemetry-client";
 
 // Polling interval in the component is 1500ms, max 5 attempts.
 // We use real timers but advance them via vi.advanceTimersByTimeAsync.

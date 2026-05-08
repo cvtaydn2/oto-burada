@@ -4,9 +4,9 @@ import { Gauge, MapPin, Search, Settings2, ShieldCheck, SlidersHorizontal } from
 import { useState } from "react";
 
 import { FilterFields } from "@/features/marketplace/components/filter-fields";
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
+import { cn } from "@/lib";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 interface QuickPreset {

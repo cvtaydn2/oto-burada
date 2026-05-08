@@ -335,7 +335,7 @@ export function applyListingFilterPredicates(
   query: ListingQuery,
   filters: ListingFilters,
   options?: { legacySchema?: boolean }
-): any {
+): ListingQuery {
   let q = query;
 
   if (filters.sellerId) q = q.eq("seller_id", filters.sellerId);
@@ -650,7 +650,7 @@ export interface PaginatedListingsResult {
   metadata?: {
     droppedFilters?: string[];
     warning?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -696,16 +696,17 @@ async function getFilteredListingsInternal(
   const selectClause = preferLegacyMarketplaceSchema
     ? legacyListingSelect
     : marketplaceListingSelect;
-  const { data, count, error }: any = await runQueryWithTransientRetry(
-    () =>
-      buildListingBaseQuery(client, selectClause, {
-        statuses: ["approved"],
-        filters: { ...filters, page, limit },
-        withCount: true,
-        legacySchema: preferLegacyMarketplaceSchema,
-      }),
-    "getFilteredListingsInternal.primaryQuery"
-  );
+  const { data, count, error }: { data: any; count: number | null; error: any } =
+    await runQueryWithTransientRetry(
+      () =>
+        buildListingBaseQuery(client, selectClause, {
+          statuses: ["approved"],
+          filters: { ...filters, page, limit },
+          withCount: true,
+          legacySchema: preferLegacyMarketplaceSchema,
+        }),
+      "getFilteredListingsInternal.primaryQuery"
+    );
 
   const dataResult = { data, error };
   const countResult = { count };
@@ -823,7 +824,7 @@ export async function getSimilarDatabaseListings(options: {
 
   // Use parameterized query builder - NO string interpolation for raw filters
   // Query for brand match OR city match
-  const { data, error }: any = await runQueryWithTransientRetry(
+  const { data, error }: { data: any; error: any } = await runQueryWithTransientRetry(
     async () =>
       await publicClient
         .from("listings")

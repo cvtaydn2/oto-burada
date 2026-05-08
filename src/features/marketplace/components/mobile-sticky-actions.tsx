@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-import { formatCurrency } from "@/features/shared/lib";
+import { formatCurrency } from "@/lib";
 import type { Profile } from "@/types";
 
 const ContactActions = dynamic(

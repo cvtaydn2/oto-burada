@@ -1,4 +1,4 @@
-import { refreshTopMarketSegments } from "../services/market/market-stats";
+import { refreshTopMarketSegments } from "../features/marketplace/services/market/market-stats";
 
 async function main() {
   console.log("Refreshing market segments...");

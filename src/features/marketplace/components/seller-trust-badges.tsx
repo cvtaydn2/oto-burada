@@ -1,8 +1,9 @@
 "use client";
 
 import { Award, Calendar, ShieldCheck, Star } from "lucide-react";
+import type React from "react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 import { Profile } from "@/types";
 
 interface SellerTrustBadgesProps {
@@ -13,7 +14,13 @@ interface SellerTrustBadgesProps {
 export function SellerTrustBadges({ seller, className }: SellerTrustBadgesProps) {
   if (!seller) return null;
 
-  const badges = [];
+  const badges: Array<{
+    id: string;
+    label: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    color: string;
+    description: string;
+  }> = [];
 
   // 1. Verification Badge
   if (seller.isVerified || seller.verificationStatus === "approved") {

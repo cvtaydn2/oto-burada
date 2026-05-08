@@ -1,10 +1,10 @@
 import { requireApiUser } from "@/features/auth/lib/api-user";
 import { getDatabaseFavoriteIds } from "@/features/favorites/services/favorite-records";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/features/shared/lib/env";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withUserAndCsrfToken } from "@/features/shared/lib/security";
-import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrfToken } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

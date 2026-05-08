@@ -7,19 +7,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withUserAndCsrfToken } from "@/features/shared/lib/security";
+import { withUserAndCsrfToken } from "@/lib/security";
 
-vi.mock("@/features/shared/lib/security", () => ({
+vi.mock("@/lib/security", () => ({
   withUserAndCsrfToken: vi.fn(),
   withSecurity: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/turnstile", () => ({
+vi.mock("@/lib/turnstile", () => ({
   verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
 }));
 
-vi.mock("@/features/shared/lib/handler-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/features/shared/lib/handler-utils")>();
+vi.mock("@/lib/handler-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/handler-utils")>();
   return {
     ...actual,
     validateRequestBody: vi.fn(async () => ({
@@ -29,21 +29,21 @@ vi.mock("@/features/shared/lib/handler-utils", async (importOriginal) => {
   };
 });
 
-vi.mock("@/features/shared/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", () => ({
   rateLimitProfiles: { general: {}, listingCreate: {} },
 }));
 
-vi.mock("@/features/shared/lib/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limit-middleware", () => ({
   enforceRateLimit: vi.fn(() => null),
   getRateLimitKey: vi.fn(() => "key"),
 }));
 
-vi.mock("@/features/shared/lib/telemetry-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   captureServerError: vi.fn(),
   trackServerEvent: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: { listings: { error: vi.fn(), info: vi.fn() }, system: { error: vi.fn() } },
 }));
 
@@ -76,7 +76,7 @@ vi.mock("@/features/notifications/services/notification-records", () => ({
 
 const mockExecuteListingCreation = vi.fn();
 vi.mock("@/domain/usecases/listing-create", () => ({
-  executeListingCreation: (...args: any[]) => mockExecuteListingCreation(...args),
+  executeListingCreation: (...args: unknown[]) => mockExecuteListingCreation(...args),
 }));
 
 const mockUser = { id: "user-1" };

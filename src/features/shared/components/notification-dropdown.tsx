@@ -8,9 +8,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { cn, formatDate } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { useNotifications } from "@/hooks/use-notifications";
+import { cn, formatDate } from "@/lib";
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();

@@ -1,7 +1,4 @@
-import {
-  listingImageAcceptedMimeTypes,
-  listingImageMaxSizeInBytes,
-} from "@/features/shared/lib/domain";
+import { listingImageAcceptedMimeTypes, listingImageMaxSizeInBytes } from "@/lib/domain";
 
 const mimeTypeSet = new Set<string>(listingImageAcceptedMimeTypes);
 

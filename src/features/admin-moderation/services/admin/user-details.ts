@@ -1,5 +1,5 @@
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { decryptIdentityNumber, maskIdentityNumber } from "@/features/shared/lib/identity-number";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { decryptIdentityNumber, maskIdentityNumber } from "@/lib/identity-number";
 
 export interface UserPaymentRecord {
   id: string;

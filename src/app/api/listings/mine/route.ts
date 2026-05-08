@@ -13,9 +13,9 @@
  */
 
 import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withSecurity } from "@/features/shared/lib/security";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withSecurity } from "@/lib/security";
+import { captureServerError } from "@/lib/telemetry-server";
 
 const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first
 const MY_LISTINGS_MAX_LIMIT = 50;

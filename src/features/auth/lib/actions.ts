@@ -4,18 +4,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getAppUrl } from "@/features/seo/lib";
-import { loginSchema, registerSchema, resetPasswordSchema } from "@/features/shared/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { rotateCsrfToken } from "@/features/shared/lib/csrf";
-import { checkBruteForceLimit } from "@/features/shared/lib/distributed-rate-limit";
-import { hasSupabaseEnv } from "@/features/shared/lib/env";
-import { AnalyticsEvent } from "@/features/shared/lib/events";
-import { logger } from "@/features/shared/lib/logger";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { checkRateLimit } from "@/features/shared/lib/rate-limit-middleware";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
-import { identifyServerUser, trackServerEvent } from "@/features/shared/lib/telemetry-server";
-import { isTurnstileEnabled, verifyTurnstileToken } from "@/features/shared/lib/turnstile";
+import { loginSchema, registerSchema, resetPasswordSchema } from "@/lib";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { rotateCsrfToken } from "@/lib/csrf";
+import { checkBruteForceLimit } from "@/lib/distributed-rate-limit";
+import { hasSupabaseEnv } from "@/lib/env";
+import { AnalyticsEvent } from "@/lib/events";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit-middleware";
+import { createSupabaseServerClient } from "@/lib/server";
+import { identifyServerUser, trackServerEvent } from "@/lib/telemetry-server";
+import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/turnstile";
 
 export interface AuthActionResponse {
   success: boolean;
@@ -342,7 +342,7 @@ export async function registerAction(
     // Fix 8: Profile Bootstrap Verification
     // Ensure the profile was created (either by trigger or manual).
     // If we're in a race condition where trigger is slow, we retry 3 times with exponential backoff.
-    let profile = null;
+    let profile: { id: string } | null = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       const { data: found } = await supabase
         .from("profiles")

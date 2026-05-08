@@ -10,12 +10,12 @@ import {
   buildProfileFromAuthUser,
   getStoredProfileById,
 } from "@/features/profile/services/profile-records";
-import { cn } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
 import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
 } from "@/features/shared/services/live-reference-data";
+import { cn } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 import { Profile } from "@/types";
 
 export const dynamic = "force-dynamic";

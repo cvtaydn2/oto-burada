@@ -1,10 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { withCache, withNextCache } from "@/features/shared/lib/cache";
-import { getSupabaseEnv, hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { withCache, withNextCache } from "@/lib/cache";
+import { getSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import type { BrandCatalogItem, CityOption, SearchSuggestionItem } from "@/types";
 
 /**

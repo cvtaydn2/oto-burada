@@ -1,9 +1,9 @@
 import type { User } from "@supabase/supabase-js";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/features/shared/lib/env";
-import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
+import { API_ERROR_CODES, apiError } from "@/lib/response";
+import { createSupabaseServerClient } from "@/lib/server";
 
 /**
  * Short-lived cache to avoid redundant DB calls for admin checks within the same instance.

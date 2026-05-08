@@ -1,9 +1,9 @@
 import { Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
+import { cn } from "@/lib";
 
 // Common emojis for quick selection
 const COMMON_EMOJIS = [

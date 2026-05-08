@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface RippleProps {
   children: React.ReactNode;

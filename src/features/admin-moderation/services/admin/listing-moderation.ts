@@ -1,9 +1,9 @@
 import { getDatabaseListings } from "@/features/marketplace/services/listing-submission-query";
-import { listingSchema } from "@/features/shared/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { getRequiredAppUrl } from "@/features/shared/lib/env";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
+import { listingSchema } from "@/lib";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { getRequiredAppUrl } from "@/lib/env";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import type { Listing } from "@/types";
 
 export type ListingModerationDecision = "approve" | "reject";
@@ -119,7 +119,7 @@ export async function moderateListingWithSideEffects({
     waitUntil(
       (async () => {
         try {
-          const { invalidateCache } = await import("@/features/shared/lib/client");
+          const { invalidateCache } = await import("@/lib/client");
           await invalidateCache("listings:approved");
         } catch (err) {
           logger.admin.error(
@@ -213,7 +213,7 @@ export async function adminDeleteDatabaseListing(listingId: string) {
         );
 
         // Queue orphaned files for cleanup by background job
-        const { queueFileCleanup } = await import("@/features/shared/lib/registry");
+        const { queueFileCleanup } = await import("@/lib/registry");
         await queueFileCleanup(bucketName, storagePaths).catch((queueErr) => {
           logger.admin.error("Failed to queue storage cleanup", queueErr, { listingId });
         });

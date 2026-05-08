@@ -7,7 +7,7 @@ import {
   getReservationsByBuyer,
   getReservationsBySeller,
 } from "@/features/reservations/services/reservation-service";
-import { reservation as copy } from "@/features/shared/lib/ui-strings";
+import { reservation as copy } from "@/lib/ui-strings";
 
 export const metadata: Metadata = {
   title: `${copy.title} — OtoBurada`,

@@ -5,9 +5,9 @@ import Image from "next/image";
 import { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
 
 import { FormSection } from "@/features/shared/components/design-system/FormSection";
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 import type { ListingCreateFormValues } from "@/types";
 
 interface PhotosStepProps {

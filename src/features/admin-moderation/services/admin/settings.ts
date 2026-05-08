@@ -3,9 +3,9 @@
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { captureServerError, captureServerWarning } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { captureServerError, captureServerWarning } from "@/lib/telemetry-server";
 
 import type { PlatformSettings } from "./settings-types";
 import { defaultPlatformSettings } from "./settings-types";

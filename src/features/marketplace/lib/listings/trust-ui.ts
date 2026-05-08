@@ -2,7 +2,7 @@
  * Trust UI ?" single module for all seller trust rendering logic.
  */
 import { getProfileRestrictionState } from "@/features/profile/services/profile-restrictions";
-import { trust } from "@/features/shared/lib/ui-strings";
+import { trust } from "@/lib/ui-strings";
 import type { Profile } from "@/types";
 
 export type RestrictionState = "active" | "restricted_review" | "banned";

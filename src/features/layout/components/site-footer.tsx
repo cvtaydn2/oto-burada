@@ -2,8 +2,8 @@ import { CarFront, CheckCircle2, MessageCircle, Shield, Users } from "lucide-rea
 import Link from "next/link";
 
 import { FooterNavLink } from "@/features/layout/components/footer-nav-link";
-import { CURRENT_YEAR } from "@/features/shared/lib/date-utils";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
+import { CURRENT_YEAR } from "@/lib/date-utils";
 
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },

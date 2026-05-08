@@ -11,15 +11,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockQueueFileCleanup = vi.fn();
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/features/shared/lib/sanitize", () => ({
+vi.mock("@/lib/sanitize", () => ({
   sanitizeDescription: (s: string) => s,
 }));
 
-vi.mock("@/features/shared/lib/registry", () => ({
+vi.mock("@/lib/registry", () => ({
   queueFileCleanup: (...args: unknown[]) => mockQueueFileCleanup(...args),
 }));
 
@@ -27,7 +27,7 @@ const mockFrom = vi.fn();
 const mockRpc = vi.fn();
 const mockAdminClient = { from: mockFrom, rpc: mockRpc };
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() => Promise.resolve(mockAdminClient)),
 }));
 

@@ -1,8 +1,8 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/telemetry-server";
 import { Profile } from "@/types";
 
 export async function getAllUsers(query?: string, page = 1, limit = 20) {
@@ -50,7 +50,21 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
   // Use sequential chunks of 5 to avoid Free-Tier Auth API rate limits
   const profileIds = profiles.map((p) => p.id);
 
-  const authResults: unknown[] = [];
+  interface AuthUserResponse {
+    data: {
+      user: {
+        id: string;
+        last_sign_in_at?: string | null;
+        email_confirmed_at?: string | null;
+        confirmed_at?: string | null;
+        app_metadata: Record<string, unknown>;
+        phone_confirmed_at?: string;
+      } | null;
+    };
+    error: unknown;
+  }
+
+  const authResults: AuthUserResponse[] = [];
   const CHUNK_SIZE = 5;
   for (let i = 0; i < profileIds.length; i += CHUNK_SIZE) {
     const chunk = profileIds.slice(i, i + CHUNK_SIZE);

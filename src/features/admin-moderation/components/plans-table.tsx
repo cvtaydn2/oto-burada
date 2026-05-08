@@ -11,7 +11,7 @@ import {
   togglePlanStatus,
 } from "@/features/admin-moderation/services/plans";
 import { PlanForm } from "@/features/forms/components/plan-form";
-import { formatCurrency } from "@/features/shared/lib";
+import { useErrorCapture } from "@/features/shared/hooks/use-error-capture";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import {
@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/features/ui/components/dropdown-menu";
-import { useErrorCapture } from "@/hooks/use-error-capture";
+import { formatCurrency } from "@/lib";
 
 interface PlansTableProps {
   initialPlans: PricingPlan[];

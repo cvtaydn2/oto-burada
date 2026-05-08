@@ -14,7 +14,7 @@ vi.mock("@/features/providers/components/csrf-provider", () => ({
   }),
 }));
 
-vi.mock("@/features/shared/lib/telemetry-client", () => ({
+vi.mock("@/lib/telemetry-client", () => ({
   captureClientEvent: (...args: unknown[]) => captureEventMock(...args),
   captureClientException: (...args: unknown[]) => captureExceptionMock(...args),
 }));

@@ -3,14 +3,14 @@
 import { Check, ChevronDown, Info, RotateCcw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
-import { cn } from "@/features/shared/lib";
+import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 import {
   carPartDamageStatuses,
   carPartDamageStatusLabels,
   carPartLabels,
   carParts,
-} from "@/features/shared/lib/domain";
-import { Button } from "@/features/ui/components/button";
+} from "@/lib/domain";
 
 interface DamageSelectorProps {
   value: Record<string, string>;

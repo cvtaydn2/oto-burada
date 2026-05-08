@@ -13,9 +13,9 @@ import {
   getListingQuestions,
   getOwnerListingQuestions,
 } from "@/features/marketplace/services/questions";
-import { formatDate } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Textarea } from "@/features/ui/components/textarea";
+import { formatDate } from "@/lib";
 import { ListingQuestion } from "@/types";
 
 const questionSchema = z.object({

@@ -7,7 +7,7 @@
  * Migration: Phase 28.5 - Legacy Service Patterns Migration
  */
 
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseServerClient } from "@/lib/server";
 import {
   type Chat,
   type ChatWithLastMessage,

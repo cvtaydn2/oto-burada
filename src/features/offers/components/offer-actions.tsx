@@ -4,7 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { acceptOfferAction, counterOfferAction, rejectOfferAction } from "@/actions/offers";
-import { formatPrice } from "@/features/shared/lib";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -18,6 +17,7 @@ import {
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
+import { formatPrice } from "@/lib";
 
 interface OfferActionsProps {
   offerId: string;

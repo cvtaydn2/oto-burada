@@ -14,18 +14,18 @@ const mockHasSupabaseAdminEnv = vi.fn(() => true);
 const mockGetUser = vi.fn();
 const mockProfileSelect = vi.fn();
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseEnv: () => mockHasSupabaseEnv(),
   hasSupabaseAdminEnv: () => mockHasSupabaseAdminEnv(),
 }));
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() => ({
     auth: { getUser: mockGetUser },
   })),
 }));
 
-vi.mock("@/features/shared/lib/admin", () => ({
+vi.mock("@/lib/admin", () => ({
   createSupabaseAdminClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
@@ -35,10 +35,8 @@ vi.mock("@/features/shared/lib/admin", () => ({
   })),
 }));
 
-vi.mock("@/features/shared/lib/response", async () => {
-  const actual = await vi.importActual<typeof import("@/features/shared/lib/response")>(
-    "@/features/shared/lib/response"
-  );
+vi.mock("@/lib/response", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/response")>("@/lib/response");
   return actual;
 });
 

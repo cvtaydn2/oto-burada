@@ -3,8 +3,8 @@
 import { MessageCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 export function WhatsAppSupport() {
   const [isVisible, setIsVisible] = useState(false);

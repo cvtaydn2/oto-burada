@@ -10,12 +10,12 @@
  */
 
 import { createDatabaseNotificationsBulk } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { getRequiredAppUrl } from "@/features/shared/lib/env";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { getRequiredAppUrl } from "@/lib/env";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { captureServerError } from "@/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 

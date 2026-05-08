@@ -274,3 +274,240 @@ When refactoring legacy code:
 6. **Type Safety**: Use Zod schemas for validation and TypeScript for type safety
 
 ---
+
+## Frontend AI Constitution
+
+Bu doküman bir yapay zekanın frontend kod üretirken uyması gereken zorunlu mimari, performans, güvenlik ve kalite kurallarını tanımlar. Tüm frontend kod üretimi bu kurallara göre yapılmalıdır.
+
+### CORE PRINCIPLES
+
+Frontend aşağıdaki öncelik sırasına göre geliştirilmelidir:
+
+1. **Maintainability** - Uzun vadeli sürdürülebilirlik
+2. **Scalability** - Büyüyebilirlik
+3. **Performance** - Performans
+4. **Accessibility** - Erişilebilirlik
+5. **Security** - Güvenlik
+6. **Reusability** - Tekrar kullanılabilirlik
+7. **UX Consistency** - UX tutarlılığı
+
+---
+
+### TECH STACK
+
+**Zorunlu Teknolojiler:**
+- React
+- Next.js (App Router)
+- TypeScript (strict)
+- Tailwind CSS
+- TanStack Query
+- Zustand
+- React Hook Form
+- Zod
+- shadcn/ui
+- Supabase (Auth, Postgres, Storage, RLS)
+
+**Yasaklar:**
+- JavaScript only
+- Context API for large global state
+- Inline CSS
+- Large monolithic components
+
+---
+
+### ARCHITECTURE RULES
+
+#### 3.1 Feature Based Architecture (Zorunlu)
+
+Dosya organizasyonu feature-based olmalıdır.
+
+```
+src/
+  features/
+    vehicle/
+    auth/
+    marketplace/
+    listing-creation/
+    admin-moderation/
+```
+
+**YAPMA:**
+```
+components/
+hooks/
+pages/
+utils/
+```
+
+#### 3.2 Separation of Concerns (Zorunlu)
+
+Aşağıdaki katmanlar birbirine karıştırılmamalıdır:
+- UI Layer
+- State Layer
+- Business Layer
+- API Layer
+- Validation Layer
+
+#### 3.3 Single Responsibility Principle
+
+Her component tek amaçlı olmalı, tek sorumluluk taşımalıdır.
+Bir component aynı anda render, fetch, validation, state logic işlerini yapmamalıdır.
+
+---
+
+### COMPONENT RULES
+
+#### 4.1 Component Size Limit
+- Bir component maksimum 250 satır olmalı
+- Büyük componentler bölünmeli
+
+#### 4.2 Smart / Dumb Component Ayrımı
+- **Dumb Component**: Sadece UI render eder, reusable, state içermez
+- **Smart Component**: API işlemleri yapar, state yönetir, logic içerir
+
+#### 4.3 Reusable UI System
+Tekrarlanan UI parçaları reusable yapılmalıdır:
+- Button, Input, Modal, Card, Table, Pagination, EmptyState, LoadingState
+
+#### 4.4 Forbidden Component Patterns
+**ASLA YAPMA:**
+- Inline fetch
+- Huge JSX trees
+- Inline business logic
+- Nested ternary chaos
+- Hardcoded strings
+- Deep prop drilling
+
+---
+
+### TYPESCRIPT RULES
+
+#### Strict TypeScript (Zorunlu)
+**ASLA KULLANMA:** `any` type
+
+**ZORUNLU:**
+- Tüm props interface kullanmalı
+- Entity tipleri merkezi olmalı (`src/types/`)
+
+---
+
+### STATE MANAGEMENT RULES
+
+#### 6.1 Global State Minimal
+Global state sadece: auth, theme, locale, notifications gibi gerçek global veriler içermelidir.
+
+#### 6.2 Server State İçin TanStack Query
+- caching, retry, deduplication, stale management zorunlu
+
+#### 6.3 Derived State Saklama
+**YAPMA:**
+```ts
+const [totalPrice, setTotalPrice]
+```
+**YAP:**
+```ts
+const totalPrice = items.reduce(...)
+```
+
+---
+
+### API RULES
+
+#### 7.1 API Calls Component İçinde Yazılamaz
+**YAPMA:**
+```ts
+useEffect(() => { fetch(...) }, [])
+```
+**YAP:** `services/api/` veya Server Actions
+
+#### 7.2 API Layer (Zorunlu)
+Tüm API işlemleri abstraction layer içinde olmalı, reusable olmalıdır.
+
+#### 7.3 Error Handling (Zorunlu)
+Tüm requestler: loading state, error state, retry, timeout içermelidir.
+
+---
+
+### PERFORMANCE RULES
+
+- **8.1** Performance First düşünülmeli
+- **8.2** Gereksiz re-render engellenmeli (React.memo, useMemo, useCallback)
+- **8.3** Large lists: pagination, virtualization, infinite query
+- **8.4** Code splitting: dynamic import, lazy loading
+- **8.5** Image optimization: WebP, AVIF, lazy loading
+
+---
+
+### FORM RULES
+
+- **9.1** React Hook Form kullan (uncontrolled)
+- **9.2** Validation için Zod (schema-based)
+- **9.3** Form UX: loading state, disabled submit, inline validation
+
+---
+
+### UI / UX RULES
+
+- **10.1** Design System zorunlu (spacing, typography, colors, shadows, radius)
+- **10.2** Consistency zorunlu (tüm buttons, forms, modals, cards aynı model)
+- **10.3** Mobile First (touch-friendly, responsive, sticky actions)
+
+---
+
+### SECURITY RULES
+
+- sanitize edilmiş HTML
+- XSS protection
+- secure auth handling
+- CSP compatible structure
+- **ASLA:** sensitive token localStorage'da tutma
+
+---
+
+### SEO RULES
+
+- SSR
+- dynamic metadata
+- canonical URLs
+- structured data
+- sitemap
+- fast LCP
+
+---
+
+### FORBIDDEN PATTERNS
+
+**ASLA YAPMA:**
+```
+any type
+inline fetch
+inline styles
+massive components
+deep prop drilling
+duplicated state
+hardcoded API urls
+business logic in JSX
+nested ternary hell
+unoptimized huge lists
+blocking rendering
+manual form validation chaos
+```
+
+---
+
+### TypeScript Error Handling Workflow
+
+TypeScript hataları düzeltirken sırasıyla:
+
+1. **Hata Analizi**: Önce hatanın kaynağını anla (type mismatch, missing export, vs)
+2. **Path Alias Kontrolü**: `tsconfig.json`'daki path alias'ları kontrol et
+3. **Export Kontrolü**: Eksik export varsa ilgili dosyaya ekle
+4. **Type Cast**: Gerekirse `as` ile cast yap (en son çare)
+5. **Yeniden Kontrol**: `npm run typecheck` ile doğrula
+
+**Önemli:**
+- `any` kullanma
+- Type safety öncelikli
+- Basit çözümler tercih et
+
+---

@@ -5,7 +5,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import type { PricingPlan } from "@/features/admin-moderation/services/plans";
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import {
   Card,
@@ -14,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/features/ui/components/card";
+import { cn } from "@/lib";
 
 interface PlanSelectorProps {
   plans: PricingPlan[];

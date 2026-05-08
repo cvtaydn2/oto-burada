@@ -1,5 +1,5 @@
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
 
 const CORPORATE_PLAN_NAME_REGEX = /(kurumsal|corporate|filo)/i;
 const PAYMENT_EXPIRY_KEYS = [

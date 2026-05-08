@@ -11,12 +11,12 @@ const mockEqId = vi.fn();
 const mockSelectListings = vi.fn();
 const mockFrom = vi.fn();
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseEnv: vi.fn(() => true),
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/features/shared/lib/public-server", () => ({
+vi.mock("@/lib/public-server", () => ({
   createSupabasePublicServerClient: vi.fn(() => ({
     from: mockFrom,
   })),

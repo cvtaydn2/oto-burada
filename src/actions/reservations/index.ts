@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { createReservation as createReservationSvc } from "@/features/reservations/services/reservation-service";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 import type { CreateReservationInput } from "@/types";
 
 export async function createReservationAction(

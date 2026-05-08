@@ -9,10 +9,10 @@ import {
   mapListingRow,
 } from "@/features/marketplace/services/mappers/listing-row.mapper";
 import { getPublicSellerProfile } from "@/features/profile/services/profile-records";
-import { withNextCache } from "@/features/shared/lib/cache";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabasePublicServerClient } from "@/features/shared/lib/public-server";
-import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { withNextCache } from "@/lib/cache";
+import { logger } from "@/lib/logger";
+import { createSupabasePublicServerClient } from "@/lib/public-server";
+import { captureServerEvent } from "@/lib/telemetry-server";
 import type { Listing, ListingFilters, Profile } from "@/types";
 
 import {

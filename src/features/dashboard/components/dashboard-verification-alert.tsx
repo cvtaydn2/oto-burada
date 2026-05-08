@@ -2,8 +2,8 @@ import { AlertCircle, AlertTriangle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 import { getProfileRestrictionState } from "@/features/profile/services/profile-restrictions";
-import { trust } from "@/features/shared/lib/ui-strings";
 import { Button } from "@/features/ui/components/button";
+import { trust } from "@/lib/ui-strings";
 import type { Profile } from "@/types";
 
 interface DashboardVerificationAlertProps {

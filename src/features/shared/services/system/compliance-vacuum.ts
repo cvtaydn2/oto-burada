@@ -1,5 +1,5 @@
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 /**
  * World-Class Compliance: Toxic Waste Vacuum (Issue 9)

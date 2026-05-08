@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 import { getAdminAnalytics } from "../analytics";
 
-vi.mock("@/features/shared/lib/admin");
-vi.mock("@/features/shared/lib/env", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/features/shared/lib/env")>();
+vi.mock("@/lib/admin");
+vi.mock("@/lib/env", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/env")>();
   return {
     ...actual,
     hasSupabaseAdminEnv: vi.fn(() => true),
@@ -96,7 +96,7 @@ describe("admin analytics service", () => {
   });
 
   it("should return null if env is missing", async () => {
-    const { hasSupabaseAdminEnv } = await import("@/features/shared/lib/env");
+    const { hasSupabaseAdminEnv } = await import("@/lib/env");
     vi.mocked(hasSupabaseAdminEnv).mockReturnValue(false);
 
     const result = await getAdminAnalytics();

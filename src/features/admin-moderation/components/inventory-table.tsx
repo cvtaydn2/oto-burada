@@ -9,8 +9,6 @@ import { toast } from "sonner";
 import { forceActionOnListing } from "@/features/admin-moderation/services/inventory";
 import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
-import { formatCurrency, formatNumber, supabaseImageUrl } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import {
@@ -21,6 +19,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/features/ui/components/dropdown-menu";
+import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 import { Listing } from "@/types";
 
 interface InventoryTableProps {

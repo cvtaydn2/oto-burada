@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
   metadata.title = `${city} Satılık İkinci El Araba İlanları | OtoBurada`;
   metadata.description = `${city} genelindeki en güncel satılık ikinci el araba ilanlarını incele. ${city}'da uygun fiyatlı araçları keşfet, güvenle satın al veya sat.`;
 
-  if (metadata.alternates) {
-    metadata.alternates.canonical = buildAbsoluteUrl(`/satilik-araba/${citySlug}`);
-  }
+  (metadata as Record<string, unknown>).alternates = {
+    canonical: buildAbsoluteUrl(`/satilik-araba/${citySlug}`),
+  };
 
-  return metadata;
+  return metadata as Metadata;
 }
 
 export default async function CityPage({ params }: CityPageProps) {

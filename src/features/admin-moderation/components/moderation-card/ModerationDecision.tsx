@@ -3,7 +3,6 @@
 import { ArrowRight, CheckCircle2, LoaderCircle, MessageCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 
-import { cn } from "@/features/shared/lib";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +16,7 @@ import {
 } from "@/features/ui/components/alert-dialog";
 import { Button } from "@/features/ui/components/button";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 import type { Listing } from "@/types";
 
 interface ModerationDecisionProps {

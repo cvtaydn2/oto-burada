@@ -12,24 +12,24 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/features/shared/lib/telemetry-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   trackServerEvent: vi.fn(),
   identifyServerUser: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limit-middleware", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
 }));
 
-vi.mock("@/features/shared/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", () => ({
   rateLimitProfiles: { auth: {}, forgotPassword: {} },
 }));
 
-vi.mock("@/features/shared/lib/distributed-rate-limit", () => ({
+vi.mock("@/lib/distributed-rate-limit", () => ({
   checkBruteForceLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-vi.mock("@/features/shared/lib/turnstile", () => ({
+vi.mock("@/lib/turnstile", () => ({
   isTurnstileEnabled: vi.fn(() => false),
   verifyTurnstileToken: vi.fn(),
 }));
@@ -41,7 +41,7 @@ vi.mock("@/features/seo/lib", () => ({
 const mockSignUp = vi.fn();
 const mockGetUser = vi.fn();
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() =>
     Promise.resolve({
       auth: {
@@ -57,7 +57,7 @@ vi.mock("@/features/shared/lib/server", () => ({
   ),
 }));
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseEnv: vi.fn(() => true),
 }));
 
@@ -174,7 +174,7 @@ describe("registerAction — success path", () => {
   });
 
   it("returns rate-limit error when rate limit is exceeded", async () => {
-    const { checkRateLimit } = await import("@/features/shared/lib/rate-limit-middleware");
+    const { checkRateLimit } = await import("@/lib/rate-limit-middleware");
     vi.mocked(checkRateLimit).mockResolvedValueOnce({
       allowed: false,
       remaining: 0,

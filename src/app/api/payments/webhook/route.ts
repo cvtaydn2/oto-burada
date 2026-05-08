@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { verifyIyzicoWebhook } from "@/features/shared/lib/iyzico-webhook";
-import { logger } from "@/features/shared/lib/logger";
-import { secrets } from "@/features/shared/lib/secrets";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { verifyIyzicoWebhook } from "@/lib/iyzico-webhook";
+import { logger } from "@/lib/logger";
+import { secrets } from "@/lib/secrets";
+
+interface IyzicoWebhookPayload {
+  token?: string;
+  iyziEventType?: string;
+  status?: string;
+  paymentId?: string;
+  [key: string]: unknown;
+}
 
 export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();
 
   try {
-    // ── BUG FIX: Issue BUG-08 - JSON Parse Error Handling ─────────────
-    // Catch JSON parse errors to prevent 500 errors on malformed payloads
-    // and avoid unnecessary Iyzico retries
     const rawBody = await req.text();
-    let body: unknown;
+    let body: IyzicoWebhookPayload;
 
     try {
       body = JSON.parse(rawBody);
@@ -115,7 +120,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ status: "ok" });
   } catch (error: unknown) {
-    logger.api.error("Payment webhook error", { message: error.message });
+    logger.api.error("Payment webhook error", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     // F-08: Return generic message to prevent information disclosure
     return NextResponse.json(
       { status: "error", message: "Webhook processing failed" },

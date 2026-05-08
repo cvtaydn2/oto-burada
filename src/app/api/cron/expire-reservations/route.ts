@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { expireReservations } from "@/features/reservations/services/reservation-service";
-import { logger } from "@/features/shared/lib/logger";
-import { withCronRoute } from "@/features/shared/lib/security";
+import { logger } from "@/lib/logger";
+import { withCronRoute } from "@/lib/security";
 
 export async function POST(request: Request) {
   const security = await withCronRoute(request);

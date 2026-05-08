@@ -4,8 +4,8 @@ import { z } from "zod";
 import { getCurrentUser } from "@/features/auth/lib/session";
 import { recordListingView } from "@/features/marketplace/services/listing-views";
 import { getListingById } from "@/features/marketplace/services/marketplace-listings";
-import { logger } from "@/features/shared/lib/logger";
-import { withSecurity } from "@/features/shared/lib/security";
+import { logger } from "@/lib/logger";
+import { withSecurity } from "@/lib/security";
 
 const viewSchema = z.object({
   listingId: z.string().uuid(),

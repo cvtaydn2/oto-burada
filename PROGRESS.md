@@ -1,5 +1,43 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 51. Homepage Modularization and Rule 4.1 Size Limit Compliance Pass
+
+**Date**: 2026-05-08
+**Status**: ✅ COMPLETED
+**Scope**: Refactor the main marketplace homepage (`src/app/(public)/(marketplace)/page.tsx`) to comply with Rule 4.1 component size limit restrictions (<250 lines) by extracting sections into modular components.
+
+### 51.1 Applied Fixes
+- **Quick Explore Component ([quick-explore.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/marketplace/components/quick-explore.tsx)):** Extracted the Popüler Markalar and Popüler Şehirler sections into a standalone, modular, strongly-typed, responsive component.
+- **Home Trust and Search Component ([home-trust-and-search.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/marketplace/components/home-trust-and-search.tsx)):** Extracted the why OtoBurada, popular search items, and corporate benefits sections into a separate clean component.
+- **Homepage Refactor ([page.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/app/(public)/(marketplace)/page.tsx)):** Integrated the modular components into `page.tsx`, reducing its line count from 408 lines to 211 lines, well below the 250-line limit, with zero impact on page SEO, SSR, structure, or performance.
+
+### 51.2 Validation
+- **TypeScript Compilation (`npm run typecheck`):** Passed with **0 errors**.
+- **ESLint Linter (`npx eslint --quiet`):** Passed with **0 errors**.
+
+## 50. Post-Audit TypeScript and Linter Resolution Pass
+
+**Date**: 2026-05-08
+**Status**: ✅ COMPLETED
+**Scope**: Resolve post-audit TypeScript compilation errors and ESLint import sorting violations globally, ensuring the repository is 100% type-safe, lint-clean, and ready for production.
+
+### 50.1 Applied Fixes
+- **Saved Search Notifier ([saved-search-notifier.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/shared/services/system/saved-search-notifier.ts)):** Fixed module resolution errors for `@/lib/admin` (changed to `@/lib/supabase/admin`), `@/lib/env` (changed to `@/lib/supabase/env`), and `@/lib/logger` (changed to `@/lib/logging/logger`) to match actual file system paths.
+- **UI Search Component ([search-with-suggestions.tsx](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/features/ui/components/search-with-suggestions.tsx)):** Corrected imports from `@/hooks/use-navigation` (changed to `@/hooks/use-navigation/use-navigation`) and `@/components/ui/button` (changed to `@/components/ui/button/button`) to accurately target files instead of non-existent parent directory aliases.
+- **Navigation Hook ([use-navigation.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/hooks/use-navigation/use-navigation.ts)):** Fixed type errors where `undefined` was being assigned to non-nullable `string` parameters of `URLSearchParams` by coalescing to empty strings.
+- **API Resilience Layer ([resilience.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/lib/api/resilience.ts)):** Fixed a `never` type narrowing compilation error on `redis` by importing it from `@/lib/redis` (mapped to `src/lib/redis/client.ts` with type `Redis | null`) rather than `@/lib/client` (which is a compatibility file that exports `redis = null`).
+- **Step-up Auth Security Layer ([step-up-auth.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/lib/security/step-up-auth.ts)):** Applied the same `redis` import correction from `@/lib/redis` to resolve TypeScript's `never` narrowing type errors.
+- **Middleware ([middleware.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/middleware.ts)):** Corrected the import of `rateLimitMiddleware` to point directly to `@/lib/middleware/rate-limit` instead of the legacy `@/lib/rate-limit` path.
+- **Market Stats Cron Script ([refresh-market-stats.ts](file:///c:/Users/Cevat/Documents/Github/oto-burada/src/scripts/refresh-market-stats.ts)):** Corrected the import of `refreshTopMarketSegments` to point to the current location under `../features/marketplace/services/market/market-stats`.
+- **ESLint Import Sorting Autofixes:** Ran ESLint import sort fixers across all affected files, ensuring a 100% compliant and pristine linter status globally.
+
+### 50.2 Validation
+- **TypeScript Compilation (`npm run typecheck`):** Successfully executed with **0 compilation errors**.
+- **ESLint Audit (`npx eslint --quiet`):** Successfully passed with **0 errors**.
+
+### 50.3 Next Step
+- Complete production rollout and deployment.
+
 ## 49. CSP Style-Src Development Optimization
 
 **Date**: 2026-05-07

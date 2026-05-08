@@ -24,6 +24,7 @@ import {
   toggleBrandStatus,
   updateBrand,
 } from "@/features/admin-moderation/services/reference";
+import { useErrorCapture } from "@/features/shared/hooks/use-error-capture";
 import { Button } from "@/features/ui/components/button";
 import {
   DropdownMenu,
@@ -35,7 +36,6 @@ import {
 } from "@/features/ui/components/dropdown-menu";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
-import { useErrorCapture } from "@/hooks/use-error-capture";
 
 import { ModelsManager } from "./models-manager";
 

@@ -9,9 +9,9 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
-vi.mock("@/features/shared/lib/admin");
+vi.mock("@/lib/admin");
 
 describe("Preservation — getSupportTickets full_name mapping (baseline, must pass on unfixed code)", () => {
   const mockFrom = vi.fn();

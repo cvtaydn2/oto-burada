@@ -3,16 +3,17 @@
 import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Label } from "@/features/ui/components/label";
+import { cn } from "@/lib";
 
 interface SellerReviewFormProps {
   sellerId: string;
-  listingId: string;
-  sellerName: string;
+  listingId?: string;
+  sellerName?: string;
   /** If provided, the form is shown inline. Otherwise it's hidden behind a toggle. */
   defaultOpen?: boolean;
+  children?: React.ReactNode;
 }
 
 export function SellerReviewForm({

@@ -9,13 +9,13 @@ import {
   PlatformSettings,
   updateAllPlatformSettings,
 } from "@/features/admin-moderation/services/settings";
-import { cn } from "@/features/shared/lib";
-import { captureClientException } from "@/features/shared/lib/telemetry-client";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
 import { Switch } from "@/features/ui/components/switch";
+import { cn } from "@/lib";
+import { captureClientException } from "@/lib/telemetry-client";
 
 interface AdminSettingsFormProps {
   initialSettings: PlatformSettings;

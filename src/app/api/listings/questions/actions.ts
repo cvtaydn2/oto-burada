@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseServerClient } from "@/lib/server";
 
 interface QuestionWithListings {
   user_id: string;

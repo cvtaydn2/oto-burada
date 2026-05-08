@@ -4,10 +4,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-import { apiResponseSchemas } from "@/features/shared/lib/api-responses";
-import { API_ROUTES } from "@/features/shared/lib/api-routes";
-import { ApiClient } from "@/features/shared/lib/client";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/api-routes";
 import { queryKeys } from "@/lib/query-keys";
+import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { Listing } from "@/types";
 
 export function useListingActions(listings: Listing[], userId?: string) {
@@ -34,7 +34,6 @@ export function useListingActions(listings: Listing[], userId?: string) {
         API_ROUTES.LISTINGS.ARCHIVE(id),
         {
           method: "POST",
-          schema: apiResponseSchemas.genericMessage,
         }
       );
       if (!response.success) {

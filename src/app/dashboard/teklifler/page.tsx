@@ -4,8 +4,8 @@ import { requireUser } from "@/features/auth/lib/session";
 import { OfferActions } from "@/features/offers/components/offer-actions";
 import { OfferStatusBadge } from "@/features/offers/components/offer-status-badge";
 import { getOffersForUser, getOffersReceived } from "@/features/offers/services/offer-service";
-import { formatPrice } from "@/features/shared/lib";
 import { Card, CardContent } from "@/features/ui/components/card";
+import { formatPrice } from "@/lib";
 
 export const dynamic = "force-dynamic";
 

@@ -2,10 +2,10 @@ import {
   getStoredNotificationsByUser,
   markAllDatabaseNotificationsRead,
 } from "@/features/notifications/services/notification-records";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withAuth, withAuthAndCsrf } from "@/features/shared/lib/security";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAuth, withAuthAndCsrf } from "@/lib/security";
+import { captureServerError } from "@/lib/telemetry-server";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting

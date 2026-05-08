@@ -3,14 +3,14 @@ import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
 } from "@/features/reports/services/report-submissions";
-import { reportCreateSchema } from "@/features/shared/lib";
-import { hasSupabaseEnv } from "@/features/shared/lib/env";
-import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { sanitizeDescription } from "@/features/shared/lib/sanitize";
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
-import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { reportCreateSchema } from "@/lib";
+import { hasSupabaseEnv } from "@/lib/env";
+import { issuesToFieldErrors } from "@/lib/helpers";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription } from "@/lib/sanitize";
+import { withAuthAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting

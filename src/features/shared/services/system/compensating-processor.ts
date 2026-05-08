@@ -1,7 +1,7 @@
 import { getIyzicoClient } from "@/features/payments/services/iyzico-client";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { iyzicoBreaker } from "@/features/shared/lib/resilience";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { iyzicoBreaker } from "@/lib/resilience";
 
 /**
  * World-Class Reliability: Compensating Actions (Issue 9)
@@ -93,20 +93,22 @@ async function handleRefundAction(payload: Record<string, unknown>) {
     };
 
     return new Promise<boolean>((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      iyzico.payment.refund.create(refundRequest, (err: any, result: any) => {
-        if (err || result.status !== "success") {
-          logger.payments.error("Refund API call failed", { err, result });
-          reject(new Error(result?.errorMessage || err?.message || "Refund failed"));
-          return;
+      iyzico.payment.refund.create(
+        refundRequest,
+        (err: Error | null, result: Record<string, unknown>) => {
+          if (err || result.status !== "success") {
+            logger.payments.error("Refund API call failed", { err, result });
+            reject(new Error((result?.errorMessage as string) || err?.message || "Refund failed"));
+            return;
+          }
+          logger.payments.info("Refund processed successfully via Compensating Action.", {
+            paymentId,
+            conversationId,
+            refundId: result?.refundId,
+          });
+          resolve(true);
         }
-        logger.payments.info("Refund processed successfully via Compensating Action.", {
-          paymentId,
-          conversationId,
-          refundId: result?.refundId,
-        });
-        resolve(true);
-      });
+      );
     });
   });
 }

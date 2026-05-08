@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { useListingActions } from "@/features/marketplace/hooks/use-listing-actions";
 import { EmptyState } from "@/features/shared/components/empty-state";
 import {
   AlertDialog,
@@ -25,7 +26,6 @@ import {
   AlertDialogTrigger,
 } from "@/features/ui/components/alert-dialog";
 import { Button } from "@/features/ui/components/button";
-import { useListingActions } from "@/hooks/use-listing-actions";
 import { type Listing } from "@/types";
 
 import { DashboardListingCard } from "./dashboard-listing-card";

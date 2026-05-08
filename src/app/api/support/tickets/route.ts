@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-import { logger } from "@/features/shared/lib/logger";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { sanitizeDescription, sanitizeText } from "@/features/shared/lib/sanitize";
-import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
-import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
 import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
 import { createTicket } from "@/features/support/services/ticket-service";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitize";
+import { withUserAndCsrf, withUserRoute } from "@/lib/security";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 
 // Import types from service - single source of truth
 const VALID_CATEGORIES: TicketCategory[] = [

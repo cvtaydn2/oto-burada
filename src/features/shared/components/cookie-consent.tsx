@@ -3,12 +3,8 @@
 import { Cookie, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import {
-  captureClientEvent,
-  getCookieConsent,
-  setCookieConsent,
-} from "@/features/shared/lib/telemetry-client";
 import { Button } from "@/features/ui/components/button";
+import { captureClientEvent, getCookieConsent, setCookieConsent } from "@/lib/telemetry-client";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);

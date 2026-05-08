@@ -8,7 +8,6 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { PriceEstimationResult } from "@/features/marketplace/services/price-estimation";
-import { formatCurrency } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/features/ui/components/select";
+import { formatCurrency } from "@/lib";
 import { BrandCatalogItem } from "@/types";
 
 const valuationSchema = z.object({

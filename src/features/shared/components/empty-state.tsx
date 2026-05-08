@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 
 export interface EmptyStateProps {
   title: string;

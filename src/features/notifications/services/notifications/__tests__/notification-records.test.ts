@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
+import { createSupabaseAdminClient } from "@/lib/admin";
 
 import {
   createDatabaseNotification,
@@ -8,7 +8,7 @@ import {
   markDatabaseNotificationRead,
 } from "../notification-records";
 
-vi.mock("@/features/shared/lib/admin");
+vi.mock("@/lib/admin");
 
 type NotificationQueryResult = {
   data:

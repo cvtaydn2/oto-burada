@@ -103,7 +103,6 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
         chatId,
         senderId: userId,
         content: content.trim(),
-        messageType: "text",
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Mesaj gönderilemedi.";

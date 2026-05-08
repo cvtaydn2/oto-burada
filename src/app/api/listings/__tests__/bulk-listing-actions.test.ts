@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { withAuthAndCsrf } from "@/lib/security";
 
-vi.mock("@/features/shared/lib/security", () => ({
+vi.mock("@/lib/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/telemetry-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   captureServerEvent: vi.fn(),
 }));
 

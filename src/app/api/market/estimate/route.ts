@@ -1,9 +1,9 @@
 import { estimateVehiclePrice } from "@/features/marketplace/services/price-estimation";
-import { getCachedData, setCachedData } from "@/features/shared/lib/client";
-import { logger } from "@/features/shared/lib/logger";
-import { enforceRateLimit, getRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { getCachedData, setCachedData } from "@/lib/client";
+import { logger } from "@/lib/logger";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { captureServerError } from "@/lib/telemetry-server";
 
 // Rate limit: 30 per minute per IP
 const ESTIMATE_RATE_LIMIT = { limit: 30, windowMs: 60 * 1000 };

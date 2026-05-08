@@ -1,6 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface TrustBadgeProps {
   badgeLabel?: string | null;

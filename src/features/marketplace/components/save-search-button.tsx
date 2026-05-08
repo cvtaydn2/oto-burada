@@ -7,8 +7,8 @@ import { useState } from "react";
 
 import { saveSearchAction } from "@/app/dashboard/saved-searches/actions";
 import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
-import { cn } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
 import type { ListingFilters } from "@/types";
 
 interface SaveSearchButtonProps {

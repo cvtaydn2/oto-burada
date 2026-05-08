@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { PricingPlan } from "@/features/admin-moderation/services/plans";
-import { captureClientEvent, captureClientException } from "@/features/shared/lib/telemetry-client";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
 import { Input } from "@/features/ui/components/input";
 import { Label } from "@/features/ui/components/label";
+import { captureClientEvent, captureClientException } from "@/lib/telemetry-client";
 
 interface CheckoutClientProps {
   plan: PricingPlan;

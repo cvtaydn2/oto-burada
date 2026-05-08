@@ -1,9 +1,6 @@
-import {
-  decryptIdentityNumber,
-  encryptIdentityNumber,
-} from "@/features/shared/lib/identity-number";
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { decryptIdentityNumber, encryptIdentityNumber } from "@/lib/identity-number";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 import { getIyzicoClient } from "./iyzico-client";
 

@@ -22,8 +22,8 @@ import { getRecentAdminModerationActions } from "@/features/admin-moderation/ser
 import { getPersistenceHealth } from "@/features/admin-moderation/services/persistence-health";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { getStoredReports } from "@/features/reports/services/report-submissions";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { captureServerError } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { captureServerError } from "@/lib/telemetry-server";
 
 type AsyncErrorResult = { error: string };
 

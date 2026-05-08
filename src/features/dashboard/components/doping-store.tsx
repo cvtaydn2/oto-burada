@@ -8,8 +8,6 @@ import {
   getListingDopingDisplayItems,
   getListingDopingStatusTone,
 } from "@/features/marketplace/lib/utils";
-import { formatCurrency, formatDate } from "@/features/shared/lib";
-import { DOPING_PACKAGES, getDopingPackageByType } from "@/features/shared/lib/doping";
 import { Button } from "@/features/ui/components/button";
 import {
   Card,
@@ -19,6 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/features/ui/components/card";
+import { formatCurrency, formatDate } from "@/lib";
+import { DOPING_PACKAGES, getDopingPackageByType } from "@/lib/doping";
 import type { Listing } from "@/types";
 import { DopingPackage } from "@/types/payment";
 

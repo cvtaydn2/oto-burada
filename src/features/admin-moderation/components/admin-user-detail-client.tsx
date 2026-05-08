@@ -12,11 +12,11 @@ import {
   toggleUserBan,
 } from "@/features/admin-moderation/services/user-actions";
 import type { UserDetailData } from "@/features/admin-moderation/services/user-details";
-import { safeFormatDate } from "@/features/shared/lib";
-import { cn } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
 import { Badge } from "@/features/ui/components/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/features/ui/components/tabs";
+import { safeFormatDate } from "@/lib";
+import { cn } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 
 import { AdminUserActionCards } from "./admin-user-action-cards";
 import { AdminUserHeader } from "./admin-user-header";

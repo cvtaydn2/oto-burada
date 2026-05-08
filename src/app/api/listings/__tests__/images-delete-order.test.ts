@@ -10,24 +10,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockVerifyFileOwnership = vi.fn();
 const mockUnregisterFileById = vi.fn();
 
-vi.mock("@/features/shared/lib/registry", () => ({
+vi.mock("@/lib/registry", () => ({
   countDailyUserUploads: vi.fn(() => 0),
   registerFileInRegistry: vi.fn(),
   verifyFileOwnership: (...args: unknown[]) => mockVerifyFileOwnership(...args),
   unregisterFileById: (...args: unknown[]) => mockUnregisterFileById(...args),
 }));
 
-vi.mock("@/features/shared/lib/security", () => ({
+vi.mock("@/lib/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/env", () => ({
+vi.mock("@/lib/env", () => ({
   hasSupabaseStorageEnv: vi.fn(() => true),
   getSupabaseStorageEnv: vi.fn(() => ({ listingsBucket: "listing-images" })),
 }));
 
 const mockRemove = vi.fn();
-vi.mock("@/features/shared/lib/server", () => ({
+vi.mock("@/lib/server", () => ({
   createSupabaseServerClient: vi.fn(() => ({
     storage: {
       from: vi.fn(() => ({ remove: mockRemove })),
@@ -35,11 +35,11 @@ vi.mock("@/features/shared/lib/server", () => ({
   })),
 }));
 
-vi.mock("@/features/shared/lib/telemetry-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   captureServerError: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: { storage: { warn: vi.fn(), error: vi.fn() } },
 }));
 
@@ -49,11 +49,11 @@ vi.mock("@/features/marketplace/services/listing-images", () => ({
   buildListingImageStoragePath: vi.fn(() => "listings/user-1/uuid.jpg"),
 }));
 
-vi.mock("@/features/shared/lib/upload-policy", () => ({
+vi.mock("@/lib/upload-policy", () => ({
   UPLOAD_POLICY: { IMAGES: { MAX_FILE_SIZE_BYTES: 10 * 1024 * 1024, MAX_DAILY_UPLOADS: 50 } },
 }));
 
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { withAuthAndCsrf } from "@/lib/security";
 
 const mockUser = { id: "user-1" };
 

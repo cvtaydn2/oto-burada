@@ -15,7 +15,7 @@ vi.mock("../../queries/get-listings", () => ({
   getStoredListingById: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/registry", () => ({
+vi.mock("@/lib/registry", () => ({
   queueFileCleanup: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -115,7 +115,7 @@ describe("deleteDatabaseListing", () => {
     });
 
     it("should queue storage cleanup for listings with images", async () => {
-      const { queueFileCleanup } = await import("@/features/shared/lib/registry");
+      const { queueFileCleanup } = await import("@/lib/registry");
 
       (getStoredListingById as any).mockResolvedValue({
         id: "listing-123",

@@ -5,9 +5,9 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 
 import { useCsrfToken } from "@/features/providers/components/csrf-provider";
-import { reportReasonLabels, reportReasons } from "@/features/shared/lib/domain";
 import { Button } from "@/features/ui/components/button";
 import { Label } from "@/features/ui/components/label";
+import { reportReasonLabels, reportReasons } from "@/lib/domain";
 
 interface ReportListingFormProps {
   listingId: string;

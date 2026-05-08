@@ -4,9 +4,9 @@ import { AlertTriangle, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import React, { Component, type ReactNode } from "react";
 
-import { cn } from "@/features/shared/lib";
-import { logger } from "@/features/shared/lib/logger";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children?: ReactNode;

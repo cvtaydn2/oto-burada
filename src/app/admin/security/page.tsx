@@ -1,9 +1,6 @@
 import { AlertTriangle, Ban, Shield, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
 import {
@@ -13,6 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/features/ui/components/card";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
 
 interface AbuseLog {
   id: string;
@@ -72,8 +72,8 @@ async function getAbuseData() {
     bannedIPs,
     stats: {
       total24h: last24h.length,
-      reasonCounts,
-    },
+      reasonCounts: reasonCounts,
+    } as { total24h: number; reasonCounts: Record<string, number> },
   };
 }
 
@@ -162,12 +162,20 @@ export default async function SecurityPage() {
           <CardContent>
             <div className="text-2xl font-bold">
               {stats?.reasonCounts
-                ? Object.entries(stats.reasonCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "-"
+                ? (() => {
+                    const entries = Object.entries(stats.reasonCounts as Record<string, number>);
+                    const sorted = entries.sort((a, b) => (b[1] || 0) - (a[1] || 0));
+                    return sorted[0]?.[0] || "-";
+                  })()
                 : "-"}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.reasonCounts
-                ? Object.entries(stats.reasonCounts).sort((a, b) => b[1] - a[1])[0]?.[1] || 0
+                ? (() => {
+                    const entries = Object.entries(stats.reasonCounts as Record<string, number>);
+                    const sorted = entries.sort((a, b) => (b[1] || 0) - (a[1] || 0));
+                    return sorted[0]?.[1] || 0;
+                  })()
                 : 0}{" "}
               kez
             </p>

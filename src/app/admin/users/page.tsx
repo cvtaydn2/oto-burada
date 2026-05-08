@@ -7,10 +7,10 @@ import { UserHeaderActions } from "@/features/admin-moderation/components/user-h
 import { UserSearch } from "@/features/admin-moderation/components/user-search";
 import { getAllUsers } from "@/features/admin-moderation/services/user-list";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/features/shared/lib";
-import { trust } from "@/features/shared/lib/ui-strings";
 import { Badge } from "@/features/ui/components/badge";
 import { Button } from "@/features/ui/components/button";
+import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib";
+import { trust } from "@/lib/ui-strings";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default async function AdminUserManagementPage({
   const totalPages = Math.ceil(total / limit);
 
   // Tüm DB'den gerçek sayılar — sadece mevcut sayfa değil
-  const admin = (await import("@/features/shared/lib/admin")).createSupabaseAdminClient();
+  const admin = (await import("@/lib/admin")).createSupabaseAdminClient();
   const [{ count: totalActive }, { count: totalProfessional }, { count: totalBanned }] =
     await Promise.all([
       admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", false),
@@ -209,7 +209,9 @@ export default async function AdminUserManagementPage({
                         </td>
                         <td className="p-6">
                           <span className="text-xs font-bold text-muted-foreground/70">
-                            {safeFormatDistanceToNow(userWithLogin.lastSignInAt)}
+                            {userWithLogin.lastSignInAt
+                              ? safeFormatDistanceToNow(userWithLogin.lastSignInAt)
+                              : "—"}
                           </span>
                         </td>
                         <td className="p-6">

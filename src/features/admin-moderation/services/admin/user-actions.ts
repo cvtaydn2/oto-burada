@@ -5,14 +5,14 @@ import { revalidatePath } from "next/cache";
 import { logAdminAction } from "@/features/admin-moderation/services/moderation-actions";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { uuidSchema } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { uuidSchema } from "@/lib/admin";
+import { logger } from "@/lib/logger";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
   const validatedUserId = uuidSchema.parse(userId);
   await requireAdminUser();
-  const { executeServerAction } = await import("@/features/shared/lib/action-utils/action-utils");
+  const { executeServerAction } = await import("@/lib/action-utils/action-utils");
 
   return executeServerAction(
     "toggleUserBan",

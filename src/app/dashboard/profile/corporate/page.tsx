@@ -17,7 +17,7 @@ import {
   buildProfileFromAuthUser,
   getStoredProfileById,
 } from "@/features/profile/services/profile-records";
-import { trust } from "@/features/shared/lib/ui-strings";
+import { trust } from "@/lib/ui-strings";
 
 export const dynamic = "force-dynamic";
 

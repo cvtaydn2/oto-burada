@@ -19,6 +19,7 @@ interface EmailVerificationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  onVerified?: () => void;
 }
 
 export function EmailVerificationDialog({

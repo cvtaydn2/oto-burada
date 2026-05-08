@@ -2,8 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 
-import { cn } from "@/features/shared/lib";
 import { Input } from "@/features/ui/components/input";
+import { cn } from "@/lib";
 
 interface RangeSliderProps {
   min: number;

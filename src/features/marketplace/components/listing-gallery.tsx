@@ -6,8 +6,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 import { Listing360View } from "@/features/marketplace/components/listing-360-view";
-import { supabaseImageUrl } from "@/features/shared/lib";
 import { Button } from "@/features/ui/components/button";
+import { supabaseImageUrl } from "@/lib";
 import type { ListingImage } from "@/types";
 
 const ListingGalleryLightbox = dynamic(() =>

@@ -9,8 +9,8 @@ import { ListingsPageClient } from "@/features/marketplace/components/listings-p
 import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
 import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
 import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
+import { createSupabaseServerClient } from "@/lib/server";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {
@@ -32,7 +32,7 @@ interface ListingsPageProps {
 export async function generateMetadata({ searchParams }: ListingsPageProps): Promise<Metadata> {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const filters = parseListingFiltersFromSearchParams(resolvedSearchParams);
-  return buildListingsMetadata(filters);
+  return buildListingsMetadata(filters as unknown as Record<string, unknown>);
 }
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {

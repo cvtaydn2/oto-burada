@@ -57,7 +57,7 @@ export async function ListingSellerSidebar({
                 className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
                   isTrusted
                     ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                    : tone === "slate"
+                    : (tone as string) === "slate"
                       ? "bg-slate-500/10 text-slate-700 border-slate-500/20"
                       : "bg-amber-500/10 text-amber-700 border-amber-500/20"
                 }`}

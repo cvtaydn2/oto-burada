@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { validateListingImageFile } from "../listing-images";
 
-vi.mock("@/features/shared/lib/domain", () => ({
+vi.mock("@/lib/domain", () => ({
   listingImageAcceptedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
   listingImageMaxSizeInBytes: 10 * 1024 * 1024, // 10MB
 }));

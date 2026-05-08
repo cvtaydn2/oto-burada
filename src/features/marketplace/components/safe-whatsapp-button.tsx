@@ -4,9 +4,9 @@ import { AlertCircle, Loader2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
-import { cn } from "@/features/shared/lib";
-import { captureClientEvent } from "@/features/shared/lib/telemetry-client";
 import { Button } from "@/features/ui/components/button";
+import { cn } from "@/lib";
+import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface SafeWhatsAppButtonProps {
   listingId: string;

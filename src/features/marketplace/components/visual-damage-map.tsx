@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/features/shared/lib";
-import { carPartDamageStatusLabels } from "@/features/shared/lib/domain";
+import { cn } from "@/lib";
+import { carPartDamageStatusLabels } from "@/lib/domain";
 
 interface VisualDamageMapProps {
   damageStatus: Record<string, string>;

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { createSupabaseServerClient } from "@/lib/server";
 
 import {
   addDatabaseFavorite,
@@ -8,7 +8,7 @@ import {
   removeDatabaseFavorite,
 } from "../favorite-records";
 
-vi.mock("@/features/shared/lib/server");
+vi.mock("@/lib/server");
 
 type FavoriteQueryResult = {
   data: Array<{ listing_id: string }> | null;

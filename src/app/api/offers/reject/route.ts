@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 import { respondToOffer } from "@/features/offers/services/offer-service";
-import { logger } from "@/features/shared/lib/logger";
-import { withUserAndCsrfToken } from "@/features/shared/lib/security";
+import { logger } from "@/lib/logger";
+import { withUserAndCsrfToken } from "@/lib/security";
 
 export async function POST(request: Request) {
   const security = await withUserAndCsrfToken(request);

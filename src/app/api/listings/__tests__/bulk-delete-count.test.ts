@@ -7,19 +7,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/features/shared/lib/security", () => ({
+vi.mock("@/lib/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", () => ({
   rateLimitProfiles: { general: {} },
 }));
 
-vi.mock("@/features/shared/lib/telemetry-server", () => ({
+vi.mock("@/lib/telemetry-server", () => ({
   captureServerEvent: vi.fn(),
 }));
 
-vi.mock("@/features/shared/lib/logger", () => ({
+vi.mock("@/lib/logger", () => ({
   logger: { listings: { info: vi.fn(), error: vi.fn() } },
 }));
 
@@ -28,7 +28,7 @@ vi.mock("@/features/marketplace/services/listing-submissions", () => ({
   deleteDatabaseListing: (...args: unknown[]) => mockDeleteDatabaseListing(...args),
 }));
 
-import { withAuthAndCsrf } from "@/features/shared/lib/security";
+import { withAuthAndCsrf } from "@/lib/security";
 
 const mockUser = { id: "user-1" };
 

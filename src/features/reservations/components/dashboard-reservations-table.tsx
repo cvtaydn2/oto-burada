@@ -4,8 +4,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { cancelReservationAction, confirmReservationAction } from "@/actions/reservations";
-import { formatPrice } from "@/features/shared/lib";
-import { reservation as copy } from "@/features/shared/lib/ui-strings";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,6 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/features/ui/components/table";
+import { formatPrice } from "@/lib";
+import { reservation as copy } from "@/lib/ui-strings";
 import type { Reservation, ReservationWithListing } from "@/types";
 
 import { ReservationCountdown, ReservationStatusBadge } from "./reservation-countdown";

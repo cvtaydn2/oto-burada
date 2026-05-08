@@ -1,7 +1,7 @@
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
 
-import { cn } from "@/features/shared/lib";
+import { cn } from "@/lib";
 
 interface SectionHeaderProps {
   title: string;

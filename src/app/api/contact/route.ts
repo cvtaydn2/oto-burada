@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { isValidRequestOrigin } from "@/features/shared/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { contactFormSchema } from "@/features/shared/lib/domain";
-import {
-  getDisposableEmailMessage,
-  isDisposableEmail,
-} from "@/features/shared/lib/email-validation";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/features/shared/lib/rate-limit-middleware";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { sanitizeDescription, sanitizeText } from "@/features/shared/lib/sanitize";
-import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
-import { isTurnstileEnabled, verifyTurnstileToken } from "@/features/shared/lib/turnstile";
 import { createPublicTicket } from "@/features/support/services/ticket-service";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { isValidRequestOrigin } from "@/lib/csrf";
+import { contactFormSchema } from "@/lib/domain";
+import { getDisposableEmailMessage, isDisposableEmail } from "@/lib/email-validation";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitize";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
+import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/turnstile";
 
 // ── Spam heuristics ───────────────────────────────────────────────────────────
 

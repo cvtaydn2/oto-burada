@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { useCsrfToken } from "@/features/providers/components/csrf-provider";
-import { captureClientEvent, captureClientException } from "@/features/shared/lib/telemetry-client";
+import { captureClientEvent, captureClientException } from "@/lib/telemetry-client";
 
 interface ListingViewTrackerProps {
   listingId: string;

@@ -1,6 +1,6 @@
 import { CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
 
-import { formatCurrency } from "@/features/shared/lib";
+import { formatCurrency } from "@/lib";
 
 import { MarketPriceBar } from "./market-price-bar";
 

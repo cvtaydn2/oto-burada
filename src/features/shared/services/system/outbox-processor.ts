@@ -7,9 +7,9 @@ import {
   sendTicketCreatedEmail,
   sendTicketReplyEmail,
 } from "@/features/notifications/services/email-service";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { logger } from "@/features/shared/lib/logger";
-import { resendBreaker } from "@/features/shared/lib/resilience";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { logger } from "@/lib/logger";
+import { resendBreaker } from "@/lib/resilience";
 
 /**
  * Hyper-Scale Transaction Outbox Processor (Item 10 - Reliability)
@@ -137,8 +137,7 @@ export async function processOutboxQueue() {
 
 interface EmailNotificationPayload {
   template: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  params: any;
+  params: Record<string, unknown>;
 }
 
 /**
@@ -155,19 +154,29 @@ async function handleEmailNotification(payload: EmailNotificationPayload) {
     let result;
     switch (payload.template) {
       case "ticket_created":
-        result = await sendTicketCreatedEmail(payload.params);
+        result = await sendTicketCreatedEmail(
+          payload.params as Parameters<typeof sendTicketCreatedEmail>[0]
+        );
         break;
       case "ticket_reply":
-        result = await sendTicketReplyEmail(payload.params);
+        result = await sendTicketReplyEmail(
+          payload.params as Parameters<typeof sendTicketReplyEmail>[0]
+        );
         break;
       case "listing_approved":
-        result = await sendListingApprovedEmail(payload.params);
+        result = await sendListingApprovedEmail(
+          payload.params as Parameters<typeof sendListingApprovedEmail>[0]
+        );
         break;
       case "listing_rejected":
-        result = await sendListingRejectedEmail(payload.params);
+        result = await sendListingRejectedEmail(
+          payload.params as Parameters<typeof sendListingRejectedEmail>[0]
+        );
         break;
       case "saved_search_alert":
-        result = await sendSavedSearchAlertEmail(payload.params);
+        result = await sendSavedSearchAlertEmail(
+          payload.params as Parameters<typeof sendSavedSearchAlertEmail>[0]
+        );
         break;
       default:
         logger.system.error(`Outbox: Unsupported email template '${payload.template}'`);

@@ -1,5 +1,9 @@
-import { getTrustStyles, type TrustTone } from "@/features/marketplace/lib/trust-ui";
-import { cn } from "@/features/shared/lib";
+import {
+  getTrustDotColor,
+  getTrustStyles,
+  type TrustTone,
+} from "@/features/marketplace/lib/trust-ui";
+import { cn } from "@/lib";
 
 interface StatusPillProps {
   label: string;
@@ -15,13 +19,11 @@ export function StatusPill({ label, tone = "amber", className, showDot = false }
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest border",
-        styles.bg,
-        styles.text,
-        styles.border,
+        styles,
         className
       )}
     >
-      {showDot && <span className={cn("size-1.5 rounded-full", styles.dot)} />}
+      {showDot && <span className={cn("size-1.5 rounded-full", getTrustDotColor(tone))} />}
       {label}
     </span>
   );

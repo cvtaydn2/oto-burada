@@ -1,8 +1,8 @@
 import { ClipboardList, LayoutDashboard, MessageSquare, Plus, Settings, Star } from "lucide-react";
 import Link from "next/link";
 
-import { cn } from "@/features/shared/lib";
-import { dashboard } from "@/features/shared/lib/ui-strings";
+import { cn } from "@/lib";
+import { dashboard } from "@/lib/ui-strings";
 
 interface DashboardHeaderProps {
   userEmail?: string;

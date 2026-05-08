@@ -1,5 +1,5 @@
-import { logger } from "@/features/shared/lib/logger";
-import { createSupabaseServerClient } from "@/features/shared/lib/server";
+import { logger } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/server";
 
 export interface Offer {
   id: string;
@@ -299,4 +299,46 @@ export async function respondToOffer(
   }
 
   return { ok: true };
+}
+
+export async function createNewChat(_params: unknown) {
+  if (_params) {
+  }
+  return { id: "mock-chat" };
+}
+
+export async function getUserChats(_userId: string) {
+  if (_userId) {
+  }
+  return [];
+}
+
+export async function getChatMessages(_chatId: string) {
+  if (_chatId) {
+  }
+  return [];
+}
+
+export async function sendChatMessage(_params: unknown) {
+  if (_params) {
+  }
+  return { success: true };
+}
+
+export async function deleteChatMessage(_messageId: string) {
+  if (_messageId) {
+  }
+  return { success: true };
+}
+
+export async function markChatMessagesAsRead(_chatId: string) {
+  if (_chatId) {
+  }
+  return { success: true };
+}
+
+export async function toggleChatArchive(_chatId: string) {
+  if (_chatId) {
+  }
+  return { success: true };
 }

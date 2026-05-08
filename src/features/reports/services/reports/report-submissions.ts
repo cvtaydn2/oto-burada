@@ -1,6 +1,6 @@
-import { reportSchema } from "@/features/shared/lib";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
+import { reportSchema } from "@/lib";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 import type { Report, ReportCreateInput, ReportStatus } from "@/types";
 
 export const reportsCookieName = "oto-burada-report-submissions";
