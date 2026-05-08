@@ -57,15 +57,20 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
       }
       const host = request.headers.get("host");
       if (host && targetUrl.host === host) return true;
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      if (forwardedHost && targetUrl.host === forwardedHost) return true;
 
       if (process.env.NODE_ENV !== "production") {
-        const allowedDevOrigins = [
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "http://127.0.0.1:3000",
-          "http://127.0.0.1:3001",
-        ];
-        if (allowedDevOrigins.includes(targetUrl.origin)) return true;
+        const originStr = targetUrl.origin;
+        if (
+          originStr.startsWith("http://localhost:") ||
+          originStr.startsWith("http://127.0.0.1:") ||
+          originStr.startsWith("http://192.168.") ||
+          originStr.startsWith("http://10.") ||
+          originStr.startsWith("http://172.")
+        ) {
+          return true;
+        }
       }
     } catch {
       return false;
