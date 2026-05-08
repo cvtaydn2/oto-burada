@@ -11,7 +11,10 @@ interface ListingsErrorStateProps {
 
 export function ListingsErrorState({ error, refetch }: ListingsErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-4 py-16 sm:py-24">
+    <div
+      role="alert"
+      className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-4 py-16 sm:py-24"
+    >
       <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-red-50 sm:size-16">
         <RefreshCcw size={28} className="text-red-500" />
       </div>

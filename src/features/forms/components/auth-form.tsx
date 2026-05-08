@@ -73,12 +73,16 @@ export function AuthForm({
       <AuthCinematicPanel />
 
       {/* Auth Content */}
-      <section className="flex w-full items-center justify-center px-6 py-12 sm:px-10 lg:w-1/2 lg:px-20 bg-background">
+      <section
+        aria-label="Kimlik Doğrulama Paneli"
+        className="flex w-full items-center justify-center px-6 py-12 sm:px-10 lg:w-1/2 lg:px-20 bg-background"
+      >
         <div className="w-full max-w-sm space-y-10">
           {/* Mobile Header */}
           <div className="text-center lg:hidden space-y-4">
             <Link
               href="/"
+              aria-label="OtoBurada Ana Sayfa"
               className="inline-flex items-center gap-3 text-3xl font-bold tracking-tighter text-foreground mx-auto"
             >
               <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-sm shadow-primary/20">

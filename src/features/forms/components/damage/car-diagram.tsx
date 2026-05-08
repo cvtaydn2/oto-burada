@@ -1,4 +1,5 @@
 import { cn } from "@/lib";
+import { carPartLabels } from "@/lib/domain";
 
 interface CarDiagramProps {
   getStatus: (part: string) => string;
@@ -12,13 +13,26 @@ export function CarDiagram({ getStatus, onPartClick, isDisabled, statusColors }:
     const status = getStatus(part);
     const colorClass =
       status !== "orijinal" ? statusColors[status].fill : "fill-white stroke-slate-300";
+    const label = carPartLabels[part as keyof typeof carPartLabels] || part;
 
     return (
       <path
         d={dPath}
-        className={cn("cursor-pointer transition-all duration-300 hover:opacity-80", colorClass)}
+        className={cn(
+          "cursor-pointer transition-all duration-300 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 rounded",
+          colorClass
+        )}
         strokeWidth="2"
+        role="button"
+        tabIndex={isDisabled ? -1 : 0}
+        aria-label={`${label} (${status === "orijinal" ? "Orijinal" : status})`}
         onClick={() => !isDisabled && onPartClick(part)}
+        onKeyDown={(e) => {
+          if (!isDisabled && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onPartClick(part);
+          }
+        }}
       />
     );
   };

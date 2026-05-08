@@ -36,6 +36,7 @@ export function MarketplaceQuickFilters({
         return (
           <Button
             key={qf.label}
+            aria-pressed={qf.type === "reset" ? undefined : isActive}
             onClick={() => {
               if (qf.type === "reset") {
                 handleReset();

@@ -224,6 +224,7 @@ export function DashboardListingCard({
                 type="button"
                 onClick={() => onBump(listing.id)}
                 disabled={isBumping}
+                aria-label="İlanı Üste Taşı"
                 className="flex items-center justify-center size-11 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm"
                 title="Üste Taşı"
               >
@@ -239,6 +240,7 @@ export function DashboardListingCard({
             type="button"
             onClick={() => onArchive(listing.id)}
             disabled={isArchiving}
+            aria-label={isArchived ? "Yeniden Yayına Al" : "Arşivle"}
             className={cn(
               "flex items-center justify-center size-11 rounded-xl transition-all disabled:opacity-30 border shadow-sm",
               isArchived
@@ -261,6 +263,7 @@ export function DashboardListingCard({
               <DialogTrigger asChild>
                 <Button
                   type="button"
+                  aria-label="Doping Al"
                   className="flex items-center justify-center size-11 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
                   title="Doping Al"
                 >

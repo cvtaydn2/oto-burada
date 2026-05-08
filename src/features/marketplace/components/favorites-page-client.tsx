@@ -1,3 +1,5 @@
+"use client";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Heart, RefreshCw, SortAsc } from "lucide-react";
 import Link from "next/link";
@@ -120,6 +122,7 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
+            aria-label="Favori İlanları Sıralama Seçeneği"
             className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 outline-none focus:border-blue-400"
           >
             {SORT_OPTIONS.map((o) => (

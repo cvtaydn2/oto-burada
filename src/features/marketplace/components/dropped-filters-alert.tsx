@@ -22,7 +22,11 @@ export function DroppedFiltersAlert({
   }
 
   return (
-    <div className="mt-4 flex items-start justify-between gap-3 rounded-lg border border-amber-100 bg-amber-50/60 p-3 text-sm text-amber-800">
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-4 flex items-start justify-between gap-3 rounded-lg border border-amber-100 bg-amber-50/60 p-3 text-sm text-amber-800"
+    >
       <div>
         <div className="font-semibold">Bazı filtreler uygulanmadı</div>
         <div className="mt-1 text-xs text-amber-700/90">

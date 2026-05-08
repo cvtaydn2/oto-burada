@@ -201,6 +201,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                       <Button
                         type="button"
                         onClick={() => handleStatusChange(part, "orijinal")}
+                        aria-label={`${carPartLabels[part as keyof typeof carPartLabels]} Durumunu Sıfırla`}
                         className="text-muted-foreground/70 hover:text-red-500"
                       >
                         <RotateCcw size={14} />

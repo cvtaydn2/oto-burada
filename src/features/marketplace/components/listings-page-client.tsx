@@ -129,7 +129,7 @@ export function ListingsPageClient({
         </div>
       )}
 
-      <div className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-6 sm:px-4 sm:py-8">
+      <main className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-6 sm:px-4 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
             <MarketplaceHeader filters={filters} total={total} />
@@ -287,7 +287,7 @@ export function ListingsPageClient({
             )}
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

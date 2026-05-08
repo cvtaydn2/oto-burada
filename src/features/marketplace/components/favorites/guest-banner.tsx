@@ -4,7 +4,11 @@ import Link from "next/link";
 export function GuestBanner({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-3">
+      <div
+        role="region"
+        aria-label="Ziyaretçi Bilgilendirmesi"
+        className="flex items-center justify-between gap-4 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-3"
+      >
         <div className="flex items-center gap-3">
           <div className="flex size-9 items-center justify-center rounded-xl bg-card text-blue-500 shadow-sm">
             <ShieldCheck size={18} />
@@ -24,7 +28,11 @@ export function GuestBanner({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="rounded-2xl border border-blue-100 bg-blue-50 p-6 text-center">
+    <div
+      role="region"
+      aria-label="Ziyaretçi Bilgilendirmesi"
+      className="rounded-2xl border border-blue-100 bg-blue-50 p-6 text-center"
+    >
       <LogIn className="mx-auto mb-3 size-10 text-blue-500" />
       <h3 className="text-lg font-bold text-foreground">Bulut senkronizasyonu</h3>
       <p className="mt-1 text-sm text-muted-foreground">
