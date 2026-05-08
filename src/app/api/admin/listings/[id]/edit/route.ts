@@ -13,6 +13,7 @@ import { logger } from "@/features/shared/lib/logger";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
 import { withAdminRoute } from "@/features/shared/lib/security";
 import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import type { TablesUpdate } from "@/types/supabase";
 
 const adminEditSchema = z.object({
   title: z.string().min(5).max(200).optional(),
@@ -125,13 +126,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
-  const dbUpdates: Record<string, unknown> = {
+  const dbUpdates: TablesUpdate<"listings"> = {
     updated_at: new Date().toISOString(),
   };
   if (updates.title !== undefined) dbUpdates.title = updates.title;
   if (updates.price !== undefined) dbUpdates.price = updates.price;
   if (updates.description !== undefined) dbUpdates.description = updates.description;
-  if (criticalFieldsChanged) dbUpdates.status = "pending_ai_review";
+  if (criticalFieldsChanged) dbUpdates.status = "pending";
 
   const { data: updatedListing, error: updateError } = await admin
     .from("listings")

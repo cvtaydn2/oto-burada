@@ -43,8 +43,16 @@ export async function getAdminInventory(filters?: {
   if (filters?.status && filters.status !== "all") {
     if (filters.status === "history") {
       query = query.in("status", ["archived", "rejected"]);
-    } else {
+    } else if (
+      filters.status === "draft" ||
+      filters.status === "pending" ||
+      filters.status === "approved" ||
+      filters.status === "rejected" ||
+      filters.status === "archived"
+    ) {
       query = query.eq("status", filters.status);
+    } else if (filters.status === "pending_ai_review" || filters.status === "flagged") {
+      query = query.eq("status", "pending");
     }
   }
 

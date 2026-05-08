@@ -62,7 +62,7 @@ export async function recordListingView(
   // Instead of doing expensive SELECT count + UPDATE on every page load,
   // we record the intent in a buffer table via RPC.
   // A background cron syncs this to the main 'listings' table later.
-  await admin.rpc("increment_listing_view_buffered", { p_listing_id: listingId });
+  await admin.rpc("increment_listing_view", { target_listing_id: listingId });
 }
 
 /**

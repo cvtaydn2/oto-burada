@@ -41,9 +41,10 @@ import { ModelsManager } from "./models-manager";
 
 interface Brand {
   id: string;
+  image_url?: string | null;
+  is_active: boolean;
   name: string;
   slug: string;
-  is_active: boolean;
 }
 
 interface BrandsManagerProps {

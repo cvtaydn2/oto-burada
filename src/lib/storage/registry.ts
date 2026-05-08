@@ -30,7 +30,7 @@ export async function registerFileInRegistry(options: RegisterFileOptions) {
         file_name: options.fileName,
         file_size: options.fileSize,
         mime_type: options.mimeType,
-      } as unknown as Record<string, string | number | null | undefined>,
+      },
       { onConflict: "bucket_id,storage_path" }
     )
     .select()

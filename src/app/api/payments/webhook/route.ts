@@ -13,6 +13,13 @@ interface IyzicoWebhookPayload {
   [key: string]: unknown;
 }
 
+type ProcessPaymentWebhookResult = {
+  job_id?: string | null;
+  payment_id?: string;
+  status: "processed" | "already_processed" | "not_found";
+  success: boolean;
+};
+
 export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();
 
@@ -64,19 +71,19 @@ export async function POST(req: NextRequest) {
       await admin.from("payment_webhook_logs").upsert(
         {
           token: body.token,
-          payload: body,
-          headers: safeHeaders,
+          payload: body as import("@/types/supabase").Json,
+          headers: safeHeaders as import("@/types/supabase").Json,
           status: "received",
-          received_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
         { onConflict: "token", ignoreDuplicates: false }
       );
     } else {
       await admin.from("payment_webhook_logs").insert({
-        payload: body,
-        headers: safeHeaders,
+        payload: body as import("@/types/supabase").Json,
+        headers: safeHeaders as import("@/types/supabase").Json,
         status: "received",
-        received_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       });
     }
 
@@ -85,12 +92,20 @@ export async function POST(req: NextRequest) {
       const token = body.token;
       const status = body.status === "SUCCESS" ? "success" : "failure";
 
+      if (!token) {
+        return NextResponse.json(
+          { status: "error", message: "Missing payment token" },
+          { status: 400 }
+        );
+      }
+
       // 3. Process payment with atomic RPC (F-01, F-04)
       const { data: result, error: rpcError } = await admin.rpc("process_payment_webhook", {
         p_token: token,
         p_status: status,
         p_iyzico_payment_id: body.paymentId,
       });
+      const webhookResult = result as unknown as ProcessPaymentWebhookResult | null;
 
       if (rpcError) {
         logger.api.error("RPC: process_payment_webhook failed", {
@@ -100,12 +115,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ status: "error", message: rpcError.message }, { status: 500 });
       }
 
-      if (result?.status === "already_processed") {
+      if (webhookResult?.status === "already_processed") {
         logger.api.info("Payment already processed (idempotent)", { token });
         return NextResponse.json({ status: "already_processed" });
       }
 
-      if (result?.status === "not_found") {
+      if (webhookResult?.status === "not_found") {
         logger.api.warn("Payment record not found for webhook", { token });
         return NextResponse.json({ status: "not_found" }, { status: 404 });
       }
@@ -113,8 +128,8 @@ export async function POST(req: NextRequest) {
       logger.api.info("Payment webhook processed atomically", {
         token,
         status,
-        paymentId: result?.payment_id,
-        jobId: result?.job_id,
+        paymentId: webhookResult?.payment_id,
+        jobId: webhookResult?.job_id,
       });
     }
 

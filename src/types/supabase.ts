@@ -1,8 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
@@ -10,19 +8,28 @@ export type Database = {
     Tables: {
       _migrations: {
         Row: {
+          checksum: string;
           executed_at: string | null;
+          execution_time_ms: number | null;
           id: number;
           name: string;
+          rollback_sql: string | null;
         };
         Insert: {
+          checksum: string;
           executed_at?: string | null;
+          execution_time_ms?: number | null;
           id?: number;
           name: string;
+          rollback_sql?: string | null;
         };
         Update: {
+          checksum?: string;
           executed_at?: string | null;
+          execution_time_ms?: number | null;
           id?: number;
           name?: string;
+          rollback_sql?: string | null;
         };
         Relationships: [];
       };
@@ -62,6 +69,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "admin_actions_admin_user_id_fkey";
+            columns: ["admin_user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       api_rate_limits: {
@@ -82,9 +96,61 @@ export type Database = {
         };
         Relationships: [];
       };
+      audit_logs: {
+        Row: {
+          action: string;
+          created_at: string;
+          id: string;
+          ip_address: string | null;
+          metadata: Json | null;
+          resource_id: string | null;
+          resource_type: string;
+          user_agent: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          action: string;
+          created_at?: string;
+          id?: string;
+          ip_address?: string | null;
+          metadata?: Json | null;
+          resource_id?: string | null;
+          resource_type: string;
+          user_agent?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          action?: string;
+          created_at?: string;
+          id?: string;
+          ip_address?: string | null;
+          metadata?: Json | null;
+          resource_id?: string | null;
+          resource_type?: string;
+          user_agent?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       brands: {
         Row: {
           id: string;
+          image_url: string | null;
           is_active: boolean;
           name: string;
           slug: string;
@@ -92,6 +158,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
+          image_url?: string | null;
           is_active?: boolean;
           name: string;
           slug: string;
@@ -99,6 +166,7 @@ export type Database = {
         };
         Update: {
           id?: string;
+          image_url?: string | null;
           is_active?: boolean;
           name?: string;
           slug?: string;
@@ -170,28 +238,37 @@ export type Database = {
       };
       chats: {
         Row: {
+          buyer_archived: boolean | null;
           buyer_id: string;
           created_at: string;
           id: string;
           last_message_at: string | null;
-          listing_id: string;
+          listing_id: string | null;
+          seller_archived: boolean | null;
           seller_id: string;
+          status: string;
         };
         Insert: {
+          buyer_archived?: boolean | null;
           buyer_id: string;
           created_at?: string;
           id?: string;
           last_message_at?: string | null;
-          listing_id: string;
+          listing_id?: string | null;
+          seller_archived?: boolean | null;
           seller_id: string;
+          status?: string;
         };
         Update: {
+          buyer_archived?: boolean | null;
           buyer_id?: string;
           created_at?: string;
           id?: string;
           last_message_at?: string | null;
-          listing_id?: string;
+          listing_id?: string | null;
+          seller_archived?: boolean | null;
           seller_id?: string;
+          status?: string;
         };
         Relationships: [
           {
@@ -199,6 +276,13 @@ export type Database = {
             columns: ["buyer_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chats_buyer_id_fkey";
+            columns: ["buyer_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
           {
@@ -213,6 +297,13 @@ export type Database = {
             columns: ["seller_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chats_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -358,6 +449,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "credit_transactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       cron_job_logs: {
@@ -432,6 +530,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "custom_roles_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       districts: {
@@ -476,7 +581,7 @@ export type Database = {
           listing_id: string;
           metadata: Json | null;
           payment_id: string | null;
-          started_at: string;
+          starts_at: string;
           user_id: string;
         };
         Insert: {
@@ -488,7 +593,7 @@ export type Database = {
           listing_id: string;
           metadata?: Json | null;
           payment_id?: string | null;
-          started_at?: string;
+          starts_at?: string;
           user_id: string;
         };
         Update: {
@@ -500,7 +605,7 @@ export type Database = {
           listing_id?: string;
           metadata?: Json | null;
           payment_id?: string | null;
-          started_at?: string;
+          starts_at?: string;
           user_id?: string;
         };
         Relationships: [
@@ -523,6 +628,121 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "doping_applications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      doping_packages: {
+        Row: {
+          duration_days: number;
+          features: Json;
+          id: string;
+          is_active: boolean;
+          name: string;
+          price: number;
+          slug: string;
+          sort_order: number;
+          type: string;
+        };
+        Insert: {
+          duration_days: number;
+          features?: Json;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          price: number;
+          slug: string;
+          sort_order?: number;
+          type: string;
+        };
+        Update: {
+          duration_days?: number;
+          features?: Json;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          price?: number;
+          slug?: string;
+          sort_order?: number;
+          type?: string;
+        };
+        Relationships: [];
+      };
+      doping_purchases: {
+        Row: {
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          listing_id: string;
+          package_id: string;
+          payment_id: string | null;
+          starts_at: string;
+          status: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          listing_id: string;
+          package_id: string;
+          payment_id?: string | null;
+          starts_at?: string;
+          status?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          listing_id?: string;
+          package_id?: string;
+          payment_id?: string | null;
+          starts_at?: string;
+          status?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "doping_purchases_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "doping_purchases_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "doping_packages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "doping_purchases_payment_id_fkey";
+            columns: ["payment_id"];
+            isOneToOne: false;
+            referencedRelation: "payments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "doping_purchases_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "doping_purchases_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -556,6 +776,13 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "favorites_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -650,10 +877,24 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "gallery_views_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "gallery_views_viewer_id_fkey";
             columns: ["viewer_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "gallery_views_viewer_id_fkey";
+            columns: ["viewer_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -758,6 +999,64 @@ export type Database = {
           },
         ];
       };
+      listing_questions: {
+        Row: {
+          answer: string | null;
+          created_at: string;
+          id: string;
+          is_public: boolean;
+          listing_id: string;
+          question: string;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          answer?: string | null;
+          created_at?: string;
+          id?: string;
+          is_public?: boolean;
+          listing_id: string;
+          question: string;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          answer?: string | null;
+          created_at?: string;
+          id?: string;
+          is_public?: boolean;
+          listing_id?: string;
+          question?: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listing_questions_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "listing_questions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "listing_questions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       listing_views: {
         Row: {
           created_at: string;
@@ -798,55 +1097,69 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "listing_views_viewer_id_fkey";
+            columns: ["viewer_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       listings: {
         Row: {
+          bold_frame_until: string | null;
           brand: string;
           bumped_at: string | null;
           car_trim: string | null;
-          category: string;
+          category: Database["public"]["Enums"]["vehicle_category"] | null;
           category_showcase_until: string | null;
           city: string;
           created_at: string;
           damage_status_json: Json | null;
           deletion_deadline: string | null;
           description: string;
+          detailed_search_showcase_until: string | null;
           display_id: number | null;
           district: string;
           expert_inspection: Json | null;
           featured: boolean;
           featured_until: string | null;
+          frame_color: string | null;
           fraud_reason: string | null;
           fraud_score: number;
           fuel_type: Database["public"]["Enums"]["fuel_type"];
+          gallery_priority: number | null;
           highlighted_until: string | null;
           homepage_showcase_until: string | null;
           id: string;
           is_featured: boolean | null;
           is_urgent: boolean | null;
-          frame_color: string | null;
+          last_inspection_date: string | null;
           license_plate: string | null;
           locked_by: string | null;
           locked_until: string | null;
           market_price_index: number | null;
           mileage: number;
           model: string;
+          ogis_report_url: string | null;
           price: number;
           published_at: string | null;
           search_vector: unknown;
           seller_id: string;
           slug: string;
+          small_photo_until: string | null;
           status: Database["public"]["Enums"]["listing_status"];
           status_updated_at: string | null;
           title: string;
-          small_photo_until: string | null;
           top_rank_until: string | null;
-          detailed_search_showcase_until: string | null;
           tramer_amount: number | null;
+          tramer_last_query: string | null;
+          tramer_score: number | null;
           transmission: Database["public"]["Enums"]["transmission_type"];
           updated_at: string;
           urgent_until: string | null;
+          vehicle_history: Json | null;
           version: number;
           view_count: number;
           vin: string | null;
@@ -854,51 +1167,58 @@ export type Database = {
           year: number;
         };
         Insert: {
+          bold_frame_until?: string | null;
           brand: string;
           bumped_at?: string | null;
           car_trim?: string | null;
-          category?: string;
+          category?: Database["public"]["Enums"]["vehicle_category"] | null;
           category_showcase_until?: string | null;
           city: string;
           created_at?: string;
           damage_status_json?: Json | null;
           deletion_deadline?: string | null;
           description: string;
+          detailed_search_showcase_until?: string | null;
           display_id?: number | null;
           district: string;
           expert_inspection?: Json | null;
           featured?: boolean;
           featured_until?: string | null;
+          frame_color?: string | null;
           fraud_reason?: string | null;
           fraud_score?: number;
           fuel_type: Database["public"]["Enums"]["fuel_type"];
+          gallery_priority?: number | null;
           highlighted_until?: string | null;
           homepage_showcase_until?: string | null;
           id?: string;
           is_featured?: boolean | null;
           is_urgent?: boolean | null;
-          frame_color?: string | null;
+          last_inspection_date?: string | null;
           license_plate?: string | null;
           locked_by?: string | null;
           locked_until?: string | null;
           market_price_index?: number | null;
           mileage: number;
           model: string;
+          ogis_report_url?: string | null;
           price: number;
           published_at?: string | null;
           search_vector?: unknown;
           seller_id: string;
           slug: string;
+          small_photo_until?: string | null;
           status?: Database["public"]["Enums"]["listing_status"];
           status_updated_at?: string | null;
           title: string;
-          small_photo_until?: string | null;
           top_rank_until?: string | null;
-          detailed_search_showcase_until?: string | null;
           tramer_amount?: number | null;
+          tramer_last_query?: string | null;
+          tramer_score?: number | null;
           transmission: Database["public"]["Enums"]["transmission_type"];
           updated_at?: string;
           urgent_until?: string | null;
+          vehicle_history?: Json | null;
           version?: number;
           view_count?: number;
           vin?: string | null;
@@ -906,51 +1226,58 @@ export type Database = {
           year: number;
         };
         Update: {
+          bold_frame_until?: string | null;
           brand?: string;
           bumped_at?: string | null;
           car_trim?: string | null;
-          category?: string;
+          category?: Database["public"]["Enums"]["vehicle_category"] | null;
           category_showcase_until?: string | null;
           city?: string;
           created_at?: string;
           damage_status_json?: Json | null;
           deletion_deadline?: string | null;
           description?: string;
+          detailed_search_showcase_until?: string | null;
           display_id?: number | null;
           district?: string;
           expert_inspection?: Json | null;
           featured?: boolean;
           featured_until?: string | null;
+          frame_color?: string | null;
           fraud_reason?: string | null;
           fraud_score?: number;
           fuel_type?: Database["public"]["Enums"]["fuel_type"];
+          gallery_priority?: number | null;
           highlighted_until?: string | null;
           homepage_showcase_until?: string | null;
           id?: string;
           is_featured?: boolean | null;
           is_urgent?: boolean | null;
-          frame_color?: string | null;
+          last_inspection_date?: string | null;
           license_plate?: string | null;
           locked_by?: string | null;
           locked_until?: string | null;
           market_price_index?: number | null;
           mileage?: number;
           model?: string;
+          ogis_report_url?: string | null;
           price?: number;
           published_at?: string | null;
           search_vector?: unknown;
           seller_id?: string;
           slug?: string;
+          small_photo_until?: string | null;
           status?: Database["public"]["Enums"]["listing_status"];
           status_updated_at?: string | null;
           title?: string;
-          small_photo_until?: string | null;
           top_rank_until?: string | null;
-          detailed_search_showcase_until?: string | null;
           tramer_amount?: number | null;
+          tramer_last_query?: string | null;
+          tramer_score?: number | null;
           transmission?: Database["public"]["Enums"]["transmission_type"];
           updated_at?: string;
           urgent_until?: string | null;
+          vehicle_history?: Json | null;
           version?: number;
           view_count?: number;
           vin?: string | null;
@@ -963,6 +1290,13 @@ export type Database = {
             columns: ["seller_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "listings_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -1005,24 +1339,30 @@ export type Database = {
           chat_id: string;
           content: string;
           created_at: string;
+          deleted_at: string | null;
           id: string;
           is_read: boolean;
+          message_type: string;
           sender_id: string;
         };
         Insert: {
           chat_id: string;
           content: string;
           created_at?: string;
+          deleted_at?: string | null;
           id?: string;
           is_read?: boolean;
+          message_type?: string;
           sender_id: string;
         };
         Update: {
           chat_id?: string;
           content?: string;
           created_at?: string;
+          deleted_at?: string | null;
           id?: string;
           is_read?: boolean;
+          message_type?: string;
           sender_id?: string;
         };
         Relationships: [
@@ -1038,6 +1378,13 @@ export type Database = {
             columns: ["sender_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -1069,27 +1416,33 @@ export type Database = {
       models: {
         Row: {
           brand_id: string;
+          created_at: string | null;
           id: string;
           is_active: boolean;
           name: string;
           slug: string;
           sort_order: number;
+          updated_at: string | null;
         };
         Insert: {
           brand_id: string;
+          created_at?: string | null;
           id?: string;
           is_active?: boolean;
           name: string;
           slug: string;
           sort_order?: number;
+          updated_at?: string | null;
         };
         Update: {
           brand_id?: string;
+          created_at?: string | null;
           id?: string;
           is_active?: boolean;
           name?: string;
           slug?: string;
           sort_order?: number;
+          updated_at?: string | null;
         };
         Relationships: [
           {
@@ -1146,6 +1499,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       notifications: {
@@ -1188,6 +1548,77 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      offers: {
+        Row: {
+          buyer_id: string;
+          counter_message: string | null;
+          counter_price: number | null;
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          listing_id: string;
+          message: string | null;
+          offered_price: number;
+          status: Database["public"]["Enums"]["offer_status"];
+          updated_at: string;
+        };
+        Insert: {
+          buyer_id: string;
+          counter_message?: string | null;
+          counter_price?: number | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          listing_id: string;
+          message?: string | null;
+          offered_price: number;
+          status?: Database["public"]["Enums"]["offer_status"];
+          updated_at?: string;
+        };
+        Update: {
+          buyer_id?: string;
+          counter_message?: string | null;
+          counter_price?: number | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          listing_id?: string;
+          message?: string | null;
+          offered_price?: number;
+          status?: Database["public"]["Enums"]["offer_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "offers_buyer_id_fkey";
+            columns: ["buyer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "offers_buyer_id_fkey";
+            columns: ["buyer_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "offers_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
             referencedColumns: ["id"];
           },
         ];
@@ -1326,6 +1757,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "payments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       phone_reveal_logs: {
@@ -1365,6 +1803,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "phone_reveal_logs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       platform_settings: {
@@ -1391,6 +1836,7 @@ export type Database = {
           features: Json | null;
           id: string;
           is_active: boolean;
+          listing_quota: number;
           name: string;
           price: number;
         };
@@ -1399,6 +1845,7 @@ export type Database = {
           features?: Json | null;
           id?: string;
           is_active?: boolean;
+          listing_quota?: number;
           name: string;
           price: number;
         };
@@ -1407,6 +1854,7 @@ export type Database = {
           features?: Json | null;
           id?: string;
           is_active?: boolean;
+          listing_quota?: number;
           name?: string;
           price?: number;
         };
@@ -1414,11 +1862,16 @@ export type Database = {
       };
       profiles: {
         Row: {
+          anonymized_at: string | null;
           avatar_url: string | null;
           balance_credits: number;
           ban_reason: string | null;
           business_address: string | null;
+          business_cover_url: string | null;
           business_description: string | null;
+          business_employees: number | null;
+          business_galery_photos: string[] | null;
+          business_hours: Json | null;
           business_logo_url: string | null;
           business_name: string | null;
           business_slug: string | null;
@@ -1428,6 +1881,7 @@ export type Database = {
           id: string;
           identity_number: string | null;
           is_banned: boolean;
+          is_deleted: boolean;
           is_verified: boolean;
           is_wallet_verified: boolean | null;
           phone: string;
@@ -1436,19 +1890,27 @@ export type Database = {
           subscription_synced_at: string | null;
           tax_id: string | null;
           tax_office: string | null;
+          total_listings_count: number;
+          total_sold_count: number;
           trust_score: number | null;
           updated_at: string;
           user_type: Database["public"]["Enums"]["user_type"];
+          verification_requested_at: string | null;
           verification_status: Database["public"]["Enums"]["verification_status"];
           verified_business: boolean;
           website_url: string | null;
         };
         Insert: {
+          anonymized_at?: string | null;
           avatar_url?: string | null;
           balance_credits?: number;
           ban_reason?: string | null;
           business_address?: string | null;
+          business_cover_url?: string | null;
           business_description?: string | null;
+          business_employees?: number | null;
+          business_galery_photos?: string[] | null;
+          business_hours?: Json | null;
           business_logo_url?: string | null;
           business_name?: string | null;
           business_slug?: string | null;
@@ -1458,6 +1920,7 @@ export type Database = {
           id: string;
           identity_number?: string | null;
           is_banned?: boolean;
+          is_deleted?: boolean;
           is_verified?: boolean;
           is_wallet_verified?: boolean | null;
           phone?: string;
@@ -1466,19 +1929,27 @@ export type Database = {
           subscription_synced_at?: string | null;
           tax_id?: string | null;
           tax_office?: string | null;
+          total_listings_count?: number;
+          total_sold_count?: number;
           trust_score?: number | null;
           updated_at?: string;
           user_type?: Database["public"]["Enums"]["user_type"];
+          verification_requested_at?: string | null;
           verification_status?: Database["public"]["Enums"]["verification_status"];
           verified_business?: boolean;
           website_url?: string | null;
         };
         Update: {
+          anonymized_at?: string | null;
           avatar_url?: string | null;
           balance_credits?: number;
           ban_reason?: string | null;
           business_address?: string | null;
+          business_cover_url?: string | null;
           business_description?: string | null;
+          business_employees?: number | null;
+          business_galery_photos?: string[] | null;
+          business_hours?: Json | null;
           business_logo_url?: string | null;
           business_name?: string | null;
           business_slug?: string | null;
@@ -1488,6 +1959,7 @@ export type Database = {
           id?: string;
           identity_number?: string | null;
           is_banned?: boolean;
+          is_deleted?: boolean;
           is_verified?: boolean;
           is_wallet_verified?: boolean | null;
           phone?: string;
@@ -1496,9 +1968,12 @@ export type Database = {
           subscription_synced_at?: string | null;
           tax_id?: string | null;
           tax_office?: string | null;
+          total_listings_count?: number;
+          total_sold_count?: number;
           trust_score?: number | null;
           updated_at?: string;
           user_type?: Database["public"]["Enums"]["user_type"];
+          verification_requested_at?: string | null;
           verification_status?: Database["public"]["Enums"]["verification_status"];
           verified_business?: boolean;
           website_url?: string | null;
@@ -1592,6 +2067,13 @@ export type Database = {
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       roles: {
@@ -1655,6 +2137,13 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saved_searches_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -1730,13 +2219,60 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "seller_reviews_reviewer_id_fkey";
+            columns: ["reviewer_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "seller_reviews_seller_id_fkey";
             columns: ["seller_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "seller_reviews_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
+      };
+      storage_cleanup_queue: {
+        Row: {
+          attempts: number;
+          bucket_name: string;
+          created_at: string;
+          file_path: string;
+          id: string;
+          last_error: string | null;
+          processed_at: string | null;
+          status: string;
+        };
+        Insert: {
+          attempts?: number;
+          bucket_name: string;
+          created_at?: string;
+          file_path: string;
+          id?: string;
+          last_error?: string | null;
+          processed_at?: string | null;
+          status?: string;
+        };
+        Update: {
+          attempts?: number;
+          bucket_name?: string;
+          created_at?: string;
+          file_path?: string;
+          id?: string;
+          last_error?: string | null;
+          processed_at?: string | null;
+          status?: string;
+        };
+        Relationships: [];
       };
       storage_objects_registry: {
         Row: {
@@ -1787,6 +2323,13 @@ export type Database = {
             columns: ["owner_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "storage_objects_registry_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -1843,6 +2386,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "support_tickets_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "tickets_listing_id_fkey";
             columns: ["listing_id"];
             isOneToOne: false;
@@ -1860,6 +2410,7 @@ export type Database = {
           id: string;
           idempotency_key: string | null;
           is_poison_pill: boolean | null;
+          next_attempt_at: string | null;
           payload: Json;
           processed_at: string | null;
           retry_count: number | null;
@@ -1873,6 +2424,7 @@ export type Database = {
           id?: string;
           idempotency_key?: string | null;
           is_poison_pill?: boolean | null;
+          next_attempt_at?: string | null;
           payload: Json;
           processed_at?: string | null;
           retry_count?: number | null;
@@ -1886,6 +2438,7 @@ export type Database = {
           id?: string;
           idempotency_key?: string | null;
           is_poison_pill?: boolean | null;
+          next_attempt_at?: string | null;
           payload?: Json;
           processed_at?: string | null;
           retry_count?: number | null;
@@ -1950,11 +2503,132 @@ export type Database = {
         };
         Relationships: [];
       };
+      vehicle_history: {
+        Row: {
+          accident_count: number | null;
+          id: string;
+          last_km: number | null;
+          listing_id: string | null;
+          ownership_count: number | null;
+          queried_at: string;
+          query_result: Json;
+          tramer_details: Json | null;
+          vin: string;
+        };
+        Insert: {
+          accident_count?: number | null;
+          id?: string;
+          last_km?: number | null;
+          listing_id?: string | null;
+          ownership_count?: number | null;
+          queried_at?: string;
+          query_result: Json;
+          tramer_details?: Json | null;
+          vin: string;
+        };
+        Update: {
+          accident_count?: number | null;
+          id?: string;
+          last_km?: number | null;
+          listing_id?: string | null;
+          ownership_count?: number | null;
+          queried_at?: string;
+          query_result?: Json;
+          tramer_details?: Json | null;
+          vin?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_history_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
-      [_ in never]: never;
+      public_profiles: {
+        Row: {
+          avatar_url: string | null;
+          ban_reason: string | null;
+          business_logo_url: string | null;
+          business_name: string | null;
+          business_slug: string | null;
+          city: string | null;
+          created_at: string | null;
+          full_name: string | null;
+          id: string | null;
+          is_banned: boolean | null;
+          is_verified: boolean | null;
+          role: Database["public"]["Enums"]["user_role"] | null;
+          trust_score: number | null;
+          updated_at: string | null;
+          user_type: Database["public"]["Enums"]["user_type"] | null;
+          verification_status: Database["public"]["Enums"]["verification_status"] | null;
+          verified_business: boolean | null;
+        };
+        Insert: {
+          avatar_url?: string | null;
+          ban_reason?: string | null;
+          business_logo_url?: string | null;
+          business_name?: string | null;
+          business_slug?: string | null;
+          city?: string | null;
+          created_at?: string | null;
+          full_name?: string | null;
+          id?: string | null;
+          is_banned?: boolean | null;
+          is_verified?: boolean | null;
+          role?: Database["public"]["Enums"]["user_role"] | null;
+          trust_score?: number | null;
+          updated_at?: string | null;
+          user_type?: Database["public"]["Enums"]["user_type"] | null;
+          verification_status?: Database["public"]["Enums"]["verification_status"] | null;
+          verified_business?: boolean | null;
+        };
+        Update: {
+          avatar_url?: string | null;
+          ban_reason?: string | null;
+          business_logo_url?: string | null;
+          business_name?: string | null;
+          business_slug?: string | null;
+          city?: string | null;
+          created_at?: string | null;
+          full_name?: string | null;
+          id?: string | null;
+          is_banned?: boolean | null;
+          is_verified?: boolean | null;
+          role?: Database["public"]["Enums"]["user_role"] | null;
+          trust_score?: number | null;
+          updated_at?: string | null;
+          user_type?: Database["public"]["Enums"]["user_type"] | null;
+          verification_status?: Database["public"]["Enums"]["verification_status"] | null;
+          verified_business?: boolean | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
+      activate_doping: {
+        Args: {
+          p_listing_id: string;
+          p_package_id: string;
+          p_payment_id: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
+      activate_free_pricing_plan: {
+        Args: {
+          p_credits: number;
+          p_plan_id: string;
+          p_plan_name: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
       adjust_user_credits_atomic:
         | {
             Args: {
@@ -1986,15 +2660,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      activate_doping: {
-        Args: {
-          p_listing_id: string;
-          p_package_id: string;
-          p_payment_id: string;
-          p_user_id: string;
-        };
-        Returns: Json;
-      };
       apply_listing_doping: {
         Args: {
           p_doping_types: string[];
@@ -2004,6 +2669,29 @@ export type Database = {
           p_user_id: string;
         };
         Returns: Json;
+      };
+      atomic_moderate_listing: {
+        Args: {
+          p_admin_id: string;
+          p_listing_id: string;
+          p_note: string;
+          p_notification_payload: Json;
+          p_outbox_payload: Json;
+          p_status: string;
+        };
+        Returns: Json;
+      };
+      ban_user_atomic: {
+        Args: {
+          p_preserve_metadata?: boolean;
+          p_reason: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
+      check_and_reserve_listing_quota: {
+        Args: { p_user_id: string };
+        Returns: boolean;
       };
       check_api_rate_limit: {
         Args: { p_key: string; p_limit: number; p_window_ms: number };
@@ -2022,9 +2710,30 @@ export type Database = {
         Returns: Json;
       };
       cleanup_expired_rate_limits: { Args: never; Returns: undefined };
+      confirm_payment_success: {
+        Args: {
+          p_iyzico_payment_id: string;
+          p_iyzico_token: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
+      create_chat_atomic: {
+        Args: {
+          p_buyer_id: string;
+          p_listing_id: string;
+          p_seller_id: string;
+          p_system_message?: string;
+        };
+        Returns: string;
+      };
       create_fulfillment_job: {
         Args: { p_job_type: string; p_metadata?: Json; p_payment_id: string };
         Returns: string;
+      };
+      create_listing_with_images: {
+        Args: { p_images_to_upsert: Json[]; p_listing_data: Json };
+        Returns: Json;
       };
       create_public_ticket: {
         Args: {
@@ -2055,7 +2764,18 @@ export type Database = {
       };
       get_active_dopings_for_listing: {
         Args: { p_listing_id: string };
-        Returns: Json;
+        Returns: {
+          doping_type: string;
+          expires_at: string;
+          package_name: string;
+        }[];
+      };
+      get_daily_listing_trend: {
+        Args: { p_days: number };
+        Returns: {
+          count: number;
+          day: string;
+        }[];
       };
       get_dead_letter_jobs: {
         Args: { p_limit?: number };
@@ -2104,6 +2824,16 @@ export type Database = {
           payment_id: string;
         }[];
       };
+      get_revenue_stats: {
+        Args: { p_end_date: string; p_start_date: string };
+        Returns: {
+          total_amount: number;
+        }[];
+      };
+      increment_compensating_retry: {
+        Args: { p_error: string; p_id: string };
+        Returns: undefined;
+      };
       increment_listing_view: {
         Args: {
           target_listing_id: string;
@@ -2112,15 +2842,20 @@ export type Database = {
         };
         Returns: undefined;
       };
-      increment_webhook_attempts: {
-        Args: { p_token: string };
+      increment_outbox_retry: {
+        Args: { p_error: string; p_id: string };
         Returns: undefined;
       };
       increment_user_credits: {
         Args: { p_credits: number; p_user_id: string };
         Returns: number;
       };
+      increment_webhook_attempts: {
+        Args: { p_token: string };
+        Returns: undefined;
+      };
       is_admin: { Args: never; Returns: boolean };
+      is_user_banned: { Args: { p_user_id: string }; Returns: boolean };
       is_valid_damage_status_json: { Args: { data: Json }; Returns: boolean };
       log_contact_abuse: {
         Args: {
@@ -2142,21 +2877,43 @@ export type Database = {
       };
       mark_job_processing: { Args: { p_job_id: string }; Returns: boolean };
       mark_job_success: { Args: { p_job_id: string }; Returns: boolean };
+      process_compensating_actions_events: {
+        Args: { batch_size: number };
+        Returns: {
+          action_type: string;
+          id: string;
+          payload: Json;
+        }[];
+      };
+      process_outbox_events: {
+        Args: { batch_size: number };
+        Returns: {
+          event_type: string;
+          id: string;
+          payload: Json;
+        }[];
+      };
       process_payment_success: {
         Args: { p_iyzico_payment_id?: string; p_payment_id: string };
         Returns: Json;
       };
       process_payment_webhook: {
-        Args: {
-          p_iyzico_payment_id?: string;
-          p_iyzico_token: string;
-          p_status: string;
-        };
+        Args: { p_iyzico_payment_id: string; p_status: string; p_token: string };
         Returns: Json;
       };
       recalibrate_all_market_stats: { Args: never; Returns: undefined };
       retry_dead_letter_job: { Args: { p_job_id: string }; Returns: boolean };
       run_expire_old_listings: { Args: never; Returns: undefined };
+      soft_delete_message: {
+        Args: { p_message_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      soft_delete_profile: { Args: { p_user_id: string }; Returns: undefined };
+      sync_listing_views_buffer: { Args: never; Returns: number };
+      toggle_chat_archive: {
+        Args: { p_archive: boolean; p_chat_id: string; p_user_id: string };
+        Returns: undefined;
+      };
       update_listing_price_indices: {
         Args: {
           p_avg_price: number;
@@ -2165,6 +2922,14 @@ export type Database = {
           p_year: number;
         };
         Returns: undefined;
+      };
+      upsert_listing_with_images: {
+        Args: {
+          p_images_to_delete: string[];
+          p_images_to_upsert: Json[];
+          p_listing_data: Json;
+        };
+        Returns: Json;
       };
       upsert_market_stats: {
         Args: {
@@ -2187,9 +2952,17 @@ export type Database = {
         | "resolve"
         | "dismiss"
         | "archive"
-        | "edit";
+        | "edit"
+        | "ban"
+        | "unban"
+        | "promote"
+        | "demote"
+        | "delete_user"
+        | "credit_grant"
+        | "doping_grant";
       moderation_target_type: "listing" | "report" | "user";
-      notification_type: "favorite" | "moderation" | "report" | "system";
+      notification_type: "favorite" | "moderation" | "report" | "system" | "question";
+      offer_status: "pending" | "accepted" | "rejected" | "counter_offer" | "expired" | "completed";
       report_reason:
         | "fake_listing"
         | "wrong_info"
@@ -2202,7 +2975,20 @@ export type Database = {
       ticket_status: "open" | "in_progress" | "resolved" | "closed";
       transmission_type: "manuel" | "otomatik" | "yari_otomatik";
       user_role: "user" | "admin";
-      user_type: "individual" | "professional" | "staff";
+      user_type: "individual" | "professional" | "staff" | "corporate";
+      vehicle_category:
+        | "otomobil"
+        | "suv"
+        | "minivan"
+        | "ticari"
+        | "motosiklet"
+        | "kiralik"
+        | "hasarli"
+        | "klasik"
+        | "karavan"
+        | "deniz"
+        | "hava"
+        | "atv";
       verification_status: "none" | "pending" | "approved" | "rejected";
     };
     CompositeTypes: {
@@ -2211,9 +2997,11 @@ export type Database = {
   };
 };
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+export type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+export type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof DatabaseWithoutInternals,
+  "public"
+>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -2225,9 +3013,7 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -2251,18 +3037,14 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
-      }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Insert: infer I }
       ? I
       : never
     : never;
@@ -2276,18 +3058,14 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
-      }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Update: infer U }
       ? U
       : never
     : never;
@@ -2296,14 +3074,10 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
+  EnumName extends DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -2318,9 +3092,7 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
@@ -2331,9 +3103,25 @@ export const Constants = {
     Enums: {
       fuel_type: ["benzin", "dizel", "lpg", "hibrit", "elektrik"],
       listing_status: ["draft", "pending", "approved", "rejected", "archived"],
-      moderation_action: ["approve", "reject", "review", "resolve", "dismiss", "archive", "edit"],
+      moderation_action: [
+        "approve",
+        "reject",
+        "review",
+        "resolve",
+        "dismiss",
+        "archive",
+        "edit",
+        "ban",
+        "unban",
+        "promote",
+        "demote",
+        "delete_user",
+        "credit_grant",
+        "doping_grant",
+      ],
       moderation_target_type: ["listing", "report", "user"],
-      notification_type: ["favorite", "moderation", "report", "system"],
+      notification_type: ["favorite", "moderation", "report", "system", "question"],
+      offer_status: ["pending", "accepted", "rejected", "counter_offer", "expired", "completed"],
       report_reason: [
         "fake_listing",
         "wrong_info",
@@ -2347,7 +3135,21 @@ export const Constants = {
       ticket_status: ["open", "in_progress", "resolved", "closed"],
       transmission_type: ["manuel", "otomatik", "yari_otomatik"],
       user_role: ["user", "admin"],
-      user_type: ["individual", "professional", "staff"],
+      user_type: ["individual", "professional", "staff", "corporate"],
+      vehicle_category: [
+        "otomobil",
+        "suv",
+        "minivan",
+        "ticari",
+        "motosiklet",
+        "kiralik",
+        "hasarli",
+        "klasik",
+        "karavan",
+        "deniz",
+        "hava",
+        "atv",
+      ],
       verification_status: ["none", "pending", "approved", "rejected"],
     },
   },

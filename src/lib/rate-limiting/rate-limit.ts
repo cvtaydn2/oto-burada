@@ -189,7 +189,7 @@ export async function checkRateLimit(
       });
 
       if (!error && data) {
-        return data as RateLimitResult;
+        return data as unknown as RateLimitResult;
       }
 
       logger.api.warn("Rate limit DB error, falling back to in-memory", { key }, error);

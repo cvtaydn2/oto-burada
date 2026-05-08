@@ -201,24 +201,36 @@ export async function GET(request: Request) {
       }
     } else if (hasSupabaseEnv()) {
       const supabase = createSupabaseAdminClient();
-      const criticalTables = ["profiles", "listings", "favorites"];
       const tableChecks: string[] = [];
 
-      for (const table of criticalTables) {
-        const { error } = await supabase
-          .from(table)
-          .select("count", { count: "exact", head: true });
+      const criticalTableChecks = [
+        {
+          label: "profiles",
+          query: () => supabase.from("profiles").select("count", { count: "exact", head: true }),
+        },
+        {
+          label: "listings",
+          query: () => supabase.from("listings").select("count", { count: "exact", head: true }),
+        },
+        {
+          label: "favorites",
+          query: () => supabase.from("favorites").select("count", { count: "exact", head: true }),
+        },
+      ] as const;
+
+      for (const table of criticalTableChecks) {
+        const { error } = await table.query();
 
         if (error) {
-          tableChecks.push(`${table}: ❌`);
+          tableChecks.push(`${table.label}: ❌`);
           response.checks.database_tables = {
             status: "unhealthy",
-            message: `Missing table: ${table}`,
+            message: `Missing table: ${table.label}`,
           };
           response.status = "unhealthy";
           break;
         } else {
-          tableChecks.push(`${table}: ✅`);
+          tableChecks.push(`${table.label}: ✅`);
         }
       }
 

@@ -19,6 +19,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/server";
 import { notificationSchema } from "@/lib/validators/notification";
 import type { NotificationType } from "@/types";
+import type { TablesInsert } from "@/types/supabase";
 
 interface NotificationRow {
   created_at: string;
@@ -132,15 +133,17 @@ export async function createDatabaseNotification(input: {
   }
 
   const admin = createSupabaseAdminClient();
+  const notificationInsert: TablesInsert<"notifications"> = {
+    href: input.href ?? null,
+    message: input.message,
+    title: input.title,
+    type: input.type as TablesInsert<"notifications">["type"],
+    user_id: input.userId,
+  };
+
   const { data, error } = await admin
     .from("notifications")
-    .insert({
-      href: input.href ?? null,
-      message: input.message,
-      title: input.title,
-      type: input.type,
-      user_id: input.userId,
-    })
+    .insert(notificationInsert)
     .select("id, user_id, type, title, message, href, read, created_at, updated_at")
     .single<NotificationRow>();
 
@@ -182,17 +185,17 @@ export async function createDatabaseNotificationsBulk(
   }
 
   const admin = createSupabaseAdminClient();
+  const notificationInserts: TablesInsert<"notifications">[] = inputs.map((input) => ({
+    href: input.href ?? null,
+    message: input.message,
+    title: input.title,
+    type: input.type as TablesInsert<"notifications">["type"],
+    user_id: input.userId,
+  }));
+
   const { data, error } = await admin
     .from("notifications")
-    .insert(
-      inputs.map((input) => ({
-        href: input.href ?? null,
-        message: input.message,
-        title: input.title,
-        type: input.type,
-        user_id: input.userId,
-      }))
-    )
+    .insert(notificationInserts)
     .select("id, user_id, type, title, message, href, read, created_at, updated_at")
     .returns<NotificationRow[]>();
 

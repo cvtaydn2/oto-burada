@@ -9,6 +9,7 @@ import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import type { ListingCreateInput } from "@/types";
+import type { TablesInsert } from "@/types/supabase";
 
 /**
  * Server Action for Bulk Listing Creation
@@ -39,14 +40,18 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
       return buildListingRecord(input, user.id, []);
     });
 
-    const rowsToInsert = preparedListings.map(mapListingToDatabaseRow);
+    const rowsToInsert = preparedListings.map(
+      mapListingToDatabaseRow
+    ) as TablesInsert<"listings">[];
 
     // 2. Chunking (Parçalı Yükleme) - RAM ve Timeout dostu
     const CHUNK_SIZE = 25;
     for (let i = 0; i < rowsToInsert.length; i += CHUNK_SIZE) {
       const chunk = rowsToInsert.slice(i, i + CHUNK_SIZE);
 
-      const { error: insertError } = await admin.from("listings").insert(chunk);
+      const { error: insertError } = await admin
+        .from("listings")
+        .insert(chunk as unknown as TablesInsert<"listings">[]);
 
       if (insertError) {
         let msg = `Satır ${i + 1}-${Math.min(i + CHUNK_SIZE, rowsToInsert.length)}: `;

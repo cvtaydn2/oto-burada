@@ -6,6 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/server";
 import type { Profile } from "@/types";
+import type { TablesInsert } from "@/types/supabase";
 
 interface ProfileRow {
   avatar_url: string | null;
@@ -23,7 +24,7 @@ interface ProfileRow {
   role: Profile["role"];
   tax_id: string | null;
   tax_office: string | null;
-  user_type: "individual" | "professional" | "staff";
+  user_type: "individual" | "professional" | "staff" | "corporate";
   balance_credits: number;
   is_verified: boolean;
   updated_at: string;
@@ -215,31 +216,30 @@ export async function createOrUpdateProfile(user: User) {
   }
 
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from("profiles").upsert(
-    {
-      avatar_url: profile.avatarUrl,
-      city: profile.city,
-      full_name: profile.fullName,
-      id: profile.id,
-      phone: profile.phone,
-      role: profile.role,
-      user_type: profile.userType ?? "individual",
-      balance_credits: profile.balanceCredits ?? 0,
-      is_verified: profile.isVerified ?? false,
-      is_banned: profile.isBanned ?? false,
-      business_name: profile.businessName ?? null,
-      business_address: profile.businessAddress ?? null,
-      business_logo_url: profile.businessLogoUrl ?? null,
-      business_description: profile.businessDescription ?? null,
-      tax_id: profile.taxId ?? null,
-      tax_office: profile.taxOffice ?? null,
-      website_url: profile.websiteUrl ?? null,
-      verified_business: profile.verifiedBusiness ?? false,
-      business_slug: profile.businessSlug ?? null,
-      updated_at: profile.updatedAt,
-    },
-    { onConflict: "id" }
-  );
+  const profileRecord: TablesInsert<"profiles"> = {
+    avatar_url: profile.avatarUrl,
+    city: profile.city,
+    full_name: profile.fullName,
+    id: profile.id,
+    phone: profile.phone,
+    role: profile.role,
+    user_type: (profile.userType ?? "individual") as TablesInsert<"profiles">["user_type"],
+    balance_credits: profile.balanceCredits ?? 0,
+    is_verified: profile.isVerified ?? false,
+    is_banned: profile.isBanned ?? false,
+    business_name: profile.businessName ?? null,
+    business_address: profile.businessAddress ?? null,
+    business_logo_url: profile.businessLogoUrl ?? null,
+    business_description: profile.businessDescription ?? null,
+    tax_id: profile.taxId ?? null,
+    tax_office: profile.taxOffice ?? null,
+    website_url: profile.websiteUrl ?? null,
+    verified_business: profile.verifiedBusiness ?? false,
+    business_slug: profile.businessSlug ?? null,
+    updated_at: profile.updatedAt,
+  };
+
+  const { error } = await admin.from("profiles").upsert(profileRecord, { onConflict: "id" });
 
   if (error) {
     throw new Error(`Failed to create/update profile: ${error.message}`);

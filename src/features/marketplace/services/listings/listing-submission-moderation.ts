@@ -279,11 +279,15 @@ export async function performAsyncModeration(listingId: string, listingSnapshot?
       .update({
         fraud_score: assessment.fraudScore,
         fraud_reason: assessment.fraudReason,
-        // Only update status if it was in 'pending_ai_review'
+        // Persist only canonical DB statuses until schema enum is expanded.
         status:
           listing.status === "pending_ai_review"
-            ? (assessment.suggestedStatus ?? "approved")
-            : listing.status,
+            ? assessment.suggestedStatus === "rejected"
+              ? "rejected"
+              : "approved"
+            : listing.status === "flagged"
+              ? "pending"
+              : listing.status,
       })
       .eq("id", listingId);
   } catch (error) {
@@ -294,12 +298,12 @@ export async function performAsyncModeration(listingId: string, listingSnapshot?
       await admin
         .from("listings")
         .update({
-          status: "flagged",
+          status: "pending",
           fraud_reason: "Otomatik moderasyon sistemi hatası - manuel inceleme gerekiyor",
           updated_at: new Date().toISOString(),
         })
         .eq("id", listingId)
-        .eq("status", "pending_ai_review"); // Only update if still in review
+        .eq("status", "pending"); // DB canonical fallback
 
       logger.listings.warn("Listing flagged for manual review due to moderation failure", {
         listingId,
@@ -555,7 +559,7 @@ export async function runListingTrustGuards(
       .select("id, vin, license_plate", { head: false, count: "exact" })
       .or(orConditions.join(","))
       .neq("id", options?.excludeListingId ?? "")
-      .in("status", ["pending", "pending_ai_review", "approved", "flagged"]);
+      .in("status", ["pending", "approved", "rejected", "archived"]);
   }
 
   // Check which field matched (VIN takes precedence if both match)

@@ -255,7 +255,7 @@ export async function getTicketCount(): Promise<Record<TicketStatus, number>> {
   };
 
   (data ?? []).forEach((t) => {
-    if (t.status in counts) {
+    if (t.status && t.status in counts) {
       counts[t.status as TicketStatus]++;
     }
   });

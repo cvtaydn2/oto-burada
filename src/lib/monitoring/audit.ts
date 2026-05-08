@@ -27,7 +27,7 @@ export async function logAuditAction(params: {
       action: params.action,
       resource_type: params.resourceType,
       resource_id: params.resourceId,
-      metadata: params.metadata || {},
+      metadata: (params.metadata || {}) as unknown as import("@/types/supabase").Json,
       ip_address: params.ip,
       user_agent: params.ua,
     });

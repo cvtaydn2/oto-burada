@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
+import type { TablesInsert, TablesUpdate } from "@/types/supabase";
 
 export interface PricingPlan {
   id: string;
@@ -74,7 +75,7 @@ async function fetchPricingPlansFromDb(includeInactive: boolean): Promise<Pricin
     return [];
   }
 
-  const result = (data as PricingPlan[]).map(mapPricingPlan);
+  const result = (data as unknown as PricingPlan[]).map(mapPricingPlan);
   logger.perf.debug("fetchPricingPlansFromDb execution", {
     duration: Date.now() - start,
     includeInactive,
@@ -120,7 +121,8 @@ export type PricingPlanInput = {
 
 export async function updatePricingPlan(id: string, updates: Partial<PricingPlanInput>) {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from("pricing_plans").update(updates).eq("id", id);
+  const dbUpdates = updates as unknown as TablesUpdate<"pricing_plans">;
+  const { error } = await admin.from("pricing_plans").update(dbUpdates).eq("id", id);
 
   if (error) {
     throw new Error(error.message);
@@ -148,7 +150,8 @@ export async function deletePricingPlan(id: string) {
 
 export async function createPricingPlan(plan: Omit<PricingPlanInput, never>) {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from("pricing_plans").insert(plan);
+  const dbPlan = plan as unknown as TablesInsert<"pricing_plans">;
+  const { error } = await admin.from("pricing_plans").insert(dbPlan);
 
   if (error) {
     throw new Error(error.message);

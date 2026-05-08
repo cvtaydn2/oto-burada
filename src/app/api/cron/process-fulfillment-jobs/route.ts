@@ -5,6 +5,12 @@ import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { withCronRoute } from "@/lib/security";
 
+type FulfillmentJobPaymentData = {
+  amount?: number;
+  listing_id?: string;
+  user_id?: string;
+};
+
 /**
  * ── PILL: Issue 1 - Fulfillment Job Processor (DLQ & Retries) ──────
  * Orchestrates background retries for critical financial operations.
@@ -54,10 +60,11 @@ export async function GET(request: Request) {
 
           // Fallback: use payment_data.amount if plan not found
           if (!credits) {
+            const paymentData = (job.payment_data as FulfillmentJobPaymentData | null) ?? {};
             credits =
-              typeof job.payment_data.amount === "number"
-                ? job.payment_data.amount
-                : parseInt(String(job.payment_data.amount), 10) || 0;
+              typeof paymentData.amount === "number"
+                ? paymentData.amount
+                : parseInt(String(paymentData.amount), 10) || 0;
           }
 
           if (!credits) {
@@ -65,8 +72,9 @@ export async function GET(request: Request) {
           }
 
           // RPC for atomic credit add
+          const paymentData = (job.payment_data as FulfillmentJobPaymentData | null) ?? {};
           const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
-            p_user_id: job.payment_data.user_id,
+            p_user_id: paymentData.user_id || "",
             p_amount: credits,
             p_type: "purchase",
             p_description: "Ödeme sonrası kredi yükleme",
@@ -80,8 +88,9 @@ export async function GET(request: Request) {
             user_id?: string;
           };
 
-          const userId = metadata.user_id ?? job.payment_data.user_id;
-          const listingId = metadata.listing_id ?? job.payment_data.listing_id;
+          const paymentData = (job.payment_data as FulfillmentJobPaymentData | null) ?? {};
+          const userId = metadata.user_id ?? paymentData.user_id;
+          const listingId = metadata.listing_id ?? paymentData.listing_id;
           const packageId = metadata.package_id;
 
           if (!userId || !listingId || !packageId) {

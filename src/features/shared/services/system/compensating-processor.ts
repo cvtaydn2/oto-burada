@@ -33,10 +33,13 @@ export async function processCompensatingActions() {
 
       switch (action.action_type) {
         case "refund":
-          await handleRefundAction(action.payload);
+          await handleRefundAction(action.payload as Record<string, unknown>);
           break;
         case "revert_credits":
-          await handleRevertCreditsAction(action.payload, action.transaction_id);
+          await handleRevertCreditsAction(
+            action.payload as Record<string, unknown>,
+            action.transaction_id
+          );
           break;
         default:
           throw new Error(`Unknown action_type: ${action.action_type}`);
@@ -50,8 +53,9 @@ export async function processCompensatingActions() {
         })
         .eq("id", action.id);
     } catch (err) {
-      const retryCount = action.retry_count + 1;
-      const status = retryCount >= action.max_retries ? "manual_intervention_required" : "pending";
+      const retryCount = (action.retry_count ?? 0) + 1;
+      const status =
+        retryCount >= (action.max_retries ?? 10) ? "manual_intervention_required" : "pending";
 
       // Exponential backoff: 2^retry * 5 minutes
       const nextAttemptMinutes = Math.pow(2, retryCount) * 5;
@@ -135,44 +139,22 @@ async function handleRevertCreditsAction(
 
   const admin = createSupabaseAdminClient();
 
-  // Option 1: Update wallet balance directly if wallet row exists
-  const { data: wallet, error: walletReadError } = await admin
-    .from("wallets")
-    .select("balance")
-    .eq("user_id", userId)
-    .maybeSingle<{ balance: number }>();
+  const { error: directError } = await admin.rpc("adjust_user_credits_atomic", {
+    p_user_id: userId,
+    p_amount: amount,
+    p_type: "compensating_revert",
+    p_description: `Compensating revert: ${reason}`,
+    p_reference_id: transactionId,
+    p_metadata: payload as import("@/types/supabase").Json,
+  });
 
-  let walletError = walletReadError;
-
-  if (!walletReadError && wallet && typeof wallet.balance === "number") {
-    const { error: walletUpdateError } = await admin
-      .from("wallets")
-      .update({
-        balance: wallet.balance + amount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId);
-
-    walletError = walletUpdateError;
-  }
-
-  // If wallet update path cannot be used, fallback to credits RPC
-  if (walletError || !wallet) {
-    const { error: directError } = await admin.rpc("add_user_credits", {
-      p_user_id: userId,
-      p_amount: amount,
-      p_reason: reason,
-      p_transaction_id: transactionId,
+  if (directError) {
+    logger.payments.error("Failed to revert credits via RPC", directError, {
+      userId,
+      amount,
+      transactionId,
     });
-
-    if (directError) {
-      logger.payments.error("Failed to revert credits via RPC", directError, {
-        userId,
-        amount,
-        transactionId,
-      });
-      throw new Error(`Credit revert failed: ${directError.message}`);
-    }
+    throw new Error(`Credit revert failed: ${directError.message}`);
   }
 
   logger.payments.info("Credits reverted via compensating action", {
@@ -196,6 +178,6 @@ export async function enqueueCompensatingAction(
   await admin.from("compensating_actions").insert({
     transaction_id: transactionId,
     action_type: type,
-    payload,
+    payload: payload as import("@/types/supabase").Json,
   });
 }

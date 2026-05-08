@@ -14,6 +14,13 @@ import { sanitizeDescription, sanitizeText } from "@/lib/sanitize";
 import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/turnstile";
 
+type ContactAbuseCheckResult = {
+  allowed: boolean;
+  count?: number;
+  message?: string;
+  reason?: string;
+};
+
 // ── Spam heuristics ───────────────────────────────────────────────────────────
 
 /** Patterns that strongly indicate spam or automated abuse. */
@@ -58,8 +65,8 @@ async function logAbuse(
       p_email: email,
       p_ip: ip,
       p_reason: reason,
-      p_user_agent: userAgent,
-      p_metadata: metadata,
+      p_user_agent: userAgent ?? undefined,
+      p_metadata: metadata as unknown as import("@/types/supabase").Json,
     });
   } catch (error) {
     logger.api.error("Failed to log contact abuse", error);
@@ -167,22 +174,30 @@ export async function POST(request: Request): Promise<NextResponse> {
         p_ip: clientIp,
       });
 
-      if (abuseCheck && !abuseCheck.allowed) {
+      const normalizedAbuseCheck = abuseCheck as unknown as ContactAbuseCheckResult | null;
+
+      if (normalizedAbuseCheck && !normalizedAbuseCheck.allowed) {
         logger.api.warn("Contact form abuse check failed", {
           ip: clientIp,
           email,
-          reason: abuseCheck.reason,
+          reason: normalizedAbuseCheck.reason,
         });
-        await logAbuse(email, clientIp, abuseCheck.reason as string, userAgent, {
-          count: abuseCheck.count,
-        });
+        await logAbuse(
+          email,
+          clientIp,
+          normalizedAbuseCheck.reason || "abuse_blocked",
+          userAgent ?? null,
+          {
+            count: normalizedAbuseCheck.count,
+          }
+        );
         captureServerEvent("contact_form_abuse_blocked", {
-          reason: abuseCheck.reason,
+          reason: normalizedAbuseCheck.reason,
           ip: clientIp,
         });
         return apiError(
           API_ERROR_CODES.BAD_REQUEST,
-          (abuseCheck.message as string) ||
+          normalizedAbuseCheck.message ||
             "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.",
           429
         );

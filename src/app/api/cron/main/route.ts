@@ -14,6 +14,12 @@ import { withCronOrAdmin } from "@/lib/security";
 
 import { expireListings } from "../expire-listings/route";
 
+type FulfillmentJobPaymentData = {
+  amount?: number;
+  listing_id?: string;
+  user_id?: string;
+};
+
 /**
  * MASTER CRON HANDLER for Vercel Hobby (Free) Plan.
  * Schedule: Daily at midnight (0 0 * * *)
@@ -125,8 +131,9 @@ export async function GET(request: Request) {
                   package_id?: string;
                   user_id?: string;
                 };
-                const userId = metadata.user_id ?? job.payment_data.user_id;
-                const listingId = metadata.listing_id ?? job.payment_data.listing_id;
+                const paymentData = (job.payment_data as FulfillmentJobPaymentData | null) ?? {};
+                const userId = metadata.user_id ?? paymentData.user_id;
+                const listingId = metadata.listing_id ?? paymentData.listing_id;
                 const packageId = metadata.package_id;
 
                 if (userId && listingId && packageId) {
@@ -143,9 +150,10 @@ export async function GET(request: Request) {
                 }
               } else if (job.job_type === "credit_add") {
                 // Simplified credit add for daily run
+                const paymentData = (job.payment_data as FulfillmentJobPaymentData | null) ?? {};
                 const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
-                  p_user_id: job.payment_data.user_id,
-                  p_amount: job.payment_data.amount || 0,
+                  p_user_id: paymentData.user_id || "",
+                  p_amount: paymentData.amount || 0,
                   p_type: "purchase",
                   p_description: "Ödeme sonrası kredi yükleme (daily cron)",
                   p_reference_id: `Payment:${job.payment_id}`,

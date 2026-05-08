@@ -22,8 +22,8 @@ export async function processReconciliation() {
   // Fetch corporate users synced more than 24h ago or never synced
   const { data: users, error } = await supabase
     .from("profiles")
-    .select("id, role, subscription_synced_at")
-    .eq("role", "corporate")
+    .select("id, user_type, subscription_synced_at")
+    .eq("user_type", "corporate")
     .or(`subscription_synced_at.is.null,subscription_synced_at.lte.${syncThreshold}`);
 
   if (error || !users) return;
@@ -43,7 +43,7 @@ export async function processReconciliation() {
         await supabase
           .from("profiles")
           .update({
-            role: "user",
+            user_type: "individual",
             subscription_synced_at: new Date().toISOString(),
           })
           .eq("id", user.id);
