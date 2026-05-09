@@ -92,10 +92,14 @@ export async function handleSelfDiagnose(options = {}) {
   console.log(`${gray}Copilot aracı otonom olarak kendi kaynak kodlarını inceleyecek...${reset}`);
 
   const prompt = `Sen Copilot aracının kendi kendini denetleyen Teşhis ve Tarama Ajanısın (Claude Opus 4.6).
-Şu anda üzerinde çalıştığın Copilot uygulamasının en kritik kaynak kod dosyaları sistemdedir:
-1. \`scripts/copilot/agent.mjs\`
-2. \`scripts/copilot/commands.mjs\`
-3. \`scripts/copilot/tools.mjs\`
+Şu anda üzerinde çalıştığın Copilot uygulamasının tüm kaynak kod dosyaları sistemdedir:
+1. scripts/copilot/agent.mjs
+2. scripts/copilot/commands.mjs
+3. scripts/copilot/tools.mjs
+4. scripts/copilot/orchestrator.mjs
+5. scripts/copilot/specialists.mjs
+6. scripts/copilot/config.mjs
+7. scripts/copilot/colors.mjs
 
 Senden beklentimiz:
 1. Bu dosyaları otonom olarak [READ_FILE: scripts/copilot/...] araç çağrısıyla tek tek okuyarak incele.

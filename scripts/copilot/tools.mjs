@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { reset, blue, purple, green, red, bold, cyan, yellow } from "./colors.mjs";
 
 // Dosya listesi önbelleği (PC'yi kastırmamak ve disk I/O yükünü sıfırlamak için)
 let filesCache = null;
+let cachedDir = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 5000; // 5 saniye
 
@@ -42,6 +44,7 @@ function getExclusions() {
 
 export function invalidateFilesCache() {
   filesCache = null;
+  cachedDir = null;
   cacheTimestamp = 0;
   exclusionsSet = null;
 }
@@ -68,7 +71,7 @@ export function safeReadFile(filePath) {
 // Projedeki tüm dosyaları tarayan recursive fonksiyon (Güvenli, Önbellekli & Optimize)
 export function getFilesRecursively(dir, files = [], useCache = true) {
   const now = Date.now();
-  if (useCache && filesCache && (now - cacheTimestamp) < CACHE_TTL) {
+  if (useCache && filesCache && cachedDir === dir && (now - cacheTimestamp) < CACHE_TTL) {
     return [...filesCache];
   }
 
@@ -99,6 +102,7 @@ export function getFilesRecursively(dir, files = [], useCache = true) {
 
   if (useCache) {
     filesCache = [...files];
+    cachedDir = dir;
     cacheTimestamp = now;
   }
   return [...files];
@@ -162,6 +166,8 @@ export function applyChanges(changes) {
 
     if (change.code !== undefined) {
       // Tam dosya yazma işlemi
+      const mode = fs.existsSync(fullPath) ? "GÜNCELLENDİ" : "YENİ OLUŞTURULDU";
+      console.log(`\n${bold}${cyan}📂 Dosya [${mode}]: ${blue}${change.path}${reset}`);
       fs.writeFileSync(fullPath, change.code, "utf-8");
     } else if (change.chunks && change.chunks.length > 0) {
       // Kısmi SEARCH/REPLACE düzenleme işlemi
@@ -169,10 +175,26 @@ export function applyChanges(changes) {
         throw new Error(`Hata: Düzenlenmek istenen dosya bulunamadı! Yol: ${change.path}`);
       }
       let fileContent = fs.readFileSync(fullPath, "utf-8");
+      console.log(`\n${bold}${purple}🔧 Yama Uygulanıyor: ${blue}${change.path}${reset}`);
+
       for (const chunk of change.chunks) {
         if (!fileContent.includes(chunk.search)) {
           throw new Error(`Hata: '${change.path}' dosyasında aranacak kısım bulunamadı. Lütfen birebir eşleşme sağlandığından emin olun.\nAranan Kısım:\n${chunk.search}`);
         }
+        
+        // Premium Görsel Diff Çıktısı (Git-Style)
+        const oldLines = chunk.search.split("\n");
+        const newLines = chunk.replace.split("\n");
+        
+        // Terminalde çok satır birikmesini önlemek için özet geçiyoruz
+        if (oldLines.length > 10 || newLines.length > 10) {
+           console.log(`  ${red}-${oldLines[0].trim()} ... (${oldLines.length - 1} satır silindi)${reset}`);
+           console.log(`  ${green}+${newLines[0].trim()} ... (${newLines.length - 1} satır eklendi)${reset}`);
+        } else {
+           oldLines.forEach(ln => console.log(`  ${red}- ${ln}${reset}`));
+           newLines.forEach(ln => console.log(`  ${green}+ ${ln}${reset}`));
+        }
+
         fileContent = fileContent.replace(chunk.search, chunk.replace);
       }
       fs.writeFileSync(fullPath, fileContent, "utf-8");
@@ -216,6 +238,16 @@ function parseCommandArgs(cmdStr) {
 // Güvenli Komut Çalıştırıcı (Beyaz Liste Kontrolü & Çıktı Kırpıcı)
 export function executeCommand(cmd) {
   const trimmedCmd = cmd.trim();
+
+  // Shell Injection Önleme: Tehlikeli shell meta-karakterlerini tespit et ve derhal engelle.
+  // (&, |, ;, >, <, `, $) karakterleri komut zincirleme ve yönlendirme için kullanılır.
+  const dangerousPattern = /[&|;><`$]/;
+  if (dangerousPattern.test(trimmedCmd)) {
+    const warning = `[GÜVENLİK İHLALİ]: Komut içerisinde yasaklı shell karakterleri (&, |, ;, >, <, \`, $) tespit edildi. Injection saldırısı durduruldu.`;
+    console.error(`\n❌ ${warning}`);
+    return warning;
+  }
+
   const tokens = parseCommandArgs(trimmedCmd);
   if (tokens.length === 0) {
     return "Hata: Geçersiz boş komut.";
@@ -255,14 +287,15 @@ export function executeCommand(cmd) {
     });
 
     let output = result.stdout || result.stderr || "";
-    if (output.length > 3000) {
-      output = output.slice(0, 3000) + "\n\n[... Çıktı çok uzun olduğu için ilk 3000 karakterle sınırlandırılmıştır ...]";
+    // Çıktı çok uzunsa, en önemli olan ilk ve son kısımları koruyalım (Self-Diagnose Önerisi)
+    if (output.length > 4000) {
+      output = output.slice(0, 2000) + "\n\n[... Çıktı çok uzun olduğu için orta kısımlar gizlendi ...]\n\n" + output.slice(-2000);
     }
     return output;
   } catch (err) {
     let output = err.message || "";
-    if (output.length > 3000) {
-      output = output.slice(0, 3000) + "\n\n[... Hata çıktısı çok uzun olduğu için ilk 3000 karakterle sınırlandırılmıştır ...]";
+    if (output.length > 4000) {
+      output = output.slice(0, 2000) + "\n\n[... Hata çıktısı çok uzun olduğu için orta kısımlar gizlendi ...]\n\n" + output.slice(-2000);
     }
     return output;
   }

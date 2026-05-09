@@ -1,199 +1,29 @@
-Temel sorun çok net: `callClaudeRaw` içinde oldukça ayrıntılı bir `systemPrompt` hazırlanıyor, ama API isteğine hiç gönderilmiyor. Yani model şu anda “anayasa kuralları”, tool-use formatı, `TASKS.md` / `PROGRESS.md` zorunluluğu, `<write_file>` / `<edit_file>` formatı ve deterministik çalışma beklentilerini hiç görmeden yanıt üretiyor.
+Önce ilgili copilot akışındaki diğer dosyalara bakıp bağlamı tamamlayayım; sonra gerekirse hızlı bir test/komut değerlendirmesi yaparım.Bağlamı doğrulamak için özellikle `conversationHistory` ve `activeContextFiles` kullanımlarını görmem faydalı olur. Eğer istersen şu dosyaları da paylaş: bu değerleri import eden `scripts/copilot/*` dosyaları. Yine de mevcut iki dosyadan çıkarılabilen net bulgular var; aşağıda onları derleyebilirim.Aşağıdaki değerlendirme, şu an gördüğüm iki dosyaya dayanıyor: `scripts/copilot/tools.mjs` ve `scripts/copilot/config.mjs`. Daha fazla dosya görmeden tüm akışı kesinleştiremem ama bu iki dosyadan çıkan birkaç önemli güvenlik ve tasarım bulgusu var.
 
-Buna ek olarak iki ikincil problem daha var. Birincisi, spinner ilk denemede oluşturuluyor ama retry sonrasında yeniden başlatılmıyor; ilk hata sonrası spinner fiilen ölüyor. İkincisi, `parseAndApplyXmlFiles` import edilmiş ama kullanılmıyor; bu da gereksiz import ve bakım borcu oluşturuyor.
+Genel sonuç şu: `tools.mjs` içinde faydalı savunmalar var; özellikle path traversal için temel kontrol, binary/large file okuma sınırlaması ve komut beyaz listeleme iyi bir başlangıç. Ama aynı dosyada komut çalıştırma ve dosya tarama tarafında bazı kırılgan noktalar var. `config.mjs` tarafındaki asıl ciddi risk ise oturum durumunun modül seviyesinde global tutulması; bu mimari, çoklu kullanıcı veya eşzamanlı istek senaryolarında bağlam sızıntısına yol açabilir.
 
-En doğru düzeltme, `systemPrompt`’u `messages` dizisine `role: "system"` olarak eklemek ve spinner’ı her retry denemesi için yeniden başlatmak.
+`config.mjs` ile başlayayım. Buradaki `activeContextFiles` ve `conversationHistory` değerleri modül seviyesinde `Set` ve dizi olarak export ediliyor. Bu, Node süreci ayakta kaldığı sürece bellekte ortak durum tutulduğu anlamına gelir. Eğer bu copilot akışı birden fazla kullanıcı, oturum veya paralel görev tarafından kullanılıyorsa, bir isteğin bağlam dosyaları ya da konuşma geçmişi başka bir isteğe karışabilir. En kritik bulgu bu. Bu sadece bellek büyümesi problemi değil; aynı zamanda gizlilik ve doğruluk problemi. Bir kullanıcının geçmiş mesajlarının başka bir kullanıcı akışına taşınması, istemeden veri sızıntısı üretebilir. Çözüm olarak bu iki yapının global export edilmemesi, bunun yerine istek bazlı ya da oturum bazlı bir state container içinde tutulması gerekir. En azından bir `createSessionState()` gibi bir fabrika fonksiyonu ile her çalışma için ayrı `activeContextFiles` ve `conversationHistory` üretilmesi daha güvenli olur.
 
-Uygulanabilir çözüm aşağıda.
+`conversationHistory` için ikinci sorun, boyut sınırı olmaması. Uzun çalışan süreçte dizi sürekli büyürse hem maliyet hem bellek tüketimi artar. Bu yüzden sadece son N mesajı saklamak, token bazlı kırpma yapmak ya da özetleme stratejisi kullanmak gerekir. Aksi halde zamanla performans bozulur.
 
-<edit_file path="scripts/copilot/agent.mjs">
-<<<<<<< SEARCH
-import { getFilesRecursively, parseAndApplyXmlFiles, executeCommand } from "./tools.mjs";
-=======
-import { getFilesRecursively, executeCommand } from "./tools.mjs";
->>>>>>> REPLACE
-</edit_file>
+`tools.mjs` içindeki `getFilesRecursively` fonksiyonu performans amaçlı cache kullanıyor ama cache anahtarsız. Yani hangi dizin için tarama yapıldığı dikkate alınmıyor. Bir çağrı kök dizini tarayıp cache doldurduğunda, kısa süre içinde başka bir alt dizin için yapılan çağrı da aynı cache’i döndürebilir. Bu sessizce yanlış sonuç üretir. Eğer fonksiyon her zaman proje kökünde çağrılıyorsa pratikte sorun görünmeyebilir, ama arayüzü genel amaçlı olduğu için bug riski var. Çözüm, cache’i `dir` parametresine göre anahtarlamak ya da fonksiyonun sadece kök dizin için çalışacağı açıkça garanti edilmiyorsa cache’i kaldırmak.
 
-<edit_file path="scripts/copilot/agent.mjs">
-<<<<<<< SEARCH
-  const messages = [
-    ...conversationHistory,
-    { role: "user", content: (extraContext ? extraContext + "\n\n" : "") + prompt }
-  ];
+Aynı fonksiyonda `.gitignore` işleme oldukça naif. Satırları doğrudan `Set` içine alıp dosya/dizin adıyla eşleştiriyor. Bu, `.gitignore` içindeki glob desenlerini, `!` ile yapılan istisnaları, iç içe path kurallarını ve sadece belli dizin bağlamında geçerli kuralları doğru yorumlamıyor. Sonuç olarak bazı dosyalar gereksizce dışlanabilir ya da dışlanması gerekenler içeri girebilir. Bu bir güvenlik açığından çok doğruluk ve bakım sorunu ama ajan bağlamı seçerken etkisi olabilir. Gerçek `.gitignore` semantiği isteniyorsa `ignore` benzeri bir kütüphane kullanılmalı.
 
-  // İstek süresince spinner'ı başlatıyoruz
-  const spinner = startSpinner(`${cyan}Claude Netiva zekasını konuşturuyor... Lütfen bekleyin...${reset}`);
+`applyChanges` içindeki path traversal kontrolü temel olarak doğru yönde. `path.resolve(cwd, change.path)` sonrası `path.relative` ile `..` kaçışı engelleniyor. Bu iyi. Ama burada kalan önemli köşe durum, symlink meselesi. Fonksiyon hedef dizin zaten varsa bunun bir sembolik link olup olmadığını doğrulamıyor; `writeFileSync` symlink’i takip ederek proje dışına yazabilir. Üstteki tarama fonksiyonu symlink’leri atlasa da yazma akışı için ayrı koruma gerekiyor. Eğer çalışma alanında saldırgan kontrollü bir symlink oluşturulabiliyorsa, bu koruma atlatılabilir. Çözüm olarak yazmadan önce hedef yolun her bileşeninin gerçek yolunu (`realpath`) doğrulamak veya en azından mevcut hedef dosya/dizinin symlink olup olmadığını kontrol etmek gerekir.
 
-  const maxRetries = 5;
-  let attempt = 0;
+Aynı `applyChanges` içinde kısmi düzenleme akışında `String.replace` ilk eşleşmeyi değiştiriyor. Eğer `SEARCH` metni dosyada birden fazla kez geçiyorsa yanlış yeri değiştirebilir. Kod bilinçli olarak “ilkini değiştir” davranışı istiyorsa sorun değil, ama XML tabanlı edit akışlarında genellikle beklenti ya tekil eşleşme ya da tam bağlam eşleşmesidir. Bu yüzden eşleşme sayısı birden fazlaysa hata vermek daha güvenli olur. Bu, yanlış dosya modifikasyonlarını azaltır.
 
-  while (attempt < maxRetries) {
-    attempt++;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // Her deneme için 120 saniye sınır (Gelişmiş analizler için ideal)
+`safeReadFile` için dosya boyutu sınırı makul ama binary tespiti uzantı listesine bağlı. Uzantısı farklı bir binary dosya yanlışlıkla UTF-8 okunmaya çalışılabilir. Bu çoğu zaman güvenlikten çok dayanıklılık sorunu. Daha sağlam bir çözüm için ilk birkaç byte üzerinden binary heuristiği eklenebilir.
 
-    try {
-      const response = await fetch(`${baseUrl}/v1/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.0, // Tutarlılık ve determinizm için kesinlikle sıfır sıcaklık
-          max_tokens: 4000,
-        }),
-        signal: controller.signal,
-      });
+En dikkat gerektiren yer `executeCommand`. Burada niyet iyi: komutları beyaz listeye almak ve bazı shell metakarakterlerini engellemek. Fakat uygulamada birkaç zayıflık var. Birincisi, bazı komutlarda `shell: true` kullanılıyor. Bu, saldırı yüzeyini gereksiz büyütüyor. Özellikle `npm`, `ls` ve `dir` için shell açılması, normalde argüman bazlı güvenli çalıştırma modelini zayıflatıyor. İkincisi, engellenen karakter listesi sınırlı; newline gibi kontrol karakterleri, platforma özgü shell davranışları ve bazı yorumlama farkları düşünülmemiş. Üçüncüsü, özel yazılmış `parseCommandArgs` kaçış karakterlerini, tek tırnakları ve karmaşık quoting senaryolarını doğru yönetmiyor. Sonuç olarak “zararlı karakter taraması + elle argüman ayrıştırma + bazı durumlarda shell true” birleşimi kırılgan bir tasarım oluşturuyor.
 
-      clearTimeout(timeoutId);
-      spinner.stop(); // Yanıt başarıyla geldiğinde durdur
+Burada en doğru çözüm, serbest metin komut kabulünü bırakmak. Yani `executeCommand("npm run typecheck")` yerine `executeCommand({ exe: "npm", args: ["run", "typecheck"] })` gibi yapılandırılmış bir API kullanmak daha güvenli. Mümkünse `shell: false` varsayılan olmalı. Windows uyumluluğu için `npm.cmd` gibi platforma özel çözüm uygulanabilir; shell açmak mecburi olmamalı. Eğer shell gerçekten zorunluysa, o zaman sadece sabit komut şablonlarına izin verilmeli; kullanıcı girdisi shell’e hiç ulaşmamalı.
 
-      const responseText = await response.text();
-      if (!response.ok) {
-        let apiErrorMessage = `API Hatası (Durum Kodu: ${response.status})`;
-        try {
-          const errorJson = JSON.parse(responseText);
-          if (errorJson.error?.message) {
-            apiErrorMessage += `: ${errorJson.error.message}`;
-          }
-        } catch {
-          apiErrorMessage += ` - Yanıt İçeriği: ${responseText.slice(0, 500)}`;
-        }
-        throw new Error(apiErrorMessage);
-      }
+Bir başka küçük ama gerçek risk, `executeCommand` çıktısının sadece ilk 3000 karaktere kırpılması. Bu güvenlik problemi değil, ama hata ayıklamada eksik bağlam üretir. Özellikle derleme ve test hatalarında son satırlar daha değerli olabilir. Baştan kırpmak yerine hem baştan hem sondan örnek vermek daha faydalı olur.
 
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseErr) {
-        throw new Error(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`);
-      }
+Model adı tarafında `config.mjs` içindeki `"claude-opus-4-6"` sabiti güncel ve tutarlı görünüyor. `baseUrl` için env yoksa sabit fallback kullanılması teknik olarak normal; ama prod ortamında yanlış endpoint’e sessizce düşme istenmiyorsa başlangıçta doğrulama eklenebilir. `apiKey` yoksa da sürecin erken ve açık biçimde hata vermesi daha iyi olur; şu haliyle eksik anahtar muhtemelen daha aşağı katmanlarda belirsiz hata üretecek.
 
-      return data.choices?.[0]?.message?.content || "";
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (attempt < maxRetries) {
-        // Üstel geri çekilme (exponential backoff) + jitter (rastgele sapma) ile bağlantı dayanıklılığını artırıyoruz
-        const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
-        spinner.stop();
-        process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        // Spinner'ı bir sonraki deneme için yeniden başlat
-        spinner.stop();
-        process.stdout.write(`\r\x1b[K`);
-        continue;
-      }
+Özetle, öncelik sırası bence şöyle olmalı. İlk olarak global oturum durumunu kaldırın; bu mimari risk hem gizlilik hem doğruluk açısından en önemli konu. İkinci olarak `executeCommand` arayüzünü yapılandırılmış argüman modeline çevirip `shell: true` bağımlılığını azaltın. Üçüncü olarak `applyChanges` için symlink güvenliğini sıkılaştırın. Dördüncü olarak `getFilesRecursively` cache mantığını dizin bazlı hale getirin ve `.gitignore` yorumlamasını sağlamlaştırın. Bunlar yapıldığında araç katmanı belirgin biçimde daha güvenli ve öngörülebilir olur.
 
-      spinner.stop(); // Son denemede de başarısız olduysa durdur
-      if (error.name === "AbortError") {
-        console.log(`${red}❌ İstek zaman aşımına uğradı (120 saniye)!${reset}`);
-        console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 120 saniye içinde tamamlayamadı.${reset}`);
-      } else {
-        console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${error.message}${reset}`);
-        if (error.stack) {
-          console.log(`${gray}Hata Ayrıntısı: ${error.stack}${reset}`);
-        }
-      }
-      return null;
-    }
-  }
-=======
-  const messages = [
-    { role: "system", content: systemPrompt },
-    ...conversationHistory,
-    { role: "user", content: (extraContext ? extraContext + "\n\n" : "") + prompt }
-  ];
-
-  const maxRetries = 5;
-  let attempt = 0;
-
-  while (attempt < maxRetries) {
-    attempt++;
-    const spinner = startSpinner(`${cyan}Claude Netiva zekasını konuşturuyor... Lütfen bekleyin...${reset}`);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // Her deneme için 120 saniye sınır (Gelişmiş analizler için ideal)
-
-    try {
-      const response = await fetch(`${baseUrl}/v1/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.0, // Tutarlılık ve determinizm için kesinlikle sıfır sıcaklık
-          max_tokens: 4000,
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-      spinner.stop();
-
-      const responseText = await response.text();
-      if (!response.ok) {
-        let apiErrorMessage = `API Hatası (Durum Kodu: ${response.status})`;
-        try {
-          const errorJson = JSON.parse(responseText);
-          if (errorJson.error?.message) {
-            apiErrorMessage += `: ${errorJson.error.message}`;
-          }
-        } catch {
-          apiErrorMessage += ` - Yanıt İçeriği: ${responseText.slice(0, 500)}`;
-        }
-        throw new Error(apiErrorMessage);
-      }
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        throw new Error(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`);
-      }
-
-      return data.choices?.[0]?.message?.content || "";
-    } catch (error) {
-      clearTimeout(timeoutId);
-      spinner.stop();
-
-      if (attempt < maxRetries) {
-        const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
-        process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        process.stdout.write(`\r\x1b[K`);
-        continue;
-      }
-
-      if (error.name === "AbortError") {
-        console.log(`${red}❌ İstek zaman aşımına uğradı (120 saniye)!${reset}`);
-        console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 120 saniye içinde tamamlayamadı.${reset}`);
-      } else {
-        console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${error.message}${reset}`);
-        if (error.stack) {
-          console.log(`${gray}Hata Ayrıntısı: ${error.stack}${reset}`);
-        }
-      }
-      return null;
-    }
-  }
-
-  return null;
->>>>>>> REPLACE
-</edit_file>
-
-Bu değişiklikten sonra ajan gerçekten tanımladığınız kurallarla çalışmaya başlayacak. Şu anki davranıştaki “tool çağrılarını bazen beklenen formatta üretmeme”, “TASKS/PROGRESS güncellememesi”, “anayasaya tam uymaması” ve “rastgele kalite sapmaları” büyük olasılıkla doğrudan bu eksikten kaynaklanıyor.
-
-Kısa etki özeti şöyle:
-
-`systemPrompt` eklenince model:
-proje anayasasını görür, tool kullanım kontratını görür, nihai rapor formatını görür, `TASKS.md` ve `PROGRESS.md` güncelleme zorunluluğunu görür.
-
-Spinner değişikliğiyle de retry UX düzelir; her denemede tekrar canlı spinner görünür.
-
-İstersen bir sonraki adımda `scripts/copilot/tools.mjs` ve `config.mjs` tarafını da inceleyip bu ajan akışında başka mimari kusur var mı, onu da çıkarabilirim.
+İstersen bir sonraki adımda sana doğrudan uygulanabilir bir patch de hazırlayabilirim. En faydalı devam adımı, `conversationHistory` ve `activeContextFiles`’ın kullanıldığı dosyaları görmek olur; böylece global state’i bozmadan nasıl session-scope hale getireceğimizi somut kodla önerebilirim.

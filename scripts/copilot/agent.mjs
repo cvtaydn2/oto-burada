@@ -165,12 +165,13 @@ ${constitutionRules}`;
           messages,
           temperature: 0.0, // Tutarlılık ve determinizm için kesinlikle sıfır sıcaklık
           max_tokens: 4000,
+          stream: true,
         }),
         signal: controller.signal,
       });
 
-      const responseText = await response.text();
       if (!response.ok) {
+        const responseText = await response.text();
         let apiErrorMessage = `API Hatası (Durum Kodu: ${response.status})`;
         try {
           const errorJson = JSON.parse(responseText);
@@ -183,14 +184,41 @@ ${constitutionRules}`;
         throw new Error(sanitizeErrorOutput(apiErrorMessage));
       }
 
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseErr) {
-        throw new Error(sanitizeErrorOutput(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`));
+      // İlk veri akışı geldiği an spinner'ı durdurup terminale anlık akışı basıyoruz (Premium DX)
+      await spinner.stop();
+
+      let fullResponseText = "";
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      for await (const chunk of response.body) {
+        buffer += decoder.decode(chunk, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          if (trimmed === "data: [DONE]") break;
+          if (trimmed.startsWith("data: ")) {
+            try {
+              const json = JSON.parse(trimmed.slice(5).trim());
+              const content = json.choices?.[0]?.delta?.content || "";
+              if (content) {
+                process.stdout.write(content);
+                fullResponseText += content;
+              }
+            } catch (err) {
+              // Kısmi veya bozuk JSON parçacıklarını sessizce geçiyoruz
+            }
+          }
+        }
       }
 
-      return data.choices?.[0]?.message?.content || "";
+      // Akış bittiğinde satırbaşı yapalım
+      process.stdout.write("\n");
+
+      return fullResponseText;
     } catch (error) {
       if (attempt < maxRetries) {
         // Üstel geri çekilme (exponential backoff) + jitter (rastgele sapma) ile bağlantı dayanıklılığını artırıyoruz
