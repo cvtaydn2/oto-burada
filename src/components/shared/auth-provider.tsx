@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { createSupabaseBrowserClient } from "@/lib/browser";
+import { captureClientException } from "@/lib/monitoring/telemetry-client";
 
 interface AuthContextValue {
   isAdmin: boolean;
@@ -56,7 +57,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       .then(({ data, error }: UserResponse) => {
         if (!mounted) return;
         if (error && error.name !== "AuthSessionMissingError") {
-          console.error("[AuthProvider] getUser error:", error);
+          captureClientException(error, "auth-provider-get-user");
         }
 
         const browserUser = data.user ?? null;
@@ -66,8 +67,8 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
         setIsReady(true);
       })
       .catch((err) => {
-        console.error("[AuthProvider] getUser unhandled catch:", err);
-        if (mounted) setIsReady(true); // Don't hang the UI even on error
+        captureClientException(err, "auth-provider-get-user-uncaught");
+        if (mounted) setIsReady(true);
       });
 
     const {

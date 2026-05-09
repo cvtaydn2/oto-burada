@@ -1,11 +1,11 @@
 import { AlertTriangle, Ban, Shield, ShieldAlert, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+import { InfoBlock, MetricCard } from "@/components/admin/security-stats";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import {} from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -49,6 +49,15 @@ const REASON_STYLES: Record<string, string> = {
   success: "border-emerald-200 bg-emerald-50 text-emerald-800",
 };
 
+function formatDate(value: string) {
+  return new Date(value).toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 async function getAbuseData(): Promise<SecurityPageData> {
   if (!hasSupabaseAdminEnv()) {
     throw new Error(
@@ -88,15 +97,6 @@ async function getAbuseData(): Promise<SecurityPageData> {
       reasonCounts,
     },
   };
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleString("tr-TR", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function getTopReason(stats: SecurityPageData["stats"]) {
@@ -368,60 +368,5 @@ export default async function SecurityPage() {
         </Card>
       </section>
     </main>
-  );
-}
-
-function MetricCard({
-  title,
-  value,
-  description,
-  icon: Icon,
-}: {
-  title: string;
-  value: number | string;
-  description: string;
-  icon: typeof Shield;
-}) {
-  return (
-    <Card className="border-border/70 shadow-sm">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
-        <div>
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          <CardDescription className="mt-1 text-xs">{description}</CardDescription>
-        </div>
-        <div className="rounded-xl border border-border/70 bg-muted/20 p-2 text-muted-foreground">
-          <Icon className="size-4" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="break-words text-2xl font-bold text-foreground">{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function InfoBlock({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="rounded-xl bg-muted/30 px-3 py-2">
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
-        {label}
-      </p>
-      <p
-        className={cn(
-          "mt-1 break-all text-sm font-medium text-foreground",
-          mono && "font-mono text-xs"
-        )}
-      >
-        {value}
-      </p>
-    </div>
   );
 }

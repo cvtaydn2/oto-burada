@@ -19,8 +19,8 @@ const stepsConfig = [
 
 export function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (
-    <div className="mb-12">
-      <div className="flex justify-between items-center relative max-w-2xl mx-auto">
+    <div className="mb-8 md:mb-12 px-2 -mx-2 overflow-x-auto scrollbar-hide">
+      <div className="flex justify-between items-center relative min-w-[480px]">
         {/* Background Track */}
         <div className="absolute left-0 top-[22px] w-full h-1.5 bg-slate-100 rounded-full z-0" />
 

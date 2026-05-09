@@ -18,9 +18,7 @@ export function PWAProvider({ children }: PWAProviderProps) {
   }, [isRegistered]);
 
   useEffect(() => {
-    if (error) {
-      console.warn("[PWA] Service worker registration failed:", error.message);
-    }
+    // Service worker hatası sessizce ele alınır - PWA özellik optional
   }, [error]);
 
   if (!isSupported) {

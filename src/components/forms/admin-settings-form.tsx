@@ -18,15 +18,15 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   PlatformSettings,
   updateAllPlatformSettings,
 } from "@/features/admin-moderation/services/settings";
-import {} from "@/lib";
 import { captureClientException } from "@/lib/telemetry-client";
 import { cn } from "@/lib/utils";
+
+import { FieldBlock, SectionHeader, ToggleRow } from "./admin-settings-fields";
+import { StatusSummaryCard } from "./admin-settings-stats";
 
 interface AdminSettingsFormProps {
   initialSettings: PlatformSettings;
@@ -416,147 +416,6 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
           </div>
         </section>
       </div>
-    </div>
-  );
-}
-
-function SectionHeader({
-  icon: Icon,
-  title,
-  description,
-  tone,
-}: {
-  icon: typeof Globe;
-  title: string;
-  description: string;
-  tone: "blue" | "amber" | "indigo" | "emerald";
-}) {
-  const toneClasses = {
-    blue: "border-blue-100 bg-blue-50 text-blue-600",
-    amber: "border-amber-100 bg-amber-50 text-amber-600",
-    indigo: "border-indigo-100 bg-indigo-50 text-indigo-600",
-    emerald: "border-emerald-100 bg-emerald-50 text-emerald-600",
-  }[tone];
-
-  return (
-    <div className="flex items-start gap-4">
-      <div
-        className={cn("flex size-12 items-center justify-center rounded-2xl border", toneClasses)}
-      >
-        <Icon className="size-5" />
-      </div>
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function FieldBlock({
-  label,
-  hint,
-  children,
-  compact = false,
-}: {
-  label: string;
-  hint: string;
-  children: React.ReactNode;
-  compact?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border/70 bg-muted/20 p-4",
-        compact && "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-      )}
-    >
-      <div className={cn("space-y-1", compact && "sm:max-w-[70%]")}>
-        <Label className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
-          {label}
-        </Label>
-        <p className="text-xs leading-5 text-muted-foreground">{hint}</p>
-      </div>
-      <div className={cn("mt-3", compact ? "sm:mt-0 sm:w-auto" : "")}>{children}</div>
-    </div>
-  );
-}
-
-function ToggleRow({
-  title,
-  description,
-  checked,
-  onCheckedChange,
-  badge,
-  danger = false,
-  warning = false,
-}: {
-  title: string;
-  description: string;
-  checked: boolean;
-  onCheckedChange: (value: boolean) => void;
-  badge: string;
-  danger?: boolean;
-  warning?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border p-4 transition-colors sm:p-5",
-        danger
-          ? "border-rose-200 bg-rose-50/80"
-          : warning
-            ? "border-amber-200 bg-amber-50/70"
-            : "border-border/70 bg-muted/20"
-      )}
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">{title}</p>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]",
-                danger
-                  ? "bg-rose-100 text-rose-700"
-                  : warning
-                    ? "bg-amber-100 text-amber-700"
-                    : checked
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-muted text-muted-foreground"
-              )}
-            >
-              {badge}
-            </span>
-          </div>
-          <p className="text-xs leading-5 text-muted-foreground">{description}</p>
-        </div>
-        <Switch checked={checked} onCheckedChange={onCheckedChange} />
-      </div>
-    </div>
-  );
-}
-
-function StatusSummaryCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "default" | "success" | "warning" | "danger";
-}) {
-  const toneClassName = {
-    default: "border-border/70 bg-background text-foreground",
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    warning: "border-amber-200 bg-amber-50 text-amber-800",
-    danger: "border-rose-200 bg-rose-50 text-rose-800",
-  }[tone];
-
-  return (
-    <div className={cn("rounded-2xl border px-4 py-4", toneClassName)}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em]">{label}</p>
-      <p className="mt-2 text-lg font-bold">{value}</p>
     </div>
   );
 }

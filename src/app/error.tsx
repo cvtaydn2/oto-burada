@@ -12,7 +12,6 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Sentry'ye error raporla (ücretsiz plan - 5k/ay limit)
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       import("@sentry/nextjs").then((Sentry) => {
         Sentry.captureException(error, {
@@ -22,8 +21,6 @@ export default function GlobalError({
         });
       });
     }
-
-    console.error("Global Error Caught:", error);
   }, [error]);
 
   return (

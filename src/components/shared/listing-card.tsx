@@ -1,15 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import {
-  ChevronRight,
-  CircleGauge,
-  Fuel,
-  MapPin,
-  Settings2,
-  ShieldCheck,
-  Sparkles,
-  TrendingDown,
-  Zap,
-} from "lucide-react";
+import { ChevronRight, MapPin, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
 
@@ -23,10 +13,12 @@ import {
 } from "@/features/marketplace/lib/utils";
 import { getListingCardInsights } from "@/features/marketplace/services/listing-card-insights";
 import { cn } from "@/lib/utils";
-import { formatNumber } from "@/lib/utils/format";
 import { formatPrice } from "@/lib/utils/format";
 import { supabaseImageUrl } from "@/lib/utils/image";
 import { type Listing } from "@/types";
+
+import { DopingBadgeGroup, InspectionBadge } from "./listing-card-badges";
+import { ListingStatsGrid } from "./listing-card-stats";
 
 const cardVariants = cva(
   "group relative overflow-hidden rounded-[1.25rem] border border-border/70 bg-card/95 shadow-sm shadow-slate-950/5 transition-[border-color,box-shadow,transform,background-color] duration-normal ease-standard hover:border-primary/18 hover:bg-card hover:shadow-[0_22px_50px_-24px_rgba(15,23,42,0.32)]",
@@ -48,20 +40,6 @@ const cardVariants = cva(
     },
   }
 );
-
-const FUEL_TYPE_LABELS: Record<string, string> = {
-  benzin: "Benzin",
-  dizel: "Dizel",
-  lpg: "LPG",
-  hybrid: "Hibrit",
-  elektrik: "Elektrikli",
-};
-
-const TRANSMISSION_LABELS: Record<string, string> = {
-  manuel: "Manuel",
-  otomatik: "Otomatik",
-  yari_otomatik: "Yarı Otomatik",
-};
 
 interface ListingCardProps extends VariantProps<typeof cardVariants> {
   listing: Listing;
@@ -89,14 +67,6 @@ export const ListingCard = memo(function ListingCard({
 
   const isGrid = variant === "grid";
   const isList = variant === "list";
-  const transmissionLabel =
-    listing.transmission && TRANSMISSION_LABELS[listing.transmission]
-      ? TRANSMISSION_LABELS[listing.transmission]
-      : listing.transmission;
-  const fuelTypeLabel =
-    listing.fuelType && FUEL_TYPE_LABELS[listing.fuelType]
-      ? FUEL_TYPE_LABELS[listing.fuelType]
-      : listing.fuelType;
   const titleText = `${listing.year} ${listing.brand} ${listing.model}`;
   const cardAriaLabel = `${titleText}, ${listing.city}, ${formatPrice(listing.price)} TL`;
 
@@ -110,7 +80,7 @@ export const ListingCard = memo(function ListingCard({
     >
       <Link
         href={detailHref}
-        className="absolute inset-0 z-10 rounded-[1.25rem] focus:outline-none"
+        className="absolute inset-0 z-10 rounded-[1.25rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         aria-label={cardAriaLabel}
       />
 
@@ -132,28 +102,11 @@ export const ListingCard = memo(function ListingCard({
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/72 via-slate-950/10 to-transparent opacity-90 transition-opacity duration-normal group-hover:opacity-75" />
 
         <div className="absolute top-4 left-4 z-20 flex flex-col gap-2 pointer-events-none">
-          {isPremiumVisible &&
-            dopingItems
-              .slice(0, 2)
-              .map((item) => (
-                <Badge
-                  key={item.type}
-                  icon={item.type === "urgent" ? Zap : Sparkles}
-                  label={item.label}
-                  className={
-                    item.type === "urgent"
-                      ? "bg-rose-600 text-white shadow-lg shadow-rose-600/20"
-                      : "bg-primary text-white shadow-lg shadow-primary/20"
-                  }
-                />
-              ))}
-          {isPremiumVisible && badgeStates.hasInspection && (
-            <Badge
-              icon={ShieldCheck}
-              label="EKSPERTİZ"
-              className="bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-2xl"
-            />
-          )}
+          <DopingBadgeGroup items={dopingItems} isPremiumVisible={isPremiumVisible} />
+          <InspectionBadge
+            hasInspection={badgeStates.hasInspection}
+            isPremiumVisible={isPremiumVisible}
+          />
         </div>
 
         {showFavorite && (
@@ -239,11 +192,11 @@ export const ListingCard = memo(function ListingCard({
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2.5 pt-1.5">
-            <Stat icon={CircleGauge} label={`${formatNumber(listing.mileage)} km`} />
-            <Stat icon={Settings2} label={transmissionLabel} />
-            <Stat icon={Fuel} label={fuelTypeLabel} />
-          </div>
+          <ListingStatsGrid
+            mileage={listing.mileage}
+            transmission={listing.transmission}
+            fuelType={listing.fuelType}
+          />
         </div>
 
         <div
@@ -270,47 +223,3 @@ export const ListingCard = memo(function ListingCard({
     </article>
   );
 });
-
-function Badge({
-  icon: Icon,
-  label,
-  className,
-}: {
-  icon: React.ElementType;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex h-8 items-center gap-2 rounded-xl border border-white/20 px-4 text-[10px] font-bold uppercase tracking-[0.16em] backdrop-blur-xl",
-        className
-      )}
-    >
-      <Icon size={14} strokeWidth={2.5} />
-      {label}
-    </div>
-  );
-}
-
-function Stat({
-  icon: Icon,
-  label,
-  sub,
-}: {
-  icon: React.ElementType;
-  label: string;
-  sub?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex size-11 items-center justify-center rounded-2xl border border-border/60 bg-muted/35 text-muted-foreground transition-[background-color,color,transform,border-color] duration-normal ease-standard group-hover:scale-[1.03] group-hover:border-primary/20 group-hover:bg-primary/5 group-hover:text-primary">
-        <Icon size={16} strokeWidth={2.25} />
-      </div>
-      <div className="flex min-w-0 items-baseline gap-1">
-        <span className="truncate text-[12px] font-semibold text-foreground/80">{label}</span>
-        {sub && <span className="text-[9px] font-bold uppercase text-muted-foreground">{sub}</span>}
-      </div>
-    </div>
-  );
-}

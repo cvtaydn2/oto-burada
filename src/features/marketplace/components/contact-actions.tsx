@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  Copy,
   Loader2,
   MessageCircle,
   MessageSquare,
@@ -57,6 +58,10 @@ function formatPhoneNumber(phone: string) {
 
 function getWhatsappLink(phone: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+}
+
+function getWhatsAppFallbackLink(phone: string) {
+  return `https://web.whatsapp.com/send?phone=${phone.replace(/\D/g, "")}&text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 }
 
 export function ContactActions({
@@ -131,6 +136,9 @@ export function ContactActions({
   };
 
   const whatsappLink = revealedPhone ? getWhatsappLink(revealedPhone) : null;
+  const whatsappWebLink = revealedPhone ? getWhatsAppFallbackLink(revealedPhone) : null;
+  const isMobile = typeof window !== "undefined" && /Mobi|Android/i.test(navigator.userAgent);
+  const finalWhatsAppLink = whatsappLink ? (isMobile ? whatsappLink : whatsappWebLink) : null;
 
   return (
     <div className="space-y-3 lg:space-y-3.5">
@@ -192,9 +200,9 @@ export function ContactActions({
             <AlertDialogCancel className="h-12 w-full border border-border font-semibold text-muted-foreground sm:flex-1">
               Vazgeç
             </AlertDialogCancel>
-            {isRevealed && whatsappLink ? (
+            {isRevealed && finalWhatsAppLink ? (
               <a
-                href={whatsappLink}
+                href={finalWhatsAppLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() =>
@@ -269,13 +277,28 @@ export function ContactActions({
             )}
           </Button>
         ) : (
-          <a
-            href={`tel:${revealedPhone}`}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-muted px-4 text-sm font-bold text-foreground"
-          >
-            <Phone className="size-5 text-primary" />
-            {revealedPhone ? formatPhoneNumber(revealedPhone) : "N/A"}
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href={`tel:${revealedPhone}`}
+              className="flex flex-1 h-12 items-center justify-center gap-2 rounded-xl border border-border bg-muted px-4 text-sm font-bold text-foreground"
+            >
+              <Phone className="size-5 text-primary" />
+              {revealedPhone ? formatPhoneNumber(revealedPhone) : "N/A"}
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                if (revealedPhone) {
+                  navigator.clipboard.writeText(revealedPhone.replace(/\D/g, ""));
+                  toast.success("Numara panoya kopyalandı");
+                }
+              }}
+              aria-label="Numarayı kopyala"
+              className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-all hover:bg-muted active:scale-95"
+            >
+              <Copy size={18} />
+            </button>
+          </div>
         )}
       </div>
 

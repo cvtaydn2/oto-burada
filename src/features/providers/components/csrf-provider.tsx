@@ -2,6 +2,8 @@
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
+import { captureClientException } from "@/lib/monitoring/telemetry-client";
+
 interface CsrfContextType {
   token: string | null;
   isReady: boolean;
@@ -49,7 +51,7 @@ export function CsrfProvider({
         setToken(null);
         return null;
       } catch (error) {
-        console.error("Failed to refresh CSRF token", error);
+        captureClientException(error, "csrf-provider-refresh");
         setToken(null);
         return null;
       } finally {

@@ -57,8 +57,7 @@ export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQ
         ? await getOwnerListingQuestions(listingId)
         : await getListingQuestions(listingId);
       setQuestions(data as ListingQuestion[]);
-    } catch (err) {
-      console.error("Error fetching questions:", err);
+    } catch {
       setError("Sorular yüklenirken bir hata oluştu");
     } finally {
       setLoading(false);

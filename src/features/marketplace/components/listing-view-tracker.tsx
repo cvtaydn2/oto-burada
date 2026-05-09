@@ -83,9 +83,6 @@ export function ListingViewTracker({
       }
 
       if (cancelled || !activeToken) {
-        // CSRF token alınamaması genellikle network sorunu veya ad-blocker kaynaklıdır.
-        // Sentry kotasını tüketmemek için exception fırlatılmıyor.
-        console.warn("[ListingViewTracker] Missing CSRF token, view not recorded.");
         return;
       }
 
@@ -106,12 +103,10 @@ export function ListingViewTracker({
         }
 
         if (response.status === 403) {
-          // Bu hata CSRF token geçerliliğini yitirdiğinde vs olur.
-          // Önemsiz hatalar kotayı tüketmesin diye uyarı seviyesinde bırakıyoruz.
-          console.warn(`[ListingViewTracker] Listing view rejected with status ${response.status}`);
+          // CSRF token geçerliliğini yitirdiğinde önemsiz hata - sessizce başarısız
         }
-      } catch (error) {
-        console.warn("[ListingViewTracker] Record failed:", error);
+      } catch {
+        // Network hataları sessizce ele alınır
       }
     };
 

@@ -41,7 +41,7 @@ export async function getSellerReviewsRecord(
     return [];
   }
 
-  return data as SellerReview[];
+  return (data ?? []) as SellerReview[];
 }
 
 export async function getSellerReviewStatsRecord(sellerId: string) {

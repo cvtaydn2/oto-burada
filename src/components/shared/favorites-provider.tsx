@@ -14,6 +14,7 @@ import {
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { readFavoriteIds, writeFavoriteIds } from "@/features/favorites/services/favorites-storage";
 import { createSupabaseBrowserClient } from "@/lib/browser";
+import { captureClientException } from "@/lib/monitoring/telemetry-client";
 
 interface FavoritesContextValue {
   favoriteIds: string[];
@@ -196,8 +197,8 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           broadcastFavoritesUpdate(safeServerIds);
           setRemoteFavoriteIds(safeServerIds);
         }
-      } catch (_err) {
-        console.error("[FavoritesProvider] Sync error:", _err);
+      } catch (err) {
+        captureClientException(err, "favorites-provider-sync");
         if (!cancelled) setRemoteFavoriteIds(readFavoriteIds());
       } finally {
         isSyncing.current = false;

@@ -74,7 +74,13 @@ export async function createChatAtomic(input: {
 export async function fetchChatById(chatId: string): Promise<ChatRecord> {
   const supabase = await createSupabaseServerClient();
 
-  const { data, error } = await supabase.from("chats").select("*").eq("id", chatId).single();
+  const { data, error } = await supabase
+    .from("chats")
+    .select(
+      "id, listing_id, buyer_id, seller_id, status, last_message_at, created_at, buyer_archived, seller_archived"
+    )
+    .eq("id", chatId)
+    .single();
 
   if (error) throw error;
   return data;
@@ -110,7 +116,7 @@ export async function fetchChatMessages(chatId: string): Promise<MessageRecord[]
 
   const { data, error } = await supabase
     .from("messages")
-    .select("*")
+    .select("id, chat_id, sender_id, content, is_read, message_type, created_at, deleted_at")
     .eq("chat_id", chatId)
     .is("deleted_at", null)
     .order("created_at", { ascending: true });

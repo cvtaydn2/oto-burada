@@ -1,6 +1,8 @@
 "use client";
 
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +91,8 @@ export function PasswordField({
   passwordAutoComplete,
   passwordHint,
 }: PasswordFieldProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between px-1">
@@ -104,18 +108,28 @@ export function PasswordField({
           </Link>
         )}
       </div>
-      <Input
-        id="password"
-        type="password"
-        name="password"
-        autoComplete={passwordAutoComplete}
-        placeholder={passwordPlaceholder}
-        required
-        minLength={8}
-        aria-invalid={!!state?.fieldErrors?.password || !!state?.error}
-        aria-describedby={`${passwordHintId} ${state?.fieldErrors?.password ? "password-error" : ""} ${state?.error ? "auth-error" : ""}`}
-        className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
-      />
+      <div className="relative">
+        <Input
+          id="password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete={passwordAutoComplete}
+          placeholder={passwordPlaceholder}
+          required
+          minLength={8}
+          aria-invalid={!!state?.fieldErrors?.password || !!state?.error}
+          aria-describedby={`${passwordHintId} ${state?.fieldErrors?.password ? "password-error" : ""} ${state?.error ? "auth-error" : ""}`}
+          className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 pr-12 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      </div>
       <p id={passwordHintId} className="px-1 text-[11px] font-medium text-muted-foreground">
         {passwordHint}
       </p>
@@ -148,21 +162,34 @@ export function PasswordField({
 
       {!isLogin && (
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-sm font-semibold text-foreground">
+          <Label
+            htmlFor="confirmPassword"
+            className="text-xs font-medium text-muted-foreground ml-1"
+          >
             Şifre Tekrar
           </Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            name="confirmPassword"
-            autoComplete="new-password"
-            placeholder="Şifrenizi tekrar girin"
-            required
-            minLength={8}
-            aria-invalid={!!state?.fieldErrors?.confirmPassword}
-            aria-describedby={state?.fieldErrors?.confirmPassword ? "confirm-password-error" : ""}
-            className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
-          />
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type="password"
+              name="confirmPassword"
+              autoComplete="new-password"
+              placeholder="Şifrenizi tekrar girin"
+              required
+              minLength={8}
+              aria-invalid={!!state?.fieldErrors?.confirmPassword}
+              aria-describedby={state?.fieldErrors?.confirmPassword ? "confirm-password-error" : ""}
+              className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 pr-12 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
           {state?.fieldErrors?.confirmPassword && (
             <p
               id="confirm-password-error"
