@@ -1,5 +1,28 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 68. Post-Convergence Roadmap & Documentation Alignment
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Frontend architecture convergence cleanup sonrası kalan işleri tekrar iş çıkarmayacak şekilde önceliklendirmek, roadmap'i mimari rapora işlemek ve uygulama öncesi yönetişim referansını netleştirmek.
+
+### 68.1 Documentation Output
+- [`ARCHITECTURE_REVIEW_REPORT.md`](ARCHITECTURE_REVIEW_REPORT.md) içine ayrıntılı uygulama yol haritası eklendi.
+- Yol haritası şu horizon'lara ayrıldı: Immediate, High ROI, Mid-term, Long-term.
+- Özellikle şu alanlar plan içinde kabul kriterli olarak işlendi:
+  - [`src/features/marketplace/services/listings/listing-submission-query.ts`](src/features/marketplace/services/listings/listing-submission-query.ts)
+  - provider/state mimarisi ve root-scope sınırları
+  - chat / notifications entegrasyon ve test derinliği
+  - build/lint/typecheck dışındaki quality gate ve release gate katmanları
+  - accessibility / responsive / UI system standardizasyonu
+  - legacy alias / compatibility cleanup backlog'u
+
+### 68.2 Planning Outcome
+- Bir sonraki implementasyon dalgası için önerilen ilk sıra: query katmanı parçalama → provider/state ownership standardı → legacy alias governance → chat/notifications contract testleri → release gate matrisi.
+- Bu fazda kod dosyalarına dokunulmadı; yalnız planlama ve markdown dokümantasyonu yapıldı.
+
+## 67. Frontend Architecture Convergence & Cleanup Phase
+
 ## 67. Frontend Architecture Convergence & Cleanup Phase
 
 **Date**: 2026-05-09

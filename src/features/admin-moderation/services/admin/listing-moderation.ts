@@ -124,7 +124,7 @@ export async function moderateListingWithSideEffects({
     waitUntil(
       (async () => {
         try {
-          const { invalidateCache } = await import("@/lib/client");
+          const { invalidateCache } = await import("@/lib/redis/client");
           await invalidateCache("listings:approved");
         } catch (err) {
           logger.admin.error(

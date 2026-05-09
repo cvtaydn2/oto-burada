@@ -1,4 +1,3 @@
-import { getListingBySlug, getPublicListings } from "@/features/marketplace/services/catalog";
 import {
   getSimilarDatabaseListings,
   listingCardSelect,
@@ -15,6 +14,7 @@ import { createSupabasePublicServerClient } from "@/lib/public-server";
 import { captureServerEvent } from "@/lib/telemetry-server";
 import type { Listing, ListingFilters, Profile } from "@/types";
 
+import { getListingBySlug, getPublicListings } from "./catalog";
 import {
   getStoredListingById,
   getStoredListingBySlug,

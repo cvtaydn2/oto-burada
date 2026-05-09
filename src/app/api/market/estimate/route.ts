@@ -1,7 +1,7 @@
 import { estimateVehiclePrice } from "@/features/marketplace/services/price-estimation";
-import { getCachedData, setCachedData } from "@/lib/client";
 import { logger } from "@/lib/logger";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { getCachedData, setCachedData } from "@/lib/redis/client";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { captureServerError } from "@/lib/telemetry-server";
 
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Eksik araç bilgileri.", 400);
   }
 
-  // Cache key for this specific estimate
+  // Cache key for this specific estimate on the canonical Redis helper surface
   const cacheKey = `market:estimate:${brand}:${model}:${year}:${Math.floor(mileage / 10000) * 10000}`;
 
   try {

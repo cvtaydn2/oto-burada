@@ -125,7 +125,7 @@ export default async function RootLayout({
         )}
       </head>
       <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary/10 selection:text-primary">
-        <RootProviders user={user} nonce={nonce} csrfToken={csrfToken}>
+        <RootProviders user={user} nonce={nonce}>
           {children}
           {isProd && analyticsEnabled ? <Analytics /> : null}
           {isProd && speedInsightsEnabled ? <SpeedInsights /> : null}

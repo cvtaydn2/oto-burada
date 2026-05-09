@@ -1,5 +1,5 @@
-import { getCachedData, setCachedData } from "@/lib/client";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
+import { getCachedData, setCachedData } from "@/lib/redis/client";
 import { apiSuccess } from "@/lib/response";
 import { createSupabaseServerClient } from "@/lib/server";
 
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     return apiSuccess({ brands: [], models: [] });
   }
 
-  // Cache suggestions for 2 minutes
+  // Cache suggestions for 2 minutes via the canonical Redis helper surface
   const cacheKey = `search:suggestions:${q.toLowerCase()}`;
   const cached = await getCachedData<{ brands: unknown[]; models: unknown[] }>(cacheKey);
   if (cached) return apiSuccess(cached);

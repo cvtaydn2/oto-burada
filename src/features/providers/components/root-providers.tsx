@@ -7,17 +7,15 @@ import { type PropsWithChildren, useState } from "react";
 import { AuthProvider } from "@/components/shared/auth-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { CsrfProvider } from "@/features/providers/components/csrf-provider";
 import { PWAProvider } from "@/features/providers/components/pwa-provider";
 import { SupabaseProvider } from "@/features/providers/components/supabase-provider";
 
 interface RootProvidersProps extends PropsWithChildren {
   user: User | null;
   nonce?: string;
-  csrfToken?: string;
 }
 
-export function RootProviders({ children, user, nonce, csrfToken }: RootProvidersProps) {
+export function RootProviders({ children, user, nonce }: RootProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -43,14 +41,12 @@ export function RootProviders({ children, user, nonce, csrfToken }: RootProvider
     >
       <QueryClientProvider client={queryClient}>
         <SupabaseProvider>
-          <CsrfProvider initialToken={csrfToken}>
-            <AuthProvider initialUser={user}>
-              <PWAProvider>
-                {children}
-                <Toaster />
-              </PWAProvider>
-            </AuthProvider>
-          </CsrfProvider>
+          <AuthProvider initialUser={user}>
+            <PWAProvider>
+              {children}
+              <Toaster />
+            </PWAProvider>
+          </AuthProvider>
         </SupabaseProvider>
       </QueryClientProvider>
     </ThemeProvider>

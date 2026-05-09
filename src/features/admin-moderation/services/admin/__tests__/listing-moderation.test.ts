@@ -47,7 +47,7 @@ vi.mock("@/features/notifications/services/notification-records", () => ({
   createDatabaseNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/client", () => ({
+vi.mock("@/lib/redis/client", () => ({
   invalidateCache: vi.fn().mockResolvedValue(undefined),
 }));
 

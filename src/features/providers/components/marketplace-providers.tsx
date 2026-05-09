@@ -3,7 +3,16 @@
 import { type PropsWithChildren } from "react";
 
 import { FavoritesProvider } from "@/components/shared/favorites-provider";
+import { CsrfProvider } from "@/features/providers/components/csrf-provider";
 
-export function MarketplaceProviders({ children }: PropsWithChildren) {
-  return <FavoritesProvider>{children}</FavoritesProvider>;
+interface MarketplaceProvidersProps extends PropsWithChildren {
+  csrfToken?: string;
+}
+
+export function MarketplaceProviders({ children, csrfToken }: MarketplaceProvidersProps) {
+  return (
+    <CsrfProvider initialToken={csrfToken}>
+      <FavoritesProvider>{children}</FavoritesProvider>
+    </CsrfProvider>
+  );
 }

@@ -45,27 +45,28 @@ const mockProfile: Partial<Profile> = {
   createdAt: "2024-01-01",
 };
 
-vi.mock("@/features/marketplace/services/listing-submissions", () => ({
+vi.mock("../listing-submissions", () => ({
+  getStoredListingById: vi.fn(),
   getStoredListingBySlug: vi.fn(),
   getStoredListingsByIds: vi.fn(),
 }));
 
-vi.mock("@/features/marketplace/services/listing-submission-query", () => ({
+vi.mock("../listing-submission-query", () => ({
   getSimilarDatabaseListings: vi.fn(),
   marketplaceListingSelect: "*",
   listingCardSelect: "*",
 }));
 
-vi.mock("@/features/marketplace/services/catalog", () => ({
+vi.mock("../catalog", () => ({
   getPublicListings: vi.fn(),
   getListingBySlug: vi.fn(),
 }));
 
-vi.mock("@/features/profile/services/profile-records", () => ({
+vi.mock("../../../../profile/services/profile/profile-records", () => ({
   getPublicSellerProfile: vi.fn(),
 }));
 
-vi.mock("@/lib/public-server", () => ({
+vi.mock("../../../../../lib/supabase/public-server", () => ({
   createSupabasePublicServerClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
@@ -77,13 +78,28 @@ vi.mock("@/lib/public-server", () => ({
   })),
 }));
 
+vi.mock("../../../../../lib/logger", () => ({
+  logger: {
+    listings: {
+      warn: vi.fn(),
+    },
+    db: {
+      error: vi.fn(),
+    },
+  },
+}));
+
+vi.mock("../../../../../lib/telemetry-server", () => ({
+  captureServerEvent: vi.fn(),
+}));
+
 describe("Marketplace Listings Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should get filtered marketplace listings", async () => {
-    const { getPublicListings } = await import("@/features/marketplace/services/catalog");
+    const { getPublicListings } = await import("../catalog");
     vi.mocked(getPublicListings).mockResolvedValue({
       listings: [],
       total: 0,
@@ -96,9 +112,45 @@ describe("Marketplace Listings Service", () => {
     expect(result).toBeDefined();
   });
 
+  it("should preserve supported marketplace filters, strip unsafe query content and surface dropped filter metadata", async () => {
+    const { getPublicListings } = await import("../catalog");
+
+    vi.mocked(getPublicListings).mockResolvedValue({
+      listings: [],
+      total: 0,
+      page: 3,
+      limit: 24,
+      hasMore: false,
+      metadata: {
+        source: "test",
+      },
+    });
+
+    const filters = {
+      page: 3,
+      limit: 24,
+      city: "İstanbul",
+      query: "BMW <script>alert('x')</script>",
+      unsupportedFlag: true,
+    } as const;
+
+    const result = await getFilteredMarketplaceListings(filters);
+
+    expect(getPublicListings).toHaveBeenCalledWith({
+      page: 3,
+      limit: 24,
+      city: "İstanbul",
+      query: "BMW alert('x')",
+    });
+    expect(result.metadata).toEqual({
+      source: "test",
+      droppedFilters: ["unsupportedFlag"],
+      warning: "Bazı filtreler desteklenmiyor ve uygulanmadı.",
+    });
+  });
+
   it("should get marketplace listings by IDs", async () => {
-    const { getStoredListingsByIds } =
-      await import("@/features/marketplace/services/listing-submissions");
+    const { getStoredListingsByIds } = await import("../listing-submissions");
     vi.mocked(getStoredListingsByIds).mockResolvedValue([]);
 
     const result = await getMarketplaceListingsByIds(["id1", "id2"]);
@@ -106,7 +158,7 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get marketplace listing by slug", async () => {
-    const { getListingBySlug } = await import("@/features/marketplace/services/catalog");
+    const { getListingBySlug } = await import("../catalog");
     vi.mocked(getListingBySlug).mockResolvedValue(mockListing as unknown as Listing);
 
     const result = await getMarketplaceListingBySlug("test-listing");
@@ -114,7 +166,7 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should return null for non-approved listing", async () => {
-    const { getListingBySlug } = await import("@/features/marketplace/services/catalog");
+    const { getListingBySlug } = await import("../catalog");
     vi.mocked(getListingBySlug).mockResolvedValue({
       ...mockListing,
       status: "pending",
@@ -125,7 +177,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get marketplace seller", async () => {
-    const { getPublicSellerProfile } = await import("@/features/profile/services/profile-records");
+    const { getPublicSellerProfile } =
+      await import("../../../../profile/services/profile/profile-records");
     vi.mocked(getPublicSellerProfile).mockResolvedValue(mockProfile as unknown as Profile);
 
     const result = await getMarketplaceSeller("seller-1");
@@ -133,7 +186,7 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get public marketplace listings", async () => {
-    const { getPublicListings } = await import("@/features/marketplace/services/catalog");
+    const { getPublicListings } = await import("../catalog");
     vi.mocked(getPublicListings).mockResolvedValue({
       listings: [],
       total: 0,
@@ -147,7 +200,7 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get recent marketplace listings", async () => {
-    const { getPublicListings } = await import("@/features/marketplace/services/catalog");
+    const { getPublicListings } = await import("../catalog");
     vi.mocked(getPublicListings).mockResolvedValue({
       listings: [mockListing as Listing],
       total: 1,
@@ -161,8 +214,7 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get similar marketplace listings", async () => {
-    const { getSimilarDatabaseListings } =
-      await import("@/features/marketplace/services/listing-submission-query");
+    const { getSimilarDatabaseListings } = await import("../listing-submission-query");
     vi.mocked(getSimilarDatabaseListings).mockResolvedValue([mockListing as Listing]);
 
     const result = await getSimilarMarketplaceListings("current-slug", "BMW", "Istanbul");

@@ -61,9 +61,6 @@
       "@/hooks/use-debounce": [
         "./src/hooks/use-debounce.ts"
       ],
-      "@/hooks/useDebounce": [
-        "./src/hooks/use-debounce.ts"
-      ],
       "@/hooks/use-media-query": [
         "./src/hooks/use-media-query.ts"
       ],
@@ -71,9 +68,6 @@
         "./src/hooks/use-chat-realtime.ts"
       ],
       "@/hooks/use-error-capture": [
-        "./src/hooks/use-error-capture.ts"
-      ],
-      "@/hooks/useErrorCapture": [
         "./src/hooks/use-error-capture.ts"
       ],
       "@/lib/helpers": [
@@ -90,12 +84,6 @@
       ],
       "@/lib/sanitize": [
         "./src/lib/sanitization/sanitize.ts"
-      ],
-      "@/lib/client": [
-        "./src/lib/client-compat.ts"
-      ],
-      "@/lib/api-routes": [
-        "./src/lib/constants/api-routes.ts"
       ],
       "@/lib/domain": [
         "./src/lib/constants/domain.ts"
@@ -204,9 +192,6 @@
       ],
       "@/features/marketplace/lib/slugs": [
         "./src/features/marketplace/lib/slugs.ts"
-      ],
-      "@/hooks/usePullToRefresh": [
-        "./src/features/shared/hooks/use-pull-to-refresh.ts"
       ],
       "@/features/profile/services/profile-records": [
         "./src/features/profile/services/profile/profile-records.ts"
@@ -396,15 +381,6 @@
       ],
       "@/features/reports/services/report-submissions": [
         "./src/features/reports/services/reports/report-submissions.ts"
-      ],
-      "@/hooks/useNavigation": [
-        "./src/hooks/use-navigation.ts"
-      ],
-      "@/hooks/useChatQueries": [
-        "./src/lib/query-keys.ts"
-      ],
-      "@/hooks/useListingActions": [
-        "./src/features/marketplace/services/listings/listing-submissions.ts"
       ],
       "@/features/marketplace/services/listing-documents": [
         "./src/features/marketplace/services/listings/listing-documents.ts"
