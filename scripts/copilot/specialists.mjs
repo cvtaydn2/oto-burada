@@ -111,13 +111,16 @@ export async function runSpecialistsInParallel(prompt, context = "") {
 export async function runSwarmVerification(frontendSol, backendSol, originalPrompt) {
   console.log(`\n${yellow}🛡️  QA Ajanı (Vera) çözümleri denetliyor...${reset}`);
 
-  const qaPrompt = `Sen QA Ajanısın. Aşağıda Frontend ve Backend uzmanlarının ürettiği iki çözüm yer alıyor.
-Bunları incele, aralarındaki entegrasyon uyumunu doğrula. Bir hata, çakışma, eksiklik veya tip uyumsuzluğu var mı tespit et.
+  const qaPrompt = `Sen QA Ajanısın. Aşağıda Frontend ve Backend uzmanlarının ürettiği çözümleri incele.
+1. Mimari Kontrol: Monolitik dosyalar canonical katmanlara (*-records.ts, *-logic.ts, *-actions.ts) düzgün bölündü mü?
+2. Veri Bütünlüğü: Supabase inner join'leri sonrasında oluşabilecek Array yapıları için normalizasyon yapıldı mı? (örn: if(Array.isArray(r)) formatı)
+3. Tip Güvenliği: TypeScript implicit any kullanılmıyor değil mi?
+4. Uyum: Frontend ve Backend arasında kontrat çakışması var mı?
 
 MUTLAKA Sadece JSON formatında, kod bloğu veya ekstra açıklama olmadan cevap ver:
 {
   "verdict": "APPROVED" | "REJECTED",
-  "feedback": "Eğer REJECTED ise sorunların detayı, aksi halde null"
+  "feedback": "Eğer REJECTED ise hangi maddenin ihlal edildiğini belirt, aksi halde null"
 }
 
 Orijinal Görev:

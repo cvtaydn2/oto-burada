@@ -24,6 +24,12 @@ export async function runSwarmOrchestration(taskDescription) {
       }
     }
   }
+  
+  // KRİTİK GELİŞTİRME (Aşama 2): AGENTS.md anayasası her zaman enjeksiyon edilir.
+  const agentsPath = path.resolve(process.cwd(), "AGENTS.md");
+  if (fs.existsSync(agentsPath)) {
+    context += `\n\n=== PROJE ANAYASASI (ZORUNLU KURALLAR) ===\n${fs.readFileSync(agentsPath, "utf-8")}\n`;
+  }
 
   let iterations = 0;
   const maxLoops = 3;
@@ -68,7 +74,30 @@ ${frontendSolution}
 Backend Çözüm Parçaları:
 ${backendSolution}`;
 
-  const finalSynthesis = await callClaudeRaw(synthesisPrompt, context);
+  let finalSynthesis = await callClaudeRaw(synthesisPrompt, context);
+
+  // GÜVENLİK KONTROLÜ: "Tembel Çıktı" Denetimi (Lazy Placeholder Check)
+  const lazyPatterns = [/existing code/, /.../g, /rest of/i, /kalan kod/i, /kodun devamı/i];
+  let lazyMatches = 0;
+  const changes = parseXmlFiles(finalSynthesis);
+  
+  // Sadece dosya bloklarının içini tara (açıklamalardaki ... noktalarını görmezden gel)
+  for(const change of changes) {
+    const code = change.code || "";
+    if (code.includes("// ...") || code.includes("/* ...") || code.includes("// rest of") || code.includes("/* existing")) {
+      lazyMatches++;
+    }
+  }
+
+  if (lazyMatches > 0) {
+    console.log(`\n${red}${bold}⚠️  KRİTİK GÜVENLİK İHLALİ: Final sentezde 'Tembel Kod Parçası' (Placeholder) tespit edildi!${reset}`);
+    console.log(`${yellow}🔄 Otomatik Kendi Kendini Düzeltme (Self-Healing) tetikleniyor...${reset}`);
+    const healingPrompt = `Ürettiğin kod bloklarında '// ... existing code' gibi tembel kısıtlamalar veya placeholder'lar tespit ettim. 
+LÜTFEN TÜM DOSYALARI HİÇBİR KISMI ATLAMADAN, TAM VE EKSİKSİZ OLARAK YENİDEN YAZ. TEK BİR SATIR BİLE KESİLEMEZ.
+Oluşturulacak veya güncellenecek tüm kod dosyalarını kesinlikle <write_file path="...">...</write_file> etiketleri içinde TAM SÜRÜM OLARAK SUN.`;
+    finalSynthesis = await callClaudeRaw(healingPrompt, `${context}\n\n=== Önceki Hatalı Çıktı ===\n${finalSynthesis}`);
+    console.log(`${green}✓ Self-healing tamamlandı.${reset}`);
+  }
 
   saveSwarmSolution(finalSynthesis);
 

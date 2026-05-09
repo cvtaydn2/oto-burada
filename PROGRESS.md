@@ -1,5 +1,22 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 71. Copilot Capacity Boost & Reports Feature Canonicalization
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Executed Co-Evolution Stage 2 (Upgraded local copilot with self-healing laziness triggers and direct AGENTS.md context binding) then ran Stage 1 (Extracted `report-submissions.ts` into canonical layers).
+
+### 71.1 Core Engine Enhancements
+- Added mandatory `AGENTS.md` file loader in `orchestrator.mjs` ensuring rules are always fed to agents.
+- Introduced **Self-Healing Anti-Laziness Loop**: Automates re-write prompts if generated code contains placeholder comments.
+- Expanded Vera QA audit checklist to actively enforce Supabase normalization and module separation check gates.
+
+### 71.2 Applied Fixes (Reports Feature)
+- Extracted monolithic logic into `report-submissions.records.ts`, `report-submissions.logic.ts`, and `report-submissions.actions.ts`.
+- Realigned `feedback.ts` exported types to reveal enums hidden by direct `ZodType<Report>` object assignment, eliminating downstream compile-time leakage.
+- Restored backward compatibility interface ensuring `src/features/reports/services/reports/report-submissions.ts` operates as transparent aggregate Facade.
+- ✅ Passed zero-warning `npm run typecheck`.
+
 ## 70. Exchange Feature Canonical Module Extraction
 
 **Date**: 2026-05-09

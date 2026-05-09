@@ -9,7 +9,7 @@ import {
   trimmedRequiredString,
 } from "./shared";
 
-const reportReasonEnum = z.enum([
+export const reportReasonEnum = z.enum([
   "fake_listing",
   "wrong_info",
   "spam",
@@ -18,7 +18,7 @@ const reportReasonEnum = z.enum([
   "other",
 ]);
 
-const reportStatusEnum = z.enum(["open", "reviewing", "resolved", "dismissed"]);
+export const reportStatusEnum = z.enum(["open", "reviewing", "resolved", "dismissed"]);
 
 export const reportSchema: z.ZodType<Report> = z.object({
   id: optionalTrimmedString,
