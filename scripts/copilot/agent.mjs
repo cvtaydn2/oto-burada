@@ -10,6 +10,7 @@ export function startSpinner(message) {
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   let i = 0;
   let startTime = Date.now();
+  let stopped = false;
   const MIN_DISPLAY_MS = 200;
 
   // İlk satırı yaz
@@ -21,6 +22,9 @@ export function startSpinner(message) {
 
   return {
     stop: async () => {
+      if (stopped) return;
+      stopped = true;
+
       const elapsed = Date.now() - startTime;
       if (elapsed < MIN_DISPLAY_MS) {
         await new Promise((resolve) => setTimeout(resolve, MIN_DISPLAY_MS - elapsed));
@@ -37,7 +41,7 @@ export function loadConstitutionRules() {
   let constitutionText = "";
 
   if (fs.existsSync(rulesDir)) {
-    const list = fs.readdirSync(rulesDir);
+    const list = fs.readdirSync(rulesDir).sort((a, b) => a.localeCompare(b));
     for (const file of list) {
       if (file.endsWith(".md") && file !== "README.md") {
         const filePath = path.join(rulesDir, file);
@@ -80,7 +84,7 @@ function sanitizeErrorOutput(text) {
 }
 
 // Claude API İstek Gönderici (Konsistens ve Sıfır Sıcaklık Odaklı)
-export async function callClaudeRaw(prompt, extraContext = "") {
+export async function callClaudeRaw(prompt, extraContext = "", overrideHistory = null) {
   if (!apiKey) {
     console.log(`${red}${bold}⚠️ CLAUDE_NETIVA_KEY, .env.local dosyasında tanımlı değil!${reset}`);
     process.exit(1);
@@ -137,8 +141,10 @@ Her zaman temiz, tip güvenli (TypeScript strict) ve aşağıda yer alan projeni
 
 ${constitutionRules}`;
 
+  const baseHistory = overrideHistory || getWindowedHistory();
+
   const messages = [
-    ...getWindowedHistory(),
+    ...baseHistory,
     { role: "user", content: (extraContext ? extraContext + "\n\n" : "") + prompt }
   ];
 
@@ -190,6 +196,7 @@ ${constitutionRules}`;
       let fullResponseText = "";
       const decoder = new TextDecoder("utf-8");
       let buffer = "";
+      let receivedDone = false;
 
       for await (const chunk of response.body) {
         buffer += decoder.decode(chunk, { stream: true });
@@ -199,7 +206,10 @@ ${constitutionRules}`;
         for (const line of lines) {
           const trimmed = line.trim();
           if (!trimmed) continue;
-          if (trimmed === "data: [DONE]") break;
+          if (trimmed === "data: [DONE]") {
+            receivedDone = true;
+            break;
+          }
           if (trimmed.startsWith("data: ")) {
             try {
               const json = JSON.parse(trimmed.slice(5).trim());
@@ -212,6 +222,9 @@ ${constitutionRules}`;
               // Kısmi veya bozuk JSON parçacıklarını sessizce geçiyoruz
             }
           }
+        }
+        if (receivedDone) {
+          break;
         }
       }
 
@@ -254,10 +267,12 @@ export async function runAgentLoop(initialPrompt, options = {}) {
   let currentPrompt = initialPrompt;
   let iterations = 0;
   const maxIterations = 8;
-  let conversationStarted = false;
 
   console.log(`\n${cyan}⚡ Claude otonom analiz döngüsü başlatıldı... Lütfen bekleyin...${reset}`);
   const startTime = Date.now();
+
+  // Oturum bazlı recursive hafıza (Modelin kendi attığı otonom adımları hatırlaması için)
+  const recursiveHistory = [...getWindowedHistory()];
 
   let sessionContext = "";
   if (activeContextFiles.size > 0) {
@@ -272,8 +287,13 @@ export async function runAgentLoop(initialPrompt, options = {}) {
 
   while (iterations < maxIterations) {
     iterations++;
-    const response = await callClaudeRaw(currentPrompt, conversationStarted ? "" : sessionContext);
-    conversationStarted = true;
+    
+    // recursiveHistory artık modelin her otonom adımını hatırlamasını sağlar!
+    const response = await callClaudeRaw(
+      currentPrompt, 
+      (iterations === 1 ? sessionContext : ""), 
+      recursiveHistory
+    );
 
     if (!response) {
       console.log(`${red}❌ Otonom analiz kesildi.${reset}`);
@@ -281,10 +301,10 @@ export async function runAgentLoop(initialPrompt, options = {}) {
     }
 
     // Araç çağrılarını yakala
-    const searchMatches = [...response.matchAll(/\[SEARCH_FILES:\s*([^\]*()\\"]+)\]/g)];
-    const readMatches = [...response.matchAll(/\[READ_FILE:\s*([^\]*()\\"]+)\]/g)];
+    const searchMatches = [...response.matchAll(/\[SEARCH_FILES:\s*([^\]\r\n]+)\]/g)];
+    const readMatches = [...response.matchAll(/\[READ_FILE:\s*([^\]\r\n]+)\]/g)];
     const readLinesMatches = [...response.matchAll(/\[READ_FILE_LINES:\s*([^,\]]+),\s*(\d+)-(\d+)\]/g)];
-    const forgetMatches = [...response.matchAll(/\[FORGET_FILE:\s*([^\]*()\\"]+)\]/g)];
+    const forgetMatches = [...response.matchAll(/\[FORGET_FILE:\s*([^\]\r\n]+)\]/g)];
     const typecheckMatch = response.includes("[RUN_TYPECHECK]");
     const lintMatch = response.includes("[RUN_LINT]");
     const gitStatusMatch = response.includes("[RUN_GIT_STATUS]");
@@ -332,7 +352,9 @@ export async function runAgentLoop(initialPrompt, options = {}) {
       const term = match[1].trim();
       console.log(`   🔎 Dosya Aranıyor: '${term}'...`);
       const allFiles = getFilesRecursively(process.cwd());
-      const results = allFiles.filter(f => f.toLowerCase().includes(term.toLowerCase()));
+      const results = allFiles
+        .filter(f => f.toLowerCase().includes(term.toLowerCase()))
+        .sort((a, b) => a.localeCompare(b));
       toolResults += `\n[SEARCH_FILES SONUCU (${term})]:\n` + (results.length > 0 ? results.slice(0, 15).join("\n") : "Eşleşen dosya bulunamadı.");
     }
 
@@ -360,7 +382,6 @@ export async function runAgentLoop(initialPrompt, options = {}) {
         const lines = content.split("\n");
         const sliced = lines.slice(Math.max(0, startLine - 1), endLine).join("\n");
         toolResults += `\n[READ_FILE_LINES SONUCU (${relPath}, ${startLine}-${endLine})]:\n${sliced}`;
-        activeContextFiles.add(relPath);
       } else {
         toolResults += `\n[READ_FILE_LINES SONUCU (${relPath})]: Dosya bulunamadı!`;
       }
@@ -399,6 +420,18 @@ export async function runAgentLoop(initialPrompt, options = {}) {
       console.log(`   🐙 Git Değişiklik Detayları Okunuyor...`);
       const output = executeCommand("git diff");
       toolResults += `\n[RUN_GIT_DIFF SONUCU]:\n${output.slice(0, 5000)}`;
+    }
+
+    // Mevcut turu yerel recursive hafızaya işle (Geçici Context Koruyucu)
+    recursiveHistory.push({ 
+      role: "user", 
+      content: (iterations === 1 && sessionContext ? sessionContext + "\n\n" : "") + currentPrompt 
+    });
+    recursiveHistory.push({ role: "assistant", content: response });
+
+    // Recursive Hafıza Koruma (Bellek şişmesini önlemek için son 4 adımı sakla)
+    if (recursiveHistory.length > 10) {
+      recursiveHistory.splice(recursiveHistory.length - 10, 2); // Eski adımları çift halinde buda
     }
 
     currentPrompt = `[ARAÇ SONUÇLARI]:\n${toolResults}\n\nAnalizine devam et. Gerekirse başka dosyalar arayebilir, okuyabilir veya tip/linter testi çalıştırabilirsin. Hazır olduğunda nihai çözüm raporunu oluştur.`;

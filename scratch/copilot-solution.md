@@ -1,29 +1,164 @@
-Önce ilgili copilot akışındaki diğer dosyalara bakıp bağlamı tamamlayayım; sonra gerekirse hızlı bir test/komut değerlendirmesi yaparım.Bağlamı doğrulamak için özellikle `conversationHistory` ve `activeContextFiles` kullanımlarını görmem faydalı olur. Eğer istersen şu dosyaları da paylaş: bu değerleri import eden `scripts/copilot/*` dosyaları. Yine de mevcut iki dosyadan çıkarılabilen net bulgular var; aşağıda onları derleyebilirim.Aşağıdaki değerlendirme, şu an gördüğüm iki dosyaya dayanıyor: `scripts/copilot/tools.mjs` ve `scripts/copilot/config.mjs`. Daha fazla dosya görmeden tüm akışı kesinleştiremem ama bu iki dosyadan çıkan birkaç önemli güvenlik ve tasarım bulgusu var.
+Dosyada birkaç önemli sorun gördüm: özellikle deterministik olmayan kural yükleme sırası, kısmi okumalarda bağlama yanlışlıkla tüm dosyanın eklenmesi, araç regex’lerinin gereğinden kırılgan olması ve stream tarafında `[DONE]` satırının dış döngüyü açık bırakması. Bunlar hem tutarlılığı hem de bellek kullanımını etkileyebilir.
 
-Genel sonuç şu: `tools.mjs` içinde faydalı savunmalar var; özellikle path traversal için temel kontrol, binary/large file okuma sınırlaması ve komut beyaz listeleme iyi bir başlangıç. Ama aynı dosyada komut çalıştırma ve dosya tarama tarafında bazı kırılgan noktalar var. `config.mjs` tarafındaki asıl ciddi risk ise oturum durumunun modül seviyesinde global tutulması; bu mimari, çoklu kullanıcı veya eşzamanlı istek senaryolarında bağlam sızıntısına yol açabilir.
+Aşağıdaki yama bu noktaları düzeltir:
 
-`config.mjs` ile başlayayım. Buradaki `activeContextFiles` ve `conversationHistory` değerleri modül seviyesinde `Set` ve dizi olarak export ediliyor. Bu, Node süreci ayakta kaldığı sürece bellekte ortak durum tutulduğu anlamına gelir. Eğer bu copilot akışı birden fazla kullanıcı, oturum veya paralel görev tarafından kullanılıyorsa, bir isteğin bağlam dosyaları ya da konuşma geçmişi başka bir isteğe karışabilir. En kritik bulgu bu. Bu sadece bellek büyümesi problemi değil; aynı zamanda gizlilik ve doğruluk problemi. Bir kullanıcının geçmiş mesajlarının başka bir kullanıcı akışına taşınması, istemeden veri sızıntısı üretebilir. Çözüm olarak bu iki yapının global export edilmemesi, bunun yerine istek bazlı ya da oturum bazlı bir state container içinde tutulması gerekir. En azından bir `createSessionState()` gibi bir fabrika fonksiyonu ile her çalışma için ayrı `activeContextFiles` ve `conversationHistory` üretilmesi daha güvenli olur.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+export function startSpinner(message) {
+  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  let i = 0;
+  let startTime = Date.now();
+  const MIN_DISPLAY_MS = 200;
+=======
+export function startSpinner(message) {
+  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  let i = 0;
+  let startTime = Date.now();
+  let stopped = false;
+  const MIN_DISPLAY_MS = 200;
+>>>>>>> REPLACE
+</edit_file>
 
-`conversationHistory` için ikinci sorun, boyut sınırı olmaması. Uzun çalışan süreçte dizi sürekli büyürse hem maliyet hem bellek tüketimi artar. Bu yüzden sadece son N mesajı saklamak, token bazlı kırpma yapmak ya da özetleme stratejisi kullanmak gerekir. Aksi halde zamanla performans bozulur.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+  return {
+    stop: async () => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < MIN_DISPLAY_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_DISPLAY_MS - elapsed));
+      }
+      clearInterval(interval);
+      process.stdout.write(`\r\x1b[K`); // Satırı tamamen temizle
+    }
+  };
+=======
+  return {
+    stop: async () => {
+      if (stopped) return;
+      stopped = true;
 
-`tools.mjs` içindeki `getFilesRecursively` fonksiyonu performans amaçlı cache kullanıyor ama cache anahtarsız. Yani hangi dizin için tarama yapıldığı dikkate alınmıyor. Bir çağrı kök dizini tarayıp cache doldurduğunda, kısa süre içinde başka bir alt dizin için yapılan çağrı da aynı cache’i döndürebilir. Bu sessizce yanlış sonuç üretir. Eğer fonksiyon her zaman proje kökünde çağrılıyorsa pratikte sorun görünmeyebilir, ama arayüzü genel amaçlı olduğu için bug riski var. Çözüm, cache’i `dir` parametresine göre anahtarlamak ya da fonksiyonun sadece kök dizin için çalışacağı açıkça garanti edilmiyorsa cache’i kaldırmak.
+      const elapsed = Date.now() - startTime;
+      if (elapsed < MIN_DISPLAY_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_DISPLAY_MS - elapsed));
+      }
+      clearInterval(interval);
+      process.stdout.write(`\r\x1b[K`); // Satırı tamamen temizle
+    }
+  };
+>>>>>>> REPLACE
+</edit_file>
 
-Aynı fonksiyonda `.gitignore` işleme oldukça naif. Satırları doğrudan `Set` içine alıp dosya/dizin adıyla eşleştiriyor. Bu, `.gitignore` içindeki glob desenlerini, `!` ile yapılan istisnaları, iç içe path kurallarını ve sadece belli dizin bağlamında geçerli kuralları doğru yorumlamıyor. Sonuç olarak bazı dosyalar gereksizce dışlanabilir ya da dışlanması gerekenler içeri girebilir. Bu bir güvenlik açığından çok doğruluk ve bakım sorunu ama ajan bağlamı seçerken etkisi olabilir. Gerçek `.gitignore` semantiği isteniyorsa `ignore` benzeri bir kütüphane kullanılmalı.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+  if (fs.existsSync(rulesDir)) {
+    const list = fs.readdirSync(rulesDir);
+    for (const file of list) {
+=======
+  if (fs.existsSync(rulesDir)) {
+    const list = fs.readdirSync(rulesDir).sort((a, b) => a.localeCompare(b));
+    for (const file of list) {
+>>>>>>> REPLACE
+</edit_file>
 
-`applyChanges` içindeki path traversal kontrolü temel olarak doğru yönde. `path.resolve(cwd, change.path)` sonrası `path.relative` ile `..` kaçışı engelleniyor. Bu iyi. Ama burada kalan önemli köşe durum, symlink meselesi. Fonksiyon hedef dizin zaten varsa bunun bir sembolik link olup olmadığını doğrulamıyor; `writeFileSync` symlink’i takip ederek proje dışına yazabilir. Üstteki tarama fonksiyonu symlink’leri atlasa da yazma akışı için ayrı koruma gerekiyor. Eğer çalışma alanında saldırgan kontrollü bir symlink oluşturulabiliyorsa, bu koruma atlatılabilir. Çözüm olarak yazmadan önce hedef yolun her bileşeninin gerçek yolunu (`realpath`) doğrulamak veya en azından mevcut hedef dosya/dizinin symlink olup olmadığını kontrol etmek gerekir.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+      let fullResponseText = "";
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
 
-Aynı `applyChanges` içinde kısmi düzenleme akışında `String.replace` ilk eşleşmeyi değiştiriyor. Eğer `SEARCH` metni dosyada birden fazla kez geçiyorsa yanlış yeri değiştirebilir. Kod bilinçli olarak “ilkini değiştir” davranışı istiyorsa sorun değil, ama XML tabanlı edit akışlarında genellikle beklenti ya tekil eşleşme ya da tam bağlam eşleşmesidir. Bu yüzden eşleşme sayısı birden fazlaysa hata vermek daha güvenli olur. Bu, yanlış dosya modifikasyonlarını azaltır.
+      for await (const chunk of response.body) {
+=======
+      let fullResponseText = "";
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let receivedDone = false;
 
-`safeReadFile` için dosya boyutu sınırı makul ama binary tespiti uzantı listesine bağlı. Uzantısı farklı bir binary dosya yanlışlıkla UTF-8 okunmaya çalışılabilir. Bu çoğu zaman güvenlikten çok dayanıklılık sorunu. Daha sağlam bir çözüm için ilk birkaç byte üzerinden binary heuristiği eklenebilir.
+      for await (const chunk of response.body) {
+>>>>>>> REPLACE
+</edit_file>
 
-En dikkat gerektiren yer `executeCommand`. Burada niyet iyi: komutları beyaz listeye almak ve bazı shell metakarakterlerini engellemek. Fakat uygulamada birkaç zayıflık var. Birincisi, bazı komutlarda `shell: true` kullanılıyor. Bu, saldırı yüzeyini gereksiz büyütüyor. Özellikle `npm`, `ls` ve `dir` için shell açılması, normalde argüman bazlı güvenli çalıştırma modelini zayıflatıyor. İkincisi, engellenen karakter listesi sınırlı; newline gibi kontrol karakterleri, platforma özgü shell davranışları ve bazı yorumlama farkları düşünülmemiş. Üçüncüsü, özel yazılmış `parseCommandArgs` kaçış karakterlerini, tek tırnakları ve karmaşık quoting senaryolarını doğru yönetmiyor. Sonuç olarak “zararlı karakter taraması + elle argüman ayrıştırma + bazı durumlarda shell true” birleşimi kırılgan bir tasarım oluşturuyor.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          if (trimmed === "data: [DONE]") break;
+          if (trimmed.startsWith("data: ")) {
+=======
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          if (trimmed === "data: [DONE]") {
+            receivedDone = true;
+            break;
+          }
+          if (trimmed.startsWith("data: ")) {
+>>>>>>> REPLACE
+</edit_file>
 
-Burada en doğru çözüm, serbest metin komut kabulünü bırakmak. Yani `executeCommand("npm run typecheck")` yerine `executeCommand({ exe: "npm", args: ["run", "typecheck"] })` gibi yapılandırılmış bir API kullanmak daha güvenli. Mümkünse `shell: false` varsayılan olmalı. Windows uyumluluğu için `npm.cmd` gibi platforma özel çözüm uygulanabilir; shell açmak mecburi olmamalı. Eğer shell gerçekten zorunluysa, o zaman sadece sabit komut şablonlarına izin verilmeli; kullanıcı girdisi shell’e hiç ulaşmamalı.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+            } catch (err) {
+              // Kısmi veya bozuk JSON parçacıklarını sessizce geçiyoruz
+            }
+          }
+        }
+      }
+=======
+            } catch (err) {
+              // Kısmi veya bozuk JSON parçacıklarını sessizce geçiyoruz
+            }
+          }
+        }
 
-Bir başka küçük ama gerçek risk, `executeCommand` çıktısının sadece ilk 3000 karaktere kırpılması. Bu güvenlik problemi değil, ama hata ayıklamada eksik bağlam üretir. Özellikle derleme ve test hatalarında son satırlar daha değerli olabilir. Baştan kırpmak yerine hem baştan hem sondan örnek vermek daha faydalı olur.
+        if (receivedDone) {
+          break;
+        }
+      }
+>>>>>>> REPLACE
+</edit_file>
 
-Model adı tarafında `config.mjs` içindeki `"claude-opus-4-6"` sabiti güncel ve tutarlı görünüyor. `baseUrl` için env yoksa sabit fallback kullanılması teknik olarak normal; ama prod ortamında yanlış endpoint’e sessizce düşme istenmiyorsa başlangıçta doğrulama eklenebilir. `apiKey` yoksa da sürecin erken ve açık biçimde hata vermesi daha iyi olur; şu haliyle eksik anahtar muhtemelen daha aşağı katmanlarda belirsiz hata üretecek.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+    const searchMatches = [...response.matchAll(/\[SEARCH_FILES:\s*([^\]*()\\"]+)\]/g)];
+    const readMatches = [...response.matchAll(/\[READ_FILE:\s*([^\]*()\\"]+)\]/g)];
+    const readLinesMatches = [...response.matchAll(/\[READ_FILE_LINES:\s*([^,\]]+),\s*(\d+)-(\d+)\]/g)];
+    const forgetMatches = [...response.matchAll(/\[FORGET_FILE:\s*([^\]*()\\"]+)\]/g)];
+=======
+    const searchMatches = [...response.matchAll(/\[SEARCH_FILES:\s*([^\]\r\n]+)\]/g)];
+    const readMatches = [...response.matchAll(/\[READ_FILE:\s*([^\]\r\n]+)\]/g)];
+    const readLinesMatches = [...response.matchAll(/\[READ_FILE_LINES:\s*([^,\]]+),\s*(\d+)-(\d+)\]/g)];
+    const forgetMatches = [...response.matchAll(/\[FORGET_FILE:\s*([^\]\r\n]+)\]/g)];
+>>>>>>> REPLACE
+</edit_file>
 
-Özetle, öncelik sırası bence şöyle olmalı. İlk olarak global oturum durumunu kaldırın; bu mimari risk hem gizlilik hem doğruluk açısından en önemli konu. İkinci olarak `executeCommand` arayüzünü yapılandırılmış argüman modeline çevirip `shell: true` bağımlılığını azaltın. Üçüncü olarak `applyChanges` için symlink güvenliğini sıkılaştırın. Dördüncü olarak `getFilesRecursively` cache mantığını dizin bazlı hale getirin ve `.gitignore` yorumlamasını sağlamlaştırın. Bunlar yapıldığında araç katmanı belirgin biçimde daha güvenli ve öngörülebilir olur.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+      const allFiles = getFilesRecursively(process.cwd());
+      const results = allFiles.filter(f => f.toLowerCase().includes(term.toLowerCase()));
+=======
+      const allFiles = getFilesRecursively(process.cwd());
+      const results = allFiles
+        .filter(f => f.toLowerCase().includes(term.toLowerCase()))
+        .sort((a, b) => a.localeCompare(b));
+>>>>>>> REPLACE
+</edit_file>
 
-İstersen bir sonraki adımda sana doğrudan uygulanabilir bir patch de hazırlayabilirim. En faydalı devam adımı, `conversationHistory` ve `activeContextFiles`’ın kullanıldığı dosyaları görmek olur; böylece global state’i bozmadan nasıl session-scope hale getireceğimizi somut kodla önerebilirim.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+        const lines = content.split("\n");
+        const sliced = lines.slice(Math.max(0, startLine - 1), endLine).join("\n");
+        toolResults += `\n[READ_FILE_LINES SONUCU (${relPath}, ${startLine}-${endLine})]:\n${sliced}`;
+        activeContextFiles.add(relPath);
+      } else {
+=======
+        const lines = content.split("\n");
+        const sliced = lines.slice(Math.max(0, startLine - 1), endLine).join("\n");
+        toolResults += `\n[READ_FILE_LINES SONUCU (${relPath}, ${startLine}-${endLine})]:\n${sliced}`;
+      } else {
+>>>>>>> REPLACE
+</edit_file>
+
+Bu değişikliklerin etkisi şu olur: `.agents/rules` her çalışmada aynı sırayla yüklenir, spinner birden fazla kez güvenle durdurulabilir, SSE akışı `[DONE]` geldiğinde temiz biçimde kapanır, araç çağrısı regex’leri daha öngörülebilir hale gelir, arama sonuçları sabit sırada gelir ve en önemlisi `READ_FILE_LINES` kullanımı bütün dosyayı gereksiz yere “aktif bağlam” hafızasına taşımadığı için context şişmesi azalır.
+
+İstersen bir sonraki adımda bu dosya için ikinci tur daha derin inceleme de yapabilirim; özellikle `saveAndShowSolution`, `parseXmlFiles/applyChanges` akışı ve `conversationHistory` politikasında da iyileştirme alanları var.
