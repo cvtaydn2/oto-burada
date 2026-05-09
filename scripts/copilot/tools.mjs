@@ -1,53 +1,105 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 
 // Dosya listesi önbelleği (PC'yi kastırmamak ve disk I/O yükünü sıfırlamak için)
 let filesCache = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 5000; // 5 saniye
+
+const DEFAULT_EXCLUDES = new Set([
+  "node_modules", ".next", ".git", "dist",
+  "artifacts", "scratch", ".agents", ".gemini",
+  "coverage", "__tests__", ".turbo", ".vercel",
+  ".swc", ".cache", "build", "out",
+  ".roo", ".nyc_output", "storybook-static"
+]);
+
+let exclusionsSet = null;
+
+function getExclusions() {
+  if (exclusionsSet) return exclusionsSet;
+  const set = new Set(DEFAULT_EXCLUDES);
+  try {
+    const gitignorePath = path.resolve(process.cwd(), ".gitignore");
+    if (fs.existsSync(gitignorePath)) {
+      const content = fs.readFileSync(gitignorePath, "utf-8");
+      const lines = content.split("\n");
+      for (let line of lines) {
+        line = line.trim();
+        if (line && !line.startsWith("#")) {
+          const clean = line.replace(/^\//, "").replace(/\/$/, "");
+          if (clean) set.add(clean);
+        }
+      }
+    }
+  } catch (err) {
+    // Sessizce geç
+  }
+  exclusionsSet = set;
+  return set;
+}
 
 export function invalidateFilesCache() {
   filesCache = null;
+  cacheTimestamp = 0;
+  exclusionsSet = null;
+}
+
+const MAX_FILE_SIZE = 512 * 1024; // 512KB
+
+export function safeReadFile(filePath) {
+  try {
+    const stats = fs.statSync(filePath);
+    if (stats.size > MAX_FILE_SIZE) {
+      return `[DOSYA ÇOK BÜYÜK: ${(stats.size / 1024).toFixed(0)}KB > ${MAX_FILE_SIZE / 1024}KB limit]`;
+    }
+    const ext = path.extname(filePath).toLowerCase();
+    const binaryExts = new Set([".png", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".zip", ".gz", ".tar", ".mp4", ".webp"]);
+    if (binaryExts.has(ext)) {
+      return "[BINARY DOSYA - okunamaz]";
+    }
+    return fs.readFileSync(filePath, "utf-8");
+  } catch (err) {
+    return `[DOSYA OKUMA HATASI]: ${err.message}`;
+  }
 }
 
 // Projedeki tüm dosyaları tarayan recursive fonksiyon (Güvenli, Önbellekli & Optimize)
 export function getFilesRecursively(dir, files = [], useCache = true) {
-  if (useCache && filesCache) {
+  const now = Date.now();
+  if (useCache && filesCache && (now - cacheTimestamp) < CACHE_TTL) {
     return [...filesCache];
   }
 
-  if (!fs.existsSync(dir)) return files;
-  const list = fs.readdirSync(dir);
-  for (const file of list) {
-    if (
-      file === "node_modules" ||
-      file === ".next" ||
-      file === ".git" ||
-      file === "dist" ||
-      file === "artifacts" ||
-      file === "scratch" ||
-      file === ".agents" ||
-      file === ".gemini"
-    ) {
-      continue;
-    }
-    const fullPath = path.join(dir, file);
-    try {
-      const stat = fs.lstatSync(fullPath);
-      if (stat.isSymbolicLink()) continue; // Symlink döngülerine karşı koruma
+  const exclusions = getExclusions();
 
-      if (stat.isDirectory()) {
-        getFilesRecursively(fullPath, files, false);
-      } else {
-        files.push(path.relative(process.cwd(), fullPath).replace(/\\/g, "/"));
+  function scan(currentDir) {
+    if (!fs.existsSync(currentDir)) return;
+    const list = fs.readdirSync(currentDir);
+    for (const file of list) {
+      if (exclusions.has(file)) continue;
+      const fullPath = path.join(currentDir, file);
+      try {
+        const stat = fs.lstatSync(fullPath);
+        if (stat.isSymbolicLink()) continue;
+
+        if (stat.isDirectory()) {
+          scan(fullPath);
+        } else {
+          files.push(path.relative(process.cwd(), fullPath).replace(/\\/g, "/"));
+        }
+      } catch (e) {
+        continue;
       }
-    } catch (e) {
-      // Hata durumunda dosyayı atla (Örn: Erişim izin hataları)
-      continue;
     }
   }
 
+  scan(dir);
+
   if (useCache) {
     filesCache = [...files];
+    cacheTimestamp = now;
   }
   return [...files];
 }
@@ -137,27 +189,41 @@ export function parseAndApplyXmlFiles(content) {
   return changes;
 }
 
-// Güvenli Komut Çalıştırıcı (Beyaz Liste Kontrolü & Çıktı Kırpıcı)
-export function executeCommand(cmd) {
-  // Gelişmiş Güvenlik Kontrolü: Kabuk Enjeksiyonu Metakarakterlerini Engelleme
-  const shellMetachars = [";", "&&", "||", "|", "`", "$", "<", ">", "\n", "\r"];
-  for (const char of shellMetachars) {
-    if (cmd.includes(char)) {
-      const warning = `[GÜVENLİK İHLALİ]: '${cmd}' komutunda kabuk enjeksiyonuna neden olabilecek metakarakterler tespit edildi ('${char}').`;
-      console.error(`\n❌ ${warning}`);
-      return warning;
+// Güvenli argüman ayrıştırma (Çift tırnakları korur)
+function parseCommandArgs(cmdStr) {
+  const args = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < cmdStr.length; i++) {
+    const char = cmdStr[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ' ' && !inQuotes) {
+      if (current) {
+        args.push(current);
+        current = "";
+      }
+    } else {
+      current += char;
     }
   }
+  if (current) {
+    args.push(current);
+  }
+  return args;
+}
 
+// Güvenli Komut Çalıştırıcı (Beyaz Liste Kontrolü & Çıktı Kırpıcı)
+export function executeCommand(cmd) {
   const trimmedCmd = cmd.trim();
-  const tokens = trimmedCmd.split(/\s+/).filter(Boolean);
+  const tokens = parseCommandArgs(trimmedCmd);
   if (tokens.length === 0) {
     return "Hata: Geçersiz boş komut.";
   }
 
   const rootExe = tokens[0].toLowerCase();
   
-  // Tam eşleşme doğrulaması
+  // Tam eşleşme doğrulaması (Kritik Güvenlik Kontrolü)
   let isAllowed = false;
   if (["git", "node", "ls", "dir"].includes(rootExe)) {
     isAllowed = true;
@@ -175,13 +241,26 @@ export function executeCommand(cmd) {
   }
 
   try {
-    let output = execSync(cmd, { stdio: "pipe", encoding: "utf-8" }) || "";
+    const exe = tokens[0];
+    const args = tokens.slice(1);
+    
+    // Windows üzerinde npm, ls, dir gibi komutların çalışması için shell gerekir
+    const useShell = process.platform === "win32" || ["npm", "ls", "dir"].includes(rootExe);
+    
+    const result = spawnSync(exe, args, {
+      stdio: "pipe",
+      encoding: "utf-8",
+      timeout: 45000, // Bazen 'npm run typecheck' uzun sürebilir
+      shell: useShell
+    });
+
+    let output = result.stdout || result.stderr || "";
     if (output.length > 3000) {
       output = output.slice(0, 3000) + "\n\n[... Çıktı çok uzun olduğu için ilk 3000 karakterle sınırlandırılmıştır ...]";
     }
     return output;
   } catch (err) {
-    let output = err.stdout || err.stderr || err.message || "";
+    let output = err.message || "";
     if (output.length > 3000) {
       output = output.slice(0, 3000) + "\n\n[... Hata çıktısı çok uzun olduğu için ilk 3000 karakterle sınırlandırılmıştır ...]";
     }

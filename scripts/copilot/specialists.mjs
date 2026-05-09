@@ -113,7 +113,12 @@ export async function runSwarmVerification(frontendSol, backendSol, originalProm
 
   const qaPrompt = `Sen QA Ajanısın. Aşağıda Frontend ve Backend uzmanlarının ürettiği iki çözüm yer alıyor.
 Bunları incele, aralarındaki entegrasyon uyumunu doğrula. Bir hata, çakışma, eksiklik veya tip uyumsuzluğu var mı tespit et.
-Eğer her şey mükemmelse "ONAYLANDI" yaz. Eğer sorun varsa, hangi sorunların olduğunu detaylandırarak "DÜZELTİLMELİ" başlığı altında açıkla.
+
+MUTLAKA Sadece JSON formatında, kod bloğu veya ekstra açıklama olmadan cevap ver:
+{
+  "verdict": "APPROVED" | "REJECTED",
+  "feedback": "Eğer REJECTED ise sorunların detayı, aksi halde null"
+}
 
 Orijinal Görev:
 ${originalPrompt}
@@ -129,11 +134,34 @@ ${backendSol}`;
   console.log(qaAssessment);
   console.log(`${bold}===============================================${reset}\n`);
 
-  if (qaAssessment.includes("ONAYLANDI") && !qaAssessment.includes("DÜZELTİLMELİ")) {
+  let verdict = "REJECTED";
+  let feedback = qaAssessment;
+
+  try {
+    // JSON bloğunu ayrıştır
+    const match = qaAssessment.match(/\{[\s\S]*\}/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      verdict = parsed.verdict === "APPROVED" ? "APPROVED" : "REJECTED";
+      feedback = parsed.feedback || qaAssessment;
+    } else {
+      // Fallback search if JSON output failed
+      if (qaAssessment.toUpperCase().includes("APPROVED") && !qaAssessment.toUpperCase().includes("REJECTED")) {
+        verdict = "APPROVED";
+      }
+    }
+  } catch (err) {
+    // Emniyet kemeri: Regex ve parse başarısızsa string aramaya güvenli fallback
+    if (qaAssessment.toUpperCase().includes("APPROVED") && !qaAssessment.toUpperCase().includes("REJECTED")) {
+      verdict = "APPROVED";
+    }
+  }
+
+  if (verdict === "APPROVED") {
     console.log(`${green}✓ QA Ajanı Vera çözümleri onayladı!${reset}`);
     return { status: "APPROVED", feedback: null };
   } else {
     console.log(`${red}⚠️ QA Ajanı Vera bazı sorunlar tespit etti. Düzeltme döngüsü başlatılıyor...${reset}`);
-    return { status: "REJECTED", feedback: qaAssessment };
+    return { status: "REJECTED", feedback };
   }
 }

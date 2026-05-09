@@ -5,7 +5,7 @@ import { runSpecialistsInPipeline, runSwarmVerification } from "./specialists.mj
 import { callClaudeRaw } from "./agent.mjs";
 import { activeContextFiles, conversationHistory } from "./config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
-import { parseAndApplyXmlFiles } from "./tools.mjs";
+import { parseXmlFiles, safeReadFile } from "./tools.mjs";
 
 // Multi-Agent Swarm Orchestrator (Aria + Atlas + Vera)
 export async function runSwarmOrchestration(taskDescription) {
@@ -20,7 +20,7 @@ export async function runSwarmOrchestration(taskDescription) {
     for (const file of activeContextFiles) {
       const fullPath = path.resolve(process.cwd(), file);
       if (fs.existsSync(fullPath)) {
-        context += `\n--- DOSYA: ${file} ---\n${fs.readFileSync(fullPath, "utf-8")}\n`;
+        context += `\n--- DOSYA: ${file} ---\n${safeReadFile(fullPath)}\n`;
       }
     }
   }
@@ -86,13 +86,14 @@ function saveSwarmSolution(content) {
   const solutionPath = path.resolve(scratchDir, "copilot-solution.md");
   fs.writeFileSync(solutionPath, content, "utf-8");
 
-  const changes = parseAndApplyXmlFiles(content);
+  const changes = parseXmlFiles(content);
 
   console.log(`\n${green}${bold}=======================================================${reset}`);
   console.log(`${green}${bold}✓ Swarm Çözüm Raporu başarıyla kaydedildi:${reset}`);
   console.log(`${cyan}${solutionPath}${reset}`);
   if (changes.length > 0) {
     console.log(`${yellow}🛸 Swarm Önerilen Kod Değişiklikleri: ${changes.length} dosya tespit edildi.${reset}`);
+    changes.forEach((c) => console.log(`   - ${cyan}${c.path}${reset}`));
   }
   console.log(`${purple}${bold}👉 Antigravity Asistanı İçin Hazır!${reset}`);
   console.log(`${gray}Bana (Antigravity'ye) dönüp şu cümleyi yazarak tüm kodu otomatik uygulatabilirsiniz:${reset}`);

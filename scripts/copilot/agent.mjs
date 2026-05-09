@@ -3,12 +3,15 @@ import path from "node:path";
 import process from "node:process";
 import { apiKey, baseUrl, model, activeContextFiles, conversationHistory } from "./config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
-import { getFilesRecursively, parseAndApplyXmlFiles, executeCommand } from "./tools.mjs";
+import { getFilesRecursively, parseAndApplyXmlFiles, parseXmlFiles, applyChanges, executeCommand, safeReadFile } from "./tools.mjs";
 
 // Terminal Yükleniyor Döndürücüsü (Premium Spinner UX)
 export function startSpinner(message) {
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   let i = 0;
+  let startTime = Date.now();
+  const MIN_DISPLAY_MS = 200;
+
   // İlk satırı yaz
   process.stdout.write(`\r${cyan}${frames[0]}${reset} ${message}`);
   const interval = setInterval(() => {
@@ -17,7 +20,11 @@ export function startSpinner(message) {
   }, 80);
 
   return {
-    stop: () => {
+    stop: async () => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < MIN_DISPLAY_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_DISPLAY_MS - elapsed));
+      }
       clearInterval(interval);
       process.stdout.write(`\r\x1b[K`); // Satırı tamamen temizle
     }
@@ -41,6 +48,35 @@ export function loadConstitutionRules() {
     }
   }
   return constitutionText;
+}
+
+
+// Token Hesabı ve Geçmiş Yönetimi (Bellek Optimizasyonu)
+const MAX_HISTORY_MESSAGES = 10;
+const MAX_CONTEXT_TOKENS = 50000;
+
+function estimateTokens(text) {
+  return Math.ceil((text || "").length / 3.5);
+}
+
+function getWindowedHistory() {
+  let history = [...conversationHistory].slice(-MAX_HISTORY_MESSAGES);
+  let totalTokens = history.reduce((sum, msg) => sum + estimateTokens(msg.content), 0);
+
+  while (totalTokens > MAX_CONTEXT_TOKENS && history.length > 2) {
+    history.shift();
+    totalTokens = history.reduce((sum, msg) => sum + estimateTokens(msg.content), 0);
+  }
+  return history;
+}
+
+// Güvenlik: API Anahtarlarını ve Gizli Verileri Temizler (Redaction)
+function sanitizeErrorOutput(text) {
+  if (typeof text !== "string") return String(text);
+  return text
+    .replace(/Bearer\s+[a-zA-Z0-9._-]+/gi, "Bearer [REDACTED]")
+    .replace(/sk-[a-zA-Z0-9]{20,}/g, "sk-[REDACTED]")
+    .replace(/"api_key":\s*"[^"]+"/g, '"api_key": "[REDACTED]"');
 }
 
 // Claude API İstek Gönderici (Konsistens ve Sıfır Sıcaklık Odaklı)
@@ -102,7 +138,7 @@ Her zaman temiz, tip güvenli (TypeScript strict) ve aşağıda yer alan projeni
 ${constitutionRules}`;
 
   const messages = [
-    ...conversationHistory,
+    ...getWindowedHistory(),
     { role: "user", content: (extraContext ? extraContext + "\n\n" : "") + prompt }
   ];
 
@@ -133,9 +169,6 @@ ${constitutionRules}`;
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-      spinner.stop(); // Yanıt başarıyla geldiğinde durdur
-
       const responseText = await response.text();
       if (!response.ok) {
         let apiErrorMessage = `API Hatası (Durum Kodu: ${response.status})`;
@@ -147,43 +180,43 @@ ${constitutionRules}`;
         } catch {
           apiErrorMessage += ` - Yanıt İçeriği: ${responseText.slice(0, 500)}`;
         }
-        throw new Error(apiErrorMessage);
+        throw new Error(sanitizeErrorOutput(apiErrorMessage));
       }
 
       let data;
       try {
         data = JSON.parse(responseText);
       } catch (parseErr) {
-        throw new Error(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`);
+        throw new Error(sanitizeErrorOutput(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`));
       }
 
       return data.choices?.[0]?.message?.content || "";
     } catch (error) {
-      clearTimeout(timeoutId);
-      
       if (attempt < maxRetries) {
         // Üstel geri çekilme (exponential backoff) + jitter (rastgele sapma) ile bağlantı dayanıklılığını artırıyoruz
         const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
-        spinner.stop();
+        await spinner.stop();
         process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
         await new Promise((resolve) => setTimeout(resolve, delay));
-        // Spinner'ı bir sonraki deneme için yeniden başlat
-        spinner.stop();
         process.stdout.write(`\r\x1b[K`);
         continue;
       }
 
-      spinner.stop(); // Son denemede de başarısız olduysa durdur
       if (error.name === "AbortError") {
         console.log(`${red}❌ İstek zaman aşımına uğradı (120 saniye)!${reset}`);
         console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 120 saniye içinde tamamlayamadı.${reset}`);
       } else {
-        console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${error.message}${reset}`);
+        const safeMsg = sanitizeErrorOutput(error.message);
+        console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${safeMsg}${reset}`);
         if (error.stack) {
-          console.log(`${gray}Hata Ayrıntısı: ${error.stack}${reset}`);
+          console.log(`${gray}Hata Ayrıntısı: ${sanitizeErrorOutput(error.stack)}${reset}`);
         }
       }
       return null;
+    } finally {
+      clearTimeout(timeoutId);
+      controller.abort(); // Memory Leak Koruması (Bug-005 Fix)
+      await spinner.stop(); // Her koşulda spinner'ı durdurur
     }
   }
 }
@@ -204,7 +237,7 @@ export async function runAgentLoop(initialPrompt, options = {}) {
     for (const file of activeContextFiles) {
       const fullPath = path.resolve(process.cwd(), file);
       if (fs.existsSync(fullPath)) {
-        sessionContext += `\n--- DOSYA: ${file} ---\n${fs.readFileSync(fullPath, "utf-8")}\n`;
+        sessionContext += `\n--- DOSYA: ${file} ---\n${safeReadFile(fullPath)}\n`;
       }
     }
   }
@@ -254,9 +287,11 @@ export async function runAgentLoop(initialPrompt, options = {}) {
       conversationHistory.push({ role: "user", content: initialPrompt });
       conversationHistory.push({ role: "assistant", content: response });
       
-      // Bellek Koruması: Sohbet geçmişini son 15 mesajla sınırla (Tavsiye Edilen Diagnostic Fix)
-      if (conversationHistory.length > 15) {
-        conversationHistory.splice(0, conversationHistory.length - 15);
+      // Gelişmiş Bellek Koruması: Token ve Sayı Limitine Göre Prune Et
+      let totalTokens = conversationHistory.reduce((sum, msg) => sum + estimateTokens(msg.content), 0);
+      while ((conversationHistory.length > MAX_HISTORY_MESSAGES * 2 || totalTokens > MAX_CONTEXT_TOKENS * 2) && conversationHistory.length > 4) {
+        conversationHistory.shift();
+        totalTokens = conversationHistory.reduce((sum, msg) => sum + estimateTokens(msg.content), 0);
       }
       return;
     }
@@ -278,7 +313,7 @@ export async function runAgentLoop(initialPrompt, options = {}) {
       console.log(`   ${bold}📖 Dosya Okunuyor: '${relPath}'...${reset}`);
       const fullPath = path.resolve(process.cwd(), relPath);
       if (fs.existsSync(fullPath)) {
-        const content = fs.readFileSync(fullPath, "utf-8");
+        const content = safeReadFile(fullPath);
         toolResults += `\n[READ_FILE SONUCU (${relPath})]:\n${content}`;
         activeContextFiles.add(relPath);
       } else {
@@ -293,7 +328,7 @@ export async function runAgentLoop(initialPrompt, options = {}) {
       console.log(`   ${bold}📖 Dosya Satırları Okunuyor: '${relPath}' (Satır: ${startLine}-${endLine})...${reset}`);
       const fullPath = path.resolve(process.cwd(), relPath);
       if (fs.existsSync(fullPath)) {
-        const content = fs.readFileSync(fullPath, "utf-8");
+        const content = safeReadFile(fullPath);
         const lines = content.split("\n");
         const sliced = lines.slice(Math.max(0, startLine - 1), endLine).join("\n");
         toolResults += `\n[READ_FILE_LINES SONUCU (${relPath}, ${startLine}-${endLine})]:\n${sliced}`;
@@ -355,7 +390,6 @@ async function saveAndShowSolution(content, options = {}) {
   const solutionPath = path.resolve(scratchDir, "copilot-solution.md");
   fs.writeFileSync(solutionPath, content, "utf-8");
 
-  const { parseXmlFiles, applyChanges } = await import("./tools.mjs");
   const changes = parseXmlFiles(content);
 
   console.log(`\n${green}${bold}=======================================================${reset}`);
