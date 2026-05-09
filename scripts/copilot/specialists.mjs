@@ -30,6 +30,44 @@ Kodları doğrudan çalıştırmadan veya onaylamadan önce her zaman en ince ay
   },
 };
 
+// Sıralı Uzman Ajan Çağrısı (Sequential Pipeline Dispatch - DAG Architecture)
+export async function runSpecialistsInPipeline(prompt, context = "") {
+  console.log(`\n${cyan}⚡ Uzman Ajanlar sıralı boru hattı (Pipeline) analizine başladı... Lütfen bekleyin...${reset}`);
+  const startTime = Date.now();
+
+  // Adım 1: Backend ve Veritabanı mimariyi belirler (Contracts, Schema, RLS)
+  console.log(`\n   ${bold}>>> Adım 1: Veri ve Mimarinin Belirlenmesi (Atlas)${reset}`);
+  const atlasStart = Date.now();
+  const backendResponse = await callClaudeRaw(
+    `Aşağıdaki görevi sadece BACKEND, VERİTABANI ve GÜVENLİK açısından analiz et ve çözümünü üret:\n\n${prompt}`,
+    `${context}\n\n=== SPECIALIST SYSTEM ROLE ===\n${SPECIALISTS.BACKEND.systemPrompt}`
+  );
+  const atlasDuration = ((Date.now() - atlasStart) / 1000).toFixed(2);
+  console.log(`   ${purple}💾 Atlas (Backend) analizini tamamladı (${atlasDuration}s)${reset}`);
+
+  // Adım 2: Frontend bu kontratları alarak UI ve Arayüzü üretir
+  console.log(`\n   ${bold}>>> Adım 2: Arayüz ve Kullanıcı Deneyiminin Üretilmesi (Aria)${reset}`);
+  const ariaStart = Date.now();
+  
+  // Backend çıktısını context'e dahil et ki UI kontrata uysun
+  const enrichedContext = `${context}\n\n=== PREVIOUS STEP OUTPUT: BACKEND ARCHITECTURE ===\n${backendResponse}`;
+
+  const frontendResponse = await callClaudeRaw(
+    `Aşağıdaki görevi sadece FRONTEND açısından analiz et ve çözümünü üret. \nÖNEMLİ: Bir önceki adımda oluşturulan Backend mimarisi, veri şeması ve API kontratlarına TAM UYUMLU frontend kodu yazmalısın!\n\n${prompt}`,
+    `${enrichedContext}\n\n=== SPECIALIST SYSTEM ROLE ===\n${SPECIALISTS.FRONTEND.systemPrompt}`
+  );
+  const ariaDuration = ((Date.now() - ariaStart) / 1000).toFixed(2);
+  console.log(`   ${cyan}🎨 Aria (Frontend) analizini tamamladı (${ariaDuration}s)${reset}`);
+
+  const totalDuration = ((Date.now() - startTime) / 1000).toFixed(2);
+  console.log(`${green}✓ Sıralı boru hattı analizi tamamlandı! (Toplam: ${totalDuration}s)${reset}\n`);
+
+  return {
+    frontend: frontendResponse,
+    backend: backendResponse,
+  };
+}
+
 // Paralel Uzman Ajan Çağrısı (Parallel Specialist Dispatch)
 export async function runSpecialistsInParallel(prompt, context = "") {
   console.log(`\n${cyan}⚡ Uzman Ajanlar paralel analize başladı... Lütfen bekleyin...${reset}`);

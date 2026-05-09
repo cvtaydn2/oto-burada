@@ -1,15 +1,199 @@
-Nihai çözüm raporu:
+Temel sorun çok net: `callClaudeRaw` içinde oldukça ayrıntılı bir `systemPrompt` hazırlanıyor, ama API isteğine hiç gönderilmiyor. Yani model şu anda “anayasa kuralları”, tool-use formatı, `TASKS.md` / `PROGRESS.md` zorunluluğu, `<write_file>` / `<edit_file>` formatı ve deterministik çalışma beklentilerini hiç görmeden yanıt üretiyor.
 
-Mevcut çıktılara göre çalışma dizininde tamamlanmış görünen ana değişiklik, `package.json` içine `"copilot": "node scripts/copilot.mjs"` script’inin eklenmesi. Bunun yanında henüz commitlenmemiş yeni dosyalar da var: `scripts/copilot.mjs`, `scripts/copilot/`, `scratch/copilot-solution.md`, `scratch/test-endpoint.mjs` ve `src/app/(public)/playground/`. Bu da projenin içine bir Copilot/yardımcı agent akışı ve muhtemelen test veya demo amaçlı bir playground eklendiğini gösteriyor.
+Buna ek olarak iki ikincil problem daha var. Birincisi, spinner ilk denemede oluşturuluyor ama retry sonrasında yeniden başlatılmıyor; ilk hata sonrası spinner fiilen ölüyor. İkincisi, `parseAndApplyXmlFiles` import edilmiş ama kullanılmıyor; bu da gereksiz import ve bakım borcu oluşturuyor.
 
-Doğrulama tarafında durum temiz görünüyor. Typecheck başarıyla geçmiş; `next typegen` ve `tsc --noEmit` hata vermemiş. Lint de hatasız tamamlanmış. Yani şu an elimizdeki değişiklikler en azından statik analiz seviyesinde derleme ve kalite kontrollerini bozmuş görünmüyor.
+En doğru düzeltme, `systemPrompt`’u `messages` dizisine `role: "system"` olarak eklemek ve spinner’ı her retry denemesi için yeniden başlatmak.
 
-Kod inceleme açısından erişebildiğim içerik sınırlı olduğu için, yeni eklenen Copilot dosyalarının iç mantığını satır satır denetleyemedim. `src/components/button.tsx` zaten mevcut değil; dolayısıyla o dosya üzerinden ilerleyen önceki arama boşa düşmüş. Buna karşılık `database/schema.snapshot.sql` çok kapsamlı ve olgun bir şema gösteriyor. Orada dikkat çeken olumlu noktalar şunlar: yoğun RLS kullanımı var, kritik iş akışlarında `SECURITY DEFINER` RPC’ler tercih edilmiş, ödeme/doping/fulfillment alanlarında idempotency ve retry mantığı kurulmuş, kredi hareketleri için immutable ledger yaklaşımı var, chat ve listing tarafında çeşitli abuse/rate-limit önlemleri eklenmiş. Yani veritabanı tarafı genel mimari olarak güçlü.
+Uygulanabilir çözüm aşağıda.
 
-Bununla birlikte şema içinde birkaç dikkat noktası da var. Bazı fonksiyonlar oldukça geniş yetkilerle `authenticated` rolüne açılmış; bu güvenli olabilir ama uygulama katmanında çağrı yüzeyi iyi sınırlandırılmalı. Ayrıca hem trigger hem generated column üzerinden arama vektörü güncelleme mantığı bulunuyor; bu çift yapı gereksizse sadeleştirilebilir. `atomic_moderate_listing` fonksiyonunun `anon` rolüne de grant edilmiş olması özellikle gözden geçirilmeli; fonksiyon kendi içinde ek yetki doğrulaması yapmıyorsa bu potansiyel risk olabilir. Aynı şekilde bazı servis fonksiyonlarına geniş grant verilmiş olması, istemci tarafından doğrudan çağrılmayacaklarsa daraltılabilir.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+import { getFilesRecursively, parseAndApplyXmlFiles, executeCommand } from "./tools.mjs";
+=======
+import { getFilesRecursively, executeCommand } from "./tools.mjs";
+>>>>>>> REPLACE
+</edit_file>
 
-Elimde yeni eklenen Copilot dosyalarının içeriği olmadığı için, “nihai çözüm”ü güvenle şu şekilde özetleyebilirim: proje, Copilot benzeri bir yardımcı akış eklemek için gerekli script girişini almış; ilgili yeni dosyalar çalışma ağacında mevcut; TypeScript ve ESLint kontrolleri başarılı; Git durumuna göre değişiklikler henüz commitlenmemiş. Teknik olarak entegrasyon iskeleti bozulmamış görünüyor.
+<edit_file path="scripts/copilot/agent.mjs">
+<<<<<<< SEARCH
+  const messages = [
+    ...conversationHistory,
+    { role: "user", content: (extraContext ? extraContext + "\n\n" : "") + prompt }
+  ];
 
-Bence bu aşamada yapılacak en doğru son adımlar şunlar olur: yeni eklenen `scripts/copilot.mjs`, `scripts/copilot/` ve `src/app/(public)/playground/` dosyalarının içerik incelemesini yapmak; `scratch/` altındaki dosyaların gerçekten repoda tutulup tutulmayacağına karar vermek; ardından gerekiyorsa güvenlik açısından RPC grant’lerini ikinci kez gözden geçirmek ve sonrasında commit hazırlamak.
+  // İstek süresince spinner'ı başlatıyoruz
+  const spinner = startSpinner(`${cyan}Claude Netiva zekasını konuşturuyor... Lütfen bekleyin...${reset}`);
 
-İstersen bir sonraki adımda sana bu çıktılara dayanarak kısa bir “PR açıklaması” ya da “commit message seti” de hazırlayabilirim.
+  const maxRetries = 5;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    attempt++;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // Her deneme için 120 saniye sınır (Gelişmiş analizler için ideal)
+
+    try {
+      const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.0, // Tutarlılık ve determinizm için kesinlikle sıfır sıcaklık
+          max_tokens: 4000,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      spinner.stop(); // Yanıt başarıyla geldiğinde durdur
+
+      const responseText = await response.text();
+      if (!response.ok) {
+        let apiErrorMessage = `API Hatası (Durum Kodu: ${response.status})`;
+        try {
+          const errorJson = JSON.parse(responseText);
+          if (errorJson.error?.message) {
+            apiErrorMessage += `: ${errorJson.error.message}`;
+          }
+        } catch {
+          apiErrorMessage += ` - Yanıt İçeriği: ${responseText.slice(0, 500)}`;
+        }
+        throw new Error(apiErrorMessage);
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`);
+      }
+
+      return data.choices?.[0]?.message?.content || "";
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (attempt < maxRetries) {
+        // Üstel geri çekilme (exponential backoff) + jitter (rastgele sapma) ile bağlantı dayanıklılığını artırıyoruz
+        const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
+        spinner.stop();
+        process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        // Spinner'ı bir sonraki deneme için yeniden başlat
+        spinner.stop();
+        process.stdout.write(`\r\x1b[K`);
+        continue;
+      }
+
+      spinner.stop(); // Son denemede de başarısız olduysa durdur
+      if (error.name === "AbortError") {
+        console.log(`${red}❌ İstek zaman aşımına uğradı (120 saniye)!${reset}`);
+        console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 120 saniye içinde tamamlayamadı.${reset}`);
+      } else {
+        console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${error.message}${reset}`);
+        if (error.stack) {
+          console.log(`${gray}Hata Ayrıntısı: ${error.stack}${reset}`);
+        }
+      }
+      return null;
+    }
+  }
+=======
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...conversationHistory,
+    { role: "user", content: (extraContext ? extraContext + "\n\n" : "") + prompt }
+  ];
+
+  const maxRetries = 5;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    attempt++;
+    const spinner = startSpinner(`${cyan}Claude Netiva zekasını konuşturuyor... Lütfen bekleyin...${reset}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // Her deneme için 120 saniye sınır (Gelişmiş analizler için ideal)
+
+    try {
+      const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.0, // Tutarlılık ve determinizm için kesinlikle sıfır sıcaklık
+          max_tokens: 4000,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      spinner.stop();
+
+      const responseText = await response.text();
+      if (!response.ok) {
+        let apiErrorMessage = `API Hatası (Durum Kodu: ${response.status})`;
+        try {
+          const errorJson = JSON.parse(responseText);
+          if (errorJson.error?.message) {
+            apiErrorMessage += `: ${errorJson.error.message}`;
+          }
+        } catch {
+          apiErrorMessage += ` - Yanıt İçeriği: ${responseText.slice(0, 500)}`;
+        }
+        throw new Error(apiErrorMessage);
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(`API yanıtı JSON olarak ayrıştırılamadı. Durum: ${response.status}, Yanıt: ${responseText.slice(0, 500)}`);
+      }
+
+      return data.choices?.[0]?.message?.content || "";
+    } catch (error) {
+      clearTimeout(timeoutId);
+      spinner.stop();
+
+      if (attempt < maxRetries) {
+        const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
+        process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        process.stdout.write(`\r\x1b[K`);
+        continue;
+      }
+
+      if (error.name === "AbortError") {
+        console.log(`${red}❌ İstek zaman aşımına uğradı (120 saniye)!${reset}`);
+        console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 120 saniye içinde tamamlayamadı.${reset}`);
+      } else {
+        console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${error.message}${reset}`);
+        if (error.stack) {
+          console.log(`${gray}Hata Ayrıntısı: ${error.stack}${reset}`);
+        }
+      }
+      return null;
+    }
+  }
+
+  return null;
+>>>>>>> REPLACE
+</edit_file>
+
+Bu değişiklikten sonra ajan gerçekten tanımladığınız kurallarla çalışmaya başlayacak. Şu anki davranıştaki “tool çağrılarını bazen beklenen formatta üretmeme”, “TASKS/PROGRESS güncellememesi”, “anayasaya tam uymaması” ve “rastgele kalite sapmaları” büyük olasılıkla doğrudan bu eksikten kaynaklanıyor.
+
+Kısa etki özeti şöyle:
+
+`systemPrompt` eklenince model:
+proje anayasasını görür, tool kullanım kontratını görür, nihai rapor formatını görür, `TASKS.md` ve `PROGRESS.md` güncelleme zorunluluğunu görür.
+
+Spinner değişikliğiyle de retry UX düzelir; her denemede tekrar canlı spinner görünür.
+
+İstersen bir sonraki adımda `scripts/copilot/tools.mjs` ve `config.mjs` tarafını da inceleyip bu ajan akışında başka mimari kusur var mı, onu da çıkarabilirim.

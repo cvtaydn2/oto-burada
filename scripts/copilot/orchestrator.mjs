@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { runSpecialistsInParallel, runSwarmVerification } from "./specialists.mjs";
+import { runSpecialistsInPipeline, runSwarmVerification } from "./specialists.mjs";
 import { callClaudeRaw } from "./agent.mjs";
 import { activeContextFiles, conversationHistory } from "./config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
@@ -11,7 +11,7 @@ import { parseAndApplyXmlFiles } from "./tools.mjs";
 export async function runSwarmOrchestration(taskDescription) {
   console.log(`\n${blue}${bold}=======================================================${reset}`);
   console.log(`${blue}${bold}      🎻 MULTI-AGENT SWARM ORCHESTRATOR v1.0 🎻        ${reset}`);
-  console.log(`${purple}${bold}         Aria (UI) + Atlas (Data) + Vera (QA)          ${reset}`);
+  console.log(`${purple}${bold}         Atlas (Data) -> Aria (UI) -> Vera (QA)        ${reset}`);
   console.log(`${blue}${bold}=======================================================${reset}\n`);
 
   let context = "";
@@ -33,10 +33,10 @@ export async function runSwarmOrchestration(taskDescription) {
 
   while (iterations < maxLoops) {
     iterations++;
-    console.log(`${purple}${bold}🛸 Swarm Adım ${iterations}: Uzmanlar paralel çalışıyor...${reset}`);
+    console.log(`${purple}${bold}🛸 Swarm Adım ${iterations}: Uzmanlar sıralı boru hattında (Pipeline) çalışıyor...${reset}`);
 
-    // Aria (UI) ve Atlas (Backend/DB) paralel istekleri tetikleniyor
-    const solutions = await runSpecialistsInParallel(currentPrompt, context);
+    // Atlas (Backend/DB) -> Aria (UI) sıralı (Pipeline) istekleri tetikleniyor
+    const solutions = await runSpecialistsInPipeline(currentPrompt, context);
     frontendSolution = solutions.frontend;
     backendSolution = solutions.backend;
 
