@@ -3,6 +3,7 @@ import path from "node:path";
 import { runAgentLoop } from "./agent.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
 import { executeCommand } from "./tools.mjs";
+import { runPlanner, enrichPromptWithPlan } from "./planner.mjs";
 
 export async function handleConstitutionalReview(options = {}) {
   console.log(`\n${cyan}🛡️  Anayasal Kod Denetimi Çalıştırılıyor...${reset}`);
@@ -29,12 +30,16 @@ ${gitDiffOutput}`;
 
 export async function handleNextTaskSolver(options = {}) {
   console.log(`\n${cyan}🎯 Otonom Görev Çözücü Başlatılıyor...${reset}`);
-  const prompt = `Sıradaki görevi tespit etmek için önce projedeki TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku.
+
+  const plan = await runPlanner("TASKS.md'den sonraki en kritik görevi bul ve çöz");
+
+  const basePrompt = `Sıradaki görevi tespit etmek için önce projedeki TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku.
 Yapılması gereken bir sonraki en kritik görevi tespit et. Görevin kapsamını anla, ilgili dosyaları projede arat [SEARCH_FILES] ve içeriklerini oku [READ_FILE].
 Görevin otonom kodlamasını ve mimari çözümünü kusursuzca yapıp, oluşturulacak veya güncellenecek dosyaları <write_file> etiketleri içinde tam sürüm olarak sun.
 Ayrıca "TASKS.md" ve "PROGRESS.md" dosyalarını da güncelleyerek çözümünün bir parçası olarak sun.`;
 
-  await runAgentLoop(prompt, options);
+  const enrichedPrompt = enrichPromptWithPlan(basePrompt, plan);
+  await runAgentLoop(enrichedPrompt, options);
 }
 
 export async function handleSchemaExplorer(options = {}) {
@@ -74,7 +79,10 @@ Geliştirici yönergelerini, ne zaman kullanılacağını ve tamamlanma kriterle
 
 export async function handleOrchestra(userPrompt, options = {}) {
   console.log(`\n${cyan}🎻 Tam Döngü Proje Orkestrasyonu (Orchestra Mode) Başlatılıyor...${reset}`);
-  console.log(`${gray}Orkestratör sırasıyla: Görevi bulacak -> Çözümü kodlayacak -> Linter/Typecheck ile doğrulayacak -> Dökümanları güncelleyecek!${reset}`);
+  console.log(`${gray}Orkestratör sırasıyla: Planlayacak -> Çözümü kodlayacak -> Linter/Typecheck ile doğrulayacak -> Dökümanları güncelleyecek!${reset}`);
+
+  const taskForPlanner = userPrompt?.trim() || "TASKS.md'den sonraki görevi çöz";
+  const plan = await runPlanner(taskForPlanner);
 
   let dynamicDirective = "";
   if (userPrompt && userPrompt.trim()) {
@@ -82,7 +90,7 @@ export async function handleOrchestra(userPrompt, options = {}) {
     dynamicDirective = `\n⚠️ DİKKAT - ÖNCELİKLİ GÖREV: Kullanıcı senden doğrudan şu görevi tamamlamanı istiyor: "${userPrompt.trim()}". TASKS.md'ye bakmadan önce İLK OLARAK bu talebi yerine getir. Kodlama bittikten sonra dökümanları bu değişikliğe göre güncelle.\n`;
   }
 
-  const prompt = `Sen tam döngü çalışan bir Orkestra Ajanısın. Lütfen şu adımları tamamen otonom olarak sırasıyla yürüt:${dynamicDirective}
+  const basePrompt = `Sen tam döngü çalışan bir Orkestra Ajanısın. Lütfen şu adımları tamamen otonom olarak sırasıyla yürüt:${dynamicDirective}
 1. TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku ve sıradaki tamamlanmamış en kritik görevi bul. (Kullanıcı doğrudan bir talimat verdiyse onu önceliklendir).
 2. Görevin kapsamındaki ilgili dosyaları projede arat [SEARCH_FILES] ve içeriklerini oku [READ_FILE].
 3. Görevin otonom kodlamasını anayasa kurallarına kusursuz uygun şekilde tamamla.
@@ -90,7 +98,8 @@ export async function handleOrchestra(userPrompt, options = {}) {
 5. Değişiklikler bittiğinde, TASKS.md dosyasında ilgili görevi tamamlandı [x] olarak işaretle ve PROGRESS.md dosyasını tamamlanan adımlar, alınan kararlar, doğrulamalar ve bir sonraki adım bilgiyle güncelle.
 6. Hem güncellenen kod dosyalarını hem de güncellenen TASKS.md ile PROGRESS.md dosyalarını <write_file> etiketleri içinde tam sürüm olarak sun.`;
 
-  await runAgentLoop(prompt, options);
+  const enrichedPrompt = enrichPromptWithPlan(basePrompt, plan);
+  await runAgentLoop(enrichedPrompt, options);
 }
 
 export async function handleSelfDiagnose(options = {}) {

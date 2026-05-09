@@ -3,7 +3,16 @@ import path from "node:path";
 import process from "node:process";
 import { apiKey, baseUrl, model, activeContextFiles, conversationHistory } from "./config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
-import { getFilesRecursively, parseAndApplyXmlFiles, parseXmlFiles, applyChanges, executeCommand, safeReadFile, grepInFiles } from "./tools.mjs";
+import { getFilesRecursively, parseAndApplyXmlFiles, parseXmlFiles, applyChanges, executeCommand, safeReadFile, grepInFiles, buildExecutorPlan, saveExecutorPlan, printExecutorPreview } from "./tools.mjs";
+import { buildMemoryContext, extractAndSaveMemoriesFromResponse } from "./memory.mjs";
+
+// Session Maliyet Takibi
+const sessionStats = {
+  calls: 0,
+  inputTokens: 0,
+  outputTokens: 0,
+  startTime: Date.now(),
+};
 
 // Terminal Yükleniyor Döndürücüsü (Premium Spinner UX)
 export function startSpinner(message) {
@@ -93,38 +102,41 @@ export async function callClaudeRaw(prompt, extraContext = "", overrideHistory =
 
   const constitutionRules = loadConstitutionRules();
 
-  const systemPrompt = `Sen OtoBurada projesinde çalışan otonom ve uzman bir Agentic AI Yazılım Mühendisi ve Sistem Mimarısın (Claude Opus 4.6).
+  const memoryContext = buildMemoryContext(prompt);
+
+const systemPrompt = `Sen OtoBurada projesinde çalışan otonom ve uzman bir Agentic AI Yazılım Mühendisi ve Sistem Mimarısın (Claude Opus 4.6).
 Geliştiricinin talimatına göre projeyi analiz edip mükemmel, güvenli ve typesafe çözüm raporları hazırlarsın.
 
 KONSİSTENS VE TUTARLILIK KURALI:
 - Aynı soruya veya probleme her zaman tutarlı, deterministik ve mükemmel çözümler üretmelisin.
 - Çözümlerini adım adım, mantıklı bir gerekçelendirme sırasıyla açıkla.
 - Geçici veya kararsız yöntemlerden kaçın; en performanslı, güvenli ve projenin anayasasına en uygun yöntemi seç.
+- ${memoryContext} ${constitutionRules ? "Proje anayasası kuralları:\n" + constitutionRules : ""}
 
 Kullanabileceğin Özel Araçlar (Tool Use):
-Projedeki dosyaları incelemek için aşağıdaki metinsel araç çağrılarını yanıtında kullanabilirsin. CLI kabuğu bu çağrıları otomatik yakalayıp sonuçlarını bir sonraki turda sana getirecektir.
+Projedeki dosyaları incelemek için aşağıdaki metinsel araç çağrılarını kullanabilirsin. CLI kabuğu bu çağrıları otomatik yakalayıp sonucu sana getirecek.
 
 1. Dosya Arama: [SEARCH_FILES: kelime] -> Belirtilen kelimeye göre dosya YOLUNDA/ADINDA arama yapar (hızlı, path-only).
- 2. Dosya Okuma: [READ_FILE: src/components/button.tsx] -> Belirtilen dosya yolunun içeriğini döner.
- 3. Kısmi Dosya Okuma: [READ_FILE_LINES: src/app/page.tsx, 1-50] -> Belirtilen dosya yolunun sadece belirtilen satır aralığını döner (büyük dosyalar için mükemmeldir!).
- 4. Hafıza Temizleme: [FORGET_FILE: src/components/button.tsx] -> Belirtilen dosya yolunu aktif bağlam hafızasından kaldırır, böylece sonraki turlarda bağlam penceresi dolmaz.
- 5. Tip Kontrolü: [RUN_TYPECHECK] -> Projede 'npm run typecheck' çalıştırır ve çıktı hatalarını döner.
- 6. Linter Kontrolü: [RUN_LINT] -> Projede 'npm run lint' çalıştırır ve hataları döner.
- 9. İçerik Arama: [GREP_SEARCH: kelime] -> Dosyaların İÇERİKİNDE tam metin araması yapar (yavaş ama kapsamlı, en etkili analiz aracı!).
- 10. Git Durumu: [RUN_GIT_STATUS] -> Projede 'git status' durumunu döner.
- 11. Git Değişiklikleri: [RUN_GIT_DIFF] -> Yapılan kod değişikliklerinin farkını (git diff) döner.
- 
- NOT: SEARCH_FILES ile dosya adı/yolunda arar, GREP_SEARCH ile dosya içeriğinde ararsın. İçerik araması yaparken GREP_SEARCH kullan.
+2. Dosya Okuma: [READ_FILE: src/components/button.tsx] -> Belirtilen dosya yolunun içeriğini döner.
+3. Kısmi Dosya Okuma: [READ_FILE_LINES: src/app/page.tsx, 1-50] -> Belirtilen dosya yolunun sadece belirtilen satır aralığını döner (büyük dosyalar için mükemmeldir!).
+4. Hafıza Temizleme: [FORGET_FILE: src/components/button.tsx] -> Belirtilen dosya yolunu aktif bağlam hafızasından kaldırır.
+5. Tip Kontrolü: [RUN_TYPECHECK] -> Projede 'npm run typecheck' çalıştırır ve çıktı hatalarını döner.
+6. Linter Kontrolü: [RUN_LINT] -> Projede 'npm run lint' çalıştırır ve hataları döner.
+7. İçerik Arama: [GREP_SEARCH: kelime] -> Dosyaların İÇERİĞİNDE tam metin araması yapar (yavaş ama kapsamlı, en etkili analiz aracı!).
+8. Git Durumu: [RUN_GIT_STATUS] -> Projede 'git status' durumunu döner.
+9. Git Değişiklikleri: [RUN_GIT_DIFF] -> Yapılan kod değişikliklerinin farkını (git diff) döner.
 
-Mümkün olan en az adımda, ihtiyacın olan dosyaları bulup okumak için bu araçları kullan. 
+NOT: SEARCH_FILES ile dosya adı/yolunda arar, GREP_SEARCH ile dosya içeriğinde ararsın. İçerik araması yaparken GREP_SEARCH kullan.
+
+Mümkün olan en az adımda, ihtiyacın olan dosyaları bulup okumak için bu araçları kullan.
 Self-Healing (Otonom İyileştirme) Kuralı:
-Eğer bir kod yazıyorsan ve bunu test etmek istiyorsan, aynı yanıtın içine hem <write_file> veya <edit_file> kodunu ekle, HEM DE [RUN_TYPECHECK] aracını yerleştir. Sistem önce kodunu diske yazacak, sonra testi çalıştıracak ve sonucu sana getirecektir. Böylece tek bir döngüde kendi hatanı düzeltebilirsin!
-
+Eğer bir kod yazıyorsan ve bunu test etmek istiyorsan, aynı yanıtın içine hem <write_file> veya <edit_file> kodunu ekle, HEM DE [RUN_TYPECHECK] aracını yerleştir.
+Sistem önce kodunu diske yazacak, sonra testi çalıştıracak ve sonucu sana getirecektir. Böylece tek bir döngüde kendi hatanı düzeltebilirsin!
 
 ÖNEMLİ DÖKÜMANTASYON KURALI:
-Projedeki görevleri veya kodları güncellediğinde, "TASKS.md" dosyasını (görevleri [x] yaparak) ve "PROGRESS.md" dosyasını (ilerleme günlüğü, kararlar ve bir sonraki adım) güncelleyecek <write_file> veya <edit_file> etiketlerini de çözümünle birlikte otonom olarak üretmelisin. Dosya güncellemeleri ve kodlar her zaman senkronize olmalıdır.
+Projedeki görevleri veya kodları güncellediğinde, "TASKS.md" dosyasını (görevleri [x] yaparak) ve "PROGRESS.md" dosyasını (ilerleme günlüğü, kararlar ve bir sonraki adım) güncelleyecek <write_file> veya <edit_file> etiketlerini de çözümünle birlikte otonom olarak üret.
 
-ÖNEMLİ VERİBATANI BİLGİSİ:
+VERİBATANI BİLGİSİ:
 Projedeki veritabanı şeması ve RLS politikalarının tek kaynağı "database/schema.snapshot.sql" dosyasıdır. Veritabanı, tablolar veya RLS hakkında bir soru geldiğinde veya kod yazarken bu dosyayı [READ_FILE_LINES: database/schema.snapshot.sql, 1-100] veya [READ_FILE] çağrısı ile okuyarak şemayı mükemmel şekilde öğrenebilirsin.
 
 NİHAİ ÇÖZÜM RAPORU KURALI:
@@ -237,10 +249,29 @@ try {
         }
       }
 
-      // Akış bittiğinde satırbaşı yapalım
-      process.stdout.write("\n");
+// Akış bittiğinde satırbaşı yapalım
+  process.stdout.write("\n");
 
-      return fullResponseText;
+  // Session maliyet takibi
+  sessionStats.calls++;
+  const inputTok = estimateTokens(messages.map((m) => (typeof m.content === "string" ? m.content : "")).join(""));
+  const outputTok = estimateTokens(fullResponseText);
+  sessionStats.inputTokens += inputTok;
+  sessionStats.outputTokens += outputTok;
+
+  // Claude Opus 4.6 fiyatlandırması (yaklaşık)
+  const INPUT_COST_PER_1K = 0.015; // $0.015/1K token
+  const OUTPUT_COST_PER_1K = 0.075; // $0.075/1K token
+  const callCost = inputTok / 1000 * INPUT_COST_PER_1K + outputTok / 1000 * OUTPUT_COST_PER_1K;
+
+  console.log(
+    `${gray}💰 Bu çağrı: ~${inputTok} giriş + ~${outputTok} çıkış token ≈ $${callCost.toFixed(4)}${reset}`
+  );
+
+  // Hafızaya karar kaydet
+  extractAndSaveMemoriesFromResponse(fullResponseText, prompt.slice(0, 100));
+
+  return fullResponseText;
     } catch (error) {
       if (attempt < maxRetries) {
         // Üstel geri çekilme (exponential backoff) + jitter (rastgele sapma) ile bağlantı dayanıklılığını artırıyoruz
@@ -503,6 +534,10 @@ async function saveAndShowSolution(content, options = {}) {
 
   const solutionPath = path.resolve(scratchDir, "copilot-solution.md");
   fs.writeFileSync(solutionPath, content, "utf-8");
+
+  const executorPlan = buildExecutorPlan(content, options.taskDescription || "");
+  saveExecutorPlan(executorPlan);
+  printExecutorPreview(executorPlan);
 
   const changes = parseXmlFiles(content);
 

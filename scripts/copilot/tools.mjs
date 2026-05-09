@@ -1,7 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { reset, blue, purple, green, red, bold, cyan, yellow } from "./colors.mjs";
+import { reset, blue, purple, green, red, bold, cyan, yellow, gray } from "./colors.mjs";
+
+function normalizeWs(str) {
+  return str
+    .replace(/\r\n/g, "\n")
+    .replace(/\t/g, "  ")
+    .replace(/[ \t]+$/gm, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+}
 
 // Dosya listesi önbelleği (PC'yi kastırmamak ve disk I/O yükünü sıfırlamak için)
 let filesCache = null;
@@ -186,15 +195,6 @@ export function applyChanges(changes) {
         let occurrences = fileContent.split(searchTarget).length - 1;
 
         if (occurrences === 0) {
-          function normalizeWs(str) {
-            return str
-              .replace(/\r\n/g, "\n")
-              .replace(/\t/g, "  ")
-              .replace(/[ \t]+$/gm, "")
-              .replace(/[ \t]+\n/g, "\n")
-              .trim();
-          }
-
           const normalizedFile = normalizeWs(fileContent);
           const normalizedSearch = normalizeWs(searchTarget);
           const normalizedReplace = normalizeWs(replaceTarget);
@@ -380,4 +380,80 @@ export function executeCommand(cmd) {
     }
     return output;
   }
+}
+
+// ─── JSON Executor Protokolü ──────────────────────────────────────────────────
+// Copilot çıktısını ücretsiz modeller için makine-okunabilir formata dönüştürür
+
+export function buildExecutorPlan(content, taskDescription = "") {
+  const changes = parseXmlFiles(content);
+  const plan = {
+    version: "1.0",
+    task: taskDescription.slice(0, 200),
+    generated_at: new Date().toISOString(),
+    summary: {
+      total_files: changes.length,
+      writes: changes.filter((c) => c.code !== undefined).length,
+      edits: changes.filter((c) => c.chunks).length,
+    },
+    steps: [],
+    verify: ["npm run typecheck", "npm run lint"],
+    rollback: "git checkout -- .",
+  };
+
+  for (const change of changes) {
+    if (change.code !== undefined) {
+      plan.steps.push({
+        action: "write",
+        path: change.path,
+        content: change.code,
+        description: `Dosya oluştur/üzerine yaz: ${change.path}`,
+      });
+    } else if (change.chunks) {
+      for (const chunk of change.chunks) {
+        plan.steps.push({
+          action: "edit",
+          path: change.path,
+          search: chunk.search,
+          replace: chunk.replace,
+          description: `Kısmi düzenleme: ${change.path}`,
+        });
+      }
+    }
+  }
+
+  return plan;
+}
+
+export function saveExecutorPlan(plan, outputDir = "scratch") {
+  const scratchDir = path.resolve(process.cwd(), outputDir);
+  if (!fs.existsSync(scratchDir)) fs.mkdirSync(scratchDir, { recursive: true });
+
+  const planPath = path.resolve(scratchDir, "executor-plan.json");
+  fs.writeFileSync(planPath, JSON.stringify(plan, null, 2), "utf-8");
+  return planPath;
+}
+
+export function printExecutorPreview(plan) {
+  console.log(`\n${bold}╔══════════════════════════════════════════════╗${reset}`);
+  console.log(`${bold}║       📋 UYGULAMA ÖNİZLEME (EXECUTOR PLAN)  ║${reset}`);
+  console.log(`${bold}╚══════════════════════════════════════════════╝${reset}`);
+  console.log(`${gray}Görev: ${plan.task}${reset}`);
+  console.log(`${gray}Oluşturulma: ${plan.generated_at}${reset}\n`);
+
+  for (const step of plan.steps) {
+    const icon = step.action === "write" ? "🆕" : "✏️ ";
+    const label = step.action === "write" ? `${green}YAZAR${reset}` : `${yellow}DÜZENLER${reset}`;
+    const lines = step.content
+      ? `(+${step.content.split("\n").length} satır)`
+      : `(ara: "${(step.search || "").trim().slice(0, 40)}...")`;
+    console.log(`  ${icon} ${label}  ${cyan}${step.path}${reset}  ${gray}${lines}${reset}`);
+  }
+
+  console.log(
+    `\n${gray}Toplam: ${plan.summary.total_files} dosya — ` +
+      `${plan.summary.writes} yeni yazma, ${plan.summary.edits} düzenleme${reset}`
+  );
+  console.log(`${purple}📁 Makine planı: scratch/executor-plan.json${reset}`);
+  console.log(`${bold}══════════════════════════════════════════════${reset}\n`);
 }
