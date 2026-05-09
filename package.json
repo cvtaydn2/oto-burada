@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "copilot": "node scripts/copilot.mjs",
     "dev": "next dev",
     "dev:lite": "set NEXT_TELEMETRY_DISABLED=1&& set NODE_OPTIONS=--max-old-space-size=2048&& next dev",
     "prebuild": "npm run db:check-env",

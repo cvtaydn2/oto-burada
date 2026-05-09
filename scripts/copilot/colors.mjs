@@ -1,0 +1,9 @@
+export const reset = "\x1b[0m";
+export const bold = "\x1b[1m";
+export const blue = "\x1b[38;5;45m";
+export const purple = "\x1b[38;5;141m";
+export const green = "\x1b[38;5;84m";
+export const cyan = "\x1b[38;5;51m";
+export const yellow = "\x1b[38;5;220m";
+export const red = "\x1b[38;5;203m";
+export const gray = "\x1b[38;5;244m";
