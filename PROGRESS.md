@@ -1,5 +1,32 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 76. Marketplace API & Database Integrity Fixes
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Resolved critical frontend/backend contract gaps and database referential integrity issues identified by QA Vera.
+
+### 76.1 Marketplace Public API Endpoint
+- Added `src/app/api/marketplace/listings/route.ts` (GET) to expose public listings with full filter support.
+- Endpoint accepts query parameters (brand, model, city, price, year, etc.), validates via `listingFiltersSchema`, and returns `{ listings, total, page, limit, hasMore, nextCursor, metadata }`.
+- Backed by existing service layer (`getPublicListings`).
+
+### 76.2 Database Foreign Key Integrity
+- Created migration `0134_add_fk_listings_seller_to_profiles.sql` adding `listings.seller_id → profiles.id` with `ON DELETE CASCADE`.
+- Ensures referential integrity and enables PostgREST `!inner` relationship joins without data drift.
+
+### 76.3 Leaked Password Protection
+- **TASKS.md**: Marked "Enable 'Leaked Password Protection'" as completed (manual dashboard action verified).
+
+### 76.4 Code Quality & Type Safety
+- Fixed import sorting in `user-actions.ts` and `user-list.ts` (simple-import-sort).
+- Replaced explicit `any` in `user-records.ts`:
+  - `getProfileById`: now returns `{ data: unknown; error: PostgrestError | null }`.
+  - `updateProfile`: accepts `Database["public"]["Tables"]["profiles"]["Update"]`.
+- **Validation**: `npm run typecheck` → 0 errors, `npm run lint` → 0 errors/warnings.
+
+---
+
 ## 75. Admin Moderation Feature Service Canonicalization
 
 **Date**: 2026-05-09

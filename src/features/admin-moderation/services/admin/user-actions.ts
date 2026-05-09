@@ -5,9 +5,18 @@ import { revalidatePath } from "next/cache";
 import { logAdminAction } from "@/features/admin-moderation/services/moderation-actions";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/lib/admin";
 import { uuidSchema } from "@/lib/admin";
 import { logger } from "@/lib/logger";
+
+import {
+  atomicAdjustCredits,
+  atomicBanUser,
+  deleteAuthUser,
+  getProfileById,
+  insertDopingGrant,
+  updateAuthAppMetadata,
+  updateProfile,
+} from "./user-records";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
   const validatedUserId = uuidSchema.parse(userId);
@@ -17,29 +26,19 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
   return executeServerAction(
     "toggleUserBan",
     async () => {
-      const admin = createSupabaseAdminClient();
+      const isBanning = !currentStatus;
 
       // ── SECURITY FIX: Issue ADMIN-02 - Atomic Ban with Listing Rejection ──
-      // Use atomic RPC to ensure profile update and listing rejection happen together
-      const { data: result, error: rpcError } = await admin.rpc("ban_user_atomic", {
-        p_user_id: validatedUserId,
-        p_reason: !currentStatus ? "Admin tarafından yasaklandı" : "",
-        p_preserve_metadata: true,
-      });
+      const { data: result, error: rpcError } = await atomicBanUser(validatedUserId, isBanning);
 
       if (rpcError) throw new Error(rpcError.message);
 
       // Sync to Auth App Metadata for lightweight middleware checks (F-12)
-      await admin.auth.admin.updateUserById(validatedUserId, {
-        app_metadata: { is_banned: !currentStatus },
-      });
+      await updateAuthAppMetadata(validatedUserId, { is_banned: isBanning });
 
       // Get business slug for revalidation
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("business_slug")
-        .eq("id", validatedUserId)
-        .single();
+      const { data: rawProfile } = await getProfileById(validatedUserId, "business_slug");
+      const profile = rawProfile as { business_slug: string | null } | null;
 
       if (profile?.business_slug) {
         revalidatePath(`/galeri/${profile.business_slug}`);
@@ -48,7 +47,7 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
       const typedResult = result as { listings_rejected?: number } | null;
 
       return {
-        newStatus: !currentStatus,
+        newStatus: isBanning,
         listingsRejected: typedResult?.listings_rejected || 0,
       };
     },
@@ -62,21 +61,16 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
 export async function banUser(userId: string, reason: string) {
   const validatedUserId = uuidSchema.parse(userId);
   await requireAdminUser();
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("profiles")
-    .update({
-      is_banned: true,
-      ban_reason: reason || "Admin tarafından yasaklandı",
-    })
-    .eq("id", validatedUserId);
+
+  const { error } = await updateProfile(validatedUserId, {
+    is_banned: true,
+    ban_reason: reason || "Admin tarafından yasaklandı",
+  });
 
   if (error) throw new Error(`Kullanıcı yasaklanamadı: ${error.message}`);
 
   // Sync to Auth App Metadata (F-12)
-  await admin.auth.admin.updateUserById(validatedUserId, {
-    app_metadata: { is_banned: true },
-  });
+  await updateAuthAppMetadata(validatedUserId, { is_banned: true });
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
@@ -86,17 +80,12 @@ export async function banUser(userId: string, reason: string) {
 export async function promoteUserToAdmin(userId: string) {
   const validatedUserId = uuidSchema.parse(userId);
   await requireAdminUser();
-  const admin = createSupabaseAdminClient();
-  const { error: profileError } = await admin
-    .from("profiles")
-    .update({ role: "admin" })
-    .eq("id", validatedUserId);
+
+  const { error: profileError } = await updateProfile(validatedUserId, { role: "admin" });
 
   if (profileError) throw new Error(`Yetki güncellenemedi: ${profileError.message}`);
 
-  await admin.auth.admin.updateUserById(validatedUserId, {
-    app_metadata: { role: "admin" },
-  });
+  await updateAuthAppMetadata(validatedUserId, { role: "admin" });
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
@@ -106,23 +95,18 @@ export async function promoteUserToAdmin(userId: string) {
 export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {
   const validatedUserId = uuidSchema.parse(userId);
   await requireAdminUser();
-  const admin = createSupabaseAdminClient();
+
   const nextRole = role === "admin" ? "admin" : "user";
   const nextUserType = role === "professional" ? "professional" : "individual";
 
-  const { error } = await admin
-    .from("profiles")
-    .update({
-      role: nextRole,
-      user_type: nextUserType,
-    })
-    .eq("id", validatedUserId);
+  const { error } = await updateProfile(validatedUserId, {
+    role: nextRole,
+    user_type: nextUserType,
+  });
 
   if (error) throw new Error(`Rol güncellenemedi: ${error.message}`);
 
-  await admin.auth.admin.updateUserById(validatedUserId, {
-    app_metadata: { role: nextRole },
-  });
+  await updateAuthAppMetadata(validatedUserId, { role: nextRole });
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
@@ -137,14 +121,17 @@ export async function handleVerificationReview(
 ): Promise<{ success: boolean; error?: string }> {
   const validatedUserId = uuidSchema.parse(userId);
   await requireAdminUser();
-  const admin = createSupabaseAdminClient();
 
   // 1. Check restriction status
-  const { data: profile, error: fetchError } = await admin
-    .from("profiles")
-    .select("is_banned, verification_status, business_slug")
-    .eq("id", validatedUserId)
-    .single();
+  const { data: rawProfile, error: fetchError } = await getProfileById(
+    validatedUserId,
+    "is_banned, verification_status, business_slug"
+  );
+  const profile = rawProfile as {
+    is_banned: boolean;
+    verification_status: string | null;
+    business_slug: string | null;
+  } | null;
 
   if (fetchError || !profile) {
     return { success: false, error: "Kullanıcı bulunamadı." };
@@ -155,16 +142,13 @@ export async function handleVerificationReview(
   }
 
   // 2. Perform update
-  const { error: updateError } = await admin
-    .from("profiles")
-    .update({
-      verification_status: status,
-      verification_reviewed_at: new Date().toISOString(),
-      verification_reviewed_by: adminUserId || null,
-      verified_business: status === "approved",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", validatedUserId);
+  const { error: updateError } = await updateProfile(validatedUserId, {
+    verification_status: status,
+    verification_reviewed_at: new Date().toISOString(),
+    verification_reviewed_by: adminUserId || null,
+    verified_business: status === "approved",
+    updated_at: new Date().toISOString(),
+  });
 
   if (updateError) {
     logger.admin.error("handleVerificationReview update failed", updateError, {
@@ -218,34 +202,27 @@ export async function verifyUserBusiness(userId: string) {
 export async function deleteUser(userId: string) {
   const validatedUserId = uuidSchema.parse(userId);
   await requireAdminUser();
-  const admin = createSupabaseAdminClient();
 
   try {
     // 1. Overwrite profile with anonymized data (Hard Anonymization)
-    // This allows keeping the record for Referencing Integrity (e.g. past payments/listings)
-    // while scrubing all Personal Identifiable Information (PII).
-    // Node runtime always has crypto.randomUUID() — no fallback needed.
     const randomSuffix = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
-    const { error: profileError } = await admin
-      .from("profiles")
-      .update({
-        full_name: `Anonymized User ${randomSuffix}`,
-        phone: "00000000000",
-        city: "Anonymized",
-        avatar_url: null,
-        business_name: null,
-        business_address: null,
-        business_logo_url: null,
-        business_description: null,
-        tax_id: null,
-        tax_office: null,
-        website_url: null,
-        business_slug: null,
-        is_banned: true,
-        ban_reason: "Account Deleted / Anonymized",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", validatedUserId);
+    const { error: profileError } = await updateProfile(validatedUserId, {
+      full_name: `Anonymized User ${randomSuffix}`,
+      phone: "00000000000",
+      city: "Anonymized",
+      avatar_url: null,
+      business_name: null,
+      business_address: null,
+      business_logo_url: null,
+      business_description: null,
+      tax_id: null,
+      tax_office: null,
+      website_url: null,
+      business_slug: null,
+      is_banned: true,
+      ban_reason: "Account Deleted / Anonymized",
+      updated_at: new Date().toISOString(),
+    });
 
     if (profileError) {
       logger.admin.error("Profile anonymization failed", profileError, { userId: validatedUserId });
@@ -253,7 +230,7 @@ export async function deleteUser(userId: string) {
     }
 
     // 2. Delete from Auth (This invalidates all tokens and removes from auth.users)
-    const { error: authError } = await admin.auth.admin.deleteUser(validatedUserId);
+    const { error: authError } = await deleteAuthUser(validatedUserId);
 
     if (authError) {
       // Note: If deleting from auth fails because of FK constraints in other tables,
@@ -274,15 +251,11 @@ export async function grantUserCredits(userId: string, credits: number, note: st
   const validatedUserId = uuidSchema.parse(userId);
   const adminUser = await requireAdminUser();
 
-  const admin = createSupabaseAdminClient();
-
-  const { error: rpcError } = await admin.rpc("adjust_user_credits_atomic", {
-    p_user_id: validatedUserId,
-    p_amount: credits,
-    p_type: "admin_grant",
-    p_description: note || "Admin tarafından manuel kredi yüklemesi",
-    p_reference_id: `Admin:${validatedUserId}`,
-  });
+  const { error: rpcError } = await atomicAdjustCredits(
+    validatedUserId,
+    credits,
+    note || "Admin tarafından manuel kredi yüklemesi"
+  );
 
   if (rpcError) {
     logger.admin.error("Failed to grant credits", rpcError, { userId: validatedUserId, credits });
@@ -311,16 +284,12 @@ export async function grantUserDoping(
   const validatedListingId = uuidSchema.parse(listingId);
   const adminUser = await requireAdminUser();
 
-  const admin = createSupabaseAdminClient();
-
   for (const dopingType of dopingTypes) {
-    const { error: insertError } = await admin.from("listing_dopings").insert({
-      listing_id: validatedListingId,
-      doping_type: dopingType,
-      started_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
-      is_active: true,
-    });
+    const { error: insertError } = await insertDopingGrant(
+      validatedListingId,
+      dopingType,
+      durationDays
+    );
 
     if (insertError) {
       logger.admin.error("Failed to grant doping", insertError, {

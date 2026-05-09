@@ -796,7 +796,7 @@ The MVP is complete when:
 - [x] Revoke `EXECUTE` on sensitive functions from `anon` and `authenticated` roles.
 - [x] Resolve lint warnings in `header-mobile-nav.tsx`.
 - [x] Optimize `ListingsPage` server-side filtering logic.
-- [ ] Enable "Leaked Password Protection" in Supabase Auth (Manual Action).
+- [x] Enable "Leaked Password Protection" in Supabase Auth (Manual Action completed via dashboard).
 - [x] Harden database performance with missing indexes and consolidated RLS policies.
 
 #### Acceptance Criteria

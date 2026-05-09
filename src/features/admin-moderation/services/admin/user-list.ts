@@ -1,42 +1,17 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { captureServerError } from "@/lib/telemetry-server";
 import { Profile } from "@/types";
 
+import { AuthUserResponse, constructAuthMap, sanitizeUserSearchQuery } from "./user-pure-logic";
+import { fetchBatchAuthUsers, fetchUsersProfiles } from "./user-records";
+
 export async function getAllUsers(query?: string, page = 1, limit = 20) {
-  const admin = createSupabaseAdminClient();
-
-  let rpc = admin
-    .from("profiles")
-    .select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_logo_url, business_slug, verified_business, created_at, updated_at",
-      { count: "exact" }
-    );
-
-  if (query) {
-    const sanitizedQuery = query
-      .normalize("NFKC")
-      .replace(/[^\p{L}\p{N}\s._-]/gu, "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 80)
-      .replace(/[%_]/g, "\\$&");
-
-    if (sanitizedQuery.length > 0) {
-      rpc = rpc.or(
-        `full_name.ilike.%${sanitizedQuery}%,phone.ilike.%${sanitizedQuery}%,id::text.ilike.%${sanitizedQuery}%`
-      );
-    }
-  }
-
+  const sanitizedQuery = sanitizeUserSearchQuery(query);
   const from = (page - 1) * limit;
-  const {
-    data: profiles,
-    error,
-    count,
-  } = await rpc.order("created_at", { ascending: false }).range(from, from + limit - 1);
+
+  const { data: profiles, error, count } = await fetchUsersProfiles(sanitizedQuery, from, limit);
 
   if (error || !profiles) {
     if (error) {
@@ -49,54 +24,16 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
   // 2. Targeted Auth Fetch (Only for current page IDs)
   // Use sequential chunks of 5 to avoid Free-Tier Auth API rate limits
   const profileIds = profiles.map((p) => p.id);
-
-  interface AuthUserResponse {
-    data: {
-      user: {
-        id: string;
-        last_sign_in_at?: string | null;
-        email_confirmed_at?: string | null;
-        confirmed_at?: string | null;
-        app_metadata: Record<string, unknown>;
-        phone_confirmed_at?: string;
-      } | null;
-    };
-    error: unknown;
-  }
-
   const authResults: AuthUserResponse[] = [];
   const CHUNK_SIZE = 5;
+
   for (let i = 0; i < profileIds.length; i += CHUNK_SIZE) {
     const chunk = profileIds.slice(i, i + CHUNK_SIZE);
-    const results = await Promise.all(chunk.map((id) => admin.auth.admin.getUserById(id)));
-    authResults.push(...results);
+    const results = await fetchBatchAuthUsers(chunk);
+    authResults.push(...(results as AuthUserResponse[]));
   }
 
-  const authMap = Object.fromEntries(
-    authResults
-      .filter((res) => !res.error && res.data?.user)
-      .map((res) => {
-        const u = res.data.user!;
-        const appMetadata = u.app_metadata as { identity_verified?: boolean };
-        const userWithPhone = u as typeof u & { phone_confirmed_at?: string };
-
-        return [
-          u.id,
-          {
-            lastSignInAt: u.last_sign_in_at ?? null,
-            emailVerified: Boolean(u.email_confirmed_at ?? u.confirmed_at),
-            phoneVerified: Boolean(userWithPhone.phone_confirmed_at),
-            identityVerified: Boolean(appMetadata.identity_verified),
-          },
-        ];
-      })
-  );
-
-  if (error) {
-    logger.admin.error("getAllUsers query failed", error, { query });
-    captureServerError("getAllUsers query failed", "admin", error, { query });
-    return { users: [] as Profile[], total: 0, page, limit };
-  }
+  const authMap = constructAuthMap(authResults);
 
   const users = (profiles || []).map((p) => {
     const auth = authMap[p.id];
