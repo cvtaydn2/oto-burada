@@ -1,5 +1,53 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 80. Copilot Enhancement + MVP Gaps Closure
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Copilot agent tool improvements (security, resilience, QA automation) + remaining MVP gap closures (P1, P2).
+
+### 80.1 Copilot Tool Enhancements
+
+**Scripts**: `scripts/copilot/`
+
+| Enhancement | File | Impact |
+|---|---|---|
+| Whitespace normalize fallback | `tools.mjs:applyChanges` | Edit patch success rate ↑ — tolerates CRLF/LF, tabs, trailing spaces |
+| Args blocklist security | `tools.mjs:executeCommand` | Blocks `node -e`, `git -c`, `--eval`, `--require`, `npm config` |
+| Post-synthesis lint/typecheck | `orchestrator.mjs` | Automatic QA gate after swarm synthesis; self-healing on failure |
+| Context file truncation | `orchestrator.mjs` | 300 lines / 8000 chars per file max — reduces prompt bloat |
+
+### 80.2 MVP Gap Closures (P1, P2)
+
+| Priority | Gap | Status | Details |
+|---|---|---|---|
+| P1 | Pending approval estimation | ✅ Done | `dashboard-listing-card.tsx:156-161` — badge: "~24 saat içinde sonuçlanır" |
+| P2 | Bump cooldown UI | ✅ Done | `dashboard-listing-card.tsx:74-237` — cooldown 7 days → 24 hours, UI updated |
+| P1 | WhatsApp seller badge | ✅ Done (Phase 79) | `contact-actions.tsx:254-263` — green badge for professional sellers |
+| P0 | Phone reveal rate limit | ⚠️ Omitted | Already implemented via Upstash Redis in `revealListingPhone` action |
+| N/A | Auth password toggle | ℹ️ N/A | Auth form uses `useActionState`, not RHF — no toggle sync bug |
+
+### 80.3 UI/UX Fixes (Phase 79 Continuity)
+
+| Fix | File | Change |
+|---|---|---|
+| Quick search touch targets | `home-hero.tsx:130-146` | `py-2→py-2.5`, `min-h-[44px]`, `active:scale-95` |
+| Hero overflow | `home-hero.tsx:74` | `overflow-hidden` container |
+| Featured carousel gap | `featured-carousel.tsx:136` | `gap-4→gap-3`, `gap-5→gap-4` |
+
+### 80.4 Validation
+- **TypeScript (`npm run typecheck`)**: ✅ 0 errors
+- **ESLint (`npm run lint`)**: ✅ 0 errors, 0 warnings
+- **Production Build (`npm run build`)**: ✅ Success (75 routes)
+- **Copilot scripts syntax**: ✅ `node --check` + module import passed
+
+### 80.5 Next Step
+- All MVP P0/P1/P2 gaps documented so far are resolved or backend-blocked
+- Remaining P0 gaps: Listing view spam (needs backend), Payment retry UI (needs payment integration)
+- Auth password toggle: Already not an issue — form uses `useActionState` not RHF
+
+---
+
 ## 79. Deep Dive Edge Cases & MVP Hardening
 
 **Date**: 2026-05-10

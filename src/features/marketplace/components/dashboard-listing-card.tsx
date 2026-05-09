@@ -71,20 +71,26 @@ export function DashboardListingCard({
   const isApproved = listing.status === "approved";
   const now = new Date(currentTime > 0 ? currentTime : 0);
 
+  const BUMP_COOLDOWN_HOURS = 24;
+
   const canBump =
     isApproved &&
     (() => {
       if (!listing.bumpedAt) return true;
-      const cooldownEnd = new Date(new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
+      const cooldownEnd = new Date(
+        new Date(listing.bumpedAt).getTime() + BUMP_COOLDOWN_HOURS * 60 * 60 * 1000
+      );
       return now >= cooldownEnd;
     })();
 
-  const bumpCooldownDays = listing.bumpedAt
+  const bumpCooldownHours = listing.bumpedAt
     ? Math.max(
         0,
         Math.ceil(
-          (new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - now.getTime()) /
-            (24 * 60 * 60 * 1000)
+          (new Date(listing.bumpedAt).getTime() +
+            BUMP_COOLDOWN_HOURS * 60 * 60 * 1000 -
+            now.getTime()) /
+            (60 * 60 * 1000)
         )
       )
     : 0;
@@ -152,6 +158,11 @@ export function DashboardListingCard({
                 >
                   {statusLabelMap[listing.status]}
                 </span>
+                {listing.status === "pending" && (
+                  <span className="rounded-lg bg-blue-50 px-2 py-0.5 text-[8px] font-medium text-blue-600/80">
+                    ~24 saat içinde sonuçlanır
+                  </span>
+                )}
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">
                   {listing.brand}
                 </span>
@@ -221,10 +232,10 @@ export function DashboardListingCard({
                 (!canBump ? (
                   <div
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border/40 bg-muted/40 px-3 text-xs font-semibold text-muted-foreground/60"
-                    title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}
+                    title={`${bumpCooldownHours} saat sonra tekrar öne çıkarılabilir`}
                   >
                     <ArrowUpCircle className="size-4" />
-                    <span>{bumpCooldownDays} gün kaldı</span>
+                    <span>{bumpCooldownHours} saat kaldı</span>
                   </div>
                 ) : (
                   <Button
