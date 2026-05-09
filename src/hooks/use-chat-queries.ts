@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
@@ -151,6 +152,35 @@ export function useSendMessage() {
       }
 
       return response.data;
+    },
+    onMutate: async (variables) => {
+      const queryKey = chatQueryKeys.messages(variables.chatId);
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousMessages = queryClient.getQueryData<Message[]>(queryKey);
+
+      const optimisticMessage: Message = {
+        id: `temp-${Date.now()}`,
+        chatId: variables.chatId,
+        senderId: variables.senderId || "current-user",
+        content: variables.content,
+        messageType: "text",
+        isRead: false,
+        deletedAt: null,
+        createdAt: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData<Message[]>(queryKey, (old) =>
+        old ? [...old, optimisticMessage] : [optimisticMessage]
+      );
+
+      return { queryKey, previousMessages };
+    },
+    onError: async (error, variables, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(context.queryKey, context.previousMessages);
+      }
+      toast.error(getErrorMessage({ message: (error as Error).message }, "Mesaj gönderilemedi."));
     },
     onSuccess: async (_message, variables) => {
       await queryClient.invalidateQueries({ queryKey: chatQueryKeys.messages(variables.chatId) });

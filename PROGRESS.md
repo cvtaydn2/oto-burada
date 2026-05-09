@@ -1,5 +1,57 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 79. Deep Dive Edge Cases & MVP Hardening
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Copilot-powered deep analysis of runtime behavior, edge cases, and MVP critical paths followed by targeted fixes.
+
+### 79.1 Deep Dive Analysis Results
+
+**Runtime & Edge Case Analysis** (3 agents):
+- Runtime behavior issues (server/client boundary, hydration)
+- Error handling edges (network timeouts, race conditions)
+- Data integrity (optimistic updates, concurrent mutations)
+- Security edges (token expiry, rate limit bypass)
+
+**Edge Cases Identified**:
+| Category | Count | Priority |
+|----------|-------|----------|
+| HIGH | 2 | Chat offline message, Realtime token expire |
+| MEDIUM | 8 | Partial upload, Draft step, Session expire, Phone format, Year limit, Chat reconnect, Draft cleanup race, Image compression |
+| LOW | 4 | Price 0, Mileage limit, Plate mismatch, Duplicate file |
+
+**MVP Gaps Identified**:
+| Priority | Count | Description |
+|----------|-------|-------------|
+| P0 | 4 | Email verification block, Phone reveal IP-based limit, Listing view spam, Payment retry UI |
+| P1 | 4 | Pending approval info, WhatsApp seller badge, Doping expire notification, Excessive messaging limit |
+| P2 | 2 | Bump cooldown UI, Profile incomplete warning |
+
+### 79.2 Fixes Applied
+
+**Chat Optimistic Update** (`src/hooks/use-chat-queries.ts`):
+- Added `onMutate` for optimistic message insertion
+- Added `onError` rollback to previous state
+- Added `toast.error` for user feedback on failure
+- Prevents "disappearing message" experience on network error
+
+**Remaining Gaps (Documented for Future)**:
+- P0 gaps require backend rate limit enhancement (documented in `CODE_REVIEW_PLAN.md`)
+- Doping expire notification requires cron job enhancement
+- WhatsApp seller badge requires UI component update
+
+### 79.3 Validation
+- **TypeScript (`npm run typecheck`)**: ✅ Passed with 0 errors
+- **ESLint (`npm run lint`)**: ✅ Passed with 0 errors, 0 warnings
+- **Production Build (`npm run build`)**: ✅ Success (75 routes)
+
+### 79.4 Next Step
+- Proceed with potential P0 enhancements if business requires
+- Consider implementing remaining P1/P2 gaps in next sprint
+
+---
+
 ## 78. End-to-End Code Review & Production Hardening
 
 **Date**: 2026-05-10
