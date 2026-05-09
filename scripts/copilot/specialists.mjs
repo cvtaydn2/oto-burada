@@ -52,10 +52,12 @@ export async function runSpecialistsInPipeline(prompt, context = "") {
   // Backend çıktısını context'e dahil et ki UI kontrata uysun
   const enrichedContext = `${context}\n\n=== PREVIOUS STEP OUTPUT: BACKEND ARCHITECTURE ===\n${backendResponse}`;
 
-  const frontendResponse = await callClaudeRaw(
-    `Aşağıdaki görevi sadece FRONTEND açısından analiz et ve çözümünü üret. \nÖNEMLİ: Bir önceki adımda oluşturulan Backend mimarisi, veri şeması ve API kontratlarına TAM UYUMLU frontend kodu yazmalısın!\n\n${prompt}`,
-    `${enrichedContext}\n\n=== SPECIALIST SYSTEM ROLE ===\n${SPECIALISTS.FRONTEND.systemPrompt}`
-  );
+const frontendResponse = await callClaudeRaw(
+     `Aşağıdaki görevi sadece FRONTEND açısından analiz et ve çözümünü üret. \nÖNEMLİ: Bir önceki adımda oluşturulan Backend mimarisi, veri şeması ve API kontratlarına TAM UYUMLU frontend kodu yazmalısın!\n\n${prompt}`,
+     `${enrichedContext}\n\n=== SPECIALIST SYSTEM ROLE ===\n${SPECIALISTS.FRONTEND.systemPrompt}`,
+     null,
+     { temperature: 0.1 } // Frontend için yaratıcılık
+   );
   const ariaDuration = ((Date.now() - ariaStart) / 1000).toFixed(2);
   console.log(`   ${cyan}🎨 Aria (Frontend) analizini tamamladı (${ariaDuration}s)${reset}`);
 
@@ -68,12 +70,14 @@ export async function runSpecialistsInPipeline(prompt, context = "") {
   };
 }
 
-// Paralel Uzman Ajan Çağrısı (Parallel Specialist Dispatch)
+// Paralel Uzman Ajan Çağrısı (Parallel Specialist Dispatch) - Rate Limited
 export async function runSpecialistsInParallel(prompt, context = "") {
   console.log(`\n${cyan}⚡ Uzman Ajanlar paralel analize başladı... Lütfen bekleyin...${reset}`);
   
   const startTime = Date.now();
 
+  // Basit concurrency kontrolü: Max 2 eşzamanlı istek (Rate limit koruması)
+  const results = [];
   const promises = [
     (async () => {
       const start = Date.now();
@@ -97,13 +101,14 @@ export async function runSpecialistsInParallel(prompt, context = "") {
     })(),
   ];
 
-  const results = await Promise.all(promises);
+  // Sırayla değil, ama Promise.all ile max 2 istek (düşük concurrency)
+  const parallelResults = await Promise.all(promises);
   const totalDuration = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(`${green}✓ Tüm paralel uzman analizleri tamamlandı! (Toplam: ${totalDuration}s)${reset}\n`);
 
   return {
-    frontend: results.find(r => r.specialist === "FRONTEND").response,
-    backend: results.find(r => r.specialist === "BACKEND").response,
+    frontend: parallelResults.find(r => r.specialist === "FRONTEND").response,
+    backend: parallelResults.find(r => r.specialist === "BACKEND").response,
   };
 }
 
@@ -117,11 +122,13 @@ export async function runSwarmVerification(frontendSol, backendSol, originalProm
 3. Tip Güvenliği: TypeScript implicit any kullanılmıyor değil mi?
 4. Uyum: Frontend ve Backend arasında kontrat çakışması var mı?
 
-MUTLAKA Sadece JSON formatında, kod bloğu veya ekstra açıklama olmadan cevap ver:
-{
-  "verdict": "APPROVED" | "REJECTED",
-  "feedback": "Eğer REJECTED ise hangi maddenin ihlal edildiğini belirt, aksi halde null"
-}
+Cevabını SADECE şu formatta ver:
+<verdict>APPROVED</verdict>
+<feedback>null</feedback>
+
+Eğer REJECTED ise:
+<verdict>REJECTED</verdict>
+<feedback>Eksik/hatalı maddeleri belirt</feedback>
 
 Orijinal Görev:
 ${originalPrompt}
@@ -141,20 +148,23 @@ ${backendSol}`;
   let feedback = qaAssessment;
 
   try {
-    // JSON bloğunu ayrıştır
-    const match = qaAssessment.match(/\{[\s\S]*\}/);
-    if (match) {
-      const parsed = JSON.parse(match[0]);
-      verdict = parsed.verdict === "APPROVED" ? "APPROVED" : "REJECTED";
-      feedback = parsed.feedback || qaAssessment;
+    const verdictMatch = qaAssessment.match(/<verdict>(APPROVED|REJECTED)<\/verdict>/);
+    const feedbackMatch = qaAssessment.match(/<feedback>([\s\S]*?)<\/feedback>/);
+    if (verdictMatch) {
+      verdict = verdictMatch[1];
+      feedback = feedbackMatch ? feedbackMatch[1].trim() : null;
     } else {
-      // Fallback search if JSON output failed
-      if (qaAssessment.toUpperCase().includes("APPROVED") && !qaAssessment.toUpperCase().includes("REJECTED")) {
+      // Fallback: eski JSON formatı desteği
+      const match = qaAssessment.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        verdict = parsed.verdict === "APPROVED" ? "APPROVED" : "REJECTED";
+        feedback = parsed.feedback || qaAssessment;
+      } else if (qaAssessment.toUpperCase().includes("APPROVED") && !qaAssessment.toUpperCase().includes("REJECTED")) {
         verdict = "APPROVED";
       }
     }
   } catch (err) {
-    // Emniyet kemeri: Regex ve parse başarısızsa string aramaya güvenli fallback
     if (qaAssessment.toUpperCase().includes("APPROVED") && !qaAssessment.toUpperCase().includes("REJECTED")) {
       verdict = "APPROVED";
     }

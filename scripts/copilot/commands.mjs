@@ -97,22 +97,30 @@ export async function handleSelfDiagnose(options = {}) {
   console.log(`\n${purple}${bold}🔍 Kendi Kendini Teşhis & Tarama Modu (Self-Diagnose) Başlatıldı...${reset}`);
   console.log(`${gray}Copilot aracı otonom olarak kendi kaynak kodlarını inceleyecek...${reset}`);
 
+  // Dinamik path keşfi: scripts/copilot dizinindeki mevcut dosyaları bul
+  const agentDir = path.resolve(import.meta.url.replace('file://', ''), '..', 'copilot');
+  const selfFiles = [];
+  try {
+    const files = fs.readdirSync(agentDir);
+    for (const file of files.sort()) {
+      if (file.endsWith('.mjs') && file !== 'index.mjs') {
+        selfFiles.push(`scripts/copilot/${file}`);
+      }
+    }
+  } catch {
+    selfFiles.push('scripts/copilot/agent.mjs', 'scripts/copilot/commands.mjs', 'scripts/copilot/tools.mjs');
+  }
+
   const prompt = `Sen Copilot aracının kendi kendini denetleyen Teşhis ve Tarama Ajanısın (Claude Opus 4.6).
 Şu anda üzerinde çalıştığın Copilot uygulamasının tüm kaynak kod dosyaları sistemdedir:
-1. scripts/copilot/agent.mjs
-2. scripts/copilot/commands.mjs
-3. scripts/copilot/tools.mjs
-4. scripts/copilot/orchestrator.mjs
-5. scripts/copilot/specialists.mjs
-6. scripts/copilot/config.mjs
-7. scripts/copilot/colors.mjs
+${selfFiles.map((f, i) => `${i + 1}. ${f}`).join('\n')}
 
 Senden beklentimiz: 
 1. Bu dosyaları otonom olarak [READ_FILE: scripts/copilot/...] araç çağrısıyla TOPLU HALDE (tek seferde birden fazla komut yazarak) okuyarak incele.
 2. Kaynak kodlardaki olası mantıksal hataları (bugs), eksik hata yakalama bloklarını (error handling), asenkron yönetim eksikliklerini ve performans darboğazlarını analiz et.
 3. Bulduğun kritik eksikleri düzeltmek veya araca yeni yetenekler kazandırmak için güncel kodları <write_file> etiketleri içinde tam sürüm olarak üret veya detaylı bir rapor sun.
 
-Analizine başlamak için öncelikle incelemek istediğin tüm dosyaları toplu halde [READ_FILE: scripts/copilot/agent.mjs] formatındaki komutlarla alt alta oku.`;
+Analizine başlamak için öncelikle incelemek istediğin tüm dosyaları toplu halde [READ_FILE: ...] formatındaki komutlarla alt alta oku.`;
 
   await runAgentLoop(prompt, options);
 }

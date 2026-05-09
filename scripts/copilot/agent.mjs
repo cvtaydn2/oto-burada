@@ -60,7 +60,8 @@ const MAX_HISTORY_MESSAGES = 10;
 const MAX_CONTEXT_TOKENS = 50000;
 
 function estimateTokens(text) {
-  return Math.ceil((text || "").length / 3.5);
+  // Türkçe/Latin karışık metin için daha doğru tahmin: ~4 karakter/token
+  return Math.ceil((text || "").length / 4);
 }
 
 function getWindowedHistory() {
@@ -84,7 +85,7 @@ function sanitizeErrorOutput(text) {
 }
 
 // Claude API İstek Gönderici (Konsistens ve Sıfır Sıcaklık Odaklı)
-export async function callClaudeRaw(prompt, extraContext = "", overrideHistory = null) {
+export async function callClaudeRaw(prompt, extraContext = "", overrideHistory = null, options = {}) {
   if (!apiKey) {
     console.log(`${red}${bold}⚠️ CLAUDE_NETIVA_KEY, .env.local dosyasında tanımlı değil!${reset}`);
     process.exit(1);
@@ -103,15 +104,17 @@ KONSİSTENS VE TUTARLILIK KURALI:
 Kullanabileceğin Özel Araçlar (Tool Use):
 Projedeki dosyaları incelemek için aşağıdaki metinsel araç çağrılarını yanıtında kullanabilirsin. CLI kabuğu bu çağrıları otomatik yakalayıp sonuçlarını bir sonraki turda sana getirecektir.
 
-1. Dosya Arama: [SEARCH_FILES: kelime] -> Belirtilen kelimeye göre projedeki tüm dosyaları arar ve yollarını döner.
-2. Dosya Okuma: [READ_FILE: src/components/button.tsx] -> Belirtilen dosya yolunun içeriğini döner.
-3. Kısmi Dosya Okuma: [READ_FILE_LINES: src/app/page.tsx, 1-50] -> Belirtilen dosya yolunun sadece belirtilen satır aralığını döner (büyük dosyalar için mükemmeldir!).
-4. Hafıza Temizleme: [FORGET_FILE: src/components/button.tsx] -> Belirtilen dosya yolunu aktif bağlam hafızasından kaldırır, böylece sonraki turlarda bağlam penceresi dolmaz.
-5. Tip Kontrolü: [RUN_TYPECHECK] -> Projede 'npm run typecheck' çalıştırır ve çıktı hatalarını döner.
-6. Linter Kontrolü: [RUN_LINT] -> Projede 'npm run lint' çalıştırır ve hataları döner.
-9. İçerik Arama: [GREP_SEARCH: kelime] -> Dosyaların içeriğinde hızlıca metin veya fonksiyon araması yapar (En etkili analiz aracı!).
-10. Git Durumu: [RUN_GIT_STATUS] -> Projedeki 'git status' durumunu döner.
-11. Git Değişiklikleri: [RUN_GIT_DIFF] -> Yapılan kod değişikliklerinin farkını (git diff) döner.
+1. Dosya Arama: [SEARCH_FILES: kelime] -> Belirtilen kelimeye göre dosya YOLUNDA/ADINDA arama yapar (hızlı, path-only).
+ 2. Dosya Okuma: [READ_FILE: src/components/button.tsx] -> Belirtilen dosya yolunun içeriğini döner.
+ 3. Kısmi Dosya Okuma: [READ_FILE_LINES: src/app/page.tsx, 1-50] -> Belirtilen dosya yolunun sadece belirtilen satır aralığını döner (büyük dosyalar için mükemmeldir!).
+ 4. Hafıza Temizleme: [FORGET_FILE: src/components/button.tsx] -> Belirtilen dosya yolunu aktif bağlam hafızasından kaldırır, böylece sonraki turlarda bağlam penceresi dolmaz.
+ 5. Tip Kontrolü: [RUN_TYPECHECK] -> Projede 'npm run typecheck' çalıştırır ve çıktı hatalarını döner.
+ 6. Linter Kontrolü: [RUN_LINT] -> Projede 'npm run lint' çalıştırır ve hataları döner.
+ 9. İçerik Arama: [GREP_SEARCH: kelime] -> Dosyaların İÇERİKİNDE tam metin araması yapar (yavaş ama kapsamlı, en etkili analiz aracı!).
+ 10. Git Durumu: [RUN_GIT_STATUS] -> Projede 'git status' durumunu döner.
+ 11. Git Değişiklikleri: [RUN_GIT_DIFF] -> Yapılan kod değişikliklerinin farkını (git diff) döner.
+ 
+ NOT: SEARCH_FILES ile dosya adı/yolunda arar, GREP_SEARCH ile dosya içeriğinde ararsın. İçerik araması yaparken GREP_SEARCH kullan.
 
 Mümkün olan en az adımda, ihtiyacın olan dosyaları bulup okumak için bu araçları kullan. 
 Self-Healing (Otonom İyileştirme) Kuralı:
@@ -163,22 +166,24 @@ ${constitutionRules}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 300000); // Her deneme için 300 saniye sınır (Mega çıktılar için yükseltildi)
 
-    try {
-      const response = await fetch(`${baseUrl}/v1/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.0, // Tutarlılık ve determinizm için kesinlikle sıfır sıcaklık
-          max_tokens: 4000,
-          stream: true,
-        }),
-        signal: controller.signal,
-      });
+try {
+       // Dinamik max_tokens: Büyük dosyalar için 8000, normal için 4000
+       const maxTokens = options?.largeOutput ? 8000 : 4000;
+       const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+         method: "POST",
+         headers: {
+           "Authorization": `Bearer ${apiKey}`,
+           "Content-Type": "application/json",
+         },
+         body: JSON.stringify({
+           model,
+           messages,
+           temperature: options?.temperature ?? 0.0, // QA için 0.0, Creative için 0.1
+           max_tokens: maxTokens,
+           stream: true,
+         }),
+         signal: controller.signal,
+       });
 
       if (!response.ok) {
         const responseText = await response.text();
@@ -461,24 +466,24 @@ export async function runAgentLoop(initialPrompt, options = {}) {
     });
     recursiveHistory.push({ role: "assistant", content: response });
 
-    // Recursive Hafıza Koruma (Bellek şişmesini önlemek için son 4 adımı sakla)
-    if (recursiveHistory.length > 10) {
-      recursiveHistory.splice(recursiveHistory.length - 10, 2); // Eski adımları çift halinde buda
-    }
+// Recursive Hafıza Koruma (Bellek şişmesini önlemek için son 5 adımı sakla)
+     while (recursiveHistory.length > 10) {
+       recursiveHistory.splice(0, 2); // Baştan eski adımları sil, son 10'u koru
+     }
 
     currentPrompt = `[ARAÇ SONUÇLARI]:\n${toolResults}\n\nAnalizine devam et. Gerekirse başka dosyalar arayebilir, okuyabilir veya tip/linter testi çalıştırabilirsin. Hazır olduğunda nihai çözüm raporunu oluştur.`;
   }
 
   console.log(`${red}⚠️ Otonom analiz maksimum adım sınırına (${maxIterations}) ulaştı. Sonuçlar toparlanıyor...${reset}`);
   
-  // Son bir kez Claude'a sorarak elimizdeki verilerle final raporu zorla
-  const finalForcePrompt = `[SİSTEM BİLGİSİ]: Maksimum otonom adım sınırına ulaşıldı. Lütfen elindeki tüm mevcut bilgileri ve okuduğun dosyaları kullanarak nihai durum raporunu, analizini ve çözüm önerilerini HEMEN oluştur. Başka bir araç çağrısı yapma.`;
-  
-  const finalRes = await callClaudeRaw(
-    systemPrompt,
-    [...recursiveHistory, { role: "user", content: finalForcePrompt }],
-    (chunk) => process.stdout.write(chunk)
-  );
+// Son bir kez Claude'a sorarak elimizdeki verilerle final raporu zorla
+   const finalForcePrompt = `[SİSTEM BİLGİSİ]: Maksimum otonom adım sınırına ulaşıldı. Lütfen elindeki tüm mevcut bilgileri ve okuduğun dosyaları kullanarak nihai durum raporunu, analizini ve çözüm önerilerini HEMEN oluştur. Başka bir araç çağrısı yapma.`;
+   
+   const finalRes = await callClaudeRaw(
+     finalForcePrompt,
+     "",
+     [...recursiveHistory, { role: "user", content: finalForcePrompt }]
+   );
 
   if (finalRes) {
     console.log(`\n${bold}================== CLAUDE FİNAL ANALİZİ (ZORUNLU KAPANIŞ) ==================${reset}`);

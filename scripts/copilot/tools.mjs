@@ -18,9 +18,12 @@ const DEFAULT_EXCLUDES = new Set([
 ]);
 
 let exclusionsSet = null;
+let cachedExclusionDir = null;
 
 function getExclusions() {
-  if (exclusionsSet) return exclusionsSet;
+  const cwd = process.cwd();
+  if (exclusionsSet && cachedExclusionDir === cwd) return exclusionsSet;
+  cachedExclusionDir = cwd;
   const set = new Set(DEFAULT_EXCLUDES);
   try {
     const gitignorePath = path.resolve(process.cwd(), ".gitignore");
