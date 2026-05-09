@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTurnstile } from "@/hooks/use-turnstile";
-import { API_ROUTES } from "@/lib/api-routes";
-import { ApiClient } from "@/lib/client";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 
 const SUBJECTS = [
   "İlanımla ilgili sorun yaşıyorum",
@@ -55,7 +55,7 @@ export function ContactForm() {
     setStatus("loading");
     setErrorMessage("");
     try {
-      const response = (await ApiClient.request(API_ROUTES.SUPPORT.CONTACT, {
+      const response = await ApiClient.request(API_ROUTES.SUPPORT.CONTACT, {
         method: "POST",
         body: JSON.stringify({
           email: form.email,
@@ -65,7 +65,7 @@ export function ContactForm() {
           _hp: hp,
           turnstileToken: isTurnstileEnabled ? turnstileToken : undefined,
         }),
-      })) as { success: boolean; error?: { message: string } };
+      });
 
       if (response.success) {
         setStatus("success");

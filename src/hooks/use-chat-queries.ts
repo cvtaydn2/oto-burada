@@ -1,127 +1,186 @@
+"use client";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { ChatWithLastMessage, Message } from "@/types/chat";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
+import type { Chat, ChatWithLastMessage, Message } from "@/types/chat";
+
+const chatQueryKeys = {
+  all: ["chats"] as const,
+  list: (userId: string, showArchived: boolean) => ["chats", userId, showArchived] as const,
+  messages: (chatId: string) => ["chat-messages", chatId] as const,
+};
+
+function getErrorMessage(error: { message?: string } | undefined, fallback: string) {
+  return error?.message?.trim() ? error.message : fallback;
+}
 
 export function useCreateChat() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (vars: { listingId: string; sellerId: string; buyerId: string }) => {
-      return { id: "mock-" + vars.listingId };
+      const response = await ApiClient.request<Chat>(API_ROUTES.CHATS.BASE, {
+        method: "POST",
+        body: JSON.stringify({
+          listingId: vars.listingId,
+          sellerId: vars.sellerId,
+        }),
+      });
+
+      if (!response.success || !response.data) {
+        throw new Error(getErrorMessage(response.error, "Sohbet başlatılamadı."));
+      }
+
+      return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    onSuccess: async (_chat, variables) => {
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.all });
+      await queryClient.invalidateQueries({
+        queryKey: chatQueryKeys.list(variables.buyerId, false),
+      });
     },
   });
 }
 
 export function useChats(userId: string, showArchived: boolean = false) {
   return useQuery({
-    queryKey: ["chats", userId, showArchived],
+    queryKey: chatQueryKeys.list(userId, showArchived),
     queryFn: async (): Promise<ChatWithLastMessage[]> => {
-      return [];
+      const path = `${API_ROUTES.CHATS.BASE}?archived=${showArchived ? "true" : "false"}`;
+      const response = await ApiClient.request<ChatWithLastMessage[]>(path);
+
+      if (!response.success) {
+        throw new Error(getErrorMessage(response.error, "Sohbet listesi alınamadı."));
+      }
+
+      return response.data ?? [];
     },
-    enabled: !!userId,
+    enabled: Boolean(userId),
   });
 }
 
-export function useChatMessages(chatId: string, _userId?: string) {
-  if (_userId) {
-  }
+export function useChatMessages(chatId: string, userId?: string) {
   return useQuery({
-    queryKey: ["chat-messages", chatId],
+    queryKey: chatQueryKeys.messages(chatId),
     queryFn: async (): Promise<Message[]> => {
-      return [];
+      const response = await ApiClient.request<Message[]>(API_ROUTES.CHATS.MESSAGES(chatId));
+
+      if (!response.success) {
+        throw new Error(getErrorMessage(response.error, "Mesajlar alınamadı."));
+      }
+
+      return response.data ?? [];
     },
-    enabled: !!chatId,
+    enabled: Boolean(chatId) && Boolean(userId),
   });
 }
 
 export function useDeleteMessage() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (_vars: { chatId: string; messageId: string }) => {
-      if (_vars) {
+    mutationFn: async (vars: { chatId: string; messageId: string }) => {
+      const response = await ApiClient.request<boolean>(
+        `${API_ROUTES.CHATS.MESSAGES(vars.chatId)}?messageId=${encodeURIComponent(vars.messageId)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.success) {
+        throw new Error(getErrorMessage(response.error, "Mesaj silinemedi."));
       }
-      return;
+
+      return response.data ?? false;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
+    onSuccess: async (_result, variables) => {
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.messages(variables.chatId) });
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.all });
     },
   });
 }
 
-export function useMarkAsRead(_chatId?: string) {
-  if (_chatId) {
-  }
+export function useMarkAsRead(chatId?: string) {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (): Promise<void> => {
-      return;
+    mutationFn: async (): Promise<{ success: boolean; updatedCount: number }> => {
+      if (!chatId) {
+        throw new Error("Okundu işaretlenecek sohbet bulunamadı.");
+      }
+
+      const response = await ApiClient.request<{ success: boolean; updatedCount: number }>(
+        API_ROUTES.CHATS.MARK_READ(chatId),
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (!response.success || !response.data) {
+        throw new Error(getErrorMessage(response.error, "Mesajlar okundu işaretlenemedi."));
+      }
+
+      return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    onSuccess: async () => {
+      if (chatId) {
+        await queryClient.invalidateQueries({ queryKey: chatQueryKeys.messages(chatId) });
+      }
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.all });
     },
   });
 }
 
 export function useSendMessage() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (_vars: { chatId: string; senderId?: string; content: string }) => {
-      if (_vars) {
+    mutationFn: async (vars: { chatId: string; senderId?: string; content: string }) => {
+      const response = await ApiClient.request<Message>(API_ROUTES.CHATS.MESSAGES(vars.chatId), {
+        method: "POST",
+        body: JSON.stringify({
+          content: vars.content,
+          messageType: "text",
+        }),
+      });
+
+      if (!response.success || !response.data) {
+        throw new Error(getErrorMessage(response.error, "Mesaj gönderilemedi."));
       }
-      return;
+
+      return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
+    onSuccess: async (_message, variables) => {
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.messages(variables.chatId) });
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.all });
     },
   });
 }
 
 export function useArchiveChat() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (_vars: { chatId: string; archive: boolean }) => {
-      if (_vars) {
+    mutationFn: async (vars: { chatId: string; archive: boolean }) => {
+      const response = await ApiClient.request<boolean>(
+        `${API_ROUTES.CHATS.DETAIL(vars.chatId)}/archive`,
+        {
+          method: "POST",
+          body: JSON.stringify({ archive: vars.archive }),
+        }
+      );
+
+      if (!response.success) {
+        throw new Error(getErrorMessage(response.error, "Sohbet arşivlenemedi."));
       }
-      return;
+
+      return response.data ?? false;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    onSuccess: async (_result, variables) => {
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.messages(variables.chatId) });
+      await queryClient.invalidateQueries({ queryKey: chatQueryKeys.all });
     },
   });
 }
-
-export function useChatRealtime(_options?: {
-  chatId?: string;
-  userId?: string;
-  onMessage?: () => void;
-  onTypingChange?: (isTyping: boolean) => void;
-}) {
-  if (_options) {
-  }
-  return {
-    subscribe: () => {},
-    unsubscribe: () => {},
-    sendTyping: (_typing?: boolean) => {
-      if (_typing) {
-      }
-    },
-  };
-}
-
-export function useErrorCapture(context?: string) {
-  return {
-    captureError: (error: unknown, source?: string, extra?: Record<string, unknown>) => {
-      console.error(`[ErrorCapture:${context}]`, { error, source, extra });
-    },
-    captureFailure: (name: string, message: string, extra?: Record<string, unknown>) => {
-      console.warn(`[FailureCapture:${context}] ${name}:`, { message, extra });
-    },
-    captureSuccess: (name: string, data?: Record<string, unknown>) => {
-      console.log(`[SuccessCapture:${context}] ${name}:`, data);
-    },
-  };
-}
-
-export default useErrorCapture;

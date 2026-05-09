@@ -11,8 +11,8 @@ import { ChatList } from "@/features/chat/components/chat-list";
 import { ChatWindow } from "@/features/chat/components/chat-window";
 import { useCreateChat } from "@/hooks/use-chat-queries";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { API_ROUTES } from "@/lib/api-routes";
-import { ApiClient } from "@/lib/client";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import type { ChatWithLastMessage } from "@/types/chat";
 
 export default function MessagesPage() {
@@ -82,11 +82,11 @@ export default function MessagesPage() {
           API_ROUTES.CHATS.BASE
         );
 
-        if (!Array.isArray(existingChatResponse)) {
+        if (!existingChatResponse.success || !Array.isArray(existingChatResponse.data)) {
           return;
         }
 
-        const existingChat = existingChatResponse.find(
+        const existingChat = existingChatResponse.data.find(
           (chat) => chat.listingId === listingId && chat.sellerId === sellerId
         );
 

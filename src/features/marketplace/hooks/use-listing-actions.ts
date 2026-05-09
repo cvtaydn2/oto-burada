@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/api-routes";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
 import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { Listing } from "@/types";

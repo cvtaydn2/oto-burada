@@ -10,7 +10,7 @@ import { lookupVehicleByPlate } from "@/features/marketplace/services/plate-look
 import { useAnalytics } from "@/hooks/use-analytics";
 import { listingCreateFormSchema } from "@/lib";
 import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/api-routes";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { AnalyticsEvent } from "@/lib/events";
 import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import {

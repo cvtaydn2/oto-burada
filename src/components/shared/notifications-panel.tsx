@@ -17,8 +17,11 @@ import { useMemo, useState } from "react";
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { Button } from "@/components/ui/button";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { formatDate } from "@/lib/datetime/date-utils";
 import { cn } from "@/lib/utils";
+import type { Notification } from "@/types";
 
 interface NotificationItem {
   createdAt: string;
@@ -34,6 +37,10 @@ interface NotificationsPanelProps {
   initialNotifications: NotificationItem[];
 }
 
+function getErrorMessage(error: { message?: string } | undefined, fallback: string) {
+  return error?.message?.trim() ? error.message : fallback;
+}
+
 export function NotificationsPanel({ initialNotifications }: NotificationsPanelProps) {
   const { userId } = useAuthUser();
   const [items, setItems] = useState(initialNotifications);
@@ -41,22 +48,29 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // F03: Real-time notifications subscription
   useRealtimeNotifications({
     userId: userId || "",
     onNotification: (notification) => {
-      setItems((prev) => [
-        {
-          id: notification.id,
-          title: notification.title,
-          message: notification.message,
-          href: notification.href,
-          read: false,
-          createdAt: notification.created_at,
-          type: notification.type as NotificationItem["type"],
-        },
-        ...prev,
-      ]);
+      setItems((prev) => {
+        const exists = prev.some((item) => item.id === notification.id);
+
+        if (exists) {
+          return prev;
+        }
+
+        return [
+          {
+            id: notification.id,
+            title: notification.title,
+            message: notification.message,
+            href: notification.href,
+            read: notification.read,
+            createdAt: notification.created_at,
+            type: notification.type as NotificationItem["type"],
+          },
+          ...prev,
+        ];
+      });
     },
   });
 
@@ -103,16 +117,12 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
     setErrorMessage(null);
 
     try {
-      const response = await fetch("/api/notifications", {
+      const response = await ApiClient.request<{ updated: true }>(API_ROUTES.NOTIFICATIONS.BASE, {
         method: "PATCH",
       });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message?: string };
-      } | null;
 
-      if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Bildirimler güncellenemedi.");
+      if (!response.success) {
+        setErrorMessage(getErrorMessage(response.error, "Bildirimler güncellenemedi."));
         return;
       }
 
@@ -129,16 +139,15 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
     setErrorMessage(null);
 
     try {
-      const response = await fetch(`/api/notifications/${id}`, {
-        method: "PATCH",
-      });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message?: string };
-      } | null;
+      const response = await ApiClient.request<{ notification: Notification }>(
+        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
+        {
+          method: "PATCH",
+        }
+      );
 
-      if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Bildirim güncellenemedi.");
+      if (!response.success) {
+        setErrorMessage(getErrorMessage(response.error, "Bildirim güncellenemedi."));
         return;
       }
 
@@ -157,16 +166,15 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
     setErrorMessage(null);
 
     try {
-      const response = await fetch(`/api/notifications/${id}`, {
-        method: "DELETE",
-      });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message?: string };
-      } | null;
+      const response = await ApiClient.request<{ deleted: true }>(
+        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Bildirim silinemedi.");
+      if (!response.success) {
+        setErrorMessage(getErrorMessage(response.error, "Bildirim silinemedi."));
         return;
       }
 

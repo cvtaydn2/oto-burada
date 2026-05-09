@@ -1,27 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
+
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { Database } from "@/types/supabase";
+
+interface NotificationPayload {
+  created_at: string;
+  href: string | null;
+  id: string;
+  message: string;
+  read: boolean;
+  title: string;
+  type: Database["public"]["Enums"]["notification_type"];
+  user_id: string;
+}
 
 interface UseRealtimeNotificationsOptions {
   userId: string;
-  onNotification?: (notification: {
-    id: string;
-    title: string;
-    message: string;
-    href?: string | null;
-    created_at: string;
-    type: string;
-  }) => void;
+  onNotification?: (notification: NotificationPayload) => void;
 }
 
-export function useRealtimeNotifications(_options?: UseRealtimeNotificationsOptions) {
-  const [notifications] = useState([]);
+export function useRealtimeNotifications(options?: UseRealtimeNotificationsOptions) {
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   useEffect(() => {
-    if (_options) {
-      // options handled externally or in mock
-    }
-  }, [_options]);
+    const userId = options?.userId?.trim();
 
-  return { notifications };
+    if (!userId) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const next = payload.new as NotificationPayload | undefined;
+
+          if (!next) {
+            return;
+          }
+
+          options?.onNotification?.(next);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [options, supabase]);
+
+  return null;
 }

@@ -229,13 +229,17 @@ Current migration themes still worth auditing:
 
 1. **Marketplace listing query layer**
    - Current area: `src/features/marketplace/services/listings/`
-   - Risk: mixed legacy query-builder patterns, admin/public branching, and localized `any` usage in hot paths.
-   - Priority: High
+   - Status: Partially stabilized
+   - What changed: client imports were normalized, dead duplicated component trees were removed, and the hot-path query module now uses typed result aliases around the legacy Supabase builder boundary.
+   - Remaining risk: the file is still oversized and should be split into select/query/filter modules in a follow-up refactor.
+   - Priority: Medium
 
 2. **Chat service surface**
-   - Current area: `src/features/chat/services/chat/`
-   - Risk: feature is operational but still carries preservation tests referencing historical paths.
-   - Priority: Medium
+   - Current area: `src/features/chat/services/chat/`, `src/hooks/use-chat-queries.ts`, `src/hooks/use-chat-realtime.ts`
+   - Status: Stabilized
+   - What changed: mock hooks were replaced with real API-backed TanStack Query mutations/queries and live Supabase realtime subscriptions.
+   - Remaining risk: confirm dialogs and cache invalidation now follow the shared pattern, but chat still needs focused integration coverage.
+   - Priority: Low
 
 3. **Support/ticket service surface**
    - Current area: `src/features/support/services/support/`
@@ -244,7 +248,9 @@ Current migration themes still worth auditing:
 
 4. **Client-side API abstractions**
    - Current area: shared wrappers such as `src/lib/api/client.ts` and feature hooks/components that still call REST endpoints directly.
-   - Risk: inconsistent client mutation patterns and duplicated error handling.
+   - Status: In progress
+   - What changed: several user-facing surfaces were migrated off the legacy `@/lib/client` compatibility wrapper onto [`ApiClient`](../../src/lib/api/client.ts) and [`API_ROUTES`](../../src/lib/constants/api-routes.ts).
+   - Remaining risk: a few server-side cache helpers still intentionally import the compatibility alias for Redis helpers, and broader mutation standardization is still a follow-up item.
    - Priority: Medium
 
 ## Migration Checklist

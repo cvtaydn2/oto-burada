@@ -27,7 +27,7 @@ import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { Listing, ListingFilters } from "@/types";
 import type { Database } from "@/types/supabase";
 
-import { mapListingRow } from "./mappers/listing-row.mapper";
+import { type ListingRow, mapListingRow } from "./mappers/listing-row.mapper";
 
 export const listingSelect = `
 id,
@@ -284,6 +284,12 @@ seller:profiles!inner!seller_id(id, full_name, is_verified, business_name, busin
 `;
 
 type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
+type ListingQueryError = { code?: string; message?: string } | null;
+type ListingQueryResult<TRow = ListingRow> = {
+  count?: number | null;
+  data: TRow[] | null;
+  error: ListingQueryError;
+};
 
 let preferLegacyListingSchema = false;
 let preferLegacyMarketplaceSchema = false;
@@ -306,7 +312,7 @@ function isTransientFetchError(error: unknown): boolean {
 }
 
 async function runQueryWithTransientRetry<T>(
-  operation: () => Promise<T>,
+  operation: () => PromiseLike<T>,
   context: string,
   retries = 2
 ): Promise<T> {
@@ -406,9 +412,9 @@ export function buildListingBaseQuery(
     };
     includeBanned?: boolean;
   }
-): any {
+): ListingQuery {
   const countOption = options?.countOnly || options?.withCount ? "exact" : undefined;
-  let query: any = client
+  let query: ListingQuery = client
     .from("listings")
     .select(
       selectClause,
@@ -533,7 +539,7 @@ export async function getDatabaseListings(options?: {
     ...options,
     legacySchema: preferLegacyListingSchema,
   });
-  const primaryResult: any = await runQueryWithTransientRetry(
+  const primaryResult: ListingQueryResult = await runQueryWithTransientRetry(
     () => primaryQuery,
     "getDatabaseListings.primaryQuery"
   );
@@ -566,7 +572,7 @@ export async function getDatabaseListings(options?: {
     ...options,
     legacySchema: true,
   });
-  const fallbackResult: any = await runQueryWithTransientRetry(
+  const fallbackResult: ListingQueryResult = await runQueryWithTransientRetry(
     () => fallbackQuery,
     "getDatabaseListings.fallbackQuery"
   );
@@ -611,7 +617,7 @@ export async function getPublicDatabaseListings(options?: {
   };
 
   const query = buildListingBaseQuery(publicClient, publicListingDetailSelect, publicOptions);
-  const result: any = await runQueryWithTransientRetry(
+  const result: ListingQueryResult = await runQueryWithTransientRetry(
     () => query,
     "getPublicDatabaseListings.query"
   );
@@ -621,7 +627,7 @@ export async function getPublicDatabaseListings(options?: {
       ...publicOptions,
       legacySchema: true,
     });
-    const fallbackResult: any = await runQueryWithTransientRetry(
+    const fallbackResult: ListingQueryResult = await runQueryWithTransientRetry(
       () => fallbackQuery,
       "getPublicDatabaseListings.fallbackQuery"
     );
@@ -697,17 +703,16 @@ async function getFilteredListingsInternal(
   const selectClause = preferLegacyMarketplaceSchema
     ? legacyListingSelect
     : marketplaceListingSelect;
-  const { data, count, error }: { data: any; count: number | null; error: any } =
-    await runQueryWithTransientRetry(
-      () =>
-        buildListingBaseQuery(client, selectClause, {
-          statuses: ["approved"],
-          filters: { ...filters, page, limit },
-          withCount: true,
-          legacySchema: preferLegacyMarketplaceSchema,
-        }),
-      "getFilteredListingsInternal.primaryQuery"
-    );
+  const { data, count, error }: ListingQueryResult = await runQueryWithTransientRetry(
+    () =>
+      buildListingBaseQuery(client, selectClause, {
+        statuses: ["approved"],
+        filters: { ...filters, page, limit },
+        withCount: true,
+        legacySchema: preferLegacyMarketplaceSchema,
+      }),
+    "getFilteredListingsInternal.primaryQuery"
+  );
 
   const dataResult = { data, error };
   const countResult = { count };
@@ -745,16 +750,17 @@ async function getFilteredListingsInternal(
         countOnly: true,
         legacySchema: true,
       });
-      const [legacyDataResult, legacyCountResult]: [any, any] = await Promise.all([
-        runQueryWithTransientRetry(
-          () => legacyDataQuery,
-          "getFilteredListingsInternal.legacyDataQuery"
-        ),
-        runQueryWithTransientRetry(
-          () => legacyCountQuery,
-          "getFilteredListingsInternal.legacyCountQuery"
-        ),
-      ]);
+      const [legacyDataResult, legacyCountResult]: [ListingQueryResult, ListingQueryResult] =
+        await Promise.all([
+          runQueryWithTransientRetry(
+            () => legacyDataQuery,
+            "getFilteredListingsInternal.legacyDataQuery"
+          ),
+          runQueryWithTransientRetry(
+            () => legacyCountQuery,
+            "getFilteredListingsInternal.legacyCountQuery"
+          ),
+        ]);
 
       if (!legacyDataResult.error) {
         const listings = (legacyDataResult.data ?? []).map(mapListingRow);
@@ -825,7 +831,7 @@ export async function getSimilarDatabaseListings(options: {
 
   // Use parameterized query builder - NO string interpolation for raw filters
   // Query for brand match OR city match
-  const { data, error }: { data: any; error: any } = await runQueryWithTransientRetry(
+  const { data, error } = await runQueryWithTransientRetry(
     async () =>
       await publicClient
         .from("listings")
@@ -844,7 +850,7 @@ export async function getSimilarDatabaseListings(options: {
     return [];
   }
 
-  const listings = (data ?? []).map(mapListingRow);
+  const listings = ((data ?? []) as unknown as ListingRow[]).map(mapListingRow);
 
   // 3. Sort by score then take limit
   // �� PERFORMANCE FIX: Issue PERF-01 - Avoid full object cloning in sort ��

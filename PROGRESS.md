@@ -1,5 +1,27 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 67. Frontend Architecture Convergence & Cleanup Phase
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Eliminate architecture drift discovered in the deep frontend audit by removing dead source artifacts, replacing mock chat/notification hooks with real API-backed flows, tightening provider boundaries, normalizing client API imports, and improving accessibility/confirmation behavior on high-risk UI surfaces.
+
+### 67.1 Applied Fixes
+- **Chat surface de-mocked and reconnected:** Replaced stub TanStack Query hooks in [`use-chat-queries.ts`](src/hooks/use-chat-queries.ts) with real [`ApiClient`](src/lib/api/client.ts) + [`API_ROUTES`](src/lib/constants/api-routes.ts) backed queries/mutations, and added real Supabase realtime listeners in [`use-chat-realtime.ts`](src/hooks/use-chat-realtime.ts).
+- **Notification surface de-mocked and reconnected:** Replaced placeholder state in [`use-notifications.ts`](src/hooks/use-notifications.ts) with typed query-backed notification loading, wired realtime inserts via [`use-realtime-notifications.ts`](src/hooks/use-realtime-notifications.ts), and migrated dropdown/panel interactions to the canonical client API layer in [`notification-dropdown.tsx`](src/components/shared/notification-dropdown.tsx) and [`notifications-panel.tsx`](src/components/shared/notifications-panel.tsx).
+- **Client API standardization:** Normalized feature imports away from legacy `@/lib/client` / `@/lib/api-routes` aliases toward [`@/lib/api/client`](src/lib/api/client.ts) and [`@/lib/constants/api-routes.ts`](src/lib/constants/api-routes.ts) in dashboard/contact/listing flows, while shrinking [`client-compat.ts`](src/lib/client-compat.ts) to cache-helper compatibility exports only.
+- **Marketplace query typing stabilization:** Reduced unsafe drift in [`listing-submission-query.ts`](src/features/marketplace/services/listings/listing-submission-query.ts) by introducing typed query-result aliases around the hot-path builder and preserving the unavoidable Supabase parser edge only at the narrowest boundary.
+- **Dead code / artifact cleanup:** Removed the duplicated accidental source subtree under `src/features/marketplace/components/s/` and replaced the placeholder [`useDebounce()`](src/hooks/use-debounce.ts) implementation with a real debouncing hook.
+- **Provider and UX boundary cleanup:** Removed the global favorites provider from [`RootProviders`](src/features/providers/components/root-providers.tsx) so favorites stay marketplace-scoped, upgraded chat destructive confirmations from `window.confirm()` to accessible [`AlertDialog`](src/components/ui/alert-dialog.tsx) flows in [`chat-window.tsx`](src/features/chat/components/chat-window.tsx), and improved listing description disclosure semantics in [`listing-description.tsx`](src/features/marketplace/components/listing-description.tsx).
+- **Alias integrity repair:** Fixed stale path alias routing in [`tsconfig.json`](tsconfig.json) so [`@/hooks/use-chat-realtime`](src/hooks/use-chat-realtime.ts) and [`@/hooks/use-error-capture`](src/hooks/use-error-capture.ts) now resolve to their canonical implementations instead of historical placeholders.
+
+### 67.2 Validation
+- **TypeScript (`npm run typecheck`)**: Passed with **0 errors** after the refactor convergence set.
+
+### 67.3 Follow-up Notes
+- Marketplace query infrastructure is now safer to evolve, but [`listing-submission-query.ts`](src/features/marketplace/services/listings/listing-submission-query.ts) still deserves a future split into dedicated select/filter/query modules.
+- Lint, build, and targeted test passes remain the next gate after this convergence phase.
+
 ## 66. Rate Limiting Redis Fallback Hardening Phase
 
 **Date**: 2026-05-09

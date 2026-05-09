@@ -31,159 +31,459 @@
       "@/lib": [
         "./src/lib/index.ts"
       ],
-      "@/lib/logger": ["./src/lib/logging/logger.ts"],
-      "@/lib/env": ["./src/lib/supabase/env.ts"],
-      "@/lib/server": ["./src/lib/supabase/server.ts"],
-      "@/lib/public-server": ["./src/lib/supabase/public-server.ts"],
-      "@/lib/browser": ["./src/lib/supabase/browser.ts"],
-      "@/lib/admin": ["./src/lib/supabase/admin.ts"],
-      "@/lib/admin-validators": ["./src/lib/validators/admin.ts"],
-      "@/hooks/use-chat-queries": ["./src/hooks/use-chat-queries.ts"],
-      "@/hooks/use-navigation": ["./src/hooks/use-navigation.ts"],
-      "@/hooks/use-debounce": ["./src/hooks/use-debounce.ts"],
-      "@/hooks/useDebounce": ["./src/hooks/use-debounce.ts"],
-      
-      
-      "@/hooks/use-media-query": ["./src/hooks/use-media-query.ts"],
-      "@/hooks/use-chat-realtime": ["./src/hooks/use-chat-queries.ts"],
-      "@/hooks/use-error-capture": ["./src/hooks/use-chat-queries.ts"],
-      "@/hooks/useErrorCapture": ["./src/lib/monitoring/sentry-client.ts"],
-      "@/lib/helpers": ["./src/lib/validators/helpers.ts"],
-      "@/lib/events": ["./src/lib/analytics/events.ts"],
-      "@/lib/cache": ["./src/lib/caching/cache.ts"],
-      "@/lib/identity-number": ["./src/lib/security/identity-number.ts"],
-      "@/lib/sanitize": ["./src/lib/sanitization/sanitize.ts"],
-      "@/lib/client": ["./src/lib/client-compat.ts"],
-      "@/lib/api-routes": ["./src/lib/constants/api-routes.ts"],
-      "@/lib/domain": ["./src/lib/constants/domain.ts"],
-      "@/lib/vehicle-categories": ["./src/lib/constants/vehicle-categories.ts"],
-      "@/lib/rate-limit": ["./src/lib/rate-limiting/rate-limit.ts"],
-      "@/lib/middleware": ["./src/lib/supabase/middleware.ts"],
-      "@/lib/api-security": ["./src/lib/middleware/api-security.ts"],
-      "@/lib/pipeline": ["./src/lib/middleware/pipeline.ts"],
-      "@/lib/rate-limit-middleware": ["./src/lib/rate-limiting/rate-limit-middleware.ts"],
-      "@/lib/distributed-rate-limit": ["./src/lib/rate-limiting/distributed-rate-limit.ts"],
-      "@/lib/ip": ["./src/lib/api/ip.ts"],
-      "@/lib/ip-utils": ["./src/lib/api/ip-utils.ts"],
-      "@/lib/headers": ["./src/lib/middleware/headers.ts"],
-      "@/lib/routes": ["./src/lib/middleware/routes.ts"],
-      "@/lib/csrf": ["./src/lib/security/csrf.ts"],
-      "@/lib/security": ["./src/lib/api/security.ts"],
-      "@/lib/response": ["./src/lib/api/response.ts"],
-      "@/lib/api-responses": ["./src/lib/validators/api-responses.ts"],
-      "@/lib/telemetry-server": ["./src/lib/monitoring/telemetry-server.ts"],
-      "@/lib/telemetry-client": ["./src/lib/monitoring/telemetry-client.ts"],
-      "@/lib/registry": ["./src/lib/storage/registry.ts"],
-      "@/lib/ui-strings": ["./src/lib/constants/ui-strings.ts"],
-      "@/lib/maintenance": ["./src/lib/platform/maintenance.ts"],
-      "@/lib/resilience": ["./src/lib/api/resilience.ts"],
-      "@/lib/features": ["./src/lib/constants/domain.ts"],
-      "@/lib/doping": ["./src/lib/constants/doping.ts"],
-      "@/lib/auth": ["./src/lib/middleware/auth.ts"],
-      "@/lib/next-context": ["./src/lib/middleware/auth.ts"],
-      "@/lib/turnstile": ["./src/lib/security/turnstile.ts"],
-      "@/lib/date-utils": ["./src/lib/datetime/date-utils.ts"],
-      "@/lib/step-up-auth": ["./src/lib/security/step-up-auth.ts"],
-      "@/lib/env-validation": ["./src/lib/supabase/env.ts"],
-      "@/lib/action-utils/action-utils": ["./src/lib/api/result.ts"],
-      "@/components/seo/structured-data": ["./src/components/seo/structured-data.tsx"],
-      "@/features/marketplace/lib/trust-ui": ["./src/features/marketplace/lib/trust-ui.ts"],
-      "@/features/marketplace/lib/utils": ["./src/features/marketplace/lib/listings/utils.ts"],
-      "@/features/seo/lib": ["./src/components/seo/structured-data.tsx"],
-      "@/features/marketplace/lib/slugs": ["./src/features/marketplace/lib/slugs.ts"],
-      "@/hooks/usePullToRefresh": ["./src/features/shared/hooks/use-pull-to-refresh.ts"],
-      "@/features/profile/services/profile-records": ["./src/features/profile/services/profile/profile-records.ts"],
-      "@/features/marketplace/services/listing-filters": ["./src/features/marketplace/services/listings/listing-filters.ts"],
-      "@/features/marketplace/services/listing-submissions": ["./src/features/marketplace/services/listings/listing-submissions.ts"],
-      "@/features/marketplace/services/listing-card-insights": ["./src/features/marketplace/services/listings/listing-card-insights.ts"],
-      "@/features/notifications/services/notification-records": ["./src/features/notifications/services/notifications/notification-records.ts"],
-      "@/features/notifications/services/notification-preferences": ["./src/features/notifications/services/notifications/notification-preferences.ts"],
-      "@/features/notifications/services/email-service": ["./src/features/notifications/services/email/email-service.ts"],
-      "@/features/notifications/services/email-templates": ["./src/features/notifications/services/email/email-templates.ts"],
-      "@/features/admin-moderation/services/plans": ["./src/features/admin-moderation/services/admin/plans.ts"],
-      "@/features/admin-moderation/services/analytics": ["./src/features/admin-moderation/services/admin/analytics.ts"],
-      "@/features/admin-moderation/services/reference": ["./src/features/admin-moderation/services/admin/reference.ts"],
-      "@/features/admin-moderation/services/roles": ["./src/features/admin-moderation/services/admin/roles.ts"],
-      "@/features/admin-moderation/services/user-actions": ["./src/features/admin-moderation/services/admin/user-actions.ts"],
-      "@/features/admin-moderation/services/user-details": ["./src/features/admin-moderation/services/admin/user-details.ts"],
-      "@/features/admin-moderation/services/inventory": ["./src/features/admin-moderation/services/admin/inventory.ts"],
-      "@/features/admin-moderation/services/settings": ["./src/features/admin-moderation/services/admin/settings.ts"],
-      "@/features/marketplace/services/saved-search-records": ["./src/features/marketplace/services/saved-searches/saved-search-records.ts"],
-      "@/features/marketplace/services/saved-search-utils": ["./src/features/marketplace/services/saved-searches/saved-search-utils.ts"],
-      "@/features/marketplace/services/market-stats": ["./src/features/marketplace/services/market/market-stats.ts"],
-      "@/features/marketplace/services/price-estimation": ["./src/features/marketplace/services/market/price-estimation.ts"],
-      "@/features/marketplace/services/pricing-engine": ["./src/features/marketplace/services/listings/pricing-engine.ts"],
-      "@/features/marketplace/services/marketplace-listings": ["./src/features/marketplace/services/listings/marketplace-listings.ts"],
-      "@/features/marketplace/services/listing-submission-query": ["./src/features/marketplace/services/listings/listing-submission-query.ts"],
-      "@/features/marketplace/services/listing-submission-persistence": ["./src/features/marketplace/services/listings/listing-submission-persistence.ts"],
-      "@/features/marketplace/services/listing-images": ["./src/features/marketplace/services/listings/listing-images.ts"],
-      "@/features/marketplace/services/plate-lookup": ["./src/features/marketplace/services/listings/plate-lookup.ts"],
-      "@/features/marketplace/services/catalog": ["./src/features/marketplace/services/listings/catalog/index.ts"],
-      "@/features/marketplace/services/listing-row.mapper": ["./src/features/marketplace/services/listings/mappers/listing-row.mapper.ts"],
-      "@/features/marketplace/services/questions": ["./src/features/marketplace/services/listings/questions.ts"],
-      "@/features/marketplace/services/queries/get-listings": ["./src/features/marketplace/services/listings/queries/get-listings.ts"],
-      "@/features/profile/services/profile-restrictions": ["./src/features/profile/services/profile/profile-restrictions.ts"],
-      "@/features/profile/services/seller-reviews": ["./src/features/profile/services/profile/seller-reviews.ts"],
-      "@/features/favorites/services/favorite-records": ["./src/features/favorites/services/favorites/favorite-records.ts"],
-      "@/features/favorites/services/favorites-storage": ["./src/features/favorites/services/favorites/favorites-storage.ts"],
-      "@/features/reservations/services/reservation-service": ["./src/features/reservations/services/reservations/reservation-service.ts"],
-      "@/features/offers/services/offer-service": ["./src/features/offers/services/offers/offer-actions.ts"],
-      "@/features/payments/services/doping-logic": ["./src/features/payments/services/payments/doping-logic.ts"],
-      "@/features/payments/services/payment-logic": ["./src/features/payments/services/payments/payment-logic.ts"],
-      "@/features/payments/services/iyzico-client": ["./src/features/payments/services/payments/iyzico-client.ts"],
-      "@/features/support/services/ticket-service": ["./src/features/support/services/support/ticket-service.ts"],
-      "@/features/shared/services/live-reference-data": ["./src/features/shared/services/reference/live-reference-data.ts"],
-      "@/features/shared/services/reference-records": ["./src/features/shared/services/reference/reference-records.ts"],
-      "@/features/shared/services/outbox-processor": ["./src/features/shared/services/system/outbox-processor.ts"],
-      "@/features/ai/services/ai-actions": ["./src/features/ai/services/ai/ai-actions.ts"],
-      "@/features/chat/services/chat-logic": ["./src/features/chat/services/chat/chat-logic.ts"],
-      "@/features/shared/lib": ["./src/lib/index.ts"],
-      "@/features/shared/lib/env": ["./src/lib/supabase/env.ts"],
-      "@/features/shared/lib/response": ["./src/lib/api/response.ts"],
-      "@/features/shared/lib/security": ["./src/lib/api/security.ts"],
-      "@/features/shared/lib/logger": ["./src/lib/logging/logger.ts"],
-      "@/features/shared/lib/rate-limit-middleware": ["./src/lib/rate-limiting/rate-limit-middleware.ts"],
-      "@/features/shared/lib/rate-limit": ["./src/lib/rate-limiting/rate-limit.ts"],
-      "@/features/shared/lib/server": ["./src/lib/supabase/server.ts"],
-      "@/features/shared/lib/telemetry-server": ["./src/lib/monitoring/telemetry-server.ts"],
-      "@/features/shared/lib/helpers": ["./src/lib/validators/helpers.ts"],
-      "@/features/shared/services/compensating-processor": ["./src/features/shared/services/system/compensating-processor.ts"],
-      "@/features/shared/services/compliance-vacuum": ["./src/features/shared/services/system/compliance-vacuum.ts"],
-      "@/features/shared/services/reconciliation-worker": ["./src/features/shared/services/system/reconciliation-worker.ts"],
-      "@/features/shared/services/saved-search-notifier": ["./src/features/shared/services/system/saved-search-notifier.ts"],
-      "@/features/admin-moderation/services/moderation-actions": ["./src/features/admin-moderation/services/admin/moderation-actions.ts"],
-      "@/features/admin-moderation/services/persistence-health": ["./src/features/admin-moderation/services/admin/persistence-health.ts"],
-      "@/features/admin-moderation/services/questions": ["./src/features/admin-moderation/services/admin/questions.ts"],
-      "@/features/reports/services/report-submissions": ["./src/features/reports/services/reports/report-submissions.ts"],
-      "@/hooks/useNavigation": ["./src/hooks/use-navigation.ts"],
-      "@/hooks/useChatQueries": ["./src/lib/query-keys.ts"],
-      "@/hooks/useListingActions": ["./src/features/marketplace/services/listings/listing-submissions.ts"],
-      "@/features/marketplace/services/listing-documents": ["./src/features/marketplace/services/listings/listing-documents.ts"],
-      "@/features/marketplace/services/listing-price-history": ["./src/features/marketplace/services/listings/listing-price-history.ts"],
-      "@/features/marketplace/services/listing-views": ["./src/features/marketplace/services/listings/listing-views.ts"],
-      "@/features/marketplace/services/listing-submission-moderation": ["./src/features/marketplace/services/listings/listing-submission-moderation.ts"],
-      "@/lib/infrastructure-health": ["./src/lib/monitoring/infrastructure-health.ts"],
-      "@/lib/email-validation": ["./src/lib/security/email-validation.ts"],
-      "@/lib/payment": ["./src/lib/payment.ts"],
-      "@/lib/iyzico-webhook": ["./src/lib/api/iyzico-webhook.ts"],
-      "@/lib/secrets": ["./src/lib/security/secrets.ts"],
-      "@/lib/request-size": ["./src/lib/api/request-size.ts"],
-      "@/lib/upload-policy": ["./src/lib/storage/upload-policy.ts"],
-      "@/lib/listing": ["./src/lib/listing.ts"],
-      "@/features/marketplace/services/listing-limits": ["./src/features/marketplace/services/listings/listing-limits.ts"],
-      "@/features/marketplace/services/listing-submission-helpers": ["./src/features/marketplace/services/listings/listing-submission-helpers.ts"],
-      "@/features/marketplace/services/mappers/listing-row.mapper": ["./src/features/marketplace/services/listings/mappers/listing-row.mapper.ts"],
-      "@/features/marketplace/lib/edit-guard": ["./src/features/marketplace/lib/listings/edit-guard.ts"],
-      "@/features/exchange/services/exchange-offers": ["./src/features/exchange/services/exchange/exchange-offers.ts"],
-      "@/features/marketplace/services": ["./src/features/marketplace/services/gallery/index.ts"],
-      "@/features/profile/services/profile-trust": ["./src/features/profile/services/profile/profile-trust.ts"],
-      "@/lib/handler-utils": ["./src/lib/api/handler-utils.ts"],
-      "@/lib/redis": ["./src/lib/redis/client.ts"],
-      "@/features/admin-moderation/services/user-list": ["./src/features/admin-moderation/services/admin/user-list.ts"],
-      "@/features/admin-moderation/services/listing-moderation": ["./src/features/admin-moderation/services/admin/listing-moderation.ts"],
-      "@/features/shared/lib/admin": ["./src/lib/supabase/admin.ts"],
-      "@/features/shared/lib/sanitize": ["./src/lib/sanitization/sanitize.ts"],
-      "@/components/reviews/review-form": ["./src/features/marketplace/lib/utils.ts"]
+      "@/lib/logger": [
+        "./src/lib/logging/logger.ts"
+      ],
+      "@/lib/env": [
+        "./src/lib/supabase/env.ts"
+      ],
+      "@/lib/server": [
+        "./src/lib/supabase/server.ts"
+      ],
+      "@/lib/public-server": [
+        "./src/lib/supabase/public-server.ts"
+      ],
+      "@/lib/browser": [
+        "./src/lib/supabase/browser.ts"
+      ],
+      "@/lib/admin": [
+        "./src/lib/supabase/admin.ts"
+      ],
+      "@/lib/admin-validators": [
+        "./src/lib/validators/admin.ts"
+      ],
+      "@/hooks/use-chat-queries": [
+        "./src/hooks/use-chat-queries.ts"
+      ],
+      "@/hooks/use-navigation": [
+        "./src/hooks/use-navigation.ts"
+      ],
+      "@/hooks/use-debounce": [
+        "./src/hooks/use-debounce.ts"
+      ],
+      "@/hooks/useDebounce": [
+        "./src/hooks/use-debounce.ts"
+      ],
+      "@/hooks/use-media-query": [
+        "./src/hooks/use-media-query.ts"
+      ],
+      "@/hooks/use-chat-realtime": [
+        "./src/hooks/use-chat-realtime.ts"
+      ],
+      "@/hooks/use-error-capture": [
+        "./src/hooks/use-error-capture.ts"
+      ],
+      "@/hooks/useErrorCapture": [
+        "./src/hooks/use-error-capture.ts"
+      ],
+      "@/lib/helpers": [
+        "./src/lib/validators/helpers.ts"
+      ],
+      "@/lib/events": [
+        "./src/lib/analytics/events.ts"
+      ],
+      "@/lib/cache": [
+        "./src/lib/caching/cache.ts"
+      ],
+      "@/lib/identity-number": [
+        "./src/lib/security/identity-number.ts"
+      ],
+      "@/lib/sanitize": [
+        "./src/lib/sanitization/sanitize.ts"
+      ],
+      "@/lib/client": [
+        "./src/lib/client-compat.ts"
+      ],
+      "@/lib/api-routes": [
+        "./src/lib/constants/api-routes.ts"
+      ],
+      "@/lib/domain": [
+        "./src/lib/constants/domain.ts"
+      ],
+      "@/lib/vehicle-categories": [
+        "./src/lib/constants/vehicle-categories.ts"
+      ],
+      "@/lib/rate-limit": [
+        "./src/lib/rate-limiting/rate-limit.ts"
+      ],
+      "@/lib/middleware": [
+        "./src/lib/supabase/middleware.ts"
+      ],
+      "@/lib/api-security": [
+        "./src/lib/middleware/api-security.ts"
+      ],
+      "@/lib/pipeline": [
+        "./src/lib/middleware/pipeline.ts"
+      ],
+      "@/lib/rate-limit-middleware": [
+        "./src/lib/rate-limiting/rate-limit-middleware.ts"
+      ],
+      "@/lib/distributed-rate-limit": [
+        "./src/lib/rate-limiting/distributed-rate-limit.ts"
+      ],
+      "@/lib/ip": [
+        "./src/lib/api/ip.ts"
+      ],
+      "@/lib/ip-utils": [
+        "./src/lib/api/ip-utils.ts"
+      ],
+      "@/lib/headers": [
+        "./src/lib/middleware/headers.ts"
+      ],
+      "@/lib/routes": [
+        "./src/lib/middleware/routes.ts"
+      ],
+      "@/lib/csrf": [
+        "./src/lib/security/csrf.ts"
+      ],
+      "@/lib/security": [
+        "./src/lib/api/security.ts"
+      ],
+      "@/lib/response": [
+        "./src/lib/api/response.ts"
+      ],
+      "@/lib/api-responses": [
+        "./src/lib/validators/api-responses.ts"
+      ],
+      "@/lib/telemetry-server": [
+        "./src/lib/monitoring/telemetry-server.ts"
+      ],
+      "@/lib/telemetry-client": [
+        "./src/lib/monitoring/telemetry-client.ts"
+      ],
+      "@/lib/registry": [
+        "./src/lib/storage/registry.ts"
+      ],
+      "@/lib/ui-strings": [
+        "./src/lib/constants/ui-strings.ts"
+      ],
+      "@/lib/maintenance": [
+        "./src/lib/platform/maintenance.ts"
+      ],
+      "@/lib/resilience": [
+        "./src/lib/api/resilience.ts"
+      ],
+      "@/lib/features": [
+        "./src/lib/constants/domain.ts"
+      ],
+      "@/lib/doping": [
+        "./src/lib/constants/doping.ts"
+      ],
+      "@/lib/auth": [
+        "./src/lib/middleware/auth.ts"
+      ],
+      "@/lib/next-context": [
+        "./src/lib/middleware/auth.ts"
+      ],
+      "@/lib/turnstile": [
+        "./src/lib/security/turnstile.ts"
+      ],
+      "@/lib/date-utils": [
+        "./src/lib/datetime/date-utils.ts"
+      ],
+      "@/lib/step-up-auth": [
+        "./src/lib/security/step-up-auth.ts"
+      ],
+      "@/lib/env-validation": [
+        "./src/lib/supabase/env.ts"
+      ],
+      "@/lib/action-utils/action-utils": [
+        "./src/lib/api/result.ts"
+      ],
+      "@/components/seo/structured-data": [
+        "./src/components/seo/structured-data.tsx"
+      ],
+      "@/features/marketplace/lib/trust-ui": [
+        "./src/features/marketplace/lib/trust-ui.ts"
+      ],
+      "@/features/marketplace/lib/utils": [
+        "./src/features/marketplace/lib/listings/utils.ts"
+      ],
+      "@/features/seo/lib": [
+        "./src/components/seo/structured-data.tsx"
+      ],
+      "@/features/marketplace/lib/slugs": [
+        "./src/features/marketplace/lib/slugs.ts"
+      ],
+      "@/hooks/usePullToRefresh": [
+        "./src/features/shared/hooks/use-pull-to-refresh.ts"
+      ],
+      "@/features/profile/services/profile-records": [
+        "./src/features/profile/services/profile/profile-records.ts"
+      ],
+      "@/features/marketplace/services/listing-filters": [
+        "./src/features/marketplace/services/listings/listing-filters.ts"
+      ],
+      "@/features/marketplace/services/listing-submissions": [
+        "./src/features/marketplace/services/listings/listing-submissions.ts"
+      ],
+      "@/features/marketplace/services/listing-card-insights": [
+        "./src/features/marketplace/services/listings/listing-card-insights.ts"
+      ],
+      "@/features/notifications/services/notification-records": [
+        "./src/features/notifications/services/notifications/notification-records.ts"
+      ],
+      "@/features/notifications/services/notification-preferences": [
+        "./src/features/notifications/services/notifications/notification-preferences.ts"
+      ],
+      "@/features/notifications/services/email-service": [
+        "./src/features/notifications/services/email/email-service.ts"
+      ],
+      "@/features/notifications/services/email-templates": [
+        "./src/features/notifications/services/email/email-templates.ts"
+      ],
+      "@/features/admin-moderation/services/plans": [
+        "./src/features/admin-moderation/services/admin/plans.ts"
+      ],
+      "@/features/admin-moderation/services/analytics": [
+        "./src/features/admin-moderation/services/admin/analytics.ts"
+      ],
+      "@/features/admin-moderation/services/reference": [
+        "./src/features/admin-moderation/services/admin/reference.ts"
+      ],
+      "@/features/admin-moderation/services/roles": [
+        "./src/features/admin-moderation/services/admin/roles.ts"
+      ],
+      "@/features/admin-moderation/services/user-actions": [
+        "./src/features/admin-moderation/services/admin/user-actions.ts"
+      ],
+      "@/features/admin-moderation/services/user-details": [
+        "./src/features/admin-moderation/services/admin/user-details.ts"
+      ],
+      "@/features/admin-moderation/services/inventory": [
+        "./src/features/admin-moderation/services/admin/inventory.ts"
+      ],
+      "@/features/admin-moderation/services/settings": [
+        "./src/features/admin-moderation/services/admin/settings.ts"
+      ],
+      "@/features/marketplace/services/saved-search-records": [
+        "./src/features/marketplace/services/saved-searches/saved-search-records.ts"
+      ],
+      "@/features/marketplace/services/saved-search-utils": [
+        "./src/features/marketplace/services/saved-searches/saved-search-utils.ts"
+      ],
+      "@/features/marketplace/services/market-stats": [
+        "./src/features/marketplace/services/market/market-stats.ts"
+      ],
+      "@/features/marketplace/services/price-estimation": [
+        "./src/features/marketplace/services/market/price-estimation.ts"
+      ],
+      "@/features/marketplace/services/pricing-engine": [
+        "./src/features/marketplace/services/listings/pricing-engine.ts"
+      ],
+      "@/features/marketplace/services/marketplace-listings": [
+        "./src/features/marketplace/services/listings/marketplace-listings.ts"
+      ],
+      "@/features/marketplace/services/listing-submission-query": [
+        "./src/features/marketplace/services/listings/listing-submission-query.ts"
+      ],
+      "@/features/marketplace/services/listing-submission-persistence": [
+        "./src/features/marketplace/services/listings/listing-submission-persistence.ts"
+      ],
+      "@/features/marketplace/services/listing-images": [
+        "./src/features/marketplace/services/listings/listing-images.ts"
+      ],
+      "@/features/marketplace/services/plate-lookup": [
+        "./src/features/marketplace/services/listings/plate-lookup.ts"
+      ],
+      "@/features/marketplace/services/catalog": [
+        "./src/features/marketplace/services/listings/catalog/index.ts"
+      ],
+      "@/features/marketplace/services/listing-row.mapper": [
+        "./src/features/marketplace/services/listings/mappers/listing-row.mapper.ts"
+      ],
+      "@/features/marketplace/services/questions": [
+        "./src/features/marketplace/services/listings/questions.ts"
+      ],
+      "@/features/marketplace/services/queries/get-listings": [
+        "./src/features/marketplace/services/listings/queries/get-listings.ts"
+      ],
+      "@/features/profile/services/profile-restrictions": [
+        "./src/features/profile/services/profile/profile-restrictions.ts"
+      ],
+      "@/features/profile/services/seller-reviews": [
+        "./src/features/profile/services/profile/seller-reviews.ts"
+      ],
+      "@/features/favorites/services/favorite-records": [
+        "./src/features/favorites/services/favorites/favorite-records.ts"
+      ],
+      "@/features/favorites/services/favorites-storage": [
+        "./src/features/favorites/services/favorites/favorites-storage.ts"
+      ],
+      "@/features/reservations/services/reservation-service": [
+        "./src/features/reservations/services/reservations/reservation-service.ts"
+      ],
+      "@/features/offers/services/offer-service": [
+        "./src/features/offers/services/offers/offer-actions.ts"
+      ],
+      "@/features/payments/services/doping-logic": [
+        "./src/features/payments/services/payments/doping-logic.ts"
+      ],
+      "@/features/payments/services/payment-logic": [
+        "./src/features/payments/services/payments/payment-logic.ts"
+      ],
+      "@/features/payments/services/iyzico-client": [
+        "./src/features/payments/services/payments/iyzico-client.ts"
+      ],
+      "@/features/support/services/ticket-service": [
+        "./src/features/support/services/support/ticket-service.ts"
+      ],
+      "@/features/shared/services/live-reference-data": [
+        "./src/features/shared/services/reference/live-reference-data.ts"
+      ],
+      "@/features/shared/services/reference-records": [
+        "./src/features/shared/services/reference/reference-records.ts"
+      ],
+      "@/features/shared/services/outbox-processor": [
+        "./src/features/shared/services/system/outbox-processor.ts"
+      ],
+      "@/features/ai/services/ai-actions": [
+        "./src/features/ai/services/ai/ai-actions.ts"
+      ],
+      "@/features/chat/services/chat-logic": [
+        "./src/features/chat/services/chat/chat-logic.ts"
+      ],
+      "@/features/shared/lib": [
+        "./src/lib/index.ts"
+      ],
+      "@/features/shared/lib/env": [
+        "./src/lib/supabase/env.ts"
+      ],
+      "@/features/shared/lib/response": [
+        "./src/lib/api/response.ts"
+      ],
+      "@/features/shared/lib/security": [
+        "./src/lib/api/security.ts"
+      ],
+      "@/features/shared/lib/logger": [
+        "./src/lib/logging/logger.ts"
+      ],
+      "@/features/shared/lib/rate-limit-middleware": [
+        "./src/lib/rate-limiting/rate-limit-middleware.ts"
+      ],
+      "@/features/shared/lib/rate-limit": [
+        "./src/lib/rate-limiting/rate-limit.ts"
+      ],
+      "@/features/shared/lib/server": [
+        "./src/lib/supabase/server.ts"
+      ],
+      "@/features/shared/lib/telemetry-server": [
+        "./src/lib/monitoring/telemetry-server.ts"
+      ],
+      "@/features/shared/lib/helpers": [
+        "./src/lib/validators/helpers.ts"
+      ],
+      "@/features/shared/services/compensating-processor": [
+        "./src/features/shared/services/system/compensating-processor.ts"
+      ],
+      "@/features/shared/services/compliance-vacuum": [
+        "./src/features/shared/services/system/compliance-vacuum.ts"
+      ],
+      "@/features/shared/services/reconciliation-worker": [
+        "./src/features/shared/services/system/reconciliation-worker.ts"
+      ],
+      "@/features/shared/services/saved-search-notifier": [
+        "./src/features/shared/services/system/saved-search-notifier.ts"
+      ],
+      "@/features/admin-moderation/services/moderation-actions": [
+        "./src/features/admin-moderation/services/admin/moderation-actions.ts"
+      ],
+      "@/features/admin-moderation/services/persistence-health": [
+        "./src/features/admin-moderation/services/admin/persistence-health.ts"
+      ],
+      "@/features/admin-moderation/services/questions": [
+        "./src/features/admin-moderation/services/admin/questions.ts"
+      ],
+      "@/features/reports/services/report-submissions": [
+        "./src/features/reports/services/reports/report-submissions.ts"
+      ],
+      "@/hooks/useNavigation": [
+        "./src/hooks/use-navigation.ts"
+      ],
+      "@/hooks/useChatQueries": [
+        "./src/lib/query-keys.ts"
+      ],
+      "@/hooks/useListingActions": [
+        "./src/features/marketplace/services/listings/listing-submissions.ts"
+      ],
+      "@/features/marketplace/services/listing-documents": [
+        "./src/features/marketplace/services/listings/listing-documents.ts"
+      ],
+      "@/features/marketplace/services/listing-price-history": [
+        "./src/features/marketplace/services/listings/listing-price-history.ts"
+      ],
+      "@/features/marketplace/services/listing-views": [
+        "./src/features/marketplace/services/listings/listing-views.ts"
+      ],
+      "@/features/marketplace/services/listing-submission-moderation": [
+        "./src/features/marketplace/services/listings/listing-submission-moderation.ts"
+      ],
+      "@/lib/infrastructure-health": [
+        "./src/lib/monitoring/infrastructure-health.ts"
+      ],
+      "@/lib/email-validation": [
+        "./src/lib/security/email-validation.ts"
+      ],
+      "@/lib/payment": [
+        "./src/lib/payment.ts"
+      ],
+      "@/lib/iyzico-webhook": [
+        "./src/lib/api/iyzico-webhook.ts"
+      ],
+      "@/lib/secrets": [
+        "./src/lib/security/secrets.ts"
+      ],
+      "@/lib/request-size": [
+        "./src/lib/api/request-size.ts"
+      ],
+      "@/lib/upload-policy": [
+        "./src/lib/storage/upload-policy.ts"
+      ],
+      "@/lib/listing": [
+        "./src/lib/listing.ts"
+      ],
+      "@/features/marketplace/services/listing-limits": [
+        "./src/features/marketplace/services/listings/listing-limits.ts"
+      ],
+      "@/features/marketplace/services/listing-submission-helpers": [
+        "./src/features/marketplace/services/listings/listing-submission-helpers.ts"
+      ],
+      "@/features/marketplace/services/mappers/listing-row.mapper": [
+        "./src/features/marketplace/services/listings/mappers/listing-row.mapper.ts"
+      ],
+      "@/features/marketplace/lib/edit-guard": [
+        "./src/features/marketplace/lib/listings/edit-guard.ts"
+      ],
+      "@/features/exchange/services/exchange-offers": [
+        "./src/features/exchange/services/exchange/exchange-offers.ts"
+      ],
+      "@/features/marketplace/services": [
+        "./src/features/marketplace/services/gallery/index.ts"
+      ],
+      "@/features/profile/services/profile-trust": [
+        "./src/features/profile/services/profile/profile-trust.ts"
+      ],
+      "@/lib/handler-utils": [
+        "./src/lib/api/handler-utils.ts"
+      ],
+      "@/lib/redis": [
+        "./src/lib/redis/client.ts"
+      ],
+      "@/features/admin-moderation/services/user-list": [
+        "./src/features/admin-moderation/services/admin/user-list.ts"
+      ],
+      "@/features/admin-moderation/services/listing-moderation": [
+        "./src/features/admin-moderation/services/admin/listing-moderation.ts"
+      ],
+      "@/features/shared/lib/admin": [
+        "./src/lib/supabase/admin.ts"
+      ],
+      "@/features/shared/lib/sanitize": [
+        "./src/lib/sanitization/sanitize.ts"
+      ],
+      "@/components/reviews/review-form": [
+        "./src/features/marketplace/lib/utils.ts"
+      ]
     },
     "types": [
       "vitest/globals"

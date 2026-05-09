@@ -1,9 +1,19 @@
 "use client";
 
-import { ArrowLeft, Car } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Car } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,6 +40,10 @@ interface ChatWindowProps {
 
 export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindowProps) {
   const [isTyping, setIsTyping] = useState(false);
+  const [confirmState, setConfirmState] = useState<{
+    messageId?: string;
+    type: "archive" | "delete";
+  } | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -64,10 +78,9 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   }, [chatId, userId, messages, markAsReadMutation]);
 
   const handleArchive = async () => {
-    if (!window.confirm("Bu sohbeti arşivlemek istediğinize emin misiniz?")) return;
-
     try {
       await archiveMutation.mutateAsync({ chatId, archive: true });
+      setConfirmState(null);
       if (onBack) onBack();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Sohbet arşivlenemedi.";
@@ -76,10 +89,9 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   };
 
   const handleDeleteMessage = async (messageId: string) => {
-    if (!window.confirm("Bu mesajı silmek istediğinize emin misiniz?")) return;
-
     try {
       await deleteMessageMutation.mutateAsync({ chatId, messageId });
+      setConfirmState(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Mesaj silinemedi.";
       toast.error(message);
@@ -151,71 +163,112 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-3 border-b bg-background/95 p-4 backdrop-blur sm:p-5">
-        <div className="flex min-w-0 items-center gap-3">
-          {onBack && (
-            <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>
-              <Car className="h-5 w-5" />
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <h3 className="truncate font-medium text-foreground">{recipientName || "Satıcı"}</h3>
-            <p className="text-xs text-muted-foreground">
-              {isTyping ? "Yazıyor..." : "Mesajlaşma aktif"}
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleArchive}
-          disabled={archiveMutation.isPending}
-          className="shrink-0"
-        >
-          Arşivle
-        </Button>
-      </div>
-
-      <ScrollArea className="flex-1 px-4 py-4 sm:px-5" ref={scrollAreaRef}>
-        <div className="space-y-4">
-          {messages && messages.length > 0 ? (
-            messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                isOwn={message.senderId === userId}
-                onDelete={handleDeleteMessage}
-              />
-            ))
-          ) : (
-            <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-6 text-center">
-              <div className="max-w-sm space-y-2">
-                <p className="text-sm font-semibold text-foreground">Henüz mesaj yok</p>
-                <p className="text-sm text-muted-foreground">
-                  İlk mesajı göndererek araçla ilgili detayları netleştirebilirsiniz.
-                </p>
-              </div>
+    <>
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between gap-3 border-b bg-background/95 p-4 backdrop-blur sm:p-5">
+          <div className="flex min-w-0 items-center gap-3">
+            {onBack && (
+              <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <Avatar className="h-10 w-10">
+              <AvatarFallback>
+                <Car className="h-5 w-5" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <h3 className="truncate font-medium text-foreground">{recipientName || "Satıcı"}</h3>
+              <p className="text-xs text-muted-foreground">
+                {isTyping ? "Yazıyor..." : "Mesajlaşma aktif"}
+              </p>
             </div>
-          )}
-
-          {isTyping && <TypingIndicator />}
-          <div ref={bottomRef} />
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setConfirmState({ type: "archive" })}
+            disabled={archiveMutation.isPending}
+            className="shrink-0"
+          >
+            Arşivle
+          </Button>
         </div>
-      </ScrollArea>
 
-      <div className="border-t bg-background p-4 sm:p-5">
-        <ChatInput
-          onSend={handleSendMessage}
-          onTyping={handleTyping}
-          disabled={sendMessageMutation.isPending}
-        />
+        <ScrollArea className="flex-1 px-4 py-4 sm:px-5" ref={scrollAreaRef}>
+          <div className="space-y-4">
+            {messages && messages.length > 0 ? (
+              messages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  isOwn={message.senderId === userId}
+                  onDelete={(messageId) => setConfirmState({ type: "delete", messageId })}
+                />
+              ))
+            ) : (
+              <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-6 text-center">
+                <div className="max-w-sm space-y-2">
+                  <p className="text-sm font-semibold text-foreground">Henüz mesaj yok</p>
+                  <p className="text-sm text-muted-foreground">
+                    İlk mesajı göndererek araçla ilgili detayları netleştirebilirsiniz.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {isTyping && <TypingIndicator />}
+            <div ref={bottomRef} />
+          </div>
+        </ScrollArea>
+
+        <div className="border-t bg-background p-4 sm:p-5">
+          <ChatInput
+            onSend={handleSendMessage}
+            onTyping={handleTyping}
+            disabled={sendMessageMutation.isPending}
+          />
+        </div>
       </div>
-    </div>
+
+      <AlertDialog
+        open={confirmState !== null}
+        onOpenChange={(open) => (!open ? setConfirmState(null) : null)}
+      >
+        <AlertDialogContent className="rounded-3xl border-border/70">
+          <AlertDialogHeader className="text-left">
+            <div className="mb-2 flex size-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+              <AlertTriangle className="size-5" />
+            </div>
+            <AlertDialogTitle>
+              {confirmState?.type === "archive" ? "Sohbeti arşivle" : "Mesajı sil"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="leading-6">
+              {confirmState?.type === "archive"
+                ? "Bu sohbeti arşive taşırsanız gelen kutusundan kaldırılır. Daha sonra arşiv sekmesinden tekrar erişebilirsiniz."
+                : "Bu mesaj sizin görünümünüzden kaldırılacak. İşlemi geri almak mümkün değildir."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Vazgeç</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-rose-600 hover:bg-rose-700"
+              onClick={() => {
+                if (confirmState?.type === "archive") {
+                  void handleArchive();
+                  return;
+                }
+
+                if (confirmState?.messageId) {
+                  void handleDeleteMessage(confirmState.messageId);
+                }
+              }}
+            >
+              {confirmState?.type === "archive" ? "Arşive taşı" : "Mesajı sil"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

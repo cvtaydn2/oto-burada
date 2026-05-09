@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
 import { AuthProvider } from "@/components/shared/auth-provider";
-import { FavoritesProvider } from "@/components/shared/favorites-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { CsrfProvider } from "@/features/providers/components/csrf-provider";
@@ -46,12 +45,10 @@ export function RootProviders({ children, user, nonce, csrfToken }: RootProvider
         <SupabaseProvider>
           <CsrfProvider initialToken={csrfToken}>
             <AuthProvider initialUser={user}>
-              <FavoritesProvider>
-                <PWAProvider>
-                  {children}
-                  <Toaster />
-                </PWAProvider>
-              </FavoritesProvider>
+              <PWAProvider>
+                {children}
+                <Toaster />
+              </PWAProvider>
             </AuthProvider>
           </CsrfProvider>
         </SupabaseProvider>

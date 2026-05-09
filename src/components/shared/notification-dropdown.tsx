@@ -2,17 +2,23 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, LoaderCircle } from "lucide-react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Bell, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/hooks/use-notifications";
 import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { formatDate } from "@/lib/datetime/date-utils";
+import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
+import type { Notification } from "@/types";
+
+function getErrorMessage(error: { message?: string } | undefined, fallback: string) {
+  return error?.message?.trim() ? error.message : fallback;
+}
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
@@ -20,44 +26,45 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, isLoading, isError } = useNotifications(userId);
 
-  // Mark as read mutation
+  const queryKey = useMemo(
+    () => [...queryKeys.notifications, userId ?? "guest"] as const,
+    [userId]
+  );
+
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      const payload = await ApiClient.request<{
-        notification: {
-          id: string;
-        };
-      }>(`/api/notifications/${id}`, { method: "PATCH" });
+      const payload = await ApiClient.request<{ notification: Notification }>(
+        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
+        { method: "PATCH" }
+      );
 
       if (!payload.success) {
-        throw new Error(payload.error?.message || "Bildirim okundu olarak işaretlenemedi");
+        throw new Error(getErrorMessage(payload.error, "Bildirim okundu olarak işaretlenemedi"));
       }
+
+      return payload.data?.notification ?? null;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
-    },
-    onError: () => {
-      // Revert optimistic state by re-fetching
-      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey });
     },
   });
 
-  // Mark all as read mutation
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      const payload = await ApiClient.request<{ updated: true }>("/api/notifications", {
+      const payload = await ApiClient.request<{ updated: true }>(API_ROUTES.NOTIFICATIONS.BASE, {
         method: "PATCH",
       });
 
       if (!payload.success) {
-        throw new Error(payload.error?.message || "Tüm bildirimler okundu olarak işaretlenemedi");
+        throw new Error(
+          getErrorMessage(payload.error, "Tüm bildirimler okundu olarak işaretlenemedi")
+        );
       }
+
+      return payload.data?.updated ?? false;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
-    },
-    onError: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -71,7 +78,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
         >
           <Bell size={20} />
           {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+            <span className="absolute right-2 top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -81,7 +88,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           className={cn(
-            "z-50 w-[calc(100vw-24px)] sm:w-[380px] rounded-2xl border border-border bg-background p-1.5 shadow-sm shadow-indigo-500/10 outline-none",
+            "z-50 w-[calc(100vw-24px)] rounded-2xl border border-border bg-background p-1.5 shadow-sm shadow-indigo-500/10 outline-none sm:w-[380px]",
             "animate-in fade-in zoom-in-95 duration-200"
           )}
           align="end"
