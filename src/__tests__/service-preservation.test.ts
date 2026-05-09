@@ -65,17 +65,26 @@ describe("Preservation: Payment Functionality", () => {
     const rootDir = path.resolve(__dirname, "../..");
 
     it("should have payment logic file", () => {
-      const logicPath = path.join(rootDir, "src/services/payments/payment-logic.ts");
+      const logicPath = path.join(
+        rootDir,
+        "src/features/payments/services/payments/payment-logic.ts"
+      );
       expect(fs.existsSync(logicPath)).toBe(true);
     });
 
     it("should have doping logic file", () => {
-      const logicPath = path.join(rootDir, "src/services/payments/doping-logic.ts");
+      const logicPath = path.join(
+        rootDir,
+        "src/features/payments/services/payments/doping-logic.ts"
+      );
       expect(fs.existsSync(logicPath)).toBe(true);
     });
 
     it("should have iyzico client file", () => {
-      const clientPath = path.join(rootDir, "src/services/payments/iyzico-client.ts");
+      const clientPath = path.join(
+        rootDir,
+        "src/features/payments/services/payments/iyzico-client.ts"
+      );
       expect(fs.existsSync(clientPath)).toBe(true);
     });
   });
@@ -112,13 +121,19 @@ describe("Preservation: Favorites Functionality", () => {
   describe("Favorites Data Layer", () => {
     it("should preserve favorites-records module for data access", () => {
       // The data access layer should remain unchanged
-      const recordsPath = path.join(rootDir, "src/services/favorites/favorite-records.ts");
+      const recordsPath = path.join(
+        rootDir,
+        "src/features/favorites/services/favorites/favorite-records.ts"
+      );
       expect(fs.existsSync(recordsPath)).toBe(true);
     });
 
     it("should preserve favorites-storage module for local storage", () => {
       // The local storage utilities should remain unchanged
-      const storagePath = path.join(rootDir, "src/services/favorites/favorites-storage.ts");
+      const storagePath = path.join(
+        rootDir,
+        "src/features/favorites/services/favorites/favorites-storage.ts"
+      );
       expect(fs.existsSync(storagePath)).toBe(true);
     });
   });
@@ -129,29 +144,35 @@ describe("Preservation: Service Structure", () => {
 
   describe("Payment Service Structure", () => {
     it("should have payments directory (not payment)", () => {
-      const paymentsDir = path.join(rootDir, "src/services/payments");
+      const paymentsDir = path.join(rootDir, "src/features/payments/services/payments");
       expect(fs.existsSync(paymentsDir)).toBe(true);
     });
 
     it("should NOT have duplicate payment directory", () => {
-      const paymentDir = path.join(rootDir, "src/services/payment");
+      const paymentDir = path.join(rootDir, "src/features/payments/services/payment");
       expect(fs.existsSync(paymentDir)).toBe(false);
     });
   });
 
   describe("Favorites Service Structure", () => {
     it("should have favorites directory", () => {
-      const favoritesDir = path.join(rootDir, "src/services/favorites");
+      const favoritesDir = path.join(rootDir, "src/features/favorites/services/favorites");
       expect(fs.existsSync(favoritesDir)).toBe(true);
     });
 
     it("should NOT have legacy favorite-service.ts", () => {
-      const legacyPath = path.join(rootDir, "src/services/favorites/favorite-service.ts");
+      const legacyPath = path.join(
+        rootDir,
+        "src/features/favorites/services/favorites/favorite-service.ts"
+      );
       expect(fs.existsSync(legacyPath)).toBe(false);
     });
 
     it("should NOT have client-service.ts", () => {
-      const clientPath = path.join(rootDir, "src/services/favorites/client-service.ts");
+      const clientPath = path.join(
+        rootDir,
+        "src/features/favorites/services/favorites/client-service.ts"
+      );
       expect(fs.existsSync(clientPath)).toBe(false);
     });
   });

@@ -47,15 +47,15 @@ describe("Preservation: Application Architecture Unchanged", () => {
   });
 
   it("should preserve service directory structure", () => {
-    const servicesDir = path.join(rootDir, "src", "services");
-    expect(fs.existsSync(servicesDir)).toBe(true);
+    const featuresDir = path.join(rootDir, "src", "features");
+    expect(fs.existsSync(featuresDir)).toBe(true);
 
-    // Verify key service directories exist
-    const keyServices = ["listings", "payments", "favorites", "profile"];
+    // Verify key features have services directories
+    const keyFeatures = ["marketplace", "payments", "favorites", "profile"];
 
-    for (const service of keyServices) {
-      const servicePath = path.join(servicesDir, service);
-      expect(fs.existsSync(servicePath)).toBe(true);
+    for (const feature of keyFeatures) {
+      const featureServicePath = path.join(featuresDir, feature, "services");
+      expect(fs.existsSync(featureServicePath)).toBe(true);
     }
   });
 
@@ -100,7 +100,7 @@ describe("Preservation: Application Architecture Unchanged", () => {
 
   it("should preserve service record files", () => {
     // Verify key record files exist
-    const recordFiles = ["src/services/favorites/favorite-records.ts"];
+    const recordFiles = ["src/features/favorites/services/favorites/favorite-records.ts"];
 
     for (const recordPath of recordFiles) {
       const fullPath = path.join(rootDir, recordPath);
@@ -111,8 +111,8 @@ describe("Preservation: Application Architecture Unchanged", () => {
   it("should preserve business logic files", () => {
     // Verify key logic files exist
     const logicFiles = [
-      "src/services/payments/payment-logic.ts",
-      "src/services/payments/doping-logic.ts",
+      "src/features/payments/services/payments/payment-logic.ts",
+      "src/features/payments/services/payments/doping-logic.ts",
     ];
 
     for (const logicPath of logicFiles) {
@@ -123,7 +123,7 @@ describe("Preservation: Application Architecture Unchanged", () => {
 
   it("should preserve external API clients", () => {
     // Verify external client files exist
-    const clientFiles = ["src/services/payments/iyzico-client.ts"];
+    const clientFiles = ["src/features/payments/services/payments/iyzico-client.ts"];
 
     for (const clientPath of clientFiles) {
       const clientFullPath = path.join(rootDir, clientPath);
