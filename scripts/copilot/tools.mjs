@@ -44,8 +44,8 @@ export function getFilesRecursively(dir, files = [], useCache = true) {
   return files;
 }
 
-// XML Bloklarını Ayrıştırma ve Dosyaları Fiziksel Olarak Güncelleme (Tam Otonom)
-export function parseAndApplyXmlFiles(content) {
+// XML Bloklarını Ayrıştırma (Sadece ayrıştırır, yazmaz)
+export function parseXmlFiles(content) {
   const fileRegex = /<write_file\s+path="([^"]+)">([\s\S]*?)<\/write_file>/g;
   let match;
   const changes = [];
@@ -54,19 +54,29 @@ export function parseAndApplyXmlFiles(content) {
     const filePath = match[1].trim();
     const fileCode = match[2];
     changes.push({ path: filePath, code: fileCode });
+  }
 
-    // Dosyayı fiziksel olarak diske yaz
-    const fullPath = path.resolve(process.cwd(), filePath);
+  return changes;
+}
+
+// Dosyaları Fiziksel Olarak Güncelleme
+export function applyChanges(changes) {
+  for (const change of changes) {
+    const fullPath = path.resolve(process.cwd(), change.path);
     const dirPath = path.dirname(fullPath);
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
     }
-    fs.writeFileSync(fullPath, fileCode, "utf-8");
-
-    // Dosya yazıldığında veya güncellendiğinde önbelleği temizle
-    invalidateFilesCache();
+    fs.writeFileSync(fullPath, change.code, "utf-8");
   }
+  // Dosyalar güncellendiğinde önbelleği temizle
+  invalidateFilesCache();
+}
 
+// XML Bloklarını Ayrıştırma ve Dosyaları Fiziksel Olarak Güncelleme (Geriye Uyumlu)
+export function parseAndApplyXmlFiles(content) {
+  const changes = parseXmlFiles(content);
+  applyChanges(changes);
   return changes;
 }
 

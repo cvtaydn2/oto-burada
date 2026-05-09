@@ -99,7 +99,7 @@ ${constitutionRules}`;
   // İstek süresince spinner'ı başlatıyoruz
   const spinner = startSpinner(`${cyan}Claude Netiva zekasını konuşturuyor... Lütfen bekleyin...${reset}`);
 
-  const maxRetries = 3;
+  const maxRetries = 5;
   let attempt = 0;
 
   while (attempt < maxRetries) {
@@ -152,10 +152,10 @@ ${constitutionRules}`;
       clearTimeout(timeoutId);
       
       if (attempt < maxRetries) {
-        // Geçici ağ sorunları için döngüye devam et, kullanıcıyı yorma
-        const delay = 1500 * attempt;
+        // Üstel geri çekilme (exponential backoff) + jitter (rastgele sapma) ile bağlantı dayanıklılığını artırıyoruz
+        const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
         spinner.stop();
-        process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu tespit edildi. ${attempt}. deneme başarısız. ${delay}ms sonra tekrar deneniyor...${reset}`);
+        process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         // Spinner'ı bir sonraki deneme için yeniden başlat
         spinner.stop();
@@ -179,7 +179,7 @@ ${constitutionRules}`;
 }
 
 // Otonom Ajan Döngüsü (Multi-Turn Autonomous Agent Loop)
-export async function runAgentLoop(initialPrompt) {
+export async function runAgentLoop(initialPrompt, options = {}) {
   let currentPrompt = initialPrompt;
   let iterations = 0;
   const maxIterations = 8;
@@ -236,7 +236,7 @@ export async function runAgentLoop(initialPrompt) {
       console.log(`${bold}=============================================================${reset}`);
 
       // Değişiklikleri kaydet ve göster
-      saveAndShowSolution(response);
+      await saveAndShowSolution(response, options);
       
       // Sohbet geçmişini güncelle
       conversationHistory.push({ role: "user", content: initialPrompt });
@@ -310,7 +310,9 @@ export async function runAgentLoop(initialPrompt) {
   console.log(`${red}⚠️ Otonom analiz maksimum adım sınırına (${maxIterations}) ulaştı.${reset}`);
 }
 
-function saveAndShowSolution(content) {
+async function saveAndShowSolution(content, options = {}) {
+  const { askQuestion, autoApply } = options;
+
   const scratchDir = path.resolve(process.cwd(), "scratch");
   if (!fs.existsSync(scratchDir)) {
     fs.mkdirSync(scratchDir);
@@ -319,14 +321,40 @@ function saveAndShowSolution(content) {
   const solutionPath = path.resolve(scratchDir, "copilot-solution.md");
   fs.writeFileSync(solutionPath, content, "utf-8");
 
-  const changes = parseAndApplyXmlFiles(content);
+  const { parseXmlFiles, applyChanges } = await import("./tools.mjs");
+  const changes = parseXmlFiles(content);
 
   console.log(`\n${green}${bold}=======================================================${reset}`);
   console.log(`${green}${bold}✓ Çözüm & Plan Raporu başarıyla kaydedildi:${reset}`);
   console.log(`${cyan}${solutionPath}${reset}`);
+
   if (changes.length > 0) {
     console.log(`${yellow}🛸 Önerilen Kod Değişiklikleri: ${changes.length} dosya tespit edildi.${reset}`);
+    changes.forEach((c) => console.log(`   - ${cyan}${c.path}${reset}`));
+
+    const gitStatus = executeCommand("git status --porcelain").trim();
+    if (gitStatus) {
+      console.log(`\n${yellow}${bold}⚠️ GÜVENLİK UYARISI: Projede commit edilmemiş aktif değişiklikler bulunmaktadır:${reset}`);
+      console.log(`${gray}${gitStatus}${reset}`);
+      console.log(`${yellow}Otomatik kod uygulama işlemi mevcut çalışmalarınızın üzerine yazabilir. Gerekirse 'git stash' veya commit alabilirsiniz.${reset}`);
+    }
+
+    if (autoApply) {
+      applyChanges(changes);
+      console.log(`${green}✓ Değişiklikler otomatik olarak başarıyla uygulandı!${reset}`);
+    } else if (askQuestion) {
+      const answer = await askQuestion(`\n${purple}${bold}👉 Bu değişiklikleri projeye otomatik uygulamak ister misiniz? (y/n): ${reset}`);
+      if (answer.toLowerCase() === "y" || answer.toLowerCase() === "yes") {
+        applyChanges(changes);
+        console.log(`${green}✓ Değişiklikler başarıyla uygulandı!${reset}`);
+      } else {
+        console.log(`${gray}Değişiklikler uygulanmadı. Kodları "scratch/copilot-solution.md" dosyasından manuel inceleyebilirsiniz.${reset}`);
+      }
+    } else {
+      console.log(`${gray}Otomatik uygulama modu aktif değil. Değişiklikleri uygulamak için "/diagnose --apply" veya "/next" kullanabilirsiniz.${reset}`);
+    }
   }
+
   console.log(`${purple}${bold}👉 Antigravity Asistanı İçin Hazır!${reset}`);
   console.log(`${gray}Bana (Antigravity'ye) dönüp şu cümleyi yazarak tüm kodu otomatik uygulatabilirsiniz:${reset}`);
   console.log(`${bold}${cyan}"scratch/copilot-solution.md dosyasındaki çözümü projeye uygula"${reset}`);

@@ -632,6 +632,11 @@ DECLARE
   v_outbox_id UUID;
   v_notif_id UUID;
 BEGIN
+  -- SECURITY: Enforce admin role check
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Security violation: Admin access required.';
+  END IF;
+
   -- 1. Atomic Update: Transitions status and sets published_at if approved
   UPDATE public.listings
   SET status = p_status,

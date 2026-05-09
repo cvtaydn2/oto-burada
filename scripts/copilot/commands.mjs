@@ -4,7 +4,7 @@ import { runAgentLoop } from "./agent.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
 import { executeCommand } from "./tools.mjs";
 
-export async function handleConstitutionalReview() {
+export async function handleConstitutionalReview(options = {}) {
   console.log(`\n${cyan}🛡️  Anayasal Kod Denetimi Çalıştırılıyor...${reset}`);
   let gitDiffOutput = executeCommand("git diff").trim();
   if (!gitDiffOutput) {
@@ -24,28 +24,28 @@ Bulduğun aykırılıkları ve riskleri listele ve bunları düzeltmek için gü
 Kod Değişiklikleri:
 ${gitDiffOutput}`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
 }
 
-export async function handleNextTaskSolver() {
+export async function handleNextTaskSolver(options = {}) {
   console.log(`\n${cyan}🎯 Otonom Görev Çözücü Başlatılıyor...${reset}`);
   const prompt = `Sıradaki görevi tespit etmek için önce projedeki TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku.
 Yapılması gereken bir sonraki en kritik görevi tespit et. Görevin kapsamını anla, ilgili dosyaları projede arat [SEARCH_FILES] ve içeriklerini oku [READ_FILE].
 Görevin otonom kodlamasını ve mimari çözümünü kusursuzca yapıp, oluşturulacak veya güncellenecek dosyaları <write_file> etiketleri içinde tam sürüm olarak sun.
 Ayrıca "TASKS.md" ve "PROGRESS.md" dosyalarını da güncelleyerek çözümünün bir parçası olarak sun.`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
 }
 
-export async function handleSchemaExplorer() {
+export async function handleSchemaExplorer(options = {}) {
   console.log(`\n${cyan}💾 Veritabanı Şeması & RLS Rehberi Hazırlanıyor...${reset}`);
   const prompt = `Projenin veri yapısını anlamak için database/schema.snapshot.sql dosyasını [READ_FILE: database/schema.snapshot.sql] çağrısı ile oku.
 Geliştiriciye projedeki mevcut veritabanı tablolarını, alanlarını, foreign key ilişkilerini ve kurulu olan Row Level Security (RLS) politikalarını içeren temiz, okunması kolay bir şema özeti sun.`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
 }
 
-export async function handleConflictResolver() {
+export async function handleConflictResolver(options = {}) {
   console.log(`\n${cyan}⚔️  Otonom Çatışma Çözücü (Conflict Resolver) Başlatılıyor...${reset}`);
   const unmergedFiles = executeCommand("git diff --name-only --diff-filter=U").trim();
 
@@ -60,19 +60,19 @@ Aşağıdaki çakışmalı dosyaları sırayla [READ_FILE] ile oku. Dosyalardaki
 Git geçmişini, kurallarimizi ve iki tarafın niyetini analiz ederek çakışmaları en doğru şekilde çöz.
 Çözülen dosyaların tam hallerini <write_file> etiketleri içinde sun.`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
 }
 
-export async function handleSkillWriter(skillName) {
+export async function handleSkillWriter(skillName, options = {}) {
   const prompt = `Proje standartlarına uygun yeni bir Agent Skill tasarlamak veya mevcut bir beceriyi denetlemek istiyoruz.
 Skill adı: "${skillName}"
 .roo/ veya .agents/ altındaki beceri şablonlarını ve kurallarını göz önünde bulundurarak, bu beceri için mükemmel bir SKILL.md rehberi ve gerekirse yardımcı scriptler tasarla.
 Geliştirici yönergelerini, ne zaman kullanılacağını ve tamamlanma kriterlerini içeren tam dökümanı <write_file> etiketleri içinde sun.`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
 }
 
-export async function handleOrchestra() {
+export async function handleOrchestra(options = {}) {
   console.log(`\n${cyan}🎻 Tam Döngü Proje Orkestrasyonu (Orchestra Mode) Başlatılıyor...${reset}`);
   console.log(`${gray}Orkestratör sırasıyla: Görevi bulacak -> Çözümü kodlayacak -> Linter/Typecheck ile doğrulayacak -> Dökümanları güncelleyecek!${reset}`);
 
@@ -84,10 +84,10 @@ export async function handleOrchestra() {
 5. Değişiklikler bittiğinde, TASKS.md dosyasında ilgili görevi tamamlandı [x] olarak işaretle ve PROGRESS.md dosyasını tamamlanan adımlar, alınan kararlar, doğrulamalar ve bir sonraki adım bilgiyle güncelle.
 6. Hem güncellenen kod dosyalarını hem de güncellenen TASKS.md ile PROGRESS.md dosyalarını <write_file> etiketleri içinde tam sürüm olarak sun.`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
 }
 
-export async function handleSelfDiagnose() {
+export async function handleSelfDiagnose(options = {}) {
   console.log(`\n${purple}${bold}🔍 Kendi Kendini Teşhis & Tarama Modu (Self-Diagnose) Başlatıldı...${reset}`);
   console.log(`${gray}Copilot aracı otonom olarak kendi kaynak kodlarını inceleyecek...${reset}`);
 
@@ -104,5 +104,61 @@ Senden beklentimiz:
 
 Analizine başlamak için öncelikle incelemek istediğin dosyayı [READ_FILE] komutu ile oku.`;
 
-  await runAgentLoop(prompt);
+  await runAgentLoop(prompt, options);
+}
+
+export async function handleSemanticCommit(options = {}) {
+  const { askQuestion, autoApply } = options;
+  console.log(`\n${cyan}🐙 Semantik Commit Mesajı Üretici Başlatılıyor...${reset}`);
+
+  let gitDiffOutput = executeCommand("git diff").trim();
+  if (!gitDiffOutput) {
+    gitDiffOutput = executeCommand("git diff --cached").trim();
+  }
+
+  if (!gitDiffOutput) {
+    console.log(`${yellow}⚠️ Commit edilecek aktif bir değişiklik bulunamadı.${reset}`);
+    return;
+  }
+
+  const prompt = `Aşağıdaki git diff değişikliklerini incele ve Conventional Commits (Semantic Commits) standartlarına uygun mükemmel bir commit mesajı üret.
+Mesaj şu formatta olmalıdır:
+<tip>(<kapsam>): <kısa açıklama>
+
+Örn: feat(copilot): add multi-select and auto-fix capabilities
+
+Commit Tipleri: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
+
+Sadece tek bir satırda commit mesajını dön, başka hiçbir açıklama veya markdown bloğu kullanma.
+
+Değişiklikler:
+${gitDiffOutput.slice(0, 4000)}`;
+
+  const { callClaudeRaw } = await import("./agent.mjs");
+  const commitMessage = (await callClaudeRaw(prompt))?.trim();
+
+  if (!commitMessage) {
+    console.log(`${red}❌ Commit mesajı üretilemedi.${reset}`);
+    return;
+  }
+
+  console.log(`\n${green}${bold}🛸 Önerilen Semantik Commit Mesajı:${reset}`);
+  console.log(`${cyan}${bold}${commitMessage}${reset}`);
+
+  if (autoApply) {
+    executeCommand("git add -A");
+    executeCommand(`git commit -m "${commitMessage}"`);
+    console.log(`${green}✓ Değişiklikler başarıyla commitleştirildi!${reset}`);
+  } else if (askQuestion) {
+    const answer = await askQuestion(`\n${purple}${bold}👉 Bu commit mesajını onaylayıp değişiklikleri kaydetmek ister misiniz? (y/n): ${reset}`);
+    if (answer.toLowerCase() === "y" || answer.toLowerCase() === "yes") {
+      executeCommand("git add -A");
+      executeCommand(`git commit -m "${commitMessage.replace(/"/g, '\\"')}"`);
+      console.log(`${green}✓ Değişiklikler başarıyla commitleştirildi!${reset}`);
+    } else {
+      console.log(`${gray}Commit işlemi iptal edildi.${reset}`);
+    }
+  } else {
+    console.log(`${gray}Commit mesajı sadece görüntülendi.${reset}`);
+  }
 }

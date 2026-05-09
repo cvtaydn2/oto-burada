@@ -4,7 +4,6 @@ import path from "node:path";
 import { activeContextFiles, conversationHistory } from "./copilot/config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./copilot/colors.mjs";
 import { getFilesRecursively, executeCommand, invalidateFilesCache } from "./copilot/tools.mjs";
-import { runAgentLoop } from "./copilot/agent.mjs";
 import { runSwarmOrchestration } from "./copilot/orchestrator.mjs";
 import {
   handleConstitutionalReview,
@@ -14,6 +13,7 @@ import {
   handleSkillWriter,
   handleOrchestra,
   handleSelfDiagnose,
+  handleSemanticCommit,
 } from "./copilot/commands.mjs";
 
 const rl = readline.createInterface({
@@ -55,6 +55,7 @@ async function showHelp() {
   console.log(`  ${yellow}/diagnose${reset}         : 🔍 Kendi kendini teşhis etme ve otomatik iyileştirme modu.`);
   console.log(`  ${yellow}/swarm <talimat>${reset}  : 🐝 Çoklu-Ajan paralel döngü modu (Aria + Atlas + Vera).`);
   console.log(`  ${yellow}/orchestra${reset}        : 🎻 Tam döngü otonom proje orkestrasyonu (Kod + Test).`);
+  console.log(`  ${yellow}/commit${reset}           : 🐙 Git değişikliklerinden semantik conventional commit mesajı üretir.`);
   console.log(`  ${yellow}/help${reset}             : Bu yardım menüsünü görüntüler.`);
   console.log(`  ${yellow}/exit${reset}             : Kabuktan çıkış yapar.\n`);
 }
@@ -263,6 +264,8 @@ async function startShell() {
         }
       } else if (cmd === "/orchestra") {
         await handleOrchestra();
+      } else if (cmd === "/commit") {
+        await handleSemanticCommit({ askQuestion, autoApply: false });
       } else {
         const closest = findClosestCommand(cmd);
         if (closest) {
@@ -283,7 +286,7 @@ function findClosestCommand(cmd) {
     "/exit", "/help", "/add", "/addall", "/files", "/remove",
     "/stats", "/clear", "/typecheck", "/lint", "/paste",
     "/review", "/next", "/schema", "/resolve", "/skill",
-    "/diagnose", "/swarm", "/orchestra"
+    "/diagnose", "/swarm", "/orchestra", "/commit"
   ];
   let closest = null;
   let minDiff = Infinity;
@@ -344,6 +347,10 @@ async function runCliMode() {
     process.exit(0);
   } else if (cmd === "orchestra" || cmd === "/orchestra") {
     await handleOrchestra();
+    process.exit(0);
+  } else if (cmd === "commit" || cmd === "/commit") {
+    const autoApply = rest.includes("auto") || rest.includes("-y");
+    await handleSemanticCommit({ askQuestion, autoApply });
     process.exit(0);
   } else if (cmd === "swarm" || cmd === "/swarm") {
     if (!rest.trim()) {
