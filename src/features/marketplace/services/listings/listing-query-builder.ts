@@ -9,6 +9,47 @@ import {
 } from "./listing-query-predicates";
 import type { ListingBaseQueryOptions, ListingQuery } from "./listing-query-types";
 
+type ListingSort = NonNullable<NonNullable<ListingBaseQueryOptions["filters"]>["sort"]>;
+
+function getCursorDirection(sort?: ListingSort): "asc" | "desc" {
+  switch (sort) {
+    case "price_asc":
+    case "mileage_asc":
+    case "year_asc":
+    case "oldest":
+      return "asc";
+    case "price_desc":
+    case "mileage_desc":
+    case "year_desc":
+    case "newest":
+    default:
+      return "desc";
+  }
+}
+
+function formatCursorFilterValue(value: string | number): string {
+  if (typeof value === "number") return String(value);
+
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+function applyLexicographicalCursor(
+  query: ListingQuery,
+  options?: ListingBaseQueryOptions
+): ListingQuery {
+  if (!options?.cursor) return query;
+
+  const sort = options.filters?.sort ?? "newest";
+  const direction = getCursorDirection(sort);
+  const operator = direction === "asc" ? "gt" : "lt";
+  const cursorValue = formatCursorFilterValue(options.cursor.value);
+  const cursorId = formatCursorFilterValue(options.cursor.id);
+
+  return query.or(
+    `${options.cursor.column}.${operator}.${cursorValue},and(${options.cursor.column}.eq.${cursorValue},id.${operator}.${cursorId})`
+  ) as ListingQuery;
+}
+
 export function buildListingBaseQuery(
   client: SupabaseClient<Database>,
   selectClause: string,
@@ -34,10 +75,6 @@ export function buildListingBaseQuery(
     query = query.in("status", sanitizedStatuses);
   }
 
-  if (options?.cursor) {
-    query = query.lt(options.cursor.column, options.cursor.value);
-  }
-
   if (!options?.includeBanned) {
     query = query.eq("seller.is_banned", false);
   }
@@ -49,9 +86,12 @@ export function buildListingBaseQuery(
     });
   }
 
+  query = applyLexicographicalCursor(query, options);
+
   if (options?.countOnly) return query as ListingQuery;
 
   const sort = filters?.sort ?? "newest";
+  const isAscendingSort = getCursorDirection(sort) === "asc";
 
   if (!filters?.sort || filters.sort === "newest") {
     if (!options?.legacySchema) {
@@ -69,33 +109,32 @@ export function buildListingBaseQuery(
 
   switch (sort) {
     case "price_asc":
-      query = query.order("price", { ascending: true }).order("created_at", { ascending: false });
+      query = query.order("price", { ascending: true }).order("id", { ascending: true });
       break;
     case "price_desc":
-      query = query.order("price", { ascending: false }).order("created_at", { ascending: false });
+      query = query.order("price", { ascending: false }).order("id", { ascending: false });
       break;
     case "mileage_asc":
-      query = query.order("mileage", { ascending: true }).order("created_at", { ascending: false });
+      query = query.order("mileage", { ascending: true }).order("id", { ascending: true });
       break;
     case "year_desc":
-      query = query.order("year", { ascending: false }).order("created_at", { ascending: false });
+      query = query.order("year", { ascending: false }).order("id", { ascending: false });
       break;
     case "oldest":
-      query = query.order("created_at", { ascending: true });
+      query = query.order("created_at", { ascending: true }).order("id", { ascending: true });
       break;
     case "mileage_desc":
-      query = query
-        .order("mileage", { ascending: false })
-        .order("created_at", { ascending: false });
+      query = query.order("mileage", { ascending: false }).order("id", { ascending: false });
       break;
     case "year_asc":
-      query = query.order("year", { ascending: true }).order("created_at", { ascending: false });
+      query = query.order("year", { ascending: true }).order("id", { ascending: true });
       break;
     case "newest":
     default:
       query = query
         .order("bumped_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
       break;
   }
 

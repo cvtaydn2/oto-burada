@@ -161,7 +161,7 @@ ${constitutionRules}`;
   while (attempt < maxRetries) {
     attempt++;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // Her deneme için 120 saniye sınır (Gelişmiş analizler için ideal)
+    const timeoutId = setTimeout(() => controller.abort(), 300000); // Her deneme için 300 saniye sınır (Mega çıktılar için yükseltildi)
 
     try {
       const response = await fetch(`${baseUrl}/v1/chat/completions`, {

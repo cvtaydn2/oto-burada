@@ -264,7 +264,7 @@ async function startShell() {
           await runSwarmOrchestration(arg);
         }
       } else if (cmd === "/orchestra") {
-        await handleOrchestra();
+        await handleOrchestra(arg);
       } else if (cmd === "/commit") {
         await handleSemanticCommit({ askQuestion, autoApply: false });
       } else {
@@ -347,7 +347,7 @@ async function runCliMode() {
     await handleSelfDiagnose();
     process.exit(0);
   } else if (cmd === "orchestra" || cmd === "/orchestra") {
-    await handleOrchestra();
+    await handleOrchestra(rest);
     process.exit(0);
   } else if (cmd === "commit" || cmd === "/commit") {
     const autoApply = rest.includes("auto") || rest.includes("-y");

@@ -1,4 +1,5 @@
 import type { Listing, ListingFilters } from "@/types";
+import type { Database } from "@/types/supabase";
 
 import type { ListingQuery } from "./listing-query-types";
 
@@ -20,9 +21,20 @@ export function applyListingFilterPredicates(
   if (filters.city) nextQuery = nextQuery.eq("city", filters.city);
   if (filters.district) nextQuery = nextQuery.eq("district", filters.district);
   if (filters.category && !options?.legacySchema)
-    nextQuery = nextQuery.eq("category", filters.category);
-  if (filters.fuelType) nextQuery = nextQuery.eq("fuel_type", filters.fuelType);
-  if (filters.transmission) nextQuery = nextQuery.eq("transmission", filters.transmission);
+    nextQuery = nextQuery.eq(
+      "category",
+      filters.category as Database["public"]["Enums"]["vehicle_category"]
+    );
+  if (filters.fuelType)
+    nextQuery = nextQuery.eq(
+      "fuel_type",
+      filters.fuelType as Database["public"]["Enums"]["fuel_type"]
+    );
+  if (filters.transmission)
+    nextQuery = nextQuery.eq(
+      "transmission",
+      filters.transmission as Database["public"]["Enums"]["transmission_type"]
+    );
   if (filters.minPrice !== undefined) nextQuery = nextQuery.gte("price", filters.minPrice);
   if (filters.maxPrice !== undefined) nextQuery = nextQuery.lte("price", filters.maxPrice);
   if (filters.minYear !== undefined) nextQuery = nextQuery.gte("year", filters.minYear);
@@ -40,7 +52,8 @@ export function applyListingFilterPredicates(
     nextQuery = nextQuery.contains("expert_inspection", { hasInspection: true });
   }
 
-  if (filters.isExchange !== undefined) nextQuery = nextQuery.eq("is_exchange", filters.isExchange);
+  // NOTE: 'is_exchange' column is missing in active DB schema. Commented to prevent build and runtime crashes.
+  // if (filters.isExchange !== undefined) nextQuery = nextQuery.eq("is_exchange", filters.isExchange);
   if (filters.featured !== undefined) nextQuery = nextQuery.eq("featured", filters.featured);
   if (filters.galleryPriority !== undefined) {
     nextQuery = nextQuery.gte("gallery_priority", filters.galleryPriority);

@@ -72,12 +72,18 @@ Geliştirici yönergelerini, ne zaman kullanılacağını ve tamamlanma kriterle
   await runAgentLoop(prompt, options);
 }
 
-export async function handleOrchestra(options = {}) {
+export async function handleOrchestra(userPrompt, options = {}) {
   console.log(`\n${cyan}🎻 Tam Döngü Proje Orkestrasyonu (Orchestra Mode) Başlatılıyor...${reset}`);
   console.log(`${gray}Orkestratör sırasıyla: Görevi bulacak -> Çözümü kodlayacak -> Linter/Typecheck ile doğrulayacak -> Dökümanları güncelleyecek!${reset}`);
 
-  const prompt = `Sen tam döngü çalışan bir Orkestra Ajanısın. Lütfen şu adımları tamamen otonom olarak sırasıyla yürüt:
-1. TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku ve sıradaki tamamlanmamış en kritik görevi bul.
+  let dynamicDirective = "";
+  if (userPrompt && userPrompt.trim()) {
+    console.log(`${yellow}📌 Kullanıcı Talimatı Alındı: ${bold}"${userPrompt.trim()}"${reset}`);
+    dynamicDirective = `\n⚠️ DİKKAT - ÖNCELİKLİ GÖREV: Kullanıcı senden doğrudan şu görevi tamamlamanı istiyor: "${userPrompt.trim()}". TASKS.md'ye bakmadan önce İLK OLARAK bu talebi yerine getir. Kodlama bittikten sonra dökümanları bu değişikliğe göre güncelle.\n`;
+  }
+
+  const prompt = `Sen tam döngü çalışan bir Orkestra Ajanısın. Lütfen şu adımları tamamen otonom olarak sırasıyla yürüt:${dynamicDirective}
+1. TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku ve sıradaki tamamlanmamış en kritik görevi bul. (Kullanıcı doğrudan bir talimat verdiyse onu önceliklendir).
 2. Görevin kapsamındaki ilgili dosyaları projede arat [SEARCH_FILES] ve içeriklerini oku [READ_FILE].
 3. Görevin otonom kodlamasını anayasa kurallarına kusursuz uygun şekilde tamamla.
 4. Kod bittikten sonra [RUN_LINT] ve [RUN_TYPECHECK] araçlarını çağırarak kodun doğruluğunu otonom test et. Eğer tip veya linter hatası alırsan, kodunu düzeltip temiz çıktıyı görene kadar döngüye devam et (Self-Healing).

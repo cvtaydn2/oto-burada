@@ -1,12 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 
 import type { Listing } from "@/types";
+import type { Database } from "@/types/supabase";
 
 import type { ListingRow } from "./mappers/listing-row.mapper";
 
-export type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
+type ListingsTable = Database["public"]["Tables"]["listings"];
+
+export type ListingTableRow = ListingsTable["Row"];
+export type ListingRelationships = ListingsTable["Relationships"];
+
+export type ListingQuery<TResult = ListingRow[]> = PostgrestFilterBuilder<
+  { PostgrestVersion?: string },
+  Database["public"],
+  ListingTableRow,
+  TResult,
+  "listings",
+  ListingRelationships
+>;
 
 export type ListingQueryError = {
   code?: string;
@@ -30,6 +41,7 @@ export interface ListingBaseQueryOptions {
   countOnly?: boolean;
   withCount?: boolean;
   cursor?: {
+    id: string;
     value: string | number;
     column: string;
   };

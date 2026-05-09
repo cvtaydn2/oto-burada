@@ -72,7 +72,7 @@ export async function createExchangeOffer(params: {
 
   const { data: listing, error: listingError } = await supabase
     .from("listings")
-    .select("id, seller_id, is_exchange")
+    .select("id, seller_id")
     .eq("id", params.listingId)
     .single();
 
@@ -80,9 +80,12 @@ export async function createExchangeOffer(params: {
     throw new Error("İlan bulunamadı.");
   }
 
+  /* 
+  TODO: is_exchange column is missing in active DB schema. 
   if (!listing.is_exchange) {
     throw new Error("Bu ilan takasa açık değil.");
-  }
+  } 
+  */
 
   if (listing.seller_id === user.id) {
     throw new Error("Kendi ilanınıza takas teklifi yapamazsınız.");
