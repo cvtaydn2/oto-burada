@@ -7,9 +7,8 @@
 **Scope**: Fix the Supabase typed query-builder assignment mismatch that was failing production build TypeScript validation in [`buildListingBaseQuery()`](src/features/marketplace/services/listings/listing-query-builder.ts:12).
 
 ### 69.1 Applied Fix
-- Removed the premature explicit `ListingQuery` annotation from the initial chained [`client.from("listings").select(...)`](src/features/marketplace/services/listings/listing-query-builder.ts:19) builder assignment so TypeScript can preserve Supabase’s concrete inferred builder type through the filter chain.
-- Kept the public function contract stable by returning narrow boundary casts only at the actual return points in [`buildListingBaseQuery()`](src/features/marketplace/services/listings/listing-query-builder.ts:12), instead of forcing a wider alias onto the initial builder value.
-- This resolves the incompatible [`eq()`](src/features/marketplace/services/listings/listing-query-builder.ts:27) signature variance between the concrete `listings` table builder and the looser [`ListingQuery`](src/features/marketplace/services/listings/listing-query-types.ts:9) alias.
+- Declared the explicit `ListingQuery` type on the `query` variable and cast the initial `client.from("listings").select(...)` builder using `as unknown as ListingQuery`.
+- This resolves the incompatible [`eq()`](src/features/marketplace/services/listings/listing-query-builder.ts:27) signature variance between Supabase's concrete inferred `listings` table builder and the looser [`ListingQuery`](src/features/marketplace/services/listings/listing-query-types.ts:9) alias, allowing subsequent reassignments via `applyListingFilterPredicates` and intermediate builders to typecheck successfully.
 
 ### 69.2 Validation
 - **TypeScript (`npm run typecheck`)**: Passed with **0 errors**.

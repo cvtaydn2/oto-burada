@@ -16,12 +16,12 @@ export function buildListingBaseQuery(
 ): ListingQuery {
   const countOption = options?.countOnly || options?.withCount ? "exact" : undefined;
 
-  let query = client
+  let query: ListingQuery = client
     .from("listings")
     .select(
       selectClause,
       countOption ? { count: countOption, head: !!options?.countOnly } : undefined
-    );
+    ) as unknown as ListingQuery;
 
   const sellerId = options?.sellerId ?? options?.filters?.sellerId;
   if (sellerId) query = query.eq("seller_id", sellerId);
