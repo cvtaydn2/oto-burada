@@ -253,8 +253,8 @@ try {
       }
 
       if (error.name === "AbortError") {
-        console.log(`${red}❌ İstek zaman aşımına uğradı (120 saniye)!${reset}`);
-        console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 120 saniye içinde tamamlayamadı.${reset}`);
+        console.log(`${red}❌ İstek zaman aşımına uğradı (300 saniye)!${reset}`);
+        console.log(`${gray}Ayrıntı: Netiva API sunucusu istek yükü çok büyük olduğunda veya yoğunluk sırasında yanıt üretmeyi 300 saniye içinde tamamlayamadı.${reset}`);
       } else {
         const safeMsg = sanitizeErrorOutput(error.message);
         console.log(`${red}❌ İstek başarısız oldu (Tüm denemeler tükendi): ${safeMsg}${reset}`);

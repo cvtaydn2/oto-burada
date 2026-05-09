@@ -76,18 +76,21 @@ ${backendSolution}`;
 
   let finalSynthesis = await callClaudeRaw(synthesisPrompt, context);
 
-  // GÜVENLİK KONTROLÜ: "Tembel Çıktı" Denetimi (Lazy Placeholder Check)
-  const lazyPatterns = [/existing code/, /.../g, /rest of/i, /kalan kod/i, /kodun devamı/i];
-  let lazyMatches = 0;
-  const changes = parseXmlFiles(finalSynthesis);
-  
-  // Sadece dosya bloklarının içini tara (açıklamalardaki ... noktalarını görmezden gel)
-  for(const change of changes) {
-    const code = change.code || "";
-    if (code.includes("// ...") || code.includes("/* ...") || code.includes("// rest of") || code.includes("/* existing")) {
-      lazyMatches++;
-    }
-  }
+// GÜVENLİK KONTROLÜ: "Tembel Çıktı" Denetimi (Lazy Placeholder Check)
+   const lazyPatterns = [/existing code/, /.../g, /rest of/i, /kalan kod/i, /kodun devamı/i];
+   let lazyMatches = 0;
+   const changes = parseXmlFiles(finalSynthesis);
+   
+   // Sadece dosya bloklarının içini tara (açıklamalardaki ... noktalarını görmezden gel)
+   for(const change of changes) {
+     const code = change.code || "";
+     if (code.includes("// ...") || code.includes("/* ...") || code.includes("// rest of") || code.includes("/* existing")
+         || code.includes("// TODO") || code.includes("// FIXME") || code.includes("TODO:") 
+         || code.includes("FIXME:") || code.includes("stub") || code.includes("placeholder")
+         || code.includes("// Your code here") || code.includes("/* Your code here")) {
+       lazyMatches++;
+     }
+   }
 
   if (lazyMatches > 0) {
     console.log(`\n${red}${bold}⚠️  KRİTİK GÜVENLİK İHLALİ: Final sentezde 'Tembel Kod Parçası' (Placeholder) tespit edildi!${reset}`);
