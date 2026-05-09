@@ -1,5 +1,19 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 74. Chat Feature Service Canonicalization
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Split the dense `chat-logic.ts` monolithic service within `src/features/chat/services/chat/` into isolated canonical component files (`records`, `pure-logic`, `actions`) to ensure architectural compliance and clean boundary isolation.
+
+### 74.1 Applied Fixes
+- **Layer Extraction**: Extracted low-level Supabase reads, inserts, and RPC calls into `chat-records.ts`.
+- **Domain Isolation**: Extracted domain mappers and input checkers into `chat-pure-logic.ts`.
+- **Action Orchestration**: Placed side-effect orchestration flows into `chat-actions.ts`.
+- **Facade Conservation**: Converted original `chat-logic.ts` to point solely at actions, preserving alias imports across standard routes and uses-cases.
+- **Validation**: Verified stability via comprehensive typecheck run.
+
+
 ## 73. Seller Reviews Feature Canonicalization
 
 **Date**: 2026-05-09
