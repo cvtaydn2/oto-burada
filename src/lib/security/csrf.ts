@@ -22,6 +22,7 @@ const CSRF_COOKIE_HASH_NAME =
   process.env.NODE_ENV === "production" ? "__Host-oto_csrf_v2" : "oto_csrf_v2";
 const CSRF_HEADER_NAME = "x-csrf-token";
 const TOKEN_LENGTH = 32;
+const TOKEN_TTL = 4 * 60 * 60; // 4 hours
 
 /**
  * Validates the request origin and referer.
@@ -177,7 +178,7 @@ export async function setCsrfTokenCookie(): Promise<string> {
     secure: isProd,
     sameSite: "strict",
     path: "/",
-    maxAge: 60 * 60 * 24, // 24 hours
+    maxAge: TOKEN_TTL,
   });
 
   return token;
@@ -188,6 +189,14 @@ export async function setCsrfTokenCookie(): Promise<string> {
  */
 export async function rotateCsrfToken(): Promise<string> {
   return setCsrfTokenCookie();
+}
+
+/**
+ * Rotates CSRF token after a sensitive action.
+ * Use this after privilege changes or other security-sensitive mutations.
+ */
+export async function rotateOnSensitiveAction(): Promise<string> {
+  return rotateCsrfToken();
 }
 
 /**
@@ -204,7 +213,7 @@ export async function applyCsrfCookieToResponse(response: NextResponse, token?: 
     secure: isProd,
     sameSite: "strict",
     path: "/",
-    maxAge: 60 * 60 * 24,
+    maxAge: TOKEN_TTL,
   });
 
   // Set raw token in header for the client to pick up

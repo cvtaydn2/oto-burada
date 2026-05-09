@@ -5,7 +5,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-import { generateCsrfToken, hashCsrfToken } from "../csrf";
+import { generateCsrfToken, hashCsrfToken, rotateOnSensitiveAction } from "../csrf";
 
 describe("CSRF Token Security", () => {
   describe("BUG-07: Promise.allSettled for Hash Comparison", () => {
@@ -90,6 +90,14 @@ describe("CSRF Token Security", () => {
       const token = "!@#$%^&*()_+-=[]{}|;:',.<>?/~`";
       const hash = await hashCsrfToken(token);
       expect(hash).toHaveLength(64);
+    });
+  });
+  describe("Sensitive Action Rotation", () => {
+    it("should expose a helper for post-sensitive-action rotation", async () => {
+      const rotatedToken = await rotateOnSensitiveAction();
+
+      expect(rotatedToken).toHaveLength(32);
+      expect(rotatedToken).toMatch(/^[0-9a-f]{32}$/);
     });
   });
 });

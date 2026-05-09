@@ -1,5 +1,22 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 66. Rate Limiting Redis Fallback Hardening Phase
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Eliminate the Redis outage fail-open gap in the application rate limiting stack so basic throttling continues during distributed rate limit infrastructure failures.
+
+### 66.1 Applied Fixes
+- **Dedicated fallback module ([fallback.ts](src/lib/rate-limiting/fallback.ts)):** Added a focused in-memory fallback limiter that tracks per-key request timestamps inside a bounded local store, prunes expired windows, and evicts oldest entries when capacity is exceeded.
+- **Primary limiter hardening ([rate-limit.ts](src/lib/rate-limiting/rate-limit.ts)):** Replaced the inline ephemeral fallback path with the shared fallback module so Redis and Supabase outages still enforce local throttling instead of effectively disabling protection. Updated fail-closed semantics so production only blocks when even fallback execution cannot run safely.
+- **Regression coverage ([rate-limit.test.ts](src/lib/utils/__tests__/rate-limit.test.ts)):** Expanded unit coverage to simulate Redis failures explicitly and verify that normal and `failClosed` profiles continue rate limiting through the local fallback layer.
+
+### 66.2 Validation
+- **Targeted unit tests (`npm run test:unit:lite -- src/lib/utils/__tests__/rate-limit.test.ts`)**: Passed with **7/7 tests**.
+
+### 66.3 Notes
+- This change hardens the application-level limiter under infrastructure degradation, but fallback state remains process-local by design; separate instances still do not share counters during outages.
+
 ## 65. Canonical Architecture & Service Separation Phase (Antigravity)
 
 **Date**: 2026-05-09

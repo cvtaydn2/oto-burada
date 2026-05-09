@@ -6,8 +6,10 @@
  * 2. Supabase RPC Tier: Persistent fallback if Redis is unavailable.
  * 3. In-memory Tier: Local fallback for development or total service outage.
  *
- * SECURITY: In production, if all tiers fail for critical endpoints,
- * the limiter can be configured to fail-closed (block requests).
+ * SECURITY: In production, critical endpoints should continue enforcing a
+ * local fallback limit when distributed infrastructure is unavailable.
+ * Fail-closed is reserved only for catastrophic cases where even fallback
+ * execution cannot complete safely.
  */
 
 export interface RateLimitConfig {
@@ -16,9 +18,10 @@ export interface RateLimitConfig {
   /** Window size in milliseconds. */
   windowMs: number;
   /**
-   * If true, block requests when rate limiting infrastructure is unavailable (fail-closed).
+   * If true, block requests only when every rate limiting tier, including
+   * the local fallback, is unavailable.
    * Recommended for critical endpoints in production (auth, payments, admin).
-   * Default: false (fail-open for backward compatibility)
+   * Default: false
    */
   failClosed?: boolean;
 }
@@ -30,87 +33,21 @@ export interface RateLimitResult {
   resetAt: number;
 }
 
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { checkFallbackRateLimit } from "@/lib/rate-limiting/fallback";
 import { redis } from "@/lib/redis/client";
-
-const inMemoryStore = new Map<string, RateLimitEntry>();
-
-let lastCleanup = Date.now();
-const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
-const MAX_DELETIONS_PER_CLEANUP = 1000; // Protect event loop
-const MAX_SCAN_PER_CLEANUP = 500; // Max scan per tick
-// ── PERFORMANCE FIX: Issue PERF-06 - Increase In-Memory Capacity ─────────────
-// Increased from 10,000 to 50,000 to handle high-traffic endpoints better.
-// Eviction is already optimized with setImmediate and batch processing.
-const MAX_IN_MEMORY_ENTRIES = 50_000; // Prevent unbounded memory growth
-
-/**
- * Clean up expired entries asynchronously to prevent event loop blocking.
- * Uses setImmediate to yield to other operations.
- *
- * PERFORMANCE: Prevents blocking the event loop on large stores.
- */
-function cleanupInMemory() {
-  const now = Date.now();
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
-  lastCleanup = now;
-
-  // ── ARCHITECTURE FIX: Issue #EDGE-01 - Edge Compatibility ─────
-  // Schedule cleanup using setTimeout(..., 0) which is supported in both
-  // Node.js and Edge Runtime. setImmediate is not available in Edge.
-  setTimeout(() => {
-    let scannedCount = 0;
-    let deletedCount = 0;
-
-    // Map iteration order is insertion order.
-    for (const [key, entry] of inMemoryStore) {
-      scannedCount++;
-      if (entry.resetAt <= now) {
-        inMemoryStore.delete(key);
-        deletedCount++;
-      }
-
-      if (scannedCount >= MAX_SCAN_PER_CLEANUP || deletedCount >= MAX_DELETIONS_PER_CLEANUP) {
-        break;
-      }
-    }
-
-    // Hard cap enforcement: if still over capacity after cleanup, evict oldest entries
-    if (inMemoryStore.size > MAX_IN_MEMORY_ENTRIES) {
-      const toEvict = inMemoryStore.size - MAX_IN_MEMORY_ENTRIES;
-      const keys = inMemoryStore.keys();
-      for (let i = 0; i < toEvict; i++) {
-        const next = keys.next();
-        if (next.done) break;
-        inMemoryStore.delete(next.value);
-      }
-      logger.api.warn(
-        `In-memory rate limit store exceeded capacity. Evicted ${toEvict} oldest entries.`
-      );
-    }
-
-    if (deletedCount > 0) {
-      logger.api.debug(`In-memory rate limit cleanup: deleted ${deletedCount} expired entries.`);
-    }
-  }, 0);
-}
 
 /**
  * Check whether a given key (IP, userId, etc.) exceeds the configured rate limit.
  * Priority:
  * 1. Redis (Persistent, Fast, Distributed)
  * 2. Supabase RPC (Persistent, Reliable)
- * 3. In-memory (Ephemeral, Fallback) - only in development or if failClosed=false
+ * 3. In-memory (Ephemeral, Fallback)
  *
- * SECURITY: If failClosed=true and all infrastructure fails in production,
- * this function throws an error instead of allowing the request.
+ * SECURITY: If fallback execution itself fails and failClosed=true in production,
+ * this function throws instead of allowing the request.
  */
 export async function checkRateLimit(
   key: string,
@@ -198,52 +135,52 @@ export async function checkRateLimit(
     }
   }
 
-  // All distributed tiers failed or were skipped
-  // 3. Fallback to in-memory (Development or fail-open mode)
-  if (config.failClosed && isProduction) {
-    logger.api.error("Rate limiting infrastructure unavailable - failing closed", {
-      key,
-      limit: config.limit,
-      failClosed: true,
-    });
-    throw new Error(`[FAIL-CLOSED] Rate limiting service unavailable for key: ${fullKey}`);
-  }
+  // All distributed tiers failed or were skipped.
+  // 3. Fallback to in-memory so basic protection continues even during Redis outages.
+  try {
+    if (isProduction) {
+      logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
+        key,
+        limit: config.limit,
+        failClosed: config.failClosed ?? false,
+      });
+    }
 
-  if (isProduction) {
-    logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
-      key,
-      limit: config.limit,
-      failClosed: false,
-    });
-  }
+    const fallbackResult = checkFallbackRateLimit(key, config.limit, config.windowMs);
 
-  cleanupInMemory();
-  const now = Date.now();
-  const existing = inMemoryStore.get(key);
-
-  if (!existing || existing.resetAt <= now) {
-    const resetAt = now + config.windowMs;
-    inMemoryStore.set(key, { count: 1, resetAt });
-    return { allowed: true, limit: config.limit, remaining: config.limit - 1, resetAt };
-  }
-
-  existing.count += 1;
-
-  if (existing.count > config.limit) {
     return {
-      allowed: false,
+      allowed: fallbackResult.allowed,
       limit: config.limit,
-      remaining: 0,
-      resetAt: existing.resetAt,
+      remaining: fallbackResult.remaining,
+      resetAt: fallbackResult.resetAt,
+    };
+  } catch (error) {
+    if (config.failClosed && isProduction) {
+      logger.api.error(
+        "Rate limiting infrastructure unavailable - fallback failed, failing closed",
+        {
+          key,
+          limit: config.limit,
+          failClosed: true,
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+      throw new Error(`[FAIL-CLOSED] Rate limiting service unavailable for key: ${fullKey}`);
+    }
+
+    logger.api.warn("Rate limiting fallback failed - allowing request", {
+      key,
+      limit: config.limit,
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    return {
+      allowed: true,
+      limit: config.limit,
+      remaining: config.limit,
+      resetAt: Date.now() + config.windowMs,
     };
   }
-
-  return {
-    allowed: true,
-    limit: config.limit,
-    remaining: config.limit - existing.count,
-    resetAt: existing.resetAt,
-  };
 }
 
 /**

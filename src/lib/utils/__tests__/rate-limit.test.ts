@@ -4,12 +4,17 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock Redis as unavailable (null) to force in-memory fallback
-vi.mock("@/lib", () => ({ redis: null }));
+const mockHasSupabaseAdminEnv = vi.fn(() => false);
+const mockRedisEval = vi.fn();
 
-// Mock Supabase as unavailable to force in-memory fallback
+vi.mock("@/lib/redis/client", () => ({
+  redis: {
+    eval: mockRedisEval,
+  },
+}));
+
 vi.mock("@/lib/env", () => ({
-  hasSupabaseAdminEnv: vi.fn(() => false),
+  hasSupabaseAdminEnv: mockHasSupabaseAdminEnv,
 }));
 
 vi.mock("@/lib/admin", () => ({
@@ -18,16 +23,23 @@ vi.mock("@/lib/admin", () => ({
 
 vi.mock("@/lib/logger", () => ({
   logger: {
-    api: { warn: vi.fn(), error: vi.fn() },
+    api: { warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     db: { warn: vi.fn() },
+    security: { warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
   },
 }));
 
-import { checkRateLimit } from "@/lib/rate-limit";
+import { resetFallbackRateLimitStore } from "../../rate-limiting/fallback";
+import { checkRateLimit } from "../../rate-limiting/rate-limit";
 
 describe("checkRateLimit — in-memory fallback", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+    mockRedisEval.mockReset();
+    mockRedisEval.mockRejectedValue(new Error("redis unavailable"));
+    mockHasSupabaseAdminEnv.mockReturnValue(false);
+    resetFallbackRateLimitStore();
   });
 
   it("allows first request", async () => {
@@ -55,9 +67,9 @@ describe("checkRateLimit — in-memory fallback", () => {
     const key = "test-key-3";
     const config = { limit: 2, windowMs: 60_000 };
 
-    await checkRateLimit(key, config); // 1
-    await checkRateLimit(key, config); // 2
-    const r3 = await checkRateLimit(key, config); // 3 — over limit
+    await checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    const r3 = await checkRateLimit(key, config);
 
     expect(r3.allowed).toBe(false);
     expect(r3.remaining).toBe(0);
@@ -73,7 +85,6 @@ describe("checkRateLimit — in-memory fallback", () => {
     const r2 = await checkRateLimit(key, config);
     expect(r2.allowed).toBe(false);
 
-    // Advance time past the window
     vi.advanceTimersByTime(1_100);
 
     const r3 = await checkRateLimit(key, config);
@@ -104,5 +115,15 @@ describe("checkRateLimit — in-memory fallback", () => {
 
     expect(rA2.allowed).toBe(false);
     expect(rB2.allowed).toBe(false);
+  });
+
+  it("keeps enforcing limits for failClosed profiles when Redis is down", async () => {
+    const config = { limit: 1, windowMs: 60_000, failClosed: true };
+
+    const first = await checkRateLimit("critical-key", config);
+    const second = await checkRateLimit("critical-key", config);
+
+    expect(first.allowed).toBe(true);
+    expect(second.allowed).toBe(false);
   });
 });
