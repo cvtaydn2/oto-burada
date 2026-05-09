@@ -16,7 +16,7 @@ export function buildListingBaseQuery(
 ): ListingQuery {
   const countOption = options?.countOnly || options?.withCount ? "exact" : undefined;
 
-  let query: ListingQuery = client
+  let query = client
     .from("listings")
     .select(
       selectClause,
@@ -49,7 +49,7 @@ export function buildListingBaseQuery(
     });
   }
 
-  if (options?.countOnly) return query;
+  if (options?.countOnly) return query as ListingQuery;
 
   const sort = filters?.sort ?? "newest";
 
@@ -100,5 +100,5 @@ export function buildListingBaseQuery(
   }
 
   const { from, to } = sanitizeListingPagination(filters);
-  return query.range(from, to);
+  return query.range(from, to) as ListingQuery;
 }
