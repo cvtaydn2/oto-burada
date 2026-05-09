@@ -69,7 +69,7 @@ export function mapChatRecordToOutput(chat: ChatRecord): ChatWithLastMessage {
 export function mapSingleChatToOutput(chat: ChatRecord): Chat {
   return {
     id: chat.id,
-    listingId: chat.listing_id,
+    listingId: chat.listing_id || "",
     buyerId: chat.buyer_id,
     sellerId: chat.seller_id,
     status: chat.status as "active" | "archived",

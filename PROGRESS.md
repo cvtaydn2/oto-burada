@@ -1,5 +1,18 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 75. Admin Moderation Feature Service Canonicalization
+
+**Date**: 2026-05-09
+**Status**: ✅ COMPLETED
+**Scope**: Extracted monolithic moderation service within `src/features/admin-moderation/services/admin/listing-moderation.ts` into modular canonical components (`records`, `pure-logic`, `actions`) to align with standard architecture.
+
+### 75.1 Applied Fixes
+- **Layer Extraction**: Extracted low-level Supabase RPC, cascading deletions, and binary removals into `listing-moderation-records.ts`.
+- **Domain Isolation**: Placed validation, mapper logic, and note builder in `listing-moderation-pure-logic.ts`.
+- **Action Orchestration**: Aggregated heavy workflow coordination and asynchronous side effects in `listing-moderation-actions.ts`.
+- **Retrospective Hardening**: Discovered and eliminated ghost typing discrepancies inside Chat service module, resolving strict compiler misalignment in its selective dataset queries.
+- **Validation**: Verified stability via 100% clean `npm run typecheck` run.
+
 ## 74. Chat Feature Service Canonicalization
 
 **Date**: 2026-05-09

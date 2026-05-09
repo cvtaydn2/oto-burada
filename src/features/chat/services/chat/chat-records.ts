@@ -32,6 +32,7 @@ export async function fetchUserChats(userId: string): Promise<ChatRecord[] | nul
         sender_id,
         content,
         is_read,
+        message_type,
         created_at,
         deleted_at
       )
@@ -85,7 +86,9 @@ export async function fetchChatById(chatId: string): Promise<ChatRecord> {
 export async function verifyChatParticipation(
   chatId: string,
   userId: string
-): Promise<Database["public"]["Tables"]["chats"]["Row"]> {
+): Promise<
+  Pick<Database["public"]["Tables"]["chats"]["Row"], "id" | "buyer_id" | "seller_id" | "status">
+> {
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
