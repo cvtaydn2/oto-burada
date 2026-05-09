@@ -178,15 +178,18 @@ export function applyChanges(changes) {
       console.log(`\n${bold}${purple}🔧 Yama Uygulanıyor: ${blue}${change.path}${reset}`);
 
       for (const chunk of change.chunks) {
-        if (!fileContent.includes(chunk.search)) {
+        const occurrences = fileContent.split(chunk.search).length - 1;
+        if (occurrences === 0) {
           throw new Error(`Hata: '${change.path}' dosyasında aranacak kısım bulunamadı. Lütfen birebir eşleşme sağlandığından emin olun.\nAranan Kısım:\n${chunk.search}`);
+        }
+        if (occurrences > 1) {
+          console.log(`${yellow}⚠️ UYARI: '${change.path}' dosyasında birden fazla eşleşme (${occurrences}) bulundu. Sadece ilk eşleşme değiştirilecek.${reset}`);
         }
         
         // Premium Görsel Diff Çıktısı (Git-Style)
         const oldLines = chunk.search.split("\n");
         const newLines = chunk.replace.split("\n");
         
-        // Terminalde çok satır birikmesini önlemek için özet geçiyoruz
         if (oldLines.length > 10 || newLines.length > 10) {
            console.log(`  ${red}-${oldLines[0].trim()} ... (${oldLines.length - 1} satır silindi)${reset}`);
            console.log(`  ${green}+${newLines[0].trim()} ... (${newLines.length - 1} satır eklendi)${reset}`);
@@ -200,8 +203,35 @@ export function applyChanges(changes) {
       fs.writeFileSync(fullPath, fileContent, "utf-8");
     }
   }
-  // Dosyalar güncellendiğinde önbelleği temizle
   invalidateFilesCache();
+}
+
+// Dosya içeriklerinde hızlı metin araması (Grep Engine)
+export function grepInFiles(query, limit = 20) {
+  const allFiles = getFilesRecursively(process.cwd());
+  const results = [];
+  let foundCount = 0;
+
+  for (const file of allFiles) {
+    try {
+      const fullPath = path.resolve(process.cwd(), file);
+      const content = fs.readFileSync(fullPath, "utf-8");
+      if (content.toLowerCase().includes(query.toLowerCase())) {
+        const lines = content.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toLowerCase().includes(query.toLowerCase())) {
+            results.push(`📂 ${file}:${i + 1} -> ${lines[i].trim()}`);
+            foundCount++;
+            if (foundCount >= limit) break;
+          }
+        }
+      }
+    } catch (err) {
+      // Binary veya bozuk dosyaları atla
+    }
+    if (foundCount >= limit) break;
+  }
+  return results.length > 0 ? results.join("\n") : `"${query}" ifadesi dosyaların içeriğinde bulunamadı.`;
 }
 
 // XML Bloklarını Ayrıştırma ve Dosyaları Fiziksel Olarak Güncelleme (Geriye Uyumlu)

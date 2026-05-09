@@ -26,13 +26,14 @@ const askQuestion = (query) => new Promise((resolve) => rl.question(query, resol
 function printHeader() {
   console.clear();
   console.log(`${blue}${bold}=======================================================${reset}`);
-  console.log(`${blue}${bold}        🛸 OtoBurada Agentic Copilot v4.5 🛸           ${reset}`);
-  console.log(`${purple}${bold}           Modüler, Çoklu-Ajan (Swarm) & Premium Kabuk  ${reset}`);
+  console.log(`${blue}${bold}        🛸 OtoBurada Agentic Copilot v5.0 (Elite) 🛸    ${reset}`);
+  console.log(`${purple}${bold}           Self-Healing, Otonom Grep & Premium Kabuk     ${reset}`);
   console.log(`${gray}           Claude Opus 4.6 (Netiva) ile Güçlendirildi  ${reset}`);
   console.log(`${blue}${bold}=======================================================${reset}`);
   console.log(`${green}✓ .agents/rules anayasa kuralları sisteme yüklendi.${reset}`);
   console.log(`${green}✓ Aria (UI) + Atlas (Data) + Vera (QA) paralel ajanları aktif.${reset}`);
-  console.log(`${green}✓ Disk Önbelleği (FilesCache) devrede (PC dostu, sıfır kasma!).${reset}`);
+  console.log(`${green}✓ Otonom Yazma & Test Etme (Self-Healing) sistemi aktif!${reset}`);
+  console.log(`${green}✓ Ultra-Hızlı İçerik Arama (Grep Engine) devrede.${reset}`);
   console.log(`${gray}Komut listesi için ${yellow}/help${gray} yazın.${reset}\n`);
 }
 
