@@ -133,7 +133,7 @@ export function FeaturedCarousel({ listings, className }: FeaturedCarouselProps)
       </div>
 
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-4 sm:gap-5">
+        <div className="flex gap-3 sm:gap-4">
           {listings.map((listing, index) => (
             <div
               key={listing.id}

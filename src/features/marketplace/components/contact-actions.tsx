@@ -260,6 +260,17 @@ export function ContactActions({
         </div>
       )}
 
+      {trustUI.isProfessional && (
+        <div className="hidden items-center gap-2 rounded-xl border border-green-100/50 bg-green-50/50 p-3 lg:flex">
+          <div className="size-5 rounded-full bg-green-100 flex items-center justify-center">
+            <span className="size-2 rounded-full bg-green-500" />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-green-700">
+            Profesyonel Satıcı
+          </p>
+        </div>
+      )}
+
       <div className="relative">
         {!isRevealed ? (
           <Button

@@ -71,8 +71,8 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
               </p>
             </div>
 
-            <div className="animate-in rounded-2xl border border-border bg-card/95 p-3 shadow-2xl backdrop-blur-xl duration-700 delay-300 fill-mode-both fade-in slide-in-from-bottom-4">
-              <div className="space-y-3">
+            <div className="animate-in rounded-2xl border border-border bg-card/95 p-3 shadow-2xl backdrop-blur-xl duration-700 delay-300 fill-mode-both fade-in slide-in-from-bottom-4 overflow-hidden">
+              <div className="space-y-3 min-w-0">
                 <div className="relative rounded-xl border border-border/80 bg-muted/70 p-1">
                   <SearchWithSuggestions
                     id="hero-search-input"
@@ -132,14 +132,14 @@ export function HomeHero({ cities, searchSuggestions }: HomeHeroProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground transition-all hover:border-primary/30 hover:text-primary"
+                      className="rounded-full border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground transition-all hover:border-primary/30 hover:text-primary active:scale-95 min-h-[44px] flex items-center sm:min-h-[auto]"
                     >
                       {item.label}
                     </Link>
                   ))}
                   <Link
                     href="/listings/filter"
-                    className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary transition-all hover:bg-primary/10"
+                    className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2.5 text-xs font-semibold text-primary transition-all hover:bg-primary/10 active:scale-95 min-h-[44px] flex items-center sm:min-h-[auto]"
                   >
                     Detaylı Filtrele
                   </Link>

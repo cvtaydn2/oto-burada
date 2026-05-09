@@ -457,6 +457,15 @@ export function useListingCreation({
   };
 
   const submitListing = async (values: ListingCreateFormValues, turnstileToken?: string) => {
+    if (!isEmailVerifiedLocally) {
+      setIsVerifyDialogOpen(true);
+      setSubmitState({
+        status: "error",
+        message: "İlan oluşturmak için e-posta adresinizi doğrulamanız gerekiyor.",
+      });
+      return;
+    }
+
     setSubmitState({ status: "idle" });
     const payload = { ...values, turnstileToken } as Record<string, unknown>;
 

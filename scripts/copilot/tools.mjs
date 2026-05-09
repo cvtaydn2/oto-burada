@@ -181,27 +181,56 @@ export function applyChanges(changes) {
       console.log(`\n${bold}${purple}🔧 Yama Uygulanıyor: ${blue}${change.path}${reset}`);
 
       for (const chunk of change.chunks) {
-        const occurrences = fileContent.split(chunk.search).length - 1;
+        let searchTarget = chunk.search;
+        let replaceTarget = chunk.replace;
+        let occurrences = fileContent.split(searchTarget).length - 1;
+
         if (occurrences === 0) {
-          throw new Error(`Hata: '${change.path}' dosyasında aranacak kısım bulunamadı. Lütfen birebir eşleşme sağlandığından emin olun.\nAranan Kısım:\n${chunk.search}`);
+          function normalizeWs(str) {
+            return str
+              .replace(/\r\n/g, "\n")
+              .replace(/\t/g, "  ")
+              .replace(/[ \t]+$/gm, "")
+              .replace(/[ \t]+\n/g, "\n")
+              .trim();
+          }
+
+          const normalizedFile = normalizeWs(fileContent);
+          const normalizedSearch = normalizeWs(searchTarget);
+          const normalizedReplace = normalizeWs(replaceTarget);
+          const normalizedOccurrences = normalizedFile.split(normalizedSearch).length - 1;
+
+          if (normalizedOccurrences > 0) {
+            console.log(`${yellow}⚠️ UYARI: '${change.path}' dosyasında birebir eşleşme bulunamadı, whitespace normalize fallback uygulandı.${reset}`);
+            fileContent = normalizeWs(fileContent).replace(normalizedSearch, normalizedReplace);
+            fs.writeFileSync(fullPath, fileContent, "utf-8");
+            continue;
+          }
+
+          throw new Error(
+            `Hata: '${change.path}' dosyasında aranacak kısım bulunamadı.\n` +
+            `Birebir ve whitespace-normalize eşleşme denenip başarısız oldu.\n` +
+            `İpucu: Modele bu dosyayı <write_file> ile tamamen yeniden yazmasını isteyin.\n` +
+            `Aranan Kısım:\n${chunk.search}`
+          );
         }
+
         if (occurrences > 1) {
           console.log(`${yellow}⚠️ UYARI: '${change.path}' dosyasında birden fazla eşleşme (${occurrences}) bulundu. Sadece ilk eşleşme değiştirilecek.${reset}`);
         }
-        
-        // Premium Görsel Diff Çıktısı (Git-Style)
+
         const oldLines = chunk.search.split("\n");
         const newLines = chunk.replace.split("\n");
-        
+
         if (oldLines.length > 10 || newLines.length > 10) {
-           console.log(`  ${red}-${oldLines[0].trim()} ... (${oldLines.length - 1} satır silindi)${reset}`);
-           console.log(`  ${green}+${newLines[0].trim()} ... (${newLines.length - 1} satır eklendi)${reset}`);
+          console.log(`  ${red}-${oldLines[0].trim()} ... (${oldLines.length - 1} satır silindi)${reset}`);
+          console.log(`  ${green}+${newLines[0].trim()} ... (${newLines.length - 1} satır eklendi)${reset}`);
         } else {
-           oldLines.forEach(ln => console.log(`  ${red}- ${ln}${reset}`));
-           newLines.forEach(ln => console.log(`  ${green}+ ${ln}${reset}`));
+          oldLines.forEach(ln => console.log(`  ${red}- ${ln}${reset}`));
+          newLines.forEach(ln => console.log(`  ${green}+ ${ln}${reset}`));
         }
 
-        fileContent = fileContent.replace(chunk.search, chunk.replace);
+        fileContent = fileContent.replace(searchTarget, replaceTarget);
       }
       fs.writeFileSync(fullPath, fileContent, "utf-8");
     }
@@ -303,6 +332,25 @@ export function executeCommand(cmd) {
     const warning = `[GÜVENLİK İHLALİ]: '${cmd}' komutunun çalıştırılmasına izin verilmedi. Sadece izin verilen komutlar (git, npm run, npm test, node, ls, dir) çalıştırılabilir.`;
     console.error(`\n❌ ${warning}`);
     return warning;
+  }
+
+  const BLOCKED_ARGS = {
+    node: ["-e", "--eval", "-p", "--print", "--require", "-r"],
+    git: ["-c", "--config", "--upload-pack", "--receive-pack"],
+    npm: ["config", "publish", "adduser", "login", "logout"],
+  };
+
+  if (rootExe in BLOCKED_ARGS) {
+    const foundBlocked = tokens.slice(1).find(arg =>
+      BLOCKED_ARGS[rootExe].some(blocked =>
+        arg === blocked || arg.startsWith(blocked + "=")
+      )
+    );
+    if (foundBlocked) {
+      const warning = `[GÜVENLİK İHLALİ]: '${rootExe}' için '${foundBlocked}' argümanı yasak.`;
+      console.error(`\n❌ ${warning}`);
+      return warning;
+    }
   }
 
   try {

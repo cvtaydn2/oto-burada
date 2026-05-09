@@ -5,7 +5,7 @@ import { runSpecialistsInPipeline, runSwarmVerification } from "./specialists.mj
 import { callClaudeRaw } from "./agent.mjs";
 import { activeContextFiles, conversationHistory } from "./config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
-import { parseXmlFiles, safeReadFile } from "./tools.mjs";
+import { parseXmlFiles, safeReadFile, applyChanges, executeCommand } from "./tools.mjs";
 
 // Multi-Agent Swarm Orchestrator (Aria + Atlas + Vera)
 export async function runSwarmOrchestration(taskDescription) {
@@ -15,13 +15,28 @@ export async function runSwarmOrchestration(taskDescription) {
   console.log(`${blue}${bold}=======================================================${reset}\n`);
 
   let context = "";
+  const MAX_CONTEXT_CHARS_PER_FILE = 8000;
+  const MAX_CONTEXT_LINES_PER_FILE = 300;
+
   if (activeContextFiles.size > 0) {
-    context += "Hafızadaki güncel dosyalar:\n";
+    context += "Hafızadaki güncel dosyalar (ilk bölüm):\n";
     for (const file of activeContextFiles) {
       const fullPath = path.resolve(process.cwd(), file);
-      if (fs.existsSync(fullPath)) {
-        context += `\n--- DOSYA: ${file} ---\n${safeReadFile(fullPath)}\n`;
+      if (!fs.existsSync(fullPath)) continue;
+
+      let content = safeReadFile(fullPath);
+
+      const lines = content.split("\n");
+      if (lines.length > MAX_CONTEXT_LINES_PER_FILE) {
+        content = lines.slice(0, MAX_CONTEXT_LINES_PER_FILE).join("\n") +
+          `\n\n[... ${lines.length - MAX_CONTEXT_LINES_PER_FILE} satır kısaltıldı. Tamamı için [READ_FILE: ${file}] kullan ...]`;
       }
+      if (content.length > MAX_CONTEXT_CHARS_PER_FILE) {
+        content = content.slice(0, MAX_CONTEXT_CHARS_PER_FILE) +
+          `\n\n[... içerik kısaltıldı. Tamamı için [READ_FILE: ${file}] kullan ...]`;
+      }
+
+      context += `\n--- DOSYA: ${file} ---\n${content}\n`;
     }
   }
   
@@ -103,6 +118,51 @@ Oluşturulacak veya güncellenecek tüm kod dosyalarını kesinlikle <write_file
   }
 
   saveSwarmSolution(finalSynthesis);
+
+  console.log(`\n${cyan}${bold}🔬 Post-Synthesis Doğrulama: Lint & Typecheck çalıştırılıyor...${reset}`);
+
+  const lintOutput = executeCommand("npm run lint").trim();
+  const typecheckOutput = executeCommand("npm run typecheck").trim();
+
+  const lintFailed = lintOutput.toLowerCase().includes("error") || lintOutput.includes("✖");
+  const typecheckFailed = typecheckOutput.toLowerCase().includes("error");
+
+  if (!lintFailed && !typecheckFailed) {
+    console.log(`${green}✓ Lint & Typecheck temiz!${reset}`);
+  } else {
+    if (lintFailed) {
+      console.log(`${red}❌ Lint Hataları Tespit Edildi:${reset}`);
+      console.log(`${yellow}${lintOutput.slice(0, 1500)}${reset}`);
+    }
+    if (typecheckFailed) {
+      console.log(`${red}❌ TypeScript Hataları Tespit Edildi:${reset}`);
+      console.log(`${yellow}${typecheckOutput.slice(0, 1500)}${reset}`);
+    }
+    console.log(`\n${yellow}🔄 Self-Healing döngüsü başlatılıyor...${reset}`);
+    const errorSummary = [
+      lintFailed ? `=== LINT HATALARI ===\n${lintOutput.slice(0, 1000)}` : "",
+      typecheckFailed ? `=== TYPECHECK HATALARI ===\n${typecheckOutput.slice(0, 1000)}` : "",
+    ].filter(Boolean).join("\n\n");
+
+    const postHealingPrompt =
+      `Swarm çözümü üretildi ancak otomatik doğrulama hataları tespit etti:\n\n${errorSummary}\n\n` +
+      `Lütfen bu hataları gidermek için ilgili dosyaları <write_file> veya <delete_file> etiketleriyle düzelt.`;
+
+    const healedOutput = await callClaudeRaw(postHealingPrompt, context);
+
+    if (healedOutput) {
+      const healedChanges = parseXmlFiles(healedOutput);
+      if (healedChanges.length > 0) {
+        console.log(`${cyan}🔧 ${healedChanges.length} düzeltme dosyası uygulanıyor...${reset}`);
+        try {
+          applyChanges(healedChanges);
+          console.log(`${green}✓ Post-healing düzeltmeleri başarıyla uygulandı.${reset}`);
+        } catch (e) {
+          console.log(`${red}❌ Post-healing hatası: ${e.message}${reset}`);
+        }
+      }
+    }
+  }
 
   // Sohbet geçmişini güncelle
   conversationHistory.push({ role: "user", content: taskDescription });
