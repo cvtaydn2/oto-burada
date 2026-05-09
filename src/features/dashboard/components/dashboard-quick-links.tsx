@@ -1,7 +1,8 @@
 import { ChevronRight, Heart, MessageSquare, User, Zap } from "lucide-react";
 import Link from "next/link";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 export function DashboardQuickLinks() {
   const links = [

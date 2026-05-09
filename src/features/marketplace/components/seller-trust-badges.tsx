@@ -3,7 +3,8 @@
 import { Award, Calendar, ShieldCheck, Star } from "lucide-react";
 import type React from "react";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import { Profile } from "@/types";
 
 interface SellerTrustBadgesProps {

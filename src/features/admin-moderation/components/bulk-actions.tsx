@@ -2,8 +2,8 @@
 
 import { CheckCircle2, LoaderCircle, Sparkles, XCircle } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
-import { Label } from "@/features/ui/components/label";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface BulkActionsProps {
   selectedCount: number;

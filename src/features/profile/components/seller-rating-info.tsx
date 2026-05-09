@@ -2,7 +2,7 @@
 
 import { Star } from "lucide-react";
 
-import { cn } from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface SellerRatingInfoProps {
   average: number;

@@ -4,10 +4,10 @@ import { ArrowLeft, Car } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { Avatar, AvatarFallback } from "@/features/ui/components/avatar";
-import { Button } from "@/features/ui/components/button";
-import { ScrollArea } from "@/features/ui/components/scroll-area";
-import { Skeleton } from "@/features/ui/components/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useArchiveChat,
   useChatMessages,

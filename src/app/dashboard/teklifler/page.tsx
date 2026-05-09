@@ -1,11 +1,15 @@
 import Link from "next/link";
 
+import { Card, CardContent } from "@/components/ui/card";
 import { requireUser } from "@/features/auth/lib/session";
 import { OfferActions } from "@/features/offers/components/offer-actions";
 import { OfferStatusBadge } from "@/features/offers/components/offer-status-badge";
-import { getOffersForUser, getOffersReceived } from "@/features/offers/services/offer-service";
-import { Card, CardContent } from "@/features/ui/components/card";
-import { formatPrice } from "@/lib";
+import {
+  getOffersForUser,
+  getOffersReceived,
+} from "@/features/offers/services/offers/offer-actions";
+import {} from "@/lib";
+import { formatPrice } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
 

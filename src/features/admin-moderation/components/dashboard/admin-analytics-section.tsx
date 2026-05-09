@@ -1,11 +1,11 @@
 import { Zap } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { AdminAnalyticsPanel } from "@/features/admin-moderation/components/admin-analytics-panel";
 import { AdminErrorDisplay } from "@/features/admin-moderation/components/admin-error-display";
 import { AdminPersistencePanel } from "@/features/admin-moderation/components/admin-persistence-panel";
 import type { AdminAnalyticsData } from "@/features/admin-moderation/services/analytics";
 import type { PersistenceHealth } from "@/features/admin-moderation/services/persistence-health";
-import { Button } from "@/features/ui/components/button";
 
 interface AsyncErrorResult {
   error: string;

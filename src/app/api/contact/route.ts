@@ -26,9 +26,9 @@ type ContactAbuseCheckResult = {
 /** Patterns that strongly indicate spam or automated abuse. */
 const SPAM_PATTERNS = [
   /\b(viagra|cialis|casino|crypto|bitcoin|nft|loan|forex|investment)\b/i,
-  /https?:\/\/[^\s]{30,}/, // long URLs in message body
-  /(.)\1{6,}/, // 7+ repeated characters (aaaaaaa)
-  /\b\d{10,}\b/, // 10+ digit number sequences (phone spam)
+  /https?:\/\/[^\s]{30 }/, // long URLs in message body
+  /(.)\1{6 }/, // 7+ repeated characters (aaaaaaa)
+  /\b\d{10 }\b/, // 10+ digit number sequences (phone spam)
 ];
 
 /** Returns true when the message body matches a known spam pattern. */

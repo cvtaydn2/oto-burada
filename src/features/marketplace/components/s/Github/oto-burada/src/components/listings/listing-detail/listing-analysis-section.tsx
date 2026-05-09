@@ -1,9 +1,9 @@
 import { LineChart } from "lucide-react";
 
+import { Panel } from "@/components/shared/design-system/Panel";
+import { SectionHeader } from "@/components/shared/design-system/SectionHeader";
 import { PriceHistoryChart } from "@/features/marketplace/components/price-history-chart";
 import type { ListingCardInsight } from "@/features/marketplace/services/listing-card-insights";
-import { Panel } from "@/features/shared/components/design-system/Panel";
-import { SectionHeader } from "@/features/shared/components/design-system/SectionHeader";
 import type { Listing } from "@/types";
 
 interface ListingAnalysisSectionProps {

@@ -2,9 +2,9 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ChevronLeft, ChevronRight, GripVertical, X } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { SafeImage } from "@/features/shared/components/safe-image";
-import { Button } from "@/features/ui/components/button";
-import { supabaseImageUrl } from "@/lib";
+import { SafeImage } from "@/components/shared/safe-image";
+import { Button } from "@/components/ui/button";
+import { supabaseImageUrl } from "@/lib/utils/image";
 import type { ListingImage } from "@/types";
 
 interface ListingGalleryLightboxProps {

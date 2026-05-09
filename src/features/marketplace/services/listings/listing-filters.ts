@@ -1,5 +1,6 @@
-import { listingFiltersSchema } from "@/lib";
+import {} from "@/lib";
 import { logger } from "@/lib/logger";
+import { listingFiltersSchema } from "@/lib/validators/marketplace";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 export function getModelsForBrand(catalog: BrandCatalogItem[], brand?: string) {

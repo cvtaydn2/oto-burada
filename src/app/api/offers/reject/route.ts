@@ -1,7 +1,8 @@
-import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { respondToOffer } from "@/features/offers/services/offer-service";
+export const dynamic = "force-dynamic";
+
+import { respondToOffer } from "@/features/offers/services/offers/offer-actions";
 import { logger } from "@/lib/logger";
 import { withUserAndCsrf } from "@/lib/security";
 
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const offerId = formData.get("offerId") as string;
     await respondToOffer(offerId, user.id, "rejected");
-    redirect("/dashboard/teklifler");
+    return NextResponse.redirect(new URL("/dashboard/teklifler", request.url));
   } catch (error) {
     logger.reservation.error("Reject offer failed", error);
     return NextResponse.json({ error: "Teklif reddedilemedi." }, { status: 400 });

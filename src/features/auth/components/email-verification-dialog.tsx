@@ -4,15 +4,15 @@ import { CheckCircle2, LoaderCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/features/ui/components/dialog";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/features/ui/components/input-otp";
+} from "@/components/ui/dialog";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface EmailVerificationDialogProps {

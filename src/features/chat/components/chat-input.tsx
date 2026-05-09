@@ -3,7 +3,7 @@
 import { Loader2, Send, Smile } from "lucide-react";
 import React, { KeyboardEvent, useRef, useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 import { EmojiPicker } from "../ui/emoji-picker";
 

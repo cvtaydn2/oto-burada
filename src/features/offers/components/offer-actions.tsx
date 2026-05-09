@@ -13,11 +13,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
-import { formatPrice } from "@/lib";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {} from "@/lib";
+import { formatPrice } from "@/lib/utils/format";
 
 interface OfferActionsProps {
   offerId: string;

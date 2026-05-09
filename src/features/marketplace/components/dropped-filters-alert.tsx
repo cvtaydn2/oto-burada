@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 interface DroppedFiltersAlertProps {
   droppedFilters?: string[];

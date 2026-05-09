@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { ErrorState } from "@/features/shared/components/error-state";
+import { ErrorState } from "@/components/shared/error-state";
 
 export default function GlobalError({
   error,

@@ -4,8 +4,9 @@ import { ChevronLeft, ChevronRight, Maximize2, Play, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { ListingImage } from "@/types";
 
 interface GalleryViewerProps {

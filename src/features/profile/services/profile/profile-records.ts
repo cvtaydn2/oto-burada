@@ -1,10 +1,10 @@
 import type { User } from "@supabase/supabase-js";
 
 import { maskPhoneNumber } from "@/features/marketplace/lib/utils";
-import { profileSchema } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/server";
+import { profileSchema } from "@/lib/validators/auth";
 import type { Profile } from "@/types";
 import type { TablesInsert } from "@/types/supabase";
 

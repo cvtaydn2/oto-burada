@@ -2,10 +2,10 @@ import { ArrowRight, Package, Plus, TrendingDown, TrendingUp } from "lucide-reac
 import Image from "next/image";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/features/auth/lib/session";
 import { getGalleryListings, getGalleryStats } from "@/features/marketplace/services";
-import { Button } from "@/features/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
 
 export default async function StockDashboardPage() {
   const user = await requireUser();

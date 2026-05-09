@@ -3,17 +3,17 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
+import { HomeErrorHandler } from "@/components/layout/home-error-handler";
+import { HomeHero } from "@/components/layout/home-hero";
 import {
   OrganizationStructuredData,
   WebSiteStructuredData,
 } from "@/components/seo/structured-data";
-import { HomeErrorHandler } from "@/features/layout/components/home-error-handler";
-import { HomeHero } from "@/features/layout/components/home-hero";
+import { ListingCard } from "@/components/shared/listing-card";
 import { HomeTrustAndSearch } from "@/features/marketplace/components/home-trust-and-search";
 import { QuickExplore } from "@/features/marketplace/components/quick-explore";
 import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
 import { getAppUrl } from "@/features/seo/lib";
-import { ListingCard } from "@/features/shared/components/listing-card";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
 const FeaturedCarousel = dynamic(

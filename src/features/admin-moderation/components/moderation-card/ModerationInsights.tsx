@@ -6,7 +6,8 @@ import Link from "next/link";
 import { getTrustToneClass } from "@/features/marketplace/lib/trust-ui";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { getListingCardInsights } from "@/features/marketplace/services/listing-card-insights";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 interface ModerationInsightsProps {

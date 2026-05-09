@@ -1,6 +1,6 @@
+import { Panel } from "@/components/shared/design-system/Panel";
+import { ListingCard } from "@/components/shared/listing-card";
 import { getSimilarMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
-import { Panel } from "@/features/shared/components/design-system/Panel";
-import { ListingCard } from "@/features/shared/components/listing-card";
 
 interface ListingRelatedProps {
   brand: string;

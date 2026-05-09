@@ -4,8 +4,9 @@ import { ClipboardList, LayoutDashboard, MessageSquare, Plus, Settings, Star } f
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
 import { dashboard } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   userEmail?: string;

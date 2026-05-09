@@ -6,17 +6,18 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   grantUserCredits,
   grantUserDoping,
   toggleUserBan,
 } from "@/features/admin-moderation/services/user-actions";
 import type { UserDetailData } from "@/features/admin-moderation/services/user-details";
-import { Badge } from "@/features/ui/components/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/features/ui/components/tabs";
-import { safeFormatDate } from "@/lib";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { safeFormatDate } from "@/lib/datetime/date-utils";
 import { trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 
 import { AdminUserActionCards } from "./admin-user-action-cards";
 import { AdminUserHeader } from "./admin-user-header";

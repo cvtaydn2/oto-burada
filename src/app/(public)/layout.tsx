@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 
-import { PublicShell } from "@/features/layout/components/public-shell";
+import { PublicShell } from "@/components/layout/public-shell";
 
 export const revalidate = 60;
 

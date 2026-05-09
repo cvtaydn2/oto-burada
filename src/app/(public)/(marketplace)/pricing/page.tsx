@@ -2,11 +2,11 @@ import { ArrowRight, Check, Lock, ShieldCheck, Star, Truck } from "lucide-react"
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
 import { CorporatePlansSection } from "@/features/marketplace/components/pricing/corporate-plans-section";
 import { DopingPackagesSection } from "@/features/marketplace/components/pricing/doping-packages-section";
 import { FreeFeaturesSection } from "@/features/marketplace/components/pricing/free-features-section";
 import { ADDITIONAL_FEATURES } from "@/features/marketplace/lib/pricing-data";
-import { WhatsAppSupport } from "@/features/shared/components/whatsapp-support";
 
 export const metadata: Metadata = {
   title: "Fiyatlandırma - OtoBurada Ücretsiz İlan & Doping Paketleri",

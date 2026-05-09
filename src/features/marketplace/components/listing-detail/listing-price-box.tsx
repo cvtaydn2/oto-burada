@@ -1,7 +1,8 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-import { formatPrice } from "@/features/shared/lib";
+import {} from "@/lib";
+import { formatPrice } from "@/lib/utils/format";
 
 import { MarketValuationBadge } from "../market-valuation-badge";
 

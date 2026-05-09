@@ -4,13 +4,13 @@ import { Car, ChevronRight, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   createModel,
   deleteModel,
   getModelsByBrand,
 } from "@/features/admin-moderation/services/reference";
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
 
 interface Model {
   id: string;

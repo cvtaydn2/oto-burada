@@ -6,12 +6,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import {
-  banUser,
-  deleteUser,
-  updateUserRole,
-  verifyUserBusiness,
-} from "@/features/admin-moderation/services/user-actions";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -20,8 +14,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +23,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/features/ui/components/dropdown-menu";
-import { Input } from "@/features/ui/components/input";
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  banUser,
+  deleteUser,
+  updateUserRole,
+  verifyUserBusiness,
+} from "@/features/admin-moderation/services/user-actions";
 
 interface UserActionsProps {
   userId: string;

@@ -4,9 +4,9 @@ import { Bell, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/features/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
-import { Label } from "@/features/ui/components/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 interface PriceAlertSettings {
   emailNotifications: boolean;

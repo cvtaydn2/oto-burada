@@ -1,6 +1,7 @@
 "use client";
 
-import { cn, formatCurrency } from "@/lib";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/format";
 
 interface MarketPriceBarProps {
   currentPrice: number;

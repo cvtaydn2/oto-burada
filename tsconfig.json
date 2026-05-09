@@ -42,8 +42,8 @@
       "@/hooks/use-navigation": ["./src/hooks/use-navigation.ts"],
       "@/hooks/use-debounce": ["./src/hooks/use-debounce.ts"],
       "@/hooks/useDebounce": ["./src/hooks/use-debounce.ts"],
-      "@/hooks/use-pull-to-refresh": ["./src/features/shared/hooks/use-pull-to-refresh.ts"],
-      "@/hooks/use-analytics": ["./src/features/shared/hooks/use-analytics.ts"],
+      
+      
       "@/hooks/use-media-query": ["./src/hooks/use-media-query.ts"],
       "@/hooks/use-chat-realtime": ["./src/hooks/use-chat-queries.ts"],
       "@/hooks/use-error-capture": ["./src/hooks/use-chat-queries.ts"],
@@ -127,7 +127,7 @@
       "@/features/favorites/services/favorite-records": ["./src/features/favorites/services/favorites/favorite-records.ts"],
       "@/features/favorites/services/favorites-storage": ["./src/features/favorites/services/favorites/favorites-storage.ts"],
       "@/features/reservations/services/reservation-service": ["./src/features/reservations/services/reservations/reservation-service.ts"],
-      "@/features/offers/services/offer-service": ["./src/features/offers/services/offers/offer-service.ts"],
+      "@/features/offers/services/offer-service": ["./src/features/offers/services/offers/offer-actions.ts"],
       "@/features/payments/services/doping-logic": ["./src/features/payments/services/payments/doping-logic.ts"],
       "@/features/payments/services/payment-logic": ["./src/features/payments/services/payments/payment-logic.ts"],
       "@/features/payments/services/iyzico-client": ["./src/features/payments/services/payments/iyzico-client.ts"],

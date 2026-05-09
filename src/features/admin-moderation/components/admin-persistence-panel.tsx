@@ -9,9 +9,10 @@ import {
   Users,
 } from "lucide-react";
 
+import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import type { PersistenceHealth } from "@/features/admin-moderation/services/persistence-health";
-import { DashboardMetricCard } from "@/features/shared/components/dashboard-metric-card";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface AdminPersistencePanelProps {
   health: PersistenceHealth;

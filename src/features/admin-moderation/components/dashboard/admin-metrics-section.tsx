@@ -1,7 +1,7 @@
 import { Activity, AlertTriangle, Car, Flag, UserPlus } from "lucide-react";
 
+import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import type { AdminAnalyticsData } from "@/features/admin-moderation/services/analytics";
-import { DashboardMetricCard } from "@/features/shared/components/dashboard-metric-card";
 import type { Report } from "@/types";
 
 interface AsyncErrorResult {

@@ -2,10 +2,10 @@
 
 import { LoaderCircle, Pencil, Save, X } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
-import { formatCurrency } from "@/lib";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { formatCurrency } from "@/lib/utils/format";
 import type { Listing } from "@/types";
 
 interface ModerationEditorProps {

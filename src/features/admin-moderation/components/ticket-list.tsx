@@ -13,14 +13,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/features/ui/components/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 interface Ticket {
   id: string;

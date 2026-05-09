@@ -3,9 +3,10 @@
 import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
-import { Label } from "@/features/ui/components/label";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface SellerReviewFormProps {
   sellerId: string;

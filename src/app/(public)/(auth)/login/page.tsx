@@ -1,5 +1,5 @@
+import { AuthForm } from "@/components/forms/auth-form";
 import { loginAction } from "@/features/auth/lib/actions";
-import { AuthForm } from "@/features/forms/components/auth-form";
 
 interface LoginPageProps {
   searchParams?: Promise<{

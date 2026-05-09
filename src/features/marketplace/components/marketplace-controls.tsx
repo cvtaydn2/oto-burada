@@ -3,13 +3,14 @@
 import { ArrowDownUp } from "lucide-react";
 import dynamic from "next/dynamic";
 
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
 import { marketplace } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 const MobileFilterDrawer = dynamic(() =>
-  import("@/features/ui/components/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer)
+  import("@/components/ui/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer)
 );
 
 const SORT_OPTIONS = [

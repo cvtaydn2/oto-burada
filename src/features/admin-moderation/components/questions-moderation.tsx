@@ -28,11 +28,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/features/ui/components/alert-dialog";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/features/ui/components/card";
-import { formatDate } from "@/lib";
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { formatDate } from "@/lib/datetime/date-utils";
 import { cn } from "@/lib/utils";
 
 export interface QuestionWithDetails {

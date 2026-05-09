@@ -12,10 +12,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
-import { Button } from "@/features/ui/components/button";
-import { formatNumber, formatPrice, supabaseImageUrl } from "@/lib";
+import { formatNumber } from "@/lib/utils/format";
+import { formatPrice } from "@/lib/utils/format";
+import { supabaseImageUrl } from "@/lib/utils/image";
 import type { Listing } from "@/types";
 
 interface FavoriteCardProps {

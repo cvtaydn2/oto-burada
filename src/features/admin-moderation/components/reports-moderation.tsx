@@ -14,7 +14,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { useErrorCapture } from "@/features/shared/hooks/use-error-capture";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,11 +23,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
-import { Label } from "@/features/ui/components/label";
-import { Textarea } from "@/features/ui/components/textarea";
-import { formatDate } from "@/lib";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useErrorCapture } from "@/hooks/use-error-capture";
+import { formatDate } from "@/lib/datetime/date-utils";
 import { reportReasonLabels, reportStatusLabels } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";

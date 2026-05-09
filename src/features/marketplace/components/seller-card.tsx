@@ -4,12 +4,13 @@ import { CheckCircle2, Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { TrustBadge } from "@/components/shared/trust-badge";
 import { ContactActions } from "@/features/marketplace/components/contact-actions";
 import { getSellerTrustUI } from "@/features/marketplace/lib/listings/trust-ui";
 import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
-import { TrustBadge } from "@/features/shared/components/trust-badge";
-import { cn } from "@/lib";
+import {} from "@/lib";
 import { trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
 
 interface SellerCardProps {

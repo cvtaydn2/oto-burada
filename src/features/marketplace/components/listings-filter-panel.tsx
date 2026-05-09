@@ -3,10 +3,11 @@
 import { Gauge, MapPin, Search, Settings2, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { FilterFields } from "@/features/marketplace/components/filter-fields";
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 interface QuickPreset {

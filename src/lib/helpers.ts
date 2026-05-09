@@ -1,1 +1,1 @@
-export { issuesToFieldErrors } from "./validators/helpers";
+export { issuesToFieldErrors } from "@/lib/validators/helpers";

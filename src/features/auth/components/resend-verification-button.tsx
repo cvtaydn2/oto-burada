@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { resendVerificationAction } from "@/features/auth/lib/actions";
-import { Button } from "@/features/ui/components/button";
 
 interface ResendVerificationButtonProps {
   email?: string;

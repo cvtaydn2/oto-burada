@@ -13,15 +13,9 @@ import {
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  deletePricingPlan,
-  PricingPlan,
-  togglePlanStatus,
-} from "@/features/admin-moderation/services/plans";
-import { PlanForm } from "@/features/forms/components/plan-form";
-import { useErrorCapture } from "@/features/shared/hooks/use-error-capture";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
+import { PlanForm } from "@/components/forms/plan-form";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +23,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/features/ui/components/dropdown-menu";
-import { cn, formatCurrency } from "@/lib";
+} from "@/components/ui/dropdown-menu";
+import {
+  deletePricingPlan,
+  PricingPlan,
+  togglePlanStatus,
+} from "@/features/admin-moderation/services/plans";
+import { useErrorCapture } from "@/hooks/use-error-capture";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/format";
 
 interface PlansTableProps {
   initialPlans: PricingPlan[];

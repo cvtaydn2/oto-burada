@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-import { TrustBadge } from "@/features/shared/components/trust-badge";
-import { cn } from "@/features/shared/lib";
-import { Button } from "@/features/ui/components/button";
+import { TrustBadge } from "@/components/shared/trust-badge";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import { type Profile } from "@/types";
 
 interface SellerHeaderSectionProps {

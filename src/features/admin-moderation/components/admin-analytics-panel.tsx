@@ -1,7 +1,7 @@
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminAnalyticsData } from "@/features/admin-moderation/services/analytics";
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
 
 interface AdminAnalyticsPanelProps {
   data: AdminAnalyticsData | null;

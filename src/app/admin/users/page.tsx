@@ -1,6 +1,7 @@
 import { ShieldCheck, UserCog } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { SimplePagination } from "@/features/admin-moderation/components/simple-pagination";
 import { UserHeaderActions } from "@/features/admin-moderation/components/user-header-actions";
 import { UserListTable } from "@/features/admin-moderation/components/user-list-table";
@@ -8,7 +9,6 @@ import { UserSearch } from "@/features/admin-moderation/components/user-search";
 import { UserStatsBar } from "@/features/admin-moderation/components/user-stats-bar";
 import { getAllUsers } from "@/features/admin-moderation/services/admin/user-list";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { Button } from "@/features/ui/components/button";
 
 export const dynamic = "force-dynamic";
 

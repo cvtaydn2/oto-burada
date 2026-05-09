@@ -1,9 +1,9 @@
 "use server";
 
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { adminModerationActionSchema } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
+import { adminModerationActionSchema } from "@/lib/validators/admin";
 import type { AdminModerationAction, ModerationAction, ModerationTargetType } from "@/types";
 
 interface AdminModerationActionRow {

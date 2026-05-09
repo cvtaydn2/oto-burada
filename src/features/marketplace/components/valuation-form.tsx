@@ -7,18 +7,18 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { PriceEstimationResult } from "@/features/marketplace/services/price-estimation";
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/features/ui/components/select";
-import { formatCurrency } from "@/lib";
+} from "@/components/ui/select";
+import { PriceEstimationResult } from "@/features/marketplace/services/price-estimation";
+import { formatCurrency } from "@/lib/utils/format";
 import { BrandCatalogItem } from "@/types";
 
 const valuationSchema = z.object({

@@ -4,7 +4,7 @@ import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 export function UserHeaderActions() {
   const [isExporting, setIsExporting] = useState(false);

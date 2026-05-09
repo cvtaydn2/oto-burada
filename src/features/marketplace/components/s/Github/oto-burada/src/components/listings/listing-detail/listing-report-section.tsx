@@ -1,9 +1,9 @@
 import { ShieldCheck, Zap } from "lucide-react";
 
+import { Panel } from "@/components/shared/design-system/Panel";
+import { SectionHeader } from "@/components/shared/design-system/SectionHeader";
 import { DamageReportCard } from "@/features/marketplace/components/damage-report-card";
 import { ExpertInspectionCard } from "@/features/marketplace/components/expert-inspection-card";
-import { Panel } from "@/features/shared/components/design-system/Panel";
-import { SectionHeader } from "@/features/shared/components/design-system/SectionHeader";
 import type { Listing } from "@/types";
 
 interface ListingReportSectionProps {

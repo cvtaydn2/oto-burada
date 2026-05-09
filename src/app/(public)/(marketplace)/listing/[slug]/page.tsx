@@ -10,6 +10,8 @@ import {
   BreadcrumbStructuredData,
   ListingDetailStructuredData,
 } from "@/components/seo/structured-data";
+import { FraudWarningBanner } from "@/components/shared/fraud-warning-banner";
+import { ListingCard } from "@/components/shared/listing-card";
 import { getCleanDescription, getListingBreadcrumbs } from "@/domain/logic/listing-factory";
 import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
 import { getAuthContext, getCurrentUser } from "@/features/auth/lib/session";
@@ -40,11 +42,9 @@ import {
 } from "@/features/marketplace/services/marketplace-listings";
 import { getSellerReviewStats as getSellerRatingSummary } from "@/features/profile/services/seller-reviews";
 import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/features/seo/lib";
-import { FraudWarningBanner } from "@/features/shared/components/fraud-warning-banner";
-import { ListingCard } from "@/features/shared/components/listing-card";
 
 const ListingMap = dynamic(
-  () => import("@/features/shared/components/listing-map-wrapper").then((m) => m.ListingMapWrapper),
+  () => import("@/components/shared/listing-map-wrapper").then((m) => m.ListingMapWrapper),
   { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
@@ -55,7 +55,7 @@ const MobileStickyActions = dynamic(() =>
 );
 
 const ReportListingForm = dynamic(() =>
-  import("@/features/forms/components/report-listing-form").then((m) => m.ReportListingForm)
+  import("@/components/forms/report-listing-form").then((m) => m.ReportListingForm)
 );
 
 interface ListingDetailPageProps {

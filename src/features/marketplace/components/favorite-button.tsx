@@ -4,16 +4,12 @@ import { Heart, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { useFavorites } from "@/features/shared/components/favorites-provider";
-import { Button } from "@/features/ui/components/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/features/ui/components/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/features/ui/components/tooltip";
-import { cn } from "@/lib";
+import { useFavorites } from "@/components/shared/favorites-provider";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {
   listingId: string;

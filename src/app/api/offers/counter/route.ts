@@ -1,7 +1,8 @@
-import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { respondToOffer } from "@/features/offers/services/offer-service";
+export const dynamic = "force-dynamic";
+
+import { respondToOffer } from "@/features/offers/services/offers/offer-actions";
 import { logger } from "@/lib/logger";
 import { withUserAndCsrf } from "@/lib/security";
 
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     await respondToOffer(offerId, user.id, "counter_offer", counterPrice, counterMessage);
-    redirect("/dashboard/teklifler");
+    return NextResponse.redirect(new URL("/dashboard/teklifler", request.url));
   } catch (error) {
     logger.reservation.error("Counter offer failed", error);
     return NextResponse.json({ error: "Karşı teklif gönderilemedi." }, { status: 400 });

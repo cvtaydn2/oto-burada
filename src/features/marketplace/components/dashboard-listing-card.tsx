@@ -4,14 +4,8 @@ import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw, Zap } from 
 import Image from "next/image";
 import Link from "next/link";
 
-import { DopingStore } from "@/features/dashboard/components/doping-store";
-import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
-import {
-  getListingDopingDisplayItems,
-  getListingDopingStatusTone,
-} from "@/features/marketplace/lib/utils";
-import { Button } from "@/features/ui/components/button";
-import { Checkbox } from "@/features/ui/components/checkbox";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -19,9 +13,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/features/ui/components/dialog";
-import { cn, formatCurrency, formatNumber, supabaseImageUrl } from "@/lib";
+} from "@/components/ui/dialog";
+import { DopingStore } from "@/features/dashboard/components/doping-store";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import {
+  getListingDopingDisplayItems,
+  getListingDopingStatusTone,
+} from "@/features/marketplace/lib/utils";
 import { trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/utils/format";
+import { supabaseImageUrl } from "@/lib/utils/image";
 import type { Listing } from "@/types";
 
 const statusLabelMap: Record<Listing["status"], string> = {

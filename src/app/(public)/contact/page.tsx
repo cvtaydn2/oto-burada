@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { ContactForm } from "@/features/shared/components/contact-form";
+import { ContactForm } from "@/components/shared/contact-form";
 import { FEATURES } from "@/lib/features";
 
 export const revalidate = 300;

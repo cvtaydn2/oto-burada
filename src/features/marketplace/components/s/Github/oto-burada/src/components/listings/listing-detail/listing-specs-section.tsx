@@ -1,8 +1,8 @@
 import { Info, Settings } from "lucide-react";
 
+import { Panel } from "@/components/shared/design-system/Panel";
+import { SectionHeader } from "@/components/shared/design-system/SectionHeader";
 import { ListingSpecs } from "@/features/marketplace/components/listing-specs";
-import { Panel } from "@/features/shared/components/design-system/Panel";
-import { SectionHeader } from "@/features/shared/components/design-system/SectionHeader";
 import type { Listing } from "@/types";
 
 interface ListingSpecsSectionProps {

@@ -2,8 +2,8 @@
 
 import { Check, Clock, Wallet } from "lucide-react";
 
-import { Badge } from "@/features/ui/components/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface FinancialSummaryProps {
   successfulSalesAmount?: number;

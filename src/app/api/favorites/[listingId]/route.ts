@@ -1,7 +1,7 @@
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/features/shared/lib/env";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withUserAndCsrf } from "@/features/shared/lib/security";
-import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrf } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 
 export const dynamic = "force-dynamic";
 

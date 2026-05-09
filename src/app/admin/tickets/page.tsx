@@ -4,7 +4,8 @@ import { requireAdminUser } from "@/features/auth/lib/session";
 import { AdminTicketList } from "@/features/support/components/admin-ticket-list";
 import type { TicketStatus } from "@/features/support/services/ticket-service";
 import { getAllTickets, getTicketCount } from "@/features/support/services/ticket-service";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 

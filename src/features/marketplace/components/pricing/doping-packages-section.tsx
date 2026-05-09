@@ -1,8 +1,8 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 
-import { formatCurrency } from "@/lib";
 import { DOPING_PACKAGES } from "@/lib/doping";
+import { formatCurrency } from "@/lib/utils/format";
 
 const featuredDopingPackageIds = new Set(["anasayfa_vitrini", "ust_siradayim", "acil_acil"]);
 

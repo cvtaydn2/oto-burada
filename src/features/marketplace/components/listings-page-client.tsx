@@ -3,6 +3,9 @@
 import { RefreshCw, Search } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
+import { ListingCard } from "@/components/shared/listing-card";
+import { Button } from "@/components/ui/button";
 import { ActiveFilterTags } from "@/features/marketplace/components/active-filter-tags";
 import { DroppedFiltersAlert } from "@/features/marketplace/components/dropped-filters-alert";
 import { ListingPagination } from "@/features/marketplace/components/listing-pagination";
@@ -14,11 +17,9 @@ import { MarketplaceHeader } from "@/features/marketplace/components/marketplace
 import { MarketplaceQuickFilters } from "@/features/marketplace/components/marketplace-quick-filters";
 import { MarketplaceSidebar } from "@/features/marketplace/components/marketplace-sidebar";
 import { useMarketplaceLogic } from "@/features/marketplace/hooks/use-marketplace-logic";
-import { EmptyState } from "@/features/shared/components/empty-state";
-import { ListingCard } from "@/features/shared/components/listing-card";
-import { Button } from "@/features/ui/components/button";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import { type BrandCatalogItem, type CityOption, type Listing, type ListingFilters } from "@/types";
 
 interface ListingsPageClientProps {

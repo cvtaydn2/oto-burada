@@ -4,11 +4,11 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useAuthUser } from "@/components/shared/auth-provider";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ChatList } from "@/features/chat/components/chat-list";
 import { ChatWindow } from "@/features/chat/components/chat-window";
-import { useAuthUser } from "@/features/shared/components/auth-provider";
-import { Button } from "@/features/ui/components/button";
-import { Card } from "@/features/ui/components/card";
 import { useCreateChat } from "@/hooks/use-chat-queries";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { API_ROUTES } from "@/lib/api-routes";
@@ -23,6 +23,21 @@ export default function MessagesPage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const createChatMutation = useCreateChat();
   const hasHandledPrefillRef = useRef(false);
+  const [showSessionNotFound, setShowSessionNotFound] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isAuthResolved && !isAuthenticated) {
+      timer = setTimeout(() => {
+        setShowSessionNotFound(true);
+      }, 1000);
+    } else {
+      timer = setTimeout(() => {
+        setShowSessionNotFound(false);
+      }, 0);
+    }
+    return () => clearTimeout(timer);
+  }, [isAuthResolved, isAuthenticated]);
 
   // Stable callback for chat selection - prevents unnecessary re-renders of ChatList
   const handleChatSelect = useCallback((chatId: string) => {
@@ -85,7 +100,7 @@ export default function MessagesPage() {
   const showChatList = !isMobile || !selectedChatId;
   const showChatWindow = !isMobile || selectedChatId;
 
-  if (!isAuthResolved) {
+  if (!isAuthResolved || (!isAuthenticated && !showSessionNotFound)) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center px-4">
         <Card className="w-full max-w-md rounded-3xl border-border/60 p-8 text-center shadow-sm">

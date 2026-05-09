@@ -3,9 +3,10 @@
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
 import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/domain";
+import { cn } from "@/lib/utils";
 
 import { VisualDamageMap } from "./visual-damage-map";
 

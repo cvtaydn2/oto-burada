@@ -1,6 +1,8 @@
 import { Car, Star } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { ListingCard } from "@/components/shared/listing-card";
+import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/features/auth/lib/session";
 import { SellerHeaderSection } from "@/features/marketplace/components/seller-header-section";
 import { SellerReviewForm } from "@/features/marketplace/components/seller-review-form";
@@ -14,8 +16,6 @@ import {
 import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
 import { getSellerTrustSummary } from "@/features/profile/services/profile-trust";
 import { getSellerReviews, getSellerReviewStats } from "@/features/profile/services/seller-reviews";
-import { ListingCard } from "@/features/shared/components/listing-card";
-import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 interface SellerProfilePageProps {

@@ -1,20 +1,15 @@
 import { AlertTriangle, Ban, Shield, ShieldAlert, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/features/ui/components/card";
-import { cn } from "@/lib";
+import {} from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 interface AbuseLog {
   id: string;

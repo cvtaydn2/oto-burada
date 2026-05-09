@@ -2,7 +2,7 @@
 
 import { Minus } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface PriceHistoryChartProps {
   listingId: string;

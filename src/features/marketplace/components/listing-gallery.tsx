@@ -5,9 +5,9 @@ import { ChevronLeft, ChevronRight, Rotate3d, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Listing360View } from "@/features/marketplace/components/listing-360-view";
-import { Button } from "@/features/ui/components/button";
-import { supabaseImageUrl } from "@/lib";
+import { supabaseImageUrl } from "@/lib/utils/image";
 import type { ListingImage } from "@/types";
 
 const ListingGalleryLightbox = dynamic(() =>
@@ -16,7 +16,7 @@ const ListingGalleryLightbox = dynamic(() =>
   )
 );
 
-import { SafeImage } from "@/features/shared/components/safe-image";
+import { SafeImage } from "@/components/shared/safe-image";
 
 interface ListingGalleryProps {
   images: ListingImage[];

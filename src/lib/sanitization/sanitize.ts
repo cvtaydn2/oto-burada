@@ -49,7 +49,7 @@ export function sanitizeDescription(value: string): string {
 export function sanitizeForMeta(value: string): string {
   return sanitizeText(value)
     .replace(/[\r\n]+/g, " ")
-    .replace(/\s{2,}/g, " ")
+    .replace(/\s{2 }/g, " ")
     .trim();
 }
 
@@ -65,7 +65,7 @@ export function sanitizeForMeta(value: string): string {
  * Protects against dynamic regex construction vulnerabilities.
  */
 function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 export function escapeHtml(value: string): string {

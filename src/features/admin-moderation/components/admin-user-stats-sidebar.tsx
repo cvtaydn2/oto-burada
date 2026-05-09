@@ -15,9 +15,10 @@ import {
 import Link from "next/link";
 import React from "react";
 
+import { Button } from "@/components/ui/button";
 import { UserProfile } from "@/features/admin-moderation/services/user-details";
-import { Button } from "@/features/ui/components/button";
-import { cn, safeFormatDate } from "@/lib";
+import { safeFormatDate } from "@/lib/datetime/date-utils";
+import { cn } from "@/lib/utils";
 
 interface AdminUserStatsSidebarProps {
   profile: UserProfile;

@@ -4,16 +4,11 @@ import { Check, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PricingPlan } from "@/features/admin-moderation/services/plans";
-import { Button } from "@/features/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/features/ui/components/card";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface PlanSelectorProps {
   plans: PricingPlan[];

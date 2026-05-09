@@ -1,5 +1,6 @@
 import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
-import { listingFiltersSchema } from "@/lib";
+import {} from "@/lib";
+import { listingFiltersSchema } from "@/lib/validators/marketplace";
 import type { ListingFilters } from "@/types";
 
 type NormalizedSavedSearchFilters = Omit<ListingFilters, "limit" | "page">;

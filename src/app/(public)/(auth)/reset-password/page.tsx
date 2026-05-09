@@ -1,4 +1,4 @@
-import { ResetPasswordForm } from "@/features/forms/components/reset-password-form";
+import { ResetPasswordForm } from "@/components/forms/reset-password-form";
 
 export const metadata = {
   title: "Şifre Yenile | OtoBurada",

@@ -5,11 +5,12 @@ import { ArrowRight, Heart, RefreshCw, SortAsc } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
+import { useFavorites } from "@/components/shared/favorites-provider";
 import { ListingsGridSkeleton } from "@/features/marketplace/components/listings-grid-skeleton";
-import { EmptyState } from "@/features/shared/components/empty-state";
-import { useFavorites } from "@/features/shared/components/favorites-provider";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 import { FavoriteCard } from "./favorites/favorite-card";

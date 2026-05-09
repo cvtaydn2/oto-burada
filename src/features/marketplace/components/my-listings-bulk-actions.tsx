@@ -12,8 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 

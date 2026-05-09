@@ -1,7 +1,8 @@
 "use client";
 
 import { ListingsFilterPanel } from "@/features/marketplace/components/listings-filter-panel";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 interface MarketplaceSidebarProps {

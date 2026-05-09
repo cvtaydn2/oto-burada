@@ -1,10 +1,10 @@
 import { Building2, CheckCircle2, Mail, Phone, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 
+import { IdentityVerificationForm } from "@/components/forms/identity-verification-form";
+import { ProfileForm } from "@/components/forms/profile-form";
 import { updateProfileAction } from "@/features/auth/lib/profile-actions";
 import { requireUser } from "@/features/auth/lib/session";
-import { IdentityVerificationForm } from "@/features/forms/components/identity-verification-form";
-import { ProfileForm } from "@/features/forms/components/profile-form";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import {
   buildProfileFromAuthUser,
@@ -14,8 +14,9 @@ import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
 } from "@/features/shared/services/live-reference-data";
-import { cn } from "@/lib";
+import {} from "@/lib";
 import { trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import { Profile } from "@/types";
 
 export const dynamic = "force-dynamic";

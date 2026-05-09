@@ -4,12 +4,12 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, CreditCard, ShieldCheck } from 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { PricingPlan } from "@/features/admin-moderation/services/plans";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
 import { captureClientEvent, captureClientException } from "@/lib/telemetry-client";
 
 interface CheckoutClientProps {

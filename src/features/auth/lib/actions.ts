@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getAppUrl } from "@/features/seo/lib";
-import { loginSchema, registerSchema, resetPasswordSchema } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { rotateCsrfToken } from "@/lib/csrf";
 import { checkBruteForceLimit } from "@/lib/distributed-rate-limit";
@@ -16,6 +15,7 @@ import { checkRateLimit } from "@/lib/rate-limit-middleware";
 import { createSupabaseServerClient } from "@/lib/server";
 import { identifyServerUser, trackServerEvent } from "@/lib/telemetry-server";
 import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/turnstile";
+import { loginSchema, registerSchema, resetPasswordSchema } from "@/lib/validators/auth";
 
 export interface AuthActionResponse {
   success: boolean;

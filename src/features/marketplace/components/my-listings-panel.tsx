@@ -3,9 +3,9 @@
 import { Plus, Rocket, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
+import { Button } from "@/components/ui/button";
 import { useListingActions } from "@/features/marketplace/hooks/use-listing-actions";
-import { EmptyState } from "@/features/shared/components/empty-state";
-import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 import { DashboardListingCard } from "./dashboard-listing-card";

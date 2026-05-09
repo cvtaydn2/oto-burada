@@ -13,10 +13,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
-import { Label } from "@/features/ui/components/label";
-import { cn } from "@/lib";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 interface ModerationDecisionProps {

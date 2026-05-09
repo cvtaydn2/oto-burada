@@ -1,11 +1,11 @@
 import type { User } from "@supabase/supabase-js";
 import { CalendarDays, ShieldCheck, Star, Store } from "lucide-react";
 
+import { Panel } from "@/components/shared/design-system/Panel";
 import { ContactActions } from "@/features/marketplace/components/contact-actions";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { getMembershipYears, getMemberSinceYear } from "@/features/marketplace/lib/utils";
 import { getSellerReviewStats as getSellerRatingSummary } from "@/features/profile/services/seller-reviews";
-import { Panel } from "@/features/shared/components/design-system/Panel";
 import type { Listing, Profile } from "@/types";
 
 interface ListingSellerSidebarProps {

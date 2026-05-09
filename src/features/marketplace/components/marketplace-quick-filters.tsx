@@ -2,9 +2,10 @@
 
 import { BadgeCheck, Star, TrendingDown } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
 import { marketplace } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import { type ListingFilters } from "@/types";
 
 const QUICK_FILTERS = [

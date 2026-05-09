@@ -8,8 +8,8 @@ import {
   deleteSavedSearchAction,
   toggleSavedSearchNotificationsAction,
 } from "@/app/dashboard/saved-searches/actions";
-import { Button } from "@/features/ui/components/button";
-import { formatDate } from "@/lib";
+import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/datetime/date-utils";
 import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface SavedSearchListItem {

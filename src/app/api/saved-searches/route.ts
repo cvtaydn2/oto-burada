@@ -3,12 +3,12 @@ import {
   getStoredSavedSearchesByUser,
 } from "@/features/marketplace/services/saved-search-records";
 import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
-import { savedSearchCreateSchema } from "@/lib";
 import { issuesToFieldErrors } from "@/lib/helpers";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { withUserAndCsrf, withUserRoute } from "@/lib/security";
 import { captureServerEvent } from "@/lib/telemetry-server";
+import { savedSearchCreateSchema } from "@/lib/validators/notification";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting

@@ -2,7 +2,9 @@
 
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 
-import { cn, formatPrice } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils/format";
 
 interface PriceAnalysisWidgetProps {
   currentPrice: number;

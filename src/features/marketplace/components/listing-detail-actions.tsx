@@ -3,18 +3,19 @@
 import { Flag } from "lucide-react";
 import { useState } from "react";
 
-import { ReportListingForm } from "@/features/forms/components/report-listing-form";
-import { FavoriteButton } from "@/features/marketplace/components/favorite-button";
-import { ShareButton } from "@/features/marketplace/components/share-button";
-import { useAuthUser } from "@/features/shared/components/auth-provider";
-import { Button } from "@/features/ui/components/button";
+import { ReportListingForm } from "@/components/forms/report-listing-form";
+import { useAuthUser } from "@/components/shared/auth-provider";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/features/ui/components/dialog";
+} from "@/components/ui/dialog";
+import { FavoriteButton } from "@/features/marketplace/components/favorite-button";
+import { ShareButton } from "@/features/marketplace/components/share-button";
 import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface ListingDetailActionsProps {
@@ -58,6 +59,9 @@ export function ListingDetailActions({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>İlanı Moderasyona Bildir</DialogTitle>
+            <DialogDescription className="sr-only">
+              Bu ilanı kurallara aykırı olduğunu düşünüyorsanız moderasyona bildirin.
+            </DialogDescription>
           </DialogHeader>
           <ReportListingForm
             listingId={listingId}

@@ -1,8 +1,8 @@
 import { ArrowRight, ClipboardList, Home, Loader2, MessageSquare, Zap } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/features/ui/components/button";
-import { Card, CardContent } from "@/features/ui/components/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { PAYMENT_STATUS_MAP, type PaymentResultStatus } from "../lib/payment-constants";
 

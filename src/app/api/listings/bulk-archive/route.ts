@@ -1,10 +1,10 @@
 import { archiveDatabaseListing } from "@/features/marketplace/services/listing-submissions";
-import { bulkListingActionSchema } from "@/lib";
 import { logger } from "@/lib/logger";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { withUserAndCsrf } from "@/lib/security";
 import { captureServerEvent } from "@/lib/telemetry-server";
+import { bulkListingActionSchema } from "@/lib/validators/admin";
 
 // Bulk archive: 20 operations per hour per user
 const BULK_ARCHIVE_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };

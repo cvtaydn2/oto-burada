@@ -1,6 +1,6 @@
+import { AdminMobileNav } from "@/components/layout/admin-mobile-nav";
+import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { AdminMobileNav } from "@/features/layout/components/admin-mobile-nav";
-import { AdminSidebar } from "@/features/layout/components/admin-sidebar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Global admin check for all subroutes

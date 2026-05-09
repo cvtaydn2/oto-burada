@@ -4,9 +4,10 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import { ListingCard } from "@/features/shared/components/listing-card";
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import { ListingCard } from "@/components/shared/listing-card";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 interface FeaturedCarouselProps {

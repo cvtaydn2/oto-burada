@@ -11,7 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/features/ui/components/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 interface Brand {
   id: string;

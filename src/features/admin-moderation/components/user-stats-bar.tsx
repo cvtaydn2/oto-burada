@@ -1,6 +1,7 @@
 "use client";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface UserStatItem {
   label: string;

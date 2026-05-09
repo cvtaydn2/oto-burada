@@ -2,7 +2,7 @@
 
 import { type PropsWithChildren } from "react";
 
-import { FavoritesProvider } from "@/features/shared/components/favorites-provider";
+import { FavoritesProvider } from "@/components/shared/favorites-provider";
 
 export function MarketplaceProviders({ children }: PropsWithChildren) {
   return <FavoritesProvider>{children}</FavoritesProvider>;

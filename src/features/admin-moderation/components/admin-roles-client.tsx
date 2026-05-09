@@ -16,12 +16,13 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { RoleForm } from "@/components/forms/role-form";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { AdminRole } from "@/features/admin-moderation/services/roles";
 import { deleteRole } from "@/features/admin-moderation/services/roles";
-import { RoleForm } from "@/features/forms/components/role-form";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface AdminRolesClientProps {
   initialRoles: AdminRole[];

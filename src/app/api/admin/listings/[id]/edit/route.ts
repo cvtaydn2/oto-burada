@@ -7,12 +7,12 @@ import {
   runListingTrustGuards,
 } from "@/features/marketplace/services/listing-submission-moderation";
 import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
-import { createSupabaseAdminClient } from "@/features/shared/lib/admin";
-import { hasSupabaseAdminEnv } from "@/features/shared/lib/env";
-import { logger } from "@/features/shared/lib/logger";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withAdminRoute } from "@/features/shared/lib/security";
-import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { createSupabaseAdminClient } from "@/lib/admin";
+import { hasSupabaseAdminEnv } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withAdminRoute } from "@/lib/security";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 import type { TablesUpdate } from "@/types/supabase";
 
 const adminEditSchema = z.object({

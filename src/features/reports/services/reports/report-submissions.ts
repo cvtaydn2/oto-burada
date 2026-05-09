@@ -1,6 +1,6 @@
-import { reportSchema } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
+import { reportSchema } from "@/lib/validators/feedback";
 import type { Report, ReportCreateInput, ReportStatus } from "@/types";
 
 export const reportsCookieName = "oto-burada-report-submissions";

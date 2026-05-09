@@ -2,8 +2,9 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface ListingPaginationProps {
   currentPage: number;

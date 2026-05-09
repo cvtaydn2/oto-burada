@@ -1,10 +1,10 @@
 import { Database, Filter } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { BrandsManager } from "@/features/admin-moderation/components/brands-manager";
 import { UserSearch } from "@/features/admin-moderation/components/user-search";
 import { getBrands } from "@/features/admin-moderation/services/reference";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import { Button } from "@/features/ui/components/button";
 
 export const dynamic = "force-dynamic";
 

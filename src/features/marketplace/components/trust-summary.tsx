@@ -1,6 +1,7 @@
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
-import { cn, formatDate } from "@/lib";
+import { formatDate } from "@/lib/datetime/date-utils";
 import { listingDetail, trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import { type Profile } from "@/types";
 
 export function TrustCard({

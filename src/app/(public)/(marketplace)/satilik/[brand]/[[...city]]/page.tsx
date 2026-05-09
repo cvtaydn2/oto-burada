@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { BreadcrumbStructuredData, ListingStructuredData } from "@/components/seo/structured-data";
+import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ListingsPageClient } from "@/features/marketplace/components/listings-page-client";
 import { normalizeSlug } from "@/features/marketplace/lib/slugs";
 import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
 import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
-import { Breadcrumbs } from "@/features/shared/components/breadcrumbs";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 import type { ListingFilters } from "@/types";
 

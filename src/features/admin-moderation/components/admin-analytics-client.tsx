@@ -4,8 +4,8 @@ import { Car, Download, MousePointer, Users, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { AdminAnalyticsData } from "@/features/admin-moderation/services/analytics";
-import { Button } from "@/features/ui/components/button";
 
 import {
   AcquisitionPanel,

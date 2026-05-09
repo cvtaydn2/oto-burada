@@ -1,6 +1,6 @@
 "use client";
 
-import { Label } from "@/features/ui/components/label";
+import { Label } from "@/components/ui/label";
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48];
 

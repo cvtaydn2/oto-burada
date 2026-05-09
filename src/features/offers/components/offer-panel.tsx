@@ -6,9 +6,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { submitOfferAction } from "@/actions/offers";
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -17,8 +17,9 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/features/ui/components/sheet";
-import { formatPrice } from "@/lib";
+} from "@/components/ui/sheet";
+import {} from "@/lib";
+import { formatPrice } from "@/lib/utils/format";
 
 interface OfferPanelProps {
   listingId: string;

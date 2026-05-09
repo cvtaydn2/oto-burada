@@ -6,9 +6,10 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { saveSearchAction } from "@/app/dashboard/saved-searches/actions";
+import { Button } from "@/components/ui/button";
 import { hasMeaningfulSavedSearchFilters } from "@/features/marketplace/services/saved-search-utils";
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { ListingFilters } from "@/types";
 
 interface SaveSearchButtonProps {

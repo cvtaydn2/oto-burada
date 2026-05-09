@@ -16,9 +16,6 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { forceActionOnListing } from "@/features/admin-moderation/services/inventory";
-import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
-import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +25,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/features/ui/components/alert-dialog";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,10 +35,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/features/ui/components/dropdown-menu";
-import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib";
+} from "@/components/ui/dropdown-menu";
+import { forceActionOnListing } from "@/features/admin-moderation/services/inventory";
+import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
+import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/utils/format";
+import { supabaseImageUrl } from "@/lib/utils/image";
 import { Listing } from "@/types";
 
 interface InventoryTableProps {

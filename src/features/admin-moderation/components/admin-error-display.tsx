@@ -2,7 +2,8 @@
 
 import { AlertTriangle } from "lucide-react";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface AdminErrorDisplayProps {
   error: unknown;

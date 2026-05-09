@@ -6,11 +6,11 @@ import { Archive, Car, Inbox, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/features/ui/components/avatar";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
-import { Card } from "@/features/ui/components/card";
-import { Skeleton } from "@/features/ui/components/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useChats } from "@/hooks/use-chat-queries";
 import { ChatWithLastMessage } from "@/types/chat";
 

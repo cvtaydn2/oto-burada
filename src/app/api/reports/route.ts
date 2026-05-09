@@ -3,7 +3,6 @@ import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
 } from "@/features/reports/services/report-submissions";
-import { reportCreateSchema } from "@/lib";
 import { hasSupabaseEnv } from "@/lib/env";
 import { issuesToFieldErrors } from "@/lib/helpers";
 import { rateLimitProfiles } from "@/lib/rate-limit";
@@ -11,6 +10,7 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { sanitizeDescription } from "@/lib/sanitize";
 import { withUserAndCsrf } from "@/lib/security";
 import { captureServerEvent } from "@/lib/telemetry-server";
+import { reportCreateSchema } from "@/lib/validators/feedback";
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting

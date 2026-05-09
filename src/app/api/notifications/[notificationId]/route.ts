@@ -2,9 +2,9 @@ import {
   deleteDatabaseNotification,
   markDatabaseNotificationRead,
 } from "@/features/notifications/services/notification-records";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { withUserAndCsrf } from "@/features/shared/lib/security";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { withUserAndCsrf } from "@/lib/security";
 
 export async function PATCH(
   request: Request,

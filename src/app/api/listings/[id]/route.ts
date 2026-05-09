@@ -12,14 +12,14 @@ import {
   findEditableListingById,
   updateDatabaseListing,
 } from "@/features/marketplace/services/listing-submissions";
-import { listingCreateFormSchema, listingCreateSchema } from "@/features/shared/lib";
-import { hasSupabaseEnv } from "@/features/shared/lib/env";
-import { issuesToFieldErrors } from "@/features/shared/lib/helpers";
-import { logger } from "@/features/shared/lib/logger";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { sanitizeDescription, sanitizeText } from "@/features/shared/lib/sanitize";
-import { withUserAndCsrf } from "@/features/shared/lib/security";
-import { captureServerError, captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { listingCreateFormSchema, listingCreateSchema } from "@/lib";
+import { hasSupabaseEnv } from "@/lib/env";
+import { issuesToFieldErrors } from "@/lib/helpers";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitize";
+import { withUserAndCsrf } from "@/lib/security";
+import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(request, {

@@ -5,9 +5,9 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { processBulkListings } from "@/app/dashboard/bulk-import/actions";
-import { Badge } from "@/features/ui/components/badge";
-import { Button } from "@/features/ui/components/button";
-import { Card, CardContent } from "@/features/ui/components/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/features/ui/components/table";
+} from "@/components/ui/table";
 import type { ListingCreateInput } from "@/types";
 
 interface ListingRow {

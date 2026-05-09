@@ -4,13 +4,13 @@ import { type User } from "@supabase/supabase-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
+import { AuthProvider } from "@/components/shared/auth-provider";
+import { FavoritesProvider } from "@/components/shared/favorites-provider";
+import { ThemeProvider } from "@/components/shared/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { CsrfProvider } from "@/features/providers/components/csrf-provider";
 import { PWAProvider } from "@/features/providers/components/pwa-provider";
 import { SupabaseProvider } from "@/features/providers/components/supabase-provider";
-import { AuthProvider } from "@/features/shared/components/auth-provider";
-import { FavoritesProvider } from "@/features/shared/components/favorites-provider";
-import { ThemeProvider } from "@/features/shared/components/theme-provider";
-import { Toaster } from "@/features/ui/components/sonner";
 
 interface RootProvidersProps extends PropsWithChildren {
   user: User | null;

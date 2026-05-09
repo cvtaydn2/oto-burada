@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { useCsrfToken } from "@/features/providers/components/csrf-provider";
-import { captureClientEvent, captureClientException } from "@/lib/telemetry-client";
+import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface ListingViewTrackerProps {
   listingId: string;
@@ -26,7 +26,7 @@ export function ListingViewTracker({
   year,
   status,
 }: ListingViewTrackerProps) {
-  const { token: csrfToken, refresh: refreshCsrfToken } = useCsrfToken();
+  const { token: csrfToken, isReady, refresh: refreshCsrfToken } = useCsrfToken();
   const hasTrackedViewRef = useRef(false);
   const hasCapturedEventRef = useRef(false);
   const hasAttemptedViewRef = useRef(false);
@@ -48,6 +48,11 @@ export function ListingViewTracker({
   }, [listingId, listingSlug, brand, model, city, price, year, status]);
 
   useEffect(() => {
+    // CSRF token sistemi hazır değilse bekle
+    if (!isReady) {
+      return;
+    }
+
     if (hasTrackedViewRef.current || hasAttemptedViewRef.current) {
       return;
     }
@@ -78,14 +83,9 @@ export function ListingViewTracker({
       }
 
       if (cancelled || !activeToken) {
-        captureClientException(
-          new Error("Missing CSRF token for listing view"),
-          "listing_view_csrf_unavailable",
-          {
-            listingId,
-            listingSlug,
-          }
-        );
+        // CSRF token alınamaması genellikle network sorunu veya ad-blocker kaynaklıdır.
+        // Sentry kotasını tüketmemek için exception fırlatılmıyor.
+        console.warn("[ListingViewTracker] Missing CSRF token, view not recorded.");
         return;
       }
 
@@ -106,20 +106,12 @@ export function ListingViewTracker({
         }
 
         if (response.status === 403) {
-          captureClientException(
-            new Error(`Listing view rejected with status ${response.status}`),
-            "listing_view_csrf_rejected",
-            {
-              listingId,
-              listingSlug,
-            }
-          );
+          // Bu hata CSRF token geçerliliğini yitirdiğinde vs olur.
+          // Önemsiz hatalar kotayı tüketmesin diye uyarı seviyesinde bırakıyoruz.
+          console.warn(`[ListingViewTracker] Listing view rejected with status ${response.status}`);
         }
       } catch (error) {
-        captureClientException(error, "listing_view_record_failed", {
-          listingId,
-          listingSlug,
-        });
+        console.warn("[ListingViewTracker] Record failed:", error);
       }
     };
 
@@ -128,7 +120,7 @@ export function ListingViewTracker({
     return () => {
       cancelled = true;
     };
-  }, [listingId, listingSlug, csrfToken, refreshCsrfToken]);
+  }, [listingId, listingSlug, csrfToken, refreshCsrfToken, isReady]);
 
   return null;
 }

@@ -2,8 +2,9 @@
 
 import { Calendar } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/features/ui/components/card";
-import { cn } from "@/lib";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface Appointment {
   id: string;

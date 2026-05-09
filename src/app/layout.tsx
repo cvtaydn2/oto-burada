@@ -6,10 +6,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import { headers } from "next/headers";
 
+import { LazyClientWidgets } from "@/components/shared/lazy-client-widgets";
 import { getCurrentUser } from "@/features/auth/lib/session";
 import { RootProviders } from "@/features/providers/components/root-providers";
 import { getAppUrl } from "@/features/seo/lib";
-import { LazyClientWidgets } from "@/features/shared/components/lazy-client-widgets";
 
 // Default behavior is preferred for better performance and Speed Insights
 // Individual pages should define their dynamic behavior if needed

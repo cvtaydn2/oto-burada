@@ -2,8 +2,8 @@ import { ChevronLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { getUserRole, requireUser } from "@/features/auth/lib/session";
-import { ListingCreateForm } from "@/features/forms/components/listing-create-form";
 import { getListingById } from "@/features/marketplace/services/marketplace-listings";
 import { getStoredProfileById } from "@/features/profile/services/profile-records";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";

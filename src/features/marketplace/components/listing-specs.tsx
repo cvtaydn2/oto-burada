@@ -1,6 +1,6 @@
 import { CalendarDays, CircleGauge, Fuel, Settings2 } from "lucide-react";
 
-import { formatNumber } from "@/lib";
+import { formatNumber } from "@/lib/utils/format";
 import type { Listing } from "@/types";
 
 interface SpecBoxProps {

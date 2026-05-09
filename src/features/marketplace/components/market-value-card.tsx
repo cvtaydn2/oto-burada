@@ -1,7 +1,7 @@
 import { Info, ShieldAlert, Target, TrendingDown, TrendingUp } from "lucide-react";
 
 import { analyzeListingValue } from "@/features/marketplace/services/pricing-engine";
-import { formatNumber } from "@/lib";
+import { formatNumber } from "@/lib/utils/format";
 import { type Listing } from "@/types";
 
 interface MarketValueCardProps {

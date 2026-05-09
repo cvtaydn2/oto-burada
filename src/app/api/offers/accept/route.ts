@@ -1,7 +1,8 @@
-import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { respondToOffer } from "@/features/offers/services/offer-service";
+export const dynamic = "force-dynamic";
+
+import { respondToOffer } from "@/features/offers/services/offers/offer-actions";
 import { logger } from "@/lib/logger";
 import { withUserAndCsrf } from "@/lib/security";
 
@@ -21,7 +22,8 @@ export async function POST(request: Request) {
 
     // SECURITY: Explicit ownership verification before accepting offer
     // Defense-in-depth: don't rely solely on RLS in service layer
-    const { verifyOfferOwnership } = await import("@/features/offers/services/offer-service");
+    const { verifyOfferOwnership } =
+      await import("@/features/offers/services/offers/offer-actions");
     const ownership = await verifyOfferOwnership(offerId, user.id);
 
     if (!ownership.isOwner) {
@@ -39,5 +41,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Teklif kabul edilemedi." }, { status: 400 });
   }
 
-  redirect("/dashboard/teklifler");
+  return NextResponse.redirect(new URL("/dashboard/teklifler", request.url));
 }

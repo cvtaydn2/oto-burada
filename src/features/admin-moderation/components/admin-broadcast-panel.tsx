@@ -3,9 +3,9 @@
 import { AlertCircle, CheckCircle2, LoaderCircle, Megaphone } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { Label } from "@/features/ui/components/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function AdminBroadcastPanel() {
   const [title, setTitle] = useState("");

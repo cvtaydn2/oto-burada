@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 
-import { Badge } from "@/features/ui/components/badge";
-import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib";
+import { Badge } from "@/components/ui/badge";
+import { safeFormatDate } from "@/lib/datetime/date-utils";
 import { trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import { type Profile } from "@/types";
 
 import { UserActionMenu } from "./user_action_menu";
@@ -121,9 +122,7 @@ export function UserListTable({ users }: UserListTableProps) {
                 </td>
                 <td className="p-6">
                   <span className="text-xs font-bold text-muted-foreground/70">
-                    {userWithLogin.lastSignInAt
-                      ? safeFormatDistanceToNow(userWithLogin.lastSignInAt)
-                      : "—"}
+                    {userWithLogin.lastSignInAt ? safeFormatDate(userWithLogin.lastSignInAt) : "—"}
                   </span>
                 </td>
                 <td className="p-6">

@@ -1,9 +1,9 @@
 import { ShieldCheck } from "lucide-react";
 
+import { Panel } from "@/components/shared/design-system/Panel";
 import { ListingGallery } from "@/features/marketplace/components/listing-gallery";
 import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
-import { Panel } from "@/features/shared/components/design-system/Panel";
 import type { Listing } from "@/types";
 
 interface ListingGallerySectionProps {

@@ -13,8 +13,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
-import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
-import { OfferPanel } from "@/features/offers/components/offer-panel";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -24,11 +22,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import { OfferPanel } from "@/features/offers/components/offer-panel";
+import {} from "@/lib";
 import { captureClientEvent } from "@/lib/telemetry-client";
 import { trust } from "@/lib/ui-strings";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {

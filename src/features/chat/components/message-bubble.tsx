@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Check, CheckCheck, Trash2 } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 
 interface MessageBubbleProps {

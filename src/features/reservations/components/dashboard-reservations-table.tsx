@@ -13,8 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/features/ui/components/alert-dialog";
-import { Button } from "@/features/ui/components/button";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,9 +22,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/features/ui/components/table";
-import { formatPrice } from "@/lib";
+} from "@/components/ui/table";
+import {} from "@/lib";
 import { reservation as copy } from "@/lib/ui-strings";
+import { formatPrice } from "@/lib/utils/format";
 import type { Reservation, ReservationWithListing } from "@/types";
 
 import { ReservationCountdown, ReservationStatusBadge } from "./reservation-countdown";

@@ -1,6 +1,7 @@
 import { Sparkles, Zap } from "lucide-react";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import type { DopingType } from "@/types/payment";
 
 export interface ListingPromoBadgeItem {

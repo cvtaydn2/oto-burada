@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface MarketValuationBadgeProps {
   status: "good" | "fair" | "high" | "unknown";

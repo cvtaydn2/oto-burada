@@ -1,6 +1,7 @@
 import { Gauge, Heart, ShieldCheck, TrendingUp } from "lucide-react";
 
-import { cn, formatCurrency } from "@/lib";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/format";
 
 type StatColor = "rose" | "blue" | "emerald" | "amber";
 

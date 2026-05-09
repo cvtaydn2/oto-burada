@@ -3,10 +3,11 @@
 import { AlertTriangle, ArrowLeft, Shield, ShieldCheck, Store } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { getTrustDotColor, getTrustToneClass } from "@/features/marketplace/lib/listings/trust-ui";
 import { getSellerTrustUI } from "@/features/marketplace/lib/listings/trust-ui";
-import { Button } from "@/features/ui/components/button";
-import { cn } from "@/lib";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
 import { type VerificationStatus } from "@/types";
 
 interface AdminUserHeaderProps {

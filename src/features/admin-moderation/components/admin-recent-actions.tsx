@@ -4,11 +4,12 @@ import { ArrowRight, Filter, History, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Button } from "@/features/ui/components/button";
-import { Input } from "@/features/ui/components/input";
-import { formatDate } from "@/lib";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {} from "@/lib";
+import { formatDate } from "@/lib/datetime/date-utils";
 import { moderationActionLabels } from "@/lib/domain";
+import { cn } from "@/lib/utils";
 import type { AdminModerationAction, ModerationAction } from "@/types";
 
 export interface AdminRecentActionItem {

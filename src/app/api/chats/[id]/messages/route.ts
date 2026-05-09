@@ -6,9 +6,9 @@ import {
   getChatMessages,
   sendChatMessage,
 } from "@/features/chat/services/chat-logic";
-import { logger } from "@/features/shared/lib/logger";
-import { API_ERROR_CODES, apiError } from "@/features/shared/lib/response";
-import { withUserAndCsrf, withUserRoute } from "@/features/shared/lib/security";
+import { logger } from "@/lib/logger";
+import { API_ERROR_CODES, apiError } from "@/lib/response";
+import { withUserAndCsrf, withUserRoute } from "@/lib/security";
 
 const messageSchema = z.object({
   content: z.string().trim().min(1).max(2000),

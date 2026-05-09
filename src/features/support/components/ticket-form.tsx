@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Input } from "@/features/ui/components/input";
+import { Input } from "@/components/ui/input";
 
 interface SupportResponse {
   message?: string;
@@ -13,16 +13,16 @@ interface SupportResponse {
   };
 }
 
-import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
-import { Button } from "@/features/ui/components/button";
-import { Label } from "@/features/ui/components/label";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/features/ui/components/select";
+} from "@/components/ui/select";
+import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
 
 const CATEGORIES: { value: TicketCategory; label: string }[] = [
   { value: "listing", label: "İlan ile ilgili" },

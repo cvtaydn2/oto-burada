@@ -3,9 +3,10 @@
 import { LucideIcon } from "lucide-react";
 import { BarChart3, PieChart, TrendingDown, TrendingUp } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
-import { formatCurrency } from "@/lib";
-import { cn } from "@/lib";
+import { Button } from "@/components/ui/button";
+import {} from "@/lib";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/format";
 
 /**
  * KPI Card Component

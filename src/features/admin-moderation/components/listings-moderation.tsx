@@ -2,11 +2,11 @@
 
 import { Layers3, TriangleAlert } from "lucide-react";
 
+import { AppErrorBoundary } from "@/components/shared/error-boundary";
+import { Button } from "@/components/ui/button";
 import { BulkActions } from "@/features/admin-moderation/components/bulk-actions";
 import { ModerationCard } from "@/features/admin-moderation/components/moderation-card";
 import { useModerationLogic } from "@/features/admin-moderation/hooks/use-moderation-logic";
-import { AppErrorBoundary } from "@/features/shared/components/error-boundary";
-import { Button } from "@/features/ui/components/button";
 import { type Listing } from "@/types";
 
 interface ListingsModerationProps {

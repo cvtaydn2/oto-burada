@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createOffer, respondToOffer } from "@/features/offers/services/offer-service";
+import { createOffer, respondToOffer } from "@/features/offers/services/offers/offer-actions";
 import { logger } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/server";
 

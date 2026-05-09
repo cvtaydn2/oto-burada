@@ -2,7 +2,7 @@
 
 import { RefreshCcw } from "lucide-react";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 interface ListingsErrorStateProps {
   error: unknown;

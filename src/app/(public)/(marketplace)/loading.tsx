@@ -1,4 +1,4 @@
-import { Skeleton } from "@/features/ui/components/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MarketplaceLoading() {
   return (

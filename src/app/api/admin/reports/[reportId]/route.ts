@@ -4,11 +4,11 @@ import { createAdminModerationAction } from "@/features/admin-moderation/service
 import { getStoredListingById } from "@/features/marketplace/services/listing-submissions";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
 import { updateDatabaseReportStatus } from "@/features/reports/services/report-submissions";
-import { rateLimitProfiles } from "@/features/shared/lib/rate-limit";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/features/shared/lib/response";
-import { sanitizeText } from "@/features/shared/lib/sanitize";
-import { withAdminRoute } from "@/features/shared/lib/security";
-import { captureServerEvent } from "@/features/shared/lib/telemetry-server";
+import { rateLimitProfiles } from "@/lib/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
+import { sanitizeText } from "@/lib/sanitize";
+import { withAdminRoute } from "@/lib/security";
+import { captureServerEvent } from "@/lib/telemetry-server";
 import type { ReportStatus } from "@/types";
 
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];

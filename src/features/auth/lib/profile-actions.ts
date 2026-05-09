@@ -1,11 +1,11 @@
 "use server";
 
 import { updateProfileTable } from "@/features/profile/services/profile-records";
-import { profileUpdateSchema } from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/server";
+import { profileUpdateSchema } from "@/lib/validators/auth";
 
 export interface ProfileActionState {
   error?: string;
@@ -143,7 +143,7 @@ export async function updateCorporateProfileAction(
     businessLogoUrl: String(formData.get("businessLogoUrl") ?? ""),
   };
 
-  const { corporateProfileSchema } = await import("@/lib");
+  const { corporateProfileSchema } = await import("@/lib/validators/auth");
   const parsed = corporateProfileSchema.safeParse(values);
 
   if (!parsed.success) {

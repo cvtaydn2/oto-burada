@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { checkApiSecurity } from "@/lib/api-security";
-import { csrfMiddleware } from "@/lib/csrf";
 import { updateSession } from "@/lib/middleware";
+import { csrfMiddleware } from "@/lib/middleware/csrf";
 import { rateLimitMiddleware } from "@/lib/middleware/rate-limit";
 import { runMiddlewarePipeline } from "@/lib/pipeline";
 import { classifyRoute } from "@/lib/routes";

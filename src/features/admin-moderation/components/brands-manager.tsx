@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import {
   addBrand,
   createModel,
@@ -12,8 +13,7 @@ import {
   toggleBrandStatus,
   updateBrand,
 } from "@/features/admin-moderation/services/reference";
-import { useErrorCapture } from "@/features/shared/hooks/use-error-capture";
-import { Button } from "@/features/ui/components/button";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 import {
   AddBrandModal,

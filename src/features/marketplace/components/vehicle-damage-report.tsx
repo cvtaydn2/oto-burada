@@ -1,7 +1,7 @@
 import { FileSearch, ShieldAlert } from "lucide-react";
 
-import { formatNumber } from "@/lib";
 import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/domain";
+import { formatNumber } from "@/lib/utils/format";
 import type { Listing } from "@/types";
 
 export function VehicleDamageReport({ listing }: { listing: Listing }) {

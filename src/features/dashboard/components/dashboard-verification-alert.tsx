@@ -1,8 +1,8 @@
 import { AlertCircle, AlertTriangle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { getProfileRestrictionState } from "@/features/profile/services/profile-restrictions";
-import { Button } from "@/features/ui/components/button";
 import { trust } from "@/lib/ui-strings";
 import type { Profile } from "@/types";
 

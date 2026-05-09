@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Button } from "@/features/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 interface SimplePaginationProps {
   currentPage: number;

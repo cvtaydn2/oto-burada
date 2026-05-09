@@ -1,10 +1,10 @@
 import { ShieldAlert, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import { ReportsModeration } from "@/features/admin-moderation/components/reports-moderation";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { getStoredReports } from "@/features/reports/services/report-submissions";
-import { Badge } from "@/features/ui/components/badge";
 import { createSupabaseAdminClient } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";

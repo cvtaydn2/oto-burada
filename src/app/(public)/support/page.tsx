@@ -1,8 +1,8 @@
 import { ArrowRight, BadgeCheck, FileText, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
+import { FaqAccordion } from "@/components/shared/faq-accordion";
 import { getCurrentUser } from "@/features/auth/lib/session";
-import { FaqAccordion } from "@/features/shared/components/faq-accordion";
 import { TicketForm } from "@/features/support/components/ticket-form";
 import { TicketList } from "@/features/support/components/ticket-list";
 import { getUserTickets } from "@/features/support/services/ticket-service";

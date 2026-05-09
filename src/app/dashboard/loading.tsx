@@ -1,4 +1,4 @@
-import { DashboardHeaderSkeleton, TableSkeleton } from "@/features/shared/components/skeletons";
+import { DashboardHeaderSkeleton, TableSkeleton } from "@/components/shared/skeletons";
 
 export default function DashboardLoading() {
   return (

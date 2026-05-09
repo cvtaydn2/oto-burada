@@ -90,7 +90,7 @@ export default function AboutPage() {
               <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-border/70 bg-muted">
                 <div className="absolute inset-0 z-10 bg-gradient-to-tr from-slate-950/30 via-slate-950/5 to-transparent" />
                 <Image
-                  src="/images/hero_bg.png"
+                  src="/images/hero_bg.webp"
                   alt="OtoBurada araç ilan deneyimi"
                   fill
                   className="object-cover"

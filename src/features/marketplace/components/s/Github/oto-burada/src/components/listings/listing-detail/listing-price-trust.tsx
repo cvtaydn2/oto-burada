@@ -1,6 +1,6 @@
+import { Panel } from "@/components/shared/design-system/Panel";
 import { TrustSummary } from "@/features/marketplace/components/trust-summary";
 import type { ListingCardInsight } from "@/features/marketplace/services/listing-card-insights";
-import { Panel } from "@/features/shared/components/design-system/Panel";
 import type { Listing, Profile } from "@/types";
 
 interface ListingPriceTrustProps {

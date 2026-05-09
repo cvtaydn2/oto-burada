@@ -3,8 +3,8 @@
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { MarketSyncButton } from "@/features/admin-moderation/components/market-sync-button";
-import { Button } from "@/features/ui/components/button";
 
 export function AdminHeaderActions() {
   const handlePrint = () => {
