@@ -385,7 +385,10 @@ export async function runAgentLoop(initialPrompt, options = {}) {
       toolResults += `\n[GREP_SEARCH SONUCU (${query})]:\n${output}`;
     }
     for (const match of readMatches) {
-      const relPath = match[1].trim();
+      let relPath = match[1].trim();
+      // Backtick veya tırnak temizliği
+      relPath = relPath.replace(/^[`"']|[`"']$/g, '');
+      
       console.log(`   ${bold}📖 Dosya Okunuyor: '${relPath}'...${reset}`);
       const fullPath = path.resolve(process.cwd(), relPath);
       if (fs.existsSync(fullPath)) {
@@ -393,12 +396,14 @@ export async function runAgentLoop(initialPrompt, options = {}) {
         toolResults += `\n[READ_FILE SONUCU (${relPath})]:\n${content}`;
         activeContextFiles.add(relPath);
       } else {
+        console.log(`   ${red}❌ Dosya bulunamadı: ${relPath}${reset}`);
         toolResults += `\n[READ_FILE SONUCU (${relPath})]: Dosya bulunamadı!`;
       }
     }
 
     for (const match of readLinesMatches) {
-      const relPath = match[1].trim();
+      let relPath = match[1].trim();
+      relPath = relPath.replace(/^[`"']|[`"']$/g, '');
       const startLine = parseInt(match[2]);
       const endLine = parseInt(match[3]);
       console.log(`   ${bold}📖 Dosya Satırları Okunuyor: '${relPath}' (Satır: ${startLine}-${endLine})...${reset}`);
@@ -409,6 +414,7 @@ export async function runAgentLoop(initialPrompt, options = {}) {
         const sliced = lines.slice(Math.max(0, startLine - 1), endLine).join("\n");
         toolResults += `\n[READ_FILE_LINES SONUCU (${relPath}, ${startLine}-${endLine})]:\n${sliced}`;
       } else {
+        console.log(`   ${red}❌ Dosya bulunamadı: ${relPath}${reset}`);
         toolResults += `\n[READ_FILE_LINES SONUCU (${relPath})]: Dosya bulunamadı!`;
       }
     }
@@ -463,7 +469,23 @@ export async function runAgentLoop(initialPrompt, options = {}) {
     currentPrompt = `[ARAÇ SONUÇLARI]:\n${toolResults}\n\nAnalizine devam et. Gerekirse başka dosyalar arayebilir, okuyabilir veya tip/linter testi çalıştırabilirsin. Hazır olduğunda nihai çözüm raporunu oluştur.`;
   }
 
-  console.log(`${red}⚠️ Otonom analiz maksimum adım sınırına (${maxIterations}) ulaştı.${reset}`);
+  console.log(`${red}⚠️ Otonom analiz maksimum adım sınırına (${maxIterations}) ulaştı. Sonuçlar toparlanıyor...${reset}`);
+  
+  // Son bir kez Claude'a sorarak elimizdeki verilerle final raporu zorla
+  const finalForcePrompt = `[SİSTEM BİLGİSİ]: Maksimum otonom adım sınırına ulaşıldı. Lütfen elindeki tüm mevcut bilgileri ve okuduğun dosyaları kullanarak nihai durum raporunu, analizini ve çözüm önerilerini HEMEN oluştur. Başka bir araç çağrısı yapma.`;
+  
+  const finalRes = await callClaudeRaw(
+    systemPrompt,
+    [...recursiveHistory, { role: "user", content: finalForcePrompt }],
+    (chunk) => process.stdout.write(chunk)
+  );
+
+  if (finalRes) {
+    console.log(`\n${bold}================== CLAUDE FİNAL ANALİZİ (ZORUNLU KAPANIŞ) ==================${reset}`);
+    console.log(finalRes);
+    console.log(`${bold}===========================================================================${reset}`);
+    await saveAndShowSolution(finalRes, options);
+  }
 }
 
 async function saveAndShowSolution(content, options = {}) {

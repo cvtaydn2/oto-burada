@@ -91,7 +91,6 @@ export function buildListingBaseQuery(
   if (options?.countOnly) return query as ListingQuery;
 
   const sort = filters?.sort ?? "newest";
-  const isAscendingSort = getCursorDirection(sort) === "asc";
 
   if (!filters?.sort || filters.sort === "newest") {
     if (!options?.legacySchema) {

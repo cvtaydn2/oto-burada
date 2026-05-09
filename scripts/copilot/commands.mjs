@@ -107,12 +107,12 @@ export async function handleSelfDiagnose(options = {}) {
 6. scripts/copilot/config.mjs
 7. scripts/copilot/colors.mjs
 
-Senden beklentimiz:
-1. Bu dosyaları otonom olarak [READ_FILE: scripts/copilot/...] araç çağrısıyla tek tek okuyarak incele.
+Senden beklentimiz: 
+1. Bu dosyaları otonom olarak [READ_FILE: scripts/copilot/...] araç çağrısıyla TOPLU HALDE (tek seferde birden fazla komut yazarak) okuyarak incele.
 2. Kaynak kodlardaki olası mantıksal hataları (bugs), eksik hata yakalama bloklarını (error handling), asenkron yönetim eksikliklerini ve performans darboğazlarını analiz et.
 3. Bulduğun kritik eksikleri düzeltmek veya araca yeni yetenekler kazandırmak için güncel kodları <write_file> etiketleri içinde tam sürüm olarak üret veya detaylı bir rapor sun.
 
-Analizine başlamak için öncelikle incelemek istediğin dosyayı [READ_FILE] komutu ile oku.`;
+Analizine başlamak için öncelikle incelemek istediğin tüm dosyaları toplu halde [READ_FILE: scripts/copilot/agent.mjs] formatındaki komutlarla alt alta oku.`;
 
   await runAgentLoop(prompt, options);
 }
