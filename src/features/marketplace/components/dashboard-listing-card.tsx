@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DopingStore } from "@/features/dashboard/components/doping-store";
-import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
+import { getSellerTrustUI, getTrustCompletionSummary } from "@/features/marketplace/lib/trust-ui";
 import {
   getListingDopingDisplayItems,
   getListingDopingStatusTone,
@@ -81,30 +81,27 @@ export function DashboardListingCard({
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
   const now = new Date(currentTime > 0 ? currentTime : 0);
-  const hasExpertInspection = Boolean(listing.expertInspection?.hasInspection);
-  const hasDamageDeclaration = Boolean(
-    listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
-  );
-  const hasTramer = typeof listing.tramerAmount === "number";
+  const trustCompletion = getTrustCompletionSummary(listing);
   const trustChecklistItems = [
     {
       key: "expert-inspection",
       label: "Ekspertiz",
-      completed: hasExpertInspection,
+      completed: Boolean(listing.expertInspection?.hasInspection),
     },
     {
       key: "damage-declaration",
       label: "Hasar beyanı",
-      completed: hasDamageDeclaration,
+      completed: Boolean(
+        listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
+      ),
     },
     {
       key: "tramer",
       label: "Tramer",
-      completed: hasTramer,
+      completed: typeof listing.tramerAmount === "number" && Number.isFinite(listing.tramerAmount),
     },
   ] as const;
-  const completedTrustItemCount = trustChecklistItems.filter((item) => item.completed).length;
-  const isTrustIncomplete = completedTrustItemCount < trustChecklistItems.length;
+  const isTrustIncomplete = !trustCompletion.isComplete;
   const shouldShowTrustReminder =
     isTrustIncomplete && ["draft", "pending", "approved"].includes(listing.status);
 
@@ -262,12 +259,11 @@ export function DashboardListingCard({
                             Güven detaylarını tamamla
                           </p>
                           <p className="text-xs font-medium leading-5 text-blue-900/85">
-                            Alıcıların ilk bakışta göreceği 3 güven alanında eksik kalanları
-                            tamamla.
+                            Alıcıların ilk bakışta göreceği güven alanlarında oranı tamamla.
                           </p>
                         </div>
                         <span className="shrink-0 pt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
-                          {completedTrustItemCount}/3
+                          {trustCompletion.ratioLabel}
                         </span>
                       </div>
 

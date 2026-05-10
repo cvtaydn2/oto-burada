@@ -6,6 +6,10 @@ import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
 import { requireUser } from "@/features/auth/lib/session";
 import { MyListingsPanel } from "@/features/marketplace/components/my-listings-panel";
+import {
+  getTrustBacklogSummary,
+  getTrustCompletionSummary,
+} from "@/features/marketplace/lib/trust-ui";
 import { getDashboardListingsPageData } from "@/features/marketplace/services/dashboard-listings-actions";
 import type {
   DashboardEditableListing,
@@ -54,25 +58,6 @@ function parsePositiveInt(value?: string, fallback = 1) {
 function clampPageSize(value?: string) {
   const parsed = parsePositiveInt(value, 10);
   return Math.min(parsed, 100);
-}
-
-function getListingTrustCompletion(
-  listing: DashboardListingsPageData["listingsPage"]["items"][number]
-) {
-  const hasDamageDeclaration = Boolean(
-    listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
-  );
-
-  const completedCount = [
-    Boolean(listing.expertInspection?.hasInspection),
-    hasDamageDeclaration,
-    typeof listing.tramerAmount === "number",
-  ].filter(Boolean).length;
-
-  return {
-    completedCount,
-    isComplete: completedCount === 3,
-  };
 }
 
 function mergeBrands(
@@ -142,9 +127,10 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const trustReminderEligibleListings = data.listingsPage.items.filter(
     (listing) =>
       ["draft", "pending", "approved"].includes(listing.status) &&
-      !getListingTrustCompletion(listing).isComplete
+      !getTrustCompletionSummary(listing).isComplete
   );
   const missingTrustCount = trustReminderEligibleListings.length;
+  const trustBacklogSummary = getTrustBacklogSummary(trustReminderEligibleListings);
   const firstTrustReminderListing = trustReminderEligibleListings[0] ?? null;
   const displayedListings =
     trustFilter === "incomplete" ? trustReminderEligibleListings : data.listingsPage.items;
@@ -224,12 +210,13 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
                   Güven detayı özeti
                 </p>
                 <p className="text-sm font-semibold leading-6 text-blue-950">
-                  Bu sayfadaki {missingTrustCount} ilanda ekspertiz, hasar veya Tramer bilgisi
-                  eksik.
+                  Bu sayfadaki trust backlog oranı şu anda {trustBacklogSummary.ratioLabel}.{" "}
+                  {missingTrustCount} ilanda en az bir güven alanı eksik.
                 </p>
                 <p className="text-xs font-medium leading-5 text-blue-900/80">
-                  Bu detaylar zorunlu değil ama alıcı güvenini artırır. Dilersen mevcut ilan kartı
-                  hatırlatmalarına ek olarak buradan da hızlıca tamamlayabilirsin.
+                  Kartlarda gördüğün aynı <span className="font-bold text-blue-900">x/3</span>{" "}
+                  mantığı burada da geçerli: ekspertiz, hasar beyanı ve Tramer alanları birlikte
+                  sayılır. Bu detaylar zorunlu değil ama alıcı güvenini artırır.
                 </p>
               </div>
 
@@ -320,8 +307,8 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
                 Sıradaki eksik ilana otomatik geçtin.
               </p>
               <p className="text-xs font-medium leading-5 text-emerald-900/80">
-                Bu sayfada tamamlanacak {remainingTrustCount} eksik ilan daha kaldı. Aynı akışla
-                listeden ayrılmadan devam edebilirsin.
+                Aynı <span className="font-bold text-emerald-900">x/3</span> ilerleme diliyle devam
+                ediyorsun. Bu sayfada tamamlanacak {remainingTrustCount} eksik ilan daha kaldı.
               </p>
             </div>
           </div>
@@ -336,12 +323,12 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
                 Sayfa kapsamındaki trust turu tamamlandı
               </p>
               <p className="text-sm font-semibold leading-6 text-emerald-950">
-                Bu görünümdeki son eksik ilanı da tamamladın.
+                Bu görünümdeki son eksik ilanın da güven oranını 3/3 yaptın.
               </p>
               <p className="text-xs font-medium leading-5 text-emerald-900/80">
                 Bu mesaj yalnız şu an açık olan `trust=incomplete` görünümü için geçerli. Aynı
-                sayfada artık trust hatırlatması gerektiren ilan kalmadı; başka sayfalarda eksik
-                ilan varsa onları kendi görünümünde görmeye devam edersin.
+                sayfada artık 3/3 olmayan ilan kalmadı; başka sayfalarda eksik ilan varsa onları
+                kendi görünümünde görmeye devam edersin.
               </p>
             </div>
             <Link

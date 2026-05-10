@@ -16,6 +16,10 @@ import { Button } from "@/components/ui/button";
 import { EmailVerificationDialog } from "@/features/auth/components/email-verification-dialog";
 import { useListingCreation } from "@/features/listing-creation/hooks/use-listing-creation";
 import UploadProgress from "@/features/marketplace/components/upload-progress";
+import {
+  getTrustCompletionSummary,
+  TRUST_COMPLETION_TOTAL,
+} from "@/features/marketplace/lib/trust-ui";
 import { type BrandCatalogItem, type CityOption, type Listing } from "@/types";
 
 import { StepIndicator } from "./listing-wizard/StepIndicator";
@@ -87,6 +91,16 @@ export function ListingCreateFormRenderer({
   const watchedDamageStatus = form.watch("damageStatusJson");
   const watchedTramerAmount = form.watch("tramerAmount");
   const watchedExpertInspection = form.watch("expertInspection");
+
+  const trustCompletion = useMemo(
+    () =>
+      getTrustCompletionSummary({
+        damageStatusJson: watchedDamageStatus,
+        expertInspection: watchedExpertInspection,
+        tramerAmount: watchedTramerAmount,
+      }),
+    [watchedDamageStatus, watchedExpertInspection, watchedTramerAmount]
+  );
 
   const trustChecklist = useMemo(() => {
     const hasDamageDeclaration = Boolean(
@@ -202,12 +216,12 @@ export function ListingCreateFormRenderer({
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-1">
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                      Odak: güven artırıcı 3 alan
+                      Odak: güven artırıcı {TRUST_COMPLETION_TOTAL} alan
                     </p>
                     <p className="text-sm font-semibold leading-6 text-slate-900">
-                      {missingTrustItems.length > 0
-                        ? `${missingTrustItems.length} alan hâlâ eksik. Aşağıda sadece sıradaki eksiklere odaklanabilirsin.`
-                        : "3 alan da dolu görünüyor. Yine de bilgileri gözden geçirip kaydedebilirsin."}
+                      {trustCompletion.isComplete
+                        ? `${trustCompletion.ratioLabel} tamamlandı. Yine de bilgileri gözden geçirip kaydedebilirsin.`
+                        : `${trustCompletion.ratioLabel} tamamlandı, ${trustCompletion.remainingCount} alan hâlâ eksik. Aşağıda sadece sıradaki eksiklere odaklanabilirsin.`}
                     </p>
                   </div>
                   <Link
@@ -238,10 +252,10 @@ export function ListingCreateFormRenderer({
                       <div className="rounded-2xl border border-blue-200 bg-white/80 px-4 py-3 text-xs font-semibold leading-5 text-blue-900 sm:max-w-xs">
                         {trustFlowTransition?.mode === "next" &&
                         trustFlowTransition.nextListingTitle
-                          ? `Kaydettiğinde sıradaki eksik ilan: ${trustFlowTransition.nextListingTitle}.`
+                          ? `Kaydettiğinde sıradaki eksik ilana geçeceksin. Oran dili aynı kalacak ve sonraki ilan ${trustFlowTransition.nextListingTitle} olacak.`
                           : trustFlowTransition?.mode === "done"
-                            ? "Bu sayfadaki son eksik ilandasın. Kaydettiğinde akış tamamlanmış görünecek."
-                            : "Kaydetmeden önce sadece eksik görünen kalemleri doldurman yeterli."}
+                            ? "Bu sayfadaki son eksik ilandasın. Kaydettiğinde bu görünüm için kalan son 3/3 eksiği de kapanmış olacak."
+                            : `Kaydetmeden önce ${trustCompletion.ratioLabel} oranını ilerletecek eksik kalemleri doldurman yeterli.`}
                       </div>
                     </div>
 
@@ -344,12 +358,17 @@ export function ListingCreateFormRenderer({
                     Doğrudan güven alanları
                   </div>
                   <h2 className="text-xl font-bold tracking-tight text-emerald-950">
-                    Eksik alanları burada tamamlayın
+                    Güven oranını burada 3/3 tamamlayın
                   </h2>
                   <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/80">
                     Bu bölümde yalnız ekspertiz, hasar beyanı ve Tramer detaylarına odaklanın.
-                    Üstteki sıradaki adımlar ile buradaki alanlar birebir eşleşir; eksik olanı girip
-                    kaydetmeniz yeterli.
+                    Kartta ve üst özette gördüğünüz aynı oran dili burada da geçerli: şu an
+                    <span className="font-bold text-emerald-950">
+                      {" "}
+                      {trustCompletion.ratioLabel}{" "}
+                    </span>
+                    tamamlandı. Üstteki sıradaki adımlar ile buradaki alanlar birebir eşleşir; eksik
+                    olanı girip kaydetmeniz yeterli.
                     {trustFlowTransition?.mode === "next"
                       ? " Bu sayfada başka eksik ilan varsa bir sonrakine otomatik geçilir."
                       : " Son eksik ilana geldiysen tamamlandığında filtre içinde net başarı mesajı görürsün."}
@@ -357,12 +376,12 @@ export function ListingCreateFormRenderer({
                 </div>
                 <div className="rounded-2xl border border-emerald-200/80 bg-white/80 px-4 py-3 text-xs font-semibold leading-5 text-emerald-900 sm:max-w-xs">
                   {trustFlowTransition?.mode === "next" && trustFlowTransition.nextListingTitle
-                    ? `Kaydetme sonrası sıradaki eksik ilan: ${trustFlowTransition.nextListingTitle}.`
+                    ? `Kaydetme sonrası bu ilanın oranı kapanır ve sıradaki eksik ilan ${trustFlowTransition.nextListingTitle} olur.`
                     : trustFlowTransition?.mode === "done"
-                      ? "Bu sayfadaki son eksik ilandasın. Kaydetme sonrası filtre içinde tamamlandı mesajı gösterilir."
+                      ? "Bu sayfadaki son eksik ilandasın. Kaydetme sonrası bu görünümde 3/3 olmayan ilan kalmaz."
                       : nextTrustAction
-                        ? `Şimdi odak: ${nextTrustAction.actionLabel.toLowerCase()}.`
-                        : "Eksik görünen alan kalmadı. İstersen bilgileri daha net hale getirip yeniden kaydedebilirsin."}
+                        ? `Şu an ${trustCompletion.ratioLabel}. Sıradaki odak: ${nextTrustAction.actionLabel.toLowerCase()}.`
+                        : `Şu an ${trustCompletion.ratioLabel}. Eksik görünen alan kalmadı; istersen bilgileri daha net hale getirip yeniden kaydedebilirsin.`}
                 </div>
               </div>
 

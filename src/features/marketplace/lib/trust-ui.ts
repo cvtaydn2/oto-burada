@@ -1,5 +1,61 @@
 // Trust UI utilities - expanded with amber and rose for additional tones
-import type { Profile } from "@/types";
+import type { DashboardListingSummary } from "@/features/marketplace/types/dashboard-listings";
+import type { Listing, Profile } from "@/types";
+
+export const TRUST_COMPLETION_TOTAL = 3;
+
+interface TrustCompletionSource {
+  damageStatusJson?: Listing["damageStatusJson"] | null;
+  expertInspection?: Listing["expertInspection"] | null;
+  tramerAmount?: Listing["tramerAmount"] | null;
+}
+
+export interface TrustCompletionSummary {
+  completedCount: number;
+  totalCount: number;
+  remainingCount: number;
+  isComplete: boolean;
+  ratioLabel: string;
+}
+
+export function getTrustCompletionSummary(source: TrustCompletionSource): TrustCompletionSummary {
+  const hasDamageDeclaration = Boolean(
+    source.damageStatusJson && Object.keys(source.damageStatusJson).length > 0
+  );
+
+  const completedCount = [
+    Boolean(source.expertInspection?.hasInspection),
+    hasDamageDeclaration,
+    typeof source.tramerAmount === "number" && Number.isFinite(source.tramerAmount),
+  ].filter(Boolean).length;
+
+  return {
+    completedCount,
+    totalCount: TRUST_COMPLETION_TOTAL,
+    remainingCount: TRUST_COMPLETION_TOTAL - completedCount,
+    isComplete: completedCount === TRUST_COMPLETION_TOTAL,
+    ratioLabel: `${completedCount}/${TRUST_COMPLETION_TOTAL}`,
+  };
+}
+
+export function getTrustBacklogSummary(
+  listings: Array<
+    Pick<DashboardListingSummary, "damageStatusJson" | "expertInspection" | "tramerAmount">
+  >
+) {
+  const completedCount = listings.reduce(
+    (total, listing) => total + getTrustCompletionSummary(listing).completedCount,
+    0
+  );
+  const totalCount = listings.length * TRUST_COMPLETION_TOTAL;
+
+  return {
+    completedCount,
+    totalCount,
+    remainingCount: Math.max(totalCount - completedCount, 0),
+    ratioLabel: `${completedCount}/${totalCount}`,
+  };
+}
 
 interface SellerTrustData {
   userType?: string;

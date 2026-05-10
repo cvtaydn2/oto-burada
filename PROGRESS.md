@@ -1,5 +1,35 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 100. Task A1 — Unified Trust Completion Ratio Language
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement by unifying trust completion language across the dashboard summary, card reminder, trust-focused edit surface, and trust save completion states, while reusing the current field-presence eligibility, existing query params, and existing page-scoped flow without backend or schema changes.
+
+### 100.1 Shared Ratio Utility
+- Added [`getTrustCompletionSummary()`](src/features/marketplace/lib/trust-ui.ts:21) and [`getTrustBacklogSummary()`](src/features/marketplace/lib/trust-ui.ts:41) in [`trust-ui.ts`](src/features/marketplace/lib/trust-ui.ts) as the shared source for `x/3` listing progress and page-level backlog ratio copy.
+- Replaced duplicated per-surface trust completion math so card reminders, top summary, and trust edit mode all read from the same simple three-field completion rule.
+
+### 100.2 Dashboard Summary & Filter Copy Alignment
+- Updated [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx:127) to derive reminder eligibility from the shared completion helper instead of local inline logic.
+- Reframed the top trust summary to describe the current page backlog using the same ratio vocabulary sellers see on cards, including a page-level aggregate like `x/y` while explicitly preserving page scope.
+- Aligned `trustSaved=next` and `trustSaved=done` success surfaces so both now reference the same `x/3` completion language instead of mixing count-only and generic completion wording.
+
+### 100.3 Card & Trust Edit Surface Alignment
+- Updated [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:84) so the reminder badge now renders the shared ratio label instead of recomputing a local `x/3` string.
+- Updated [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx:91) so trust mode now repeats the same completion ratio in the top panel, next-step guidance, and trust section header copy.
+- Updated [`MyListingsPanel`](src/features/marketplace/components/my-listings-panel.tsx:210) so the filtered empty/final state and active filter banner also describe incomplete trust work as “3/3 olmayan” items, keeping the funnel language consistent without changing the CTA model.
+
+### 100.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/dashboard/listings/page.tsx src/features/marketplace/components/my-listings-panel.tsx src/features/marketplace/components/dashboard-listing-card.tsx src/components/forms/listing-create-form-renderer.tsx src/features/marketplace/lib/trust-ui.ts`](package.json:12) ✅
+
+### 100.5 Remaining Risk
+- The new shared language still reflects field presence only; a listing can read as `3/3` even if the informational depth of ekspertiz, hasar, or Tramer content is weak.
+- The backlog summary is intentionally limited to the currently loaded dashboard page, so its aggregate ratio is page-scoped rather than a whole-account trust progress metric.
+
+---
+
 ## 99. Task A1 — Trust Completion Final State Closure Surface
 
 **Date**: 2026-05-10

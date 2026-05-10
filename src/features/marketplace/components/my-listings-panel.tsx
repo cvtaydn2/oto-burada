@@ -210,12 +210,12 @@ export function MyListingsPanel({
                   Sayfa kapsamındaki tur tamamlandı
                 </p>
                 <h3 className="text-lg font-semibold leading-tight text-emerald-950">
-                  Bu görünümdeki son eksik trust ilanını da kaydettin.
+                  Bu görünümdeki son eksik ilanın güven oranını da 3/3 yaptın.
                 </h3>
                 <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/85">
-                  Bu kapanış yalnız şu an açık olan filtreli sayfa için geçerli. Bu yüzden trust
-                  hatırlatmaları bu görünümde doğal olarak sustu; diğer sayfalarda eksik ilan varsa
-                  onları kendi sayfasında görmeye devam edersin.
+                  Bu kapanış yalnız şu an açık olan filtreli sayfa için geçerli. Bu yüzden bu
+                  görünümde artık 3/3 olmayan ilan kalmadı; diğer sayfalarda eksik ilan varsa onları
+                  kendi sayfasında görmeye devam edersin.
                 </p>
               </div>
 
@@ -291,11 +291,12 @@ export function MyListingsPanel({
                     Aktif filtre
                   </p>
                   <p className="text-sm font-semibold leading-6 text-blue-950">
-                    Yalnız güven detayı eksik ilanlar gösteriliyor.
+                    Yalnız güven oranı 3/3 olmayan ilanlar gösteriliyor.
                   </p>
                   <p className="text-xs font-medium leading-5 text-blue-900/80">
-                    Ekspertiz, hasar veya Tramer bilgisi eksik ilanlara odaklanıyorsun. Filtreyi
-                    kapatınca tüm ilan görünümüne dönersin.
+                    Ekspertiz, hasar veya Tramer bilgisi eksik ilanlara odaklanıyorsun. Karttaki
+                    aynı x/3 mantığı bu filtrede de geçerli; filtreyi kapatınca tüm ilan görünümüne
+                    dönersin.
                   </p>
                 </div>
 
