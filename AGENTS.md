@@ -20,6 +20,8 @@ Primary success criteria:
 
 ## Documentation Hierarchy (Source of Truth)
 
+Bu liste normatif öncelik sırasını tanımlar; onboarding veya önerilen okuma sırası değildir. Yeni bir okuyucu için başlangıç akışı [`README.md`](README.md) ile başlar, ancak çelişki durumunda aşağıdaki öncelik uygulanır:
+
 1. **AGENTS.md**: The "Compass". Vision, non-negotiable rules, and architectural standards.
 2. **README.md**: The "Entry Point". Quick start, setup, and high-level tech overview.
 3. **TASKS.md**: The "Backlog". Execution order and detailed acceptance criteria.

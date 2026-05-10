@@ -1,26 +1,43 @@
 # OtoBurada
 
-Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsiz ilan pazaryeri.
+OtoBurada, yalnızca otomobil ilanlarına odaklanan, mobil-first, güven odaklı ve ücretsiz bireysel ilan yayınlamayı merkeze alan bir pazaryeri MVP’sidir.
 
-## Genel durum
+Bu belge deponun giriş noktasıdır. Ürün vizyonunun kuralları [`AGENTS.md`](AGENTS.md), teslim backlog’u [`TASKS.md`](TASKS.md), yapılan işlerin günlüğü [`PROGRESS.md`](PROGRESS.md), operasyonel akışlar [`RUNBOOK.md`](RUNBOOK.md) ve dokümantasyon kataloğu [`docs/INDEX.md`](docs/INDEX.md) altında tutulur.
 
-Bu repo şu anda mimari olarak aktif geliştirme altındadır ve son güvenli checkpoint commit'i alınmıştır. Kod tabanı önemli bir mimari toparlama turundan geçmiş olsa da depo hâlâ tam yeşil kalite kapısında değildir.
+## Belge omurgası
 
-Şu anki doğrulanmış durum:
+Bu bölüm normatif source-of-truth önceliğini özetler; önerilen onboarding okuma sırası değildir. Yeni bir okuyucu için başlangıç noktası yine [`README.md`](README.md) olur, ancak çelişki halinde aşağıdaki öncelik uygulanır:
 
-- `npm run lint`: değişikliklerden sonra yeniden çalıştırılmalıdır; repo standardı sıfır warning / sıfır error hedefidir.
-- `npm run typecheck`: şu anda temizdir; alias, client-server boundary ve marketplace query yüzeyindeki kritik tip kırıkları toparlanmıştır.
-- `npm run build`: her refactor turundan sonra ayrıca doğrulanmalıdır; typecheck temizliği tek başına build garantisi sayılmaz.
-- `npm run test:unit` / `npm run test:int`: ortam izinleri, Supabase erişimi ve test fixture gerçekliğine göre değerlendirilmelidir.
+1. [`AGENTS.md`](AGENTS.md): Ürün, mimari ve kalite için anayasa niteliğindeki kurallar.
+2. [`README.md`](README.md): Hızlı başlangıç ve temel yönlendirme.
+3. [`TASKS.md`](TASKS.md): Backlog, teslim sırası ve acceptance criteria.
+4. [`PROGRESS.md`](PROGRESS.md): Tamamlanan işler, kararlar ve doğrulama geçmişi.
+5. [`RUNBOOK.md`](RUNBOOK.md): Deploy, incident, rollback ve operasyon prosedürleri.
+6. [`docs/INDEX.md`](docs/INDEX.md): Aktif, referans, audit ve archive doküman kataloğu.
 
-Not: E2E testleri çevresel bağımlılıklara (Supabase erişimi, test data, local network) duyarlıdır. Production readiness için her release öncesi smoke koşusu önerilir.
+## Ürün özeti
 
-## Tek komutla çalıştırma
+Ürün hedefi, sahibinden.com ve arabam.com benzeri yatay veya karmaşık deneyimlere kıyasla daha güvenilir, daha şeffaf, daha düşük maliyetli ve daha sade bir otomobil ilan deneyimi sunmaktır.
 
-En hızlı local başlangıç:
+Temel ilkeler şunlardır:
+
+- sadece otomobil ilanları
+- bireysel kullanıcı için ücretsiz ilan yayını
+- moderasyon zorunluluğu
+- WhatsApp CTA ile hızlı satıcı iletişimi
+- mobil-first kullanım kolaylığı
+- SEO dostu public listing sayfaları
+- ücretsiz tier ile sürdürülebilir mimari
+
+Detaylı ürün yönü için [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md), güven ve politika yapısı için [`docs/TRUST_AND_SAFETY.md`](docs/TRUST_AND_SAFETY.md), [`docs/MODERATION_POLICY.md`](docs/MODERATION_POLICY.md) ve gelir modeli için [`docs/MONETIZATION.md`](docs/MONETIZATION.md) belgelerine bakılmalıdır.
+
+## Hızlı başlangıç
+
+Yerel geliştirme için en kısa akış:
 
 ```bash
-npm install && npm run dev
+npm install
+npm run dev
 ```
 
 Uygulama varsayılan olarak `http://localhost:3000` üzerinde açılır.
@@ -29,21 +46,17 @@ Uygulama varsayılan olarak `http://localhost:3000` üzerinde açılır.
 
 - Node.js 20+
 - npm 10+
-- İsteğe bağlı: Supabase projesi veya local Supabase stack
+- İsteğe bağlı Supabase projesi veya local Supabase stack
 
-## Hızlı kurulum
+## Kurulum akışı
 
-### 1) Env dosyasını oluştur
+### 1. Ortam değişkenlerini hazırla
 
 ```bash
 copy .env.local.template .env.local
 ```
 
-Windows PowerShell dışında iseniz manuel olarak da kopyalayabilirsiniz.
-
-### 2) Minimum local env değerlerini gir
-
-Uygulamanın anlamlı şekilde açılması için en az şu alanları doldurun:
+Minimum anlamlı local çalışma için tipik çekirdek değişkenler:
 
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -56,22 +69,11 @@ SUPABASE_STORAGE_BUCKET_DOCUMENTS=listing-documents
 SUPABASE_DEMO_USER_PASSWORD=test-123456
 ```
 
-Notlar:
+Tam environment ve operasyonel beklentiler için [`RUNBOOK.md`](RUNBOOK.md) okunmalıdır.
 
-- Turnstile local geliştirmede zorunlu değildir. `NEXT_PUBLIC_TURNSTILE_SITE_KEY` ve `TURNSTILE_SECRET_KEY` boş kalabilir.
-- Redis, Resend, Sentry ve Iyzico local boot için zorunlu değildir.
-- Bu opsiyonel servisler tanımlı değilse uygulama degrade modda çalışır.
-- Analytics/telemetry tarafında runtime hata takibi için yalnızca Sentry kullanılır; ayrı ürün analitik servisi gerekmez.
+### 2. Veritabanını hazırla
 
-### 3) Bağımlılıkları kur
-
-```bash
-npm install
-```
-
-### 4) Veritabanını hazırla
-
-Supabase schema ve demo data gerekiyorsa sırayla:
+Gerekliyse sırasıyla:
 
 ```bash
 npm run db:apply-schema
@@ -79,19 +81,19 @@ npm run db:migrate
 npm run db:seed-demo
 ```
 
-Tek akış olarak çalıştırmak isterseniz:
+Tek akış olarak:
 
 ```bash
 npm run db:bootstrap-demo
 ```
 
-### 5) Uygulamayı başlat
+### 3. Uygulamayı başlat
 
 ```bash
 npm run dev
 ```
 
-## Kullanılabilir komutlar
+## Sık kullanılan komutlar
 
 ```bash
 npm run dev
@@ -109,343 +111,38 @@ npm run db:seed-demo
 npm run db:bootstrap-demo
 ```
 
-## Local geliştirme davranışı
+## Mimari özet
 
-### Turnstile
+Uygulama tek bir full-stack Next.js kod tabanı olarak çalışır. Server component yaklaşımı varsayılandır. Mutation akışları route handlers veya server actions ile yürütülür. Supabase Auth, Postgres ve Storage ana backend omurgasını oluşturur. RLS client tarafında asla bypass edilmez.
 
-- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` yoksa widget render edilmez.
-- `TURNSTILE_SECRET_KEY` yoksa server doğrulaması development ve test ortamında fail-open çalışır.
-- Production için her ikisi de tanımlanmalıdır.
+Servis katmanı standardı için [`docs/SERVICE_ARCHITECTURE.md`](docs/SERVICE_ARCHITECTURE.md), teknik güvenlik için [`docs/SECURITY.md`](docs/SECURITY.md) ve release gate’leri için [`docs/RELEASE_READINESS.md`](docs/RELEASE_READINESS.md) kullanılmalıdır.
 
-### Redis
+## Repo haritası
 
-- `UPSTASH_REDIS_REST_URL` ve `UPSTASH_REDIS_REST_TOKEN` yoksa bazı rate-limit ve dedup akışları localde hafifletilmiş modda çalışır.
+- [`src/app`](src/app): App Router sayfaları ve route handler’lar
+- [`src/features`](src/features): Feature bazlı modüller
+- [`src/domain`](src/domain): Saf domain mantığı ve use case’ler
+- [`src/services`](src/services): Paylaşılan veya kalan servis katmanları
+- [`src/lib`](src/lib): Auth, güvenlik, env, validator ve yardımcı altyapı
+- [`database`](database): Schema snapshot, base schema ve migration dosyaları
+- [`scripts`](scripts): DB ve operasyon scriptleri
+- [`docs`](docs): Aktif, referans, audit ve archive dokümantasyonu
 
-### E-posta
+## Dokümantasyon navigasyonu
 
-- `RESEND_API_KEY` yoksa transactional email akışları localde tam aktif olmaz.
+Aktif belge kataloğu [`docs/INDEX.md`](docs/INDEX.md) altındadır. Yeni bir geliştirici için önerilen okuma sırası şöyledir:
 
-### Ödeme
+1. [`README.md`](README.md)
+2. [`AGENTS.md`](AGENTS.md)
+3. [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md)
+4. [`docs/TRUST_AND_SAFETY.md`](docs/TRUST_AND_SAFETY.md)
+5. [`docs/SERVICE_ARCHITECTURE.md`](docs/SERVICE_ARCHITECTURE.md)
+6. [`TASKS.md`](TASKS.md)
+7. [`PROGRESS.md`](PROGRESS.md)
+8. [`RUNBOOK.md`](RUNBOOK.md)
 
-- `IYZICO_*` değişkenleri production için gereklidir.
-- Local boot ve temel UI/test akışları için zorunlu değildir.
+Bu sıra onboarding kolaylığı içindir. Normatif çelişki çözümü için üstteki belge omurgası sırası ve [`AGENTS.md`](AGENTS.md) önceliği geçerlidir.
 
-## E2E ve demo kullanıcı
+## Notlar
 
-Playwright listing wizard testi için demo kullanıcı beklenir:
-
-```env
-SUPABASE_DEMO_USER_PASSWORD=test-123456
-```
-
-Varsayılan test kullanıcısı:
-
-- `emre@otoburada.demo`
-
-Bu hesabın seed sırasında oluşmuş olması gerekir.
-
-## Proje yapısı
-
-- `src/app`: App Router sayfaları ve API route'ları
-- `src/components`: Paylaşılan ve feature tabanlı UI bileşenleri
-- `src/features`: Üst seviye feature modülleri
-- `src/domain`: Domain logic ve use case katmanı
-- `src/services`: Veri erişimi, iş mantığı ve harici servis entegrasyonları
-- `src/lib`: Auth, güvenlik, env, utils, validator ve altyapı yardımcıları
-- `database/`: Schema snapshot, base schema ve migration dosyaları
-- `scripts/`: DB, bootstrap ve operasyon scriptleri
-- `e2e/`, `tests/`: Playwright ve diğer test senaryoları
-
-## Mimari notlar
-
-- Server component yaklaşımı varsayılandır.
-- Mutations için route handlers ve server-side orchestration kullanılır.
-- Supabase Auth/Postgres/Storage ana backend omurgasıdır.
-- RLS bypass edecek client-side service role kullanımı yoktur.
-
-## Env açıklamaları
-
-## Güven skoru (Trust Score)
-
-[`TrustScoreCalculator.calculate()`](src/domain/logic/trust-score-calculator.ts:14) aşağıdaki deterministik kurallarla çalışır:
-
-- başlangıç puanı: `50`
-- e-posta doğrulandıysa: `+10`
-- temel kimlik/doğrulama tamamlandıysa (`isVerified`): `+20`
-- ek cüzdan/doğrulama tamamlandıysa (`isWalletVerified`): `+20`
-- profesyonel satıcıysa: `+10`
-- kullanıcı banlıysa: skor doğrudan `0`
-- kullanıcı `restricted_review` durumundaysa: skor en fazla `30`
-
-Bu skor MVP aşamasında açıklanabilirlik ve moderasyon sadeliği için bilinçli olarak lineer tutulur.
-
-## API: Listing Create Contract
-
-The `POST /api/listings` endpoint accepts a JSON body matching the `ListingCreateInput` contract.
-Important notes:
-
-- `price` should be sent as full TL amount (example: `1500000` for 1.500.000 TL). The server stores price as kurus (integer) — internally multiplied by 100.
-- `images` must be an array of image objects with at least 3 items when creating a listing. Each image object should contain `storagePath` and `url` (returned by `/api/listings/images`). Example:
-
-```json
-{
-   "title": "2019 Honda Civic",
-   "brand": "Honda",
-   "model": "Civic",
-   "year": 2019,
-   "price": 1500000,
-   "mileage": 45000,
-   "fuelType": "benzin",
-   "transmission": "manuel",
-   "city": "İstanbul",
-   "district": "Beşiktaş",
-   "description": "Araç temiz, hasar kaydı ...",
-   "whatsappPhone": "+905xxxxxxxxx",
-   "vin": "1HGCM82633A004352",
-   "images": [
-      { "storagePath": "user-id/abcd.webp", "url": "https://.../abcd.webp" },
-      { "storagePath": "user-id/efgh.webp", "url": "https://.../efgh.webp" },
-      { "storagePath": "user-id/ijkl.webp", "url": "https://.../ijkl.webp" }
-   ]
-}
-```
-
-On success the endpoint returns a minimal listing reference:
-
-```json
-{
-   "success": true,
-   "data": {
-      "message": "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
-      "listing": { "id": "...", "slug": "...", "status": "pending" }
-   }
-}
-```
-
-Validation errors are returned in `error.details` as a mapping of field names to arrays of short messages (e.g. `{ "price": ["Fiyat en az 1 TL olmalıdır"] }`). This is safe for production and suitable for displaying field-level errors on the frontend.
-
-
-### Zorunlu çekirdek değişkenler
-
-- `NEXT_PUBLIC_APP_URL`: Public app origin
-- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Public anon key
-- `SUPABASE_SERVICE_ROLE_KEY`: Server-side privileged operations
-- `SUPABASE_DB_URL`: Migration ve schema scriptleri için DB bağlantısı
-
-### Depolama
-
-- `SUPABASE_STORAGE_BUCKET_LISTINGS`: İlan görselleri bucket adı
-- `SUPABASE_STORAGE_BUCKET_DOCUMENTS`: Doküman bucket adı
-
-### Opsiyonel güvenlik ve entegrasyonlar
-
-- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Client bot koruma widget anahtarı
-- `TURNSTILE_SECRET_KEY`: Server doğrulama anahtarı
-- `UPSTASH_REDIS_REST_URL`: Upstash Redis URL
-- `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis token
-- `RESEND_API_KEY`: E-posta servisi
-- `RESEND_FROM_EMAIL`: Gönderen adresi
-- `IYZICO_API_KEY`: Ödeme API key
-- `IYZICO_SECRET_KEY`: Ödeme secret key
-- `IYZICO_BASE_URL`: Sandbox/production base URL
-- `CRON_SECRET`: Cron endpoint koruması
-- `NEXT_PUBLIC_SENTRY_DSN`: İstemci ve sunucu tarafı Sentry hata takibi
-- `SENTRY_AUTH_TOKEN`: Sentry source map upload / build entegrasyonu
-- `SENTRY_ORG`: Sentry organizasyon adı
-- `SENTRY_PROJECT`: Sentry proje adı
-- `INTERNAL_API_SECRET`: Internal API çağrıları
-- `SENTRY_ORG`: Sentry organizasyon adı, build/report otomasyonlarında gerekebilir
-- `SENTRY_PROJECT`: Sentry proje adı, build/report otomasyonlarında gerekebilir
-
-### Feature flag'ler
-
-Hepsi opsiyoneldir, default davranış `false` kabul edilir.
-
-```env
-NEXT_PUBLIC_ENABLE_BILLING=false
-NEXT_PUBLIC_ENABLE_AI=false
-NEXT_PUBLIC_ENABLE_CHAT=false
-NEXT_PUBLIC_ENABLE_COMPARE=true
-NEXT_PUBLIC_ENABLE_DOCS=false
-NEXT_PUBLIC_ENABLE_PWA=false
-```
-
-## Troubleshooting
-
-### Uygulama açılıyor ama bazı özellikler eksik
-
-Bu genelde opsiyonel env eksikliğidir. Local geliştirmede aşağıdakiler eksik olabilir:
-
-- Redis
-- Turnstile
-- Resend
-- Sentry
-- Iyzico
-
-Çekirdek akışlar yine çalışmalıdır.
-
-### DB scriptleri hata veriyor
-
-Önce env doğrulayın:
-
-```bash
-npm run db:check-env
-```
-
-Ardından `SUPABASE_DB_URL` ve Supabase key'lerini kontrol edin.
-
-### E2E wizard testi login aşamasında kalıyor
-
-Muhtemel nedenler:
-
-- demo kullanıcı seed edilmedi
-- `SUPABASE_DEMO_USER_PASSWORD` yanlış
-- local database bootstrap tamamlanmadı
-
-### Production'da kayıt/login çalışmıyor
-
-**Hızlı Tanı:**
-```bash
-npm run diagnose
-```
-
-Bu script otomatik olarak tüm production sorunlarını kontrol eder.
-
-**Detaylı Troubleshooting:**
-Detaylı çözümler için [`docs/PRODUCTION_TROUBLESHOOTING.md`](docs/PRODUCTION_TROUBLESHOOTING.md) dosyasına bakın.
-
-**Yaygın Sorunlar:**
-1. Supabase Email Provider kapalı
-2. Site URL/Redirect URLs yanlış yapılandırılmış
-3. Environment variables eksik veya yanlış
-4. Email rate limit (ücretsiz tier: 4 email/saat)
-5. Database migrations uygulanmamış
-6. Profile trigger çalışmıyor
-
-**Hızlı Çözüm Kontrol Listesi:**
-- [ ] Supabase Dashboard > Auth > Providers > Email **enabled**
-- [ ] Supabase Dashboard > Auth > URL Configuration doğru
-- [ ] Vercel Environment Variables tanımlı
-- [ ] `NEXT_PUBLIC_APP_URL` production domain'e ayarlı
-- [ ] Database migrations uygulanmış (`npm run db:migrate`)
-- [ ] Profile trigger mevcut (veya manuel profile creation aktif)
-
-### Runtime Errors (Production/Local)
-
-**Yaygın Runtime Hatalar:**
-- Maintenance mode aktif (admin bile etkileniyor)
-- Redis config eksik (rate limiting warning)
-- Database column eksik (migration uygulanmamış)
-
-**Hızlı Çözüm:**
-[`docs/RUNTIME_ERRORS_FIX.md`](docs/RUNTIME_ERRORS_FIX.md) - 10 dakikada çözüm
-
-**Örnek Çözümler:**
-```sql
--- Maintenance mode'u kapat
-UPDATE platform_settings
-SET value = jsonb_set(value, '{maintenance_mode}', 'false')
-WHERE key = 'general_appearance';
-
--- Eksik column ekle
-ALTER TABLE profiles 
-ADD COLUMN IF NOT EXISTS verification_requested_at TIMESTAMPTZ;
-```
-
-## Güvenlik
-
-### Security Audit
-
-Proje otomatik güvenlik taraması ile korunur:
-
-```bash
-# Local security audit
-npm audit
-
-# Sadece critical/high
-npm audit --audit-level=high
-```
-
-**GitHub Actions:**
-- Her push'ta otomatik security audit
-- Haftalık scheduled scan
-- Critical vulnerability'lerde warning (deployment engellenmez)
-
-**Bilinen Sorunlar:**
-- `iyzipay` transitive dependencies (mitigasyon uygulandı)
-- Detaylar: [`docs/KNOWN_SECURITY_ISSUES.md`](docs/KNOWN_SECURITY_ISSUES.md)
-
-### Güvenlik Katmanları
-
-- ✅ **Input Validation**: Zod schemas
-- ✅ **CSRF Protection**: Token-based
-- ✅ **Rate Limiting**: IP-based (Redis/in-memory)
-- ✅ **RLS**: Database-level access control
-- ✅ **Server-Only**: Hassas kod client'a sızmaz
-- ✅ **Webhook Verification**: Signature validation
-
-## Monitoring (Ücretsiz Tier)
-
-### Hızlı Tanı
-
-```bash
-# Tüm sistemleri kontrol et
-npm run diagnose
-```
-
-### Otomatik Monitoring
-
-Proje 3 katmanlı ücretsiz monitoring ile gelir:
-
-1. **GitHub Actions** (günde 1 kez)
-   - Otomatik health check
-   - Sorun varsa GitHub Issue oluşturur
-   - Email bildirimi
-
-2. **Vercel Cron** (günde 1 kez - Hobby plan limiti)
-   - `/api/health-check` endpoint'i
-   - Environment, database, auth kontrolü
-   - Vercel Dashboard'da sonuçlar
-
-3. **UptimeRobot** (manuel kurulum - her 5 dakikada)
-   - Her 5 dakikada uptime kontrolü
-   - Email/SMS alerts
-   - Public status page
-
-**Not:** Vercel Hobby plan'da cron job'lar günde 1 kez çalışabilir. Daha sık kontrol için UptimeRobot kullanın (ücretsiz, her 5 dakika).
-
-**Detaylı Kurulum:** [`docs/MONITORING_SETUP.md`](docs/MONITORING_SETUP.md) (15 dakika)
-
-### Manuel Debug
-
-**Vercel Logs:**
-```bash
-vercel logs --follow          # Real-time
-vercel logs -n 100            # Son 100 log
-```
-
-**Supabase Logs:**
-- Dashboard > Logs > Auth Logs (login/signup)
-- Dashboard > Logs > API Logs (HTTP requests)
-- Dashboard > Logs > Database Logs (SQL queries)
-
-**Browser Console:**
-- F12 > Console (JavaScript errors)
-- F12 > Network (Failed requests)
-- F12 > Application > Storage (Auth tokens)
-
-**Detaylı Guide:** [`docs/FREE_TIER_MONITORING.md`](docs/FREE_TIER_MONITORING.md)
-
-## Dokümantasyon
-
-- `docs/INDEX.md`: dokümantasyon navigasyon başlangıç noktası
-- `AGENTS.md`: ürün ve mimari kurallar
-- `TASKS.md`: backlog ve kabul kriterleri
-- `PROGRESS.md`: yapılan işler ve doğrulama geçmişi
-- `docs/SECURITY.md`: güvenlik kararları
-- `docs/SERVICE_ARCHITECTURE.md`: servis katmanı düzeni
-- `docs/PRODUCTION_TROUBLESHOOTING.md`: production sorun çözümleri (50+ sayfa)
-- `docs/PRODUCTION_QUICK_FIX.md`: 5 dakikada hızlı çözümler
-- `docs/FREE_TIER_MONITORING.md`: ücretsiz monitoring stratejisi
-- `docs/MONITORING_SETUP.md`: 15 dakikada monitoring kurulumu
+Production troubleshooting, runtime hata çözümü veya tarihsel audit içerikleri için başlangıç noktası yine [`docs/INDEX.md`](docs/INDEX.md) olmalıdır. Bu dosya bilerek kısa tutulur; uzun operasyonel veya tarihsel detaylar burada tekrar edilmez.

@@ -8,7 +8,9 @@
 
 ## RAPOR HAKKINDA
 
-Bu denetim projenin tum katmanlarini bottom-up yontemle (Veritabani → Guvenlik → API → Servisler → Alan Mantigi → UI/UX → Yonetim → Performans) kapsamli ve butuncul sekilde inceler.
+> Historical audit note: Bu klasördeki içerikler tarihsel denetim çıktılarıdır. Buradaki P0, P1 ve P2 sayıları 2026-05-07 tarihli inceleme anının bulgu yoğunluğunu gösterir; bugünün açık backlog veya canlı incident listesi olarak okunmamalıdır. Güncel ürün, güvenlik, servis mimarisi ve operasyon kararları için sırasıyla [`docs/PRODUCT_STRATEGY.md`](../PRODUCT_STRATEGY.md), [`docs/SECURITY.md`](../SECURITY.md), [`docs/SERVICE_ARCHITECTURE.md`](../SERVICE_ARCHITECTURE.md), [`RUNBOOK.md`](../../RUNBOOK.md) ve [`PROGRESS.md`](../../PROGRESS.md) referans alınmalıdır.
+
+Bu denetim projenin tum katmanlarini bottom-up yontemle Veritabani → Guvenlik → API → Servisler → Alan Mantigi → UI/UX → Yonetim → Performans şeklinde kapsamli ve butuncul sekilde inceler.
 
 Her faz kendi icerisinde ayri bir uzmanlik alanidir. Ayni bug birden fazla fazda gorunebilir cunku etkisi capraz katmanli olabilir.
 
@@ -16,9 +18,11 @@ Her faz kendi icerisinde ayri bir uzmanlik alanidir. Ayni bug birden fazla fazda
 
 ## RAPORLAR LISTESI
 
+> Faz tablosu tarihsel kapsam haritasıdır. Bir faz satırında dosya bulunmaması, bugünün eksik operasyon adımı değil; yalnızca o döneme ait ayrıntılı markdown çıktısının repoda korunmamış olduğunu gösterir.
+
 | Faz | Baslik | Kritik (P0) | Yuksek (P1) | Orta (P2) | Dosya |
 |-----|--------|-------------|-------------|-----------|-------|
-| 1 | Veritabani & Sema | 5 | 5 | 6 | [FAZ_1_VERITABANI_SEMA.md](FAZ_1_VERITABANI_SEMA.md) |
+| 1 | Veritabani & Sema | 5 | 5 | 6 | Ayrıntılı Faz 1 markdown raporu bu klasörde korunmamıştır. Bu yüzden tabloda yalnız tarihsel özet referansı tutulur; güncel veritabanı gerçekliği için [`database/schema.snapshot.sql`](../../database/schema.snapshot.sql), migration dosyaları ve [`PROGRESS.md`](../../PROGRESS.md) esas alınmalıdır. |
 | 2 | Guvenlik & Yetkilendirme | 2 | 3 | 2 | [FAZ_2_GUVENLIK_YETKILENDIRME.md](FAZ_2_GUVENLIK_YETKILENDIRME.md) |
 | 3 | API & Route Handlerlar | 2 | 2 | 1 | [FAZ_3_API_ROUTE_HANDLERLAR.md](FAZ_3_API_ROUTE_HANDLERLAR.md) |
 | 4 | Servisler & Uygulamalar Mantigi | 2 | 2 | 0 | [FAZ_4_SERVISLER_UYGULAMALAR_MANTIGI.md](FAZ_4_SERVISLER_UYGULAMALAR_MANTIGI.md) |
@@ -26,13 +30,15 @@ Her faz kendi icerisinde ayri bir uzmanlik alanidir. Ayni bug birden fazla fazda
 | 6 | UI/UX & Komponentler | 0 | 1 | 2 | [FAZ_6_UI_UX_KOMPONENTLER.md](FAZ_6_UI_UX_KOMPONENTLER.md) |
 | 7 | Yonetim Paneli & Moderasyon | 0 | 2 | 1 | [FAZ_7_ADMIN_PANEL_MODERASYON.md](FAZ_7_ADMIN_PANEL_MODERASYON.md) |
 | 8 | Performans & Olceklenebilirlik | 1 | 1 | 0 | [FAZ_8_PERFORMANS_OLCEKLENEBILIRLIK.md](FAZ_8_PERFORMANS_OLCEKLENEBILIRLIK.md) |
-| **Genel Toplam** | **12** | **18** | **13** | **43 Bulgu** |
+| Ek | Doğrulanmış mimari rapor | - | - | - | [ARCHITECTURE_REVIEW_REPORT.md](ARCHITECTURE_REVIEW_REPORT.md) |
+| Ek | Tamamlanmış code review planı | - | - | - | [CODE_REVIEW_PLAN.md](CODE_REVIEW_PLAN.md) |
+| **Genel Toplam** | **12** | **18** | **13** | **43 Bulgu + ek tarihsel belgeler** |
 
 ---
 
 ## EN KRITIK BULGULAR (P0 Ozeti)
 
-> Durum Notu (2026-05-07): Faz 2-7 kapsamındaki bircok uygulama-kodu duzeltmesi yapildi. Bu README tablosu tarihsel audit ozeti olarak korunur; canli durum icin faz dosyalarindaki guncelleme notlari ve [`PROGRESS.md`](../PROGRESS.md) referans alinmalidir.
+> Durum Notu: Faz 2-7 kapsamındaki birçok uygulama-kodu düzeltmesi sonradan uygulanmıştır. Bu README tablosu tarihsel audit özeti olarak korunur; bugünün açık problemleri bu listeden türetilmemeli, canlı durum için faz dosyalarındaki güncelleme notları ve [`PROGRESS.md`](../../PROGRESS.md) referans alınmalıdır.
 
 | # | Faz | ID | Sorun |
 |---|-----|-----|-------|
@@ -52,6 +58,8 @@ Her faz kendi icerisinde ayri bir uzmanlik alanidir. Ayni bug birden fazla fazda
 ---
 
 ## DUZELTME ONCELIĞI
+
+> Historical prioritization note: Aşağıdaki sıra audit gününde önerilen müdahale önceliğidir. Bugünün aktif iş sırası veya açık sprint planı olarak değil, tarihsel triage kaydı olarak okunmalıdır. Güncel backlog için [`TASKS.md`](../../TASKS.md) ve gerçekleşen düzeltmeler için [`PROGRESS.md`](../../PROGRESS.md) esas alınmalıdır.
 
 > Guncel Durum: Faz 2/3 rate-limit ve callback sertlestirmeleri, Faz 4/5 payment-domain duzeltmeleri ve Faz 6/7 admin-drawer refactor'lari uygulanmistir. En buyuk acik kalan madde Faz 8 snapshot senkronizasyonunun harici ortam bagimliliklari nedeniyle tamamlanamamasidir.
 

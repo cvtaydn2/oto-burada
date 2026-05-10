@@ -1,289 +1,171 @@
-# Service Architecture Migration Guide
-
-This document provides detailed guidance on migrating from legacy service patterns to the modern server action pattern established in Phase 28.4.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Modern Pattern: Server Actions](#modern-pattern-server-actions)
-- [Legacy Patterns](#legacy-patterns)
-- [Migration Examples](#migration-examples)
-- [Naming Conventions](#naming-conventions)
-- [Migrated Services](#migrated-services)
-
-## Overview
-
-The OtoBurada codebase has evolved through 46 development phases, resulting in some architectural inconsistencies. This guide documents the **established pattern** (Server Actions) and provides migration paths from legacy patterns.
-
-**Goal**: Achieve consistency across all services using the server action pattern with functional programming principles.
-
-## Modern Pattern: Server Actions
-
-### Structure
-
-```
-src/
-  app/
-    api/
-      [feature]/
-        actions.ts          # Server actions (API endpoints)
-    dashboard/
-      [feature]/
-        actions.ts          # Server actions (authenticated routes)
-  services/
-    [feature]/
-      [feature]-records.ts  # Data access layer
-      [feature]-logic.ts    # Business logic
-      [feature]-client.ts   # External API clients (optional)
-```
-
-### Example: Server Action
-
-```typescript
-// src/app/api/payments/actions.ts
-"use server";
-
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { PaymentService } from "@/services/payments/payment-logic";
-
-export async function initializePayment(listingId: string, packageType: string) {
-  const supabase = await createSupabaseServerClient();
-  
-  // Authentication check
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return { success: false, error: "Unauthorized" };
-  }
-  
-  // Business logic
-  const result = await PaymentService.initializeCheckout({
-    userId: user.id,
-    listingId,
-    packageType
-  });
-  
-  return result;
-}
-```
-
-### Key Characteristics
-
-1. **`"use server"` directive** at the top of the file
-2. **Functional approach** - no classes
-3. **Authentication** handled in server actions
-4. **Serializable return values** (no functions, classes, or symbols)
-5. **Type-safe** with TypeScript and Zod validation
-
-## Legacy Patterns
-
-### Pattern 1: Class-Based Services
-
-**Problem**: Uses object-oriented patterns instead of functional approach.
-
-```typescript
-// ❌ Legacy Pattern
-export class PaymentService {
-  static async initializeCheckout(params: PaymentParams) {
-    // ...
-  }
-}
-```
-
-**Solution**: Convert to functional exports.
-
-```typescript
-// ✅ Modern Pattern
-export async function initializeCheckout(params: PaymentParams) {
-  // ...
-}
-```
-
-### Pattern 2: Client-Service Wrappers
-
-**Problem**: Unnecessary abstraction layer between components and server.
-
-```typescript
-// ❌ Legacy Pattern (client-service.ts)
-import { ApiClient } from "@/lib/api-client";
-
-export async function toggleFavorite(listingId: string) {
-  return ApiClient.request("/api/favorites", {
-    method: "POST",
-    data: { listingId }
-  });
-}
-```
-
-**Solution**: Use server actions directly.
-
-```typescript
-// ✅ Modern Pattern (actions.ts)
-"use server";
-
-export async function toggleFavorite(listingId: string) {
-  const supabase = await createSupabaseServerClient();
-  // Direct implementation
-}
-```
-
-## Migration Examples
-
-### Example 1: Payment Service Migration
-
-**Before (Phase 27)**:
-```
-src/services/payment/
-  ├── payment-service.ts    # Class-based service
-  ├── doping-service.ts     # Class-based service
-  ├── client-service.ts     # Client wrapper
-  └── iyzico-client.ts      # External API client
-```
-
-**After (Phase 28.4)**:
-```
-src/services/payments/
-  ├── payment-logic.ts      # Business logic (functional)
-  ├── doping-logic.ts       # Business logic (functional)
-  └── iyzico-client.ts      # External API client (unchanged)
-
-src/app/api/payments/
-  ├── initialize/
-  │   └── route.ts          # Server action
-  └── callback/
-      └── route.ts          # Server action
-```
-
-**Changes**:
-1. Renamed directory: `payment/` → `payments/`
-2. Renamed files: `*-service.ts` → `*-logic.ts`
-3. Deleted `client-service.ts`
-4. Components now call API routes directly
-
-### Example 2: Favorites Service Migration
-
-**Before (Phase 27)**:
-```
-src/services/favorites/
-  ├── favorite-service.ts   # Legacy class-based
-  ├── client-service.ts     # Modern but redundant
-  ├── favorite-records.ts   # Data access layer
-  └── favorites-storage.ts  # Local storage utilities
-```
-
-**After (Phase 28.4)**:
-```
-src/services/favorites/
-  ├── favorite-records.ts   # Data access layer (kept)
-  └── favorites-storage.ts  # Local storage utilities (kept)
-
-src/app/dashboard/favorites/
-  └── actions.ts            # Server actions
-```
-
-**Changes**:
-1. Deleted `favorite-service.ts` (legacy)
-2. Deleted `client-service.ts` (redundant)
-3. Kept data access and utility files
-4. Components use `actions.ts` server actions
-
-## Naming Conventions
-
-### File Naming
-
-| Pattern | Purpose | Example |
-|---------|---------|---------|
-| `*-actions.ts` | Server actions (API endpoints) | `payment-actions.ts` |
-| `*-records.ts` | Data access layer (DB queries) | `favorite-records.ts` |
-| `*-logic.ts` | Business logic (pure functions) | `payment-logic.ts` |
-| `*-client.ts` | External API clients | `iyzico-client.ts` |
-| `*-storage.ts` | Local/session storage utilities | `favorites-storage.ts` |
-
-### Function Naming
-
-- **Server Actions**: Use verb-noun format
-  - `initializePayment`, `toggleFavorite`, `createListing`
-- **Business Logic**: Use descriptive names
-  - `calculateDopingPrice`, `validateListingData`
-- **Data Access**: Use CRUD verbs
-  - `getFavorites`, `createFavorite`, `deleteFavorite`
-
-## Migrated Services
-
-### ✅ Completed Migrations (Phase 28.4)
-
-1. **Payment Service**
-   - Status: ✅ Migrated
-   - Pattern: Server actions + functional logic
-   - Location: `src/services/payments/`, `src/app/api/payments/`
-
-2. **Favorites Service**
-   - Status: ✅ Migrated
-   - Pattern: Server actions + data access layer
-   - Location: `src/services/favorites/`, `src/app/dashboard/favorites/`
-
-### ⚠️ Pending Migrations
-
-The architecture has moved from top-level `src/services/*` ownership to a feature-first structure where service code also lives under `src/features/*/services/*`. Because of that transition, the old pending list below is no longer reliable as a file-path inventory and should be treated as a migration theme list instead of a literal file checklist.
-
-Current migration themes still worth auditing:
-
-1. **Marketplace listing query layer**
-   - Current area: `src/features/marketplace/services/listings/`
-   - Status: Partially stabilized
-   - What changed: client imports were normalized, dead duplicated component trees were removed, and the hot-path query module now uses typed result aliases around the legacy Supabase builder boundary.
-   - Remaining risk: the file is still oversized and should be split into select/query/filter modules in a follow-up refactor.
-   - Priority: Medium
-
-2. **Chat service surface**
-   - Current area: `src/features/chat/services/chat/`, `src/hooks/use-chat-queries.ts`, `src/hooks/use-chat-realtime.ts`
-   - Status: Stabilized
-   - What changed: mock hooks were replaced with real API-backed TanStack Query mutations/queries and live Supabase realtime subscriptions.
-   - Remaining risk: confirm dialogs and cache invalidation now follow the shared pattern, but chat still needs focused integration coverage.
-   - Priority: Low
-
-3. **Support/ticket service surface**
-   - Current area: `src/features/support/services/support/`
-   - Risk: some flows are modernized, but the documentation previously pointed to removed top-level service paths.
-   - Priority: Medium
-
-4. **Client-side API abstractions**
-   - Current area: shared wrappers such as `src/lib/api/client.ts` and feature hooks/components that still call REST endpoints directly.
-   - Status: In progress
-   - What changed: several user-facing surfaces were migrated off the legacy `@/lib/client` compatibility wrapper onto [`ApiClient`](../../src/lib/api/client.ts) and [`API_ROUTES`](../../src/lib/constants/api-routes.ts).
-   - Remaining risk: a few server-side cache helpers still intentionally import the compatibility alias for Redis helpers, and broader mutation standardization is still a follow-up item.
-   - Priority: Medium
-
-## Migration Checklist
-
-When migrating a service, follow this checklist:
-
-- [ ] Identify all files in the service directory
-- [ ] Extract business logic to `*-logic.ts` files
-- [ ] Create server actions in appropriate `app/` directory
-- [ ] Update all component imports
-- [ ] Write/update tests for new structure
-- [ ] Delete legacy files (class-based services, client-service wrappers)
-- [ ] Update documentation (this file and AGENTS.md)
-- [ ] Run full test suite to ensure no regressions
-- [ ] Commit changes with descriptive message
-
-## Best Practices
-
-1. **Start with tests**: Write tests for existing behavior before migrating
-2. **Migrate incrementally**: One service at a time
-3. **Preserve behavior**: Ensure no user-facing changes
-4. **Update documentation**: Keep AGENTS.md and this file in sync
-5. **Review with team**: Get code review before merging
-6. **Monitor production**: Watch for errors after deployment
-
-## Questions?
-
-For questions or clarifications about service architecture:
-1. Check AGENTS.md for high-level architectural standards
-2. Review this document for migration patterns
-3. Look at migrated services (payments, favorites) as examples
-4. Consult with the team lead
-
----
-
-**Last Updated**: Phase 46 (Backend-API-Frontend Alignment Fix)
+# Service Architecture
+
+Bu belge OtoBurada servis katmanı standardının güncel referansıdır. Amaç, projede hangi dosyanın hangi sorumluluğu taşıdığını netleştirmek ve yeni geliştirmelerde tek bir baskın pattern kullanılmasını sağlamaktır.
+
+Ürün kuralları [`AGENTS.md`](../AGENTS.md), operasyonel süreçler [`RUNBOOK.md`](../RUNBOOK.md), teknik güvenlik beklentileri [`docs/SECURITY.md`](docs/SECURITY.md) ve backlog yönü [`TASKS.md`](../TASKS.md) altındadır.
+
+## Neden bu belge var
+
+Kod tabanı çok sayıda refactor ve hardening fazından geçtiği için tarihsel olarak birden fazla servis yaklaşımı oluştu. Bu belge, bugün geçerli olan standardı açıklar ve eski pattern’lerin artık nasıl değerlendirilmesi gerektiğini netleştirir.
+
+## Güncel standart
+
+Varsayılan yaklaşım, server actions veya route handlers ile orkestre edilen fonksiyonel servis mimarisidir. Sorumluluk ayrımı aşağıdaki gibi kurulmalıdır.
+
+### `*-actions.ts`
+
+Bu dosyalar mutation veya server taraflı orkestrasyon giriş noktalarıdır.
+
+Beklenen sorumluluklar:
+
+- auth ve authorization kontrolü
+- request seviyesinde giriş doğrulama
+- iş akışının orkestrasyonu
+- gerektiğinde cache revalidation
+- serializable sonuç döndürme
+
+Tipik örnek yüzeyler arasında [`actions.ts`](../src/app/dashboard/favorites/actions.ts:1) ve [`actions.ts`](../src/app/api/payments/actions.ts:1) bulunur.
+
+### `*-records.ts`
+
+Bu dosyalar veri erişim katmanıdır.
+
+Beklenen sorumluluklar:
+
+- Supabase sorguları
+- CRUD işlemleri
+- projection ve join kararları
+- RLS uyumlu veri erişimi
+- null guard ve veri şekillendirme
+
+İş mantığı burada yoğunlaşmamalıdır. Bu katman veriyi alır, yazar veya minimum dönüştürür.
+
+### `*-logic.ts`
+
+Bu dosyalar saf veya büyük ölçüde saf iş mantığını taşır.
+
+Beklenen sorumluluklar:
+
+- domain kuralları
+- hesaplamalar
+- durum geçişleri
+- validasyon yardımcıları
+- stateless dönüşümler
+
+Bu katman, UI veya DB detayına bağımlı olmadan çalışabilmelidir.
+
+### `*-client.ts`
+
+Bu dosyalar yalnız dış servis entegrasyonu için kullanılır.
+
+Beklenen sorumluluklar:
+
+- Iyzico, Resend veya benzeri üçüncü parti API sarmalaması
+- HTTP client davranışı
+- imzalama, request mapping ve response normalizasyonu
+
+Bu katman uygulama business logic merkezi olmamalıdır. Sadece dış dünya ile konuşur.
+
+## Domain katmanı ile ilişki
+
+Bazı iş akışları tek bir servis dosyasından daha geniştir. Bu durumda [`src/domain/usecases`](../src/domain/usecases) altındaki use case dosyaları devreye girer.
+
+Bu katman şu işlerde kullanılmalıdır:
+
+- birden fazla servis veya feature arasında koordinasyon
+- transaction veya idempotent süreç orkestrasyonu
+- business workflow düzeyinde karar zincirleri
+
+Saf domain kuralları ise [`src/domain/logic`](../src/domain/logic) altında tutulabilir.
+
+## Karar ağacı
+
+Yeni bir davranış eklerken dosya yeri seçimi için kısa karar ağacı:
+
+- kullanıcıdan gelen bir mutation veya server-side işlem mi başlıyor → `*-actions.ts`
+- doğrudan veritabanı okuma yazma mı yapılıyor → `*-records.ts`
+- saf iş kuralı veya hesaplama mı yazılıyor → `*-logic.ts`
+- üçüncü parti API ile mi konuşuluyor → `*-client.ts`
+- birden fazla servis katmanını bağlayan iş akışı mı var → `domain/usecases/*`
+
+## Güncel klasör yaklaşımı
+
+Kod tabanı feature-first yapıya doğru evrilmiştir. Bu nedenle servis kodu yalnız kök [`src/services`](../src/services) altında değil, ilgili feature altında da yaşayabilir.
+
+Pratikte iki geçerli konum vardır:
+
+- paylaşılan veya yatay altyapı servisleri için [`src/services`](../src/services)
+- feature’e sıkı bağlı servisler için [`src/features`](../src/features) altındaki `services` klasörleri
+
+Önemli olan fiziksel klasörden çok sorumluluk ayrımı ve isim standardıdır.
+
+## Tercih edilen akış
+
+Yeni feature geliştirmelerinde önerilen akış şöyledir:
+
+1. Zod schema ve input shape netleştirilir
+2. veri erişimi `*-records.ts` içinde yazılır
+3. iş mantığı `*-logic.ts` içine çıkarılır
+4. auth ve orkestrasyon `*-actions.ts` içinde kurulur
+5. dış servis gerekiyorsa `*-client.ts` ile sınırlandırılır
+6. gerekirse use case katmanında çok adımlı akış kurulur
+
+## Anti-patternler
+
+Aşağıdaki yaklaşımlar yeni kodda tercih edilmemelidir.
+
+### Class-based service merkezleri
+
+`export class PaymentService` benzeri yapılar tarihsel kalıntı olarak görülmelidir. Fonksiyonel yaklaşım tercih edilir. Bunun nedeni, test etme, sorumluluk ayrımı ve server action akışlarına entegrasyonun daha sade olmasıdır.
+
+### Redundant client-service wrapper katmanı
+
+Sadece REST veya API çağrısını gizleyen ince istemci wrapper’ları çoğu durumda gereksiz soyutlama üretir. Özellikle doğrudan server action kullanılabilecek yüzeylerde bu pattern büyütülmemelidir.
+
+### Business logic’in UI veya records içine gömülmesi
+
+JSX içinde karar ağacı, records katmanında karmaşık domain kuralı veya client içinde auth bypass mantığı birikmemelidir.
+
+## Mimari beklentiler
+
+Servis katmanında kalıcı beklentiler şunlardır:
+
+- fonksiyonel yaklaşım, sınıf tabanlı yaklaşıma tercih edilir
+- RLS client tarafından bypass edilmez
+- hot path’lerde `SELECT *` kullanılmaz
+- hatalar yutulmaz, anlamlı biçimde yüzeye taşınır
+- side effect’ler transaction içinde bekletilmez
+- ödeme, e-posta ve benzeri dış yan etkiler idempotent ve ayrıştırılmış tasarlanır
+- dosya isimleri ve sorumluluklar tutarlı kalır
+
+## Örnek referans alanlar
+
+Kod tabanında bu pattern’in görüldüğü referans alanlar şunlardır:
+
+- favoriler server action yüzeyi [`actions.ts`](../src/app/dashboard/favorites/actions.ts:1)
+- ödeme action yüzeyi [`actions.ts`](../src/app/api/payments/actions.ts:1)
+- domain use case örnekleri [`listing-create.ts`](../src/domain/usecases/listing-create.ts:1), [`payment-initiate.ts`](../src/domain/usecases/payment-initiate.ts:1)
+
+## Refactor sırasında kontrol listesi
+
+Mevcut bir servisi yeni standarda çekerken minimum kontrol:
+
+1. mevcut public API ve import yüzeyini tespit et
+2. veri erişimini `*-records.ts` içine ayır
+3. saf iş kurallarını `*-logic.ts` içine çıkar
+4. auth ve orkestrasyonu `*-actions.ts` katmanına al
+5. gerekirse facade veya re-export ile geçiş uyumu sağla
+6. testleri ve çağıran import’ları güncelle
+7. dokümantasyonu bu belgeyle çelişmeyecek şekilde hizala
+
+## Bu belgenin sınırı
+
+Bu dosya tüm tarihsel migration listesini taşımaz. Ayrıntılı refactor geçmişi [`PROGRESS.md`](../PROGRESS.md) altında yaşar. Bu belge yalnız güncel standardı ve karar mantığını sabitlemek içindir.
+
+## İlgili belgeler
+
+- mimari kurallar: [`AGENTS.md`](../AGENTS.md)
+- teknik güvenlik: [`docs/SECURITY.md`](docs/SECURITY.md)
+- operasyonel prosedürler: [`RUNBOOK.md`](../RUNBOOK.md)
+- release kapıları: [`docs/RELEASE_READINESS.md`](docs/RELEASE_READINESS.md)
+- katalog: [`docs/INDEX.md`](docs/INDEX.md)

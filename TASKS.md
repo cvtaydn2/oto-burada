@@ -1,983 +1,199 @@
 # TASKS.md
 
-This file defines the execution order, acceptance criteria, and done conditions.
+Bu belge proje backlog’unun aktif çalışma listesidir. Uygulama sırası, bağımlılık ilişkileri ve acceptance criteria burada tutulur. Yapılan işler buradan değil, [`PROGRESS.md`](PROGRESS.md) içinden takip edilir.
 
-Do not skip ahead unless a dependency is blocked.
+Ürün, mimari ve kalite kuralları için önce [`AGENTS.md`](AGENTS.md) okunmalıdır. Operasyonel prosedürler [`RUNBOOK.md`](RUNBOOK.md), dokümantasyon kataloğu ise [`docs/INDEX.md`](docs/INDEX.md) altındadır.
+
+## Kullanım kuralları
+
+Yeni iş başlatmadan önce ilgili kapsamın [`PROGRESS.md`](PROGRESS.md) içinde zaten tamamlanıp tamamlanmadığı kontrol edilmelidir. Bu dosyada sadece yapılacaklar, aktif backlog kalemleri ve kabul kriterleri bulunur. Bir iş tamamlandığında burada işaretlenir, karar ve doğrulama özeti ayrıca [`PROGRESS.md`](PROGRESS.md) içine yazılır.
+
+## Backlog yapısı
+
+Aşağıdaki fazlar teslim sırası açısından geçerlidir. Tamamlanan fazlar, tarihsel iz bırakmak için bu belgede korunur; ancak uygulama önceliği aktif fazlardan başlar.
 
 ---
 
-## Phase 0 — Bootstrap
+## Active Documentation Backbone
 
-### Task 0.1 — Initialize project
+### Task D1 — Dokümantasyon omurgasını standartlaştır
 
-Create a Next.js App Router project with:
+Amaç, proje dokümantasyonunu güven veren bir çekirdek set etrafında sadeleştirmektir.
 
-- TypeScript
-- Tailwind CSS
-- ESLint
-- src directory
+Kapsam:
 
-Install and configure:
-
-- shadcn/ui
-- React Hook Form
-- Zod
-- TanStack Query
-- Supabase client utilities
-- lucide-react
+- [`README.md`](README.md) dosyasını kısa giriş noktası olarak netleştir
+- [`TASKS.md`](TASKS.md) dosyasını backlog ve acceptance criteria odağına çek
+- [`PROGRESS.md`](PROGRESS.md) dosyasını karar ve doğrulama günlüğü olarak temiz tut
+- [`RUNBOOK.md`](RUNBOOK.md) dosyasını operasyon, deploy, incident ve rollback odağına çek
+- [`docs/INDEX.md`](docs/INDEX.md) dosyasını aktif katalog haline getir
+- ürün, güven, moderasyon, gelir modeli, release readiness ve governance belgelerini aktif sete ekle
 
 #### Acceptance Criteria
 
-- Project runs locally
-- Tailwind works
-- Folder structure exists
-- App builds successfully
-
-#### Done When
-
-- `npm run build` passes
-- `npm run lint` passes
+- Çekirdek belgelerin rolü açık biçimde ayrışmıştır
+- Yeni aktif belge seti oluşturulmuştur
+- Belgeler arasında kırık veya çelişkili yönlendirme yoktur
+- Aktif ve tarihsel içerik ayrımı katalogda görünürdür
 
 ---
 
-### Task 0.2 — Base docs and environment
+## Active Product and Delivery Backlog
 
-Create:
+### Phase A — Marketplace Core Stability
 
-- README.md
-- AGENTS.md
-- TASKS.md
-- UI_SYSTEM.md
-- `.env.example`
-- `schema.sql`
+#### Task A1 — Listing create akışını iki dakikanın altında tut
 
-#### Acceptance Criteria
+- form alan yoğunluğunu ve adım sayısını düzenle
+- mobil kullanımda görsel yükleme ve doğrulama sürtünmesini azalt
+- moderasyon bekleme durumunu anlaşılır göster
 
-- Repo contains baseline documentation
-- README includes setup steps
+##### Acceptance Criteria
 
----
+- Yeni kullanıcı temel ilanı kısa akışta tamamlayabilir
+- Mobilde form terk oranını artıracak belirsiz alanlar kaldırılmıştır
+- Başarılı submit sonrası statü ve sonraki adım nettir
 
-## Phase 1 — Shared Foundations
+#### Task A2 — Arama ve filtreyi üç etkileşim altında tut
 
-### Task 1.1 — Define shared types and validators
+- ana arama, hızlı filtre ve sonuç daraltma akışlarını sadeleştir
+- boş, loading ve hata durumlarını güven veren şekilde sun
+- URL tabanlı paylaşılabilir filtre davranışını koru
 
-Create reusable domain types and Zod validators for:
+##### Acceptance Criteria
 
-- profile
-- listing
-- listing image
-- favorite
-- report
-- admin moderation actions
-- filters
+- Kullanıcı ana akışta az etkileşimle ilgili ilanlara ulaşabilir
+- Filtre durumu paylaşılabilir ve refresh sonrası korunur
+- Mobil filtre drawer ve masaüstü sidebar tutarlı davranır
 
-#### Acceptance Criteria
+#### Task A3 — Listing detail güven sinyallerini güçlendir
 
-- Shared types compile cleanly
-- Listing create validator enforces required fields
-- Validators are reusable on client and server
+- satıcı güven işaretleri, ilan şeffaflığı ve raporlama aksiyonlarını netleştir
+- WhatsApp CTA birincil temas yöntemi olarak kalır
+- benzer ilanlar ve fiyat bağlamı karar vermeyi kolaylaştırır
 
----
+##### Acceptance Criteria
 
-### Task 1.2 — Seed constants and mock data
-
-Create realistic dummy data for:
-
-- brands
-- models
-- cities
-- districts
-- example listings
-- example admin user
-- example normal user
-
-#### Acceptance Criteria
-
-- Public pages can render before backend wiring
-- Example listings are realistic for Turkey market
+- Listing detail bilgi hiyerarşisi güven odaklıdır
+- WhatsApp CTA görünür ve ikincil aksiyonlardan ayrışır
+- Güven ve moderasyon sinyalleri kullanıcı tarafından fark edilir düzeydedir
 
 ---
 
-## Phase 2 — Public UI
+### Phase B — Trust, Moderation and Safety
 
-### Task 2.1 — Global layout
+#### Task B1 — Moderasyon akışlarını operasyonel hale getir
 
-Build:
+- pending, approved, rejected ve archived durumları netleştir
+- red nedenleri ve moderatör notu yapısını standardize et
+- admin görünümünde hızlı karar akışını koru
 
-- header
-- mobile navigation
-- footer
-- responsive shell
+##### Acceptance Criteria
 
-#### Acceptance Criteria
+- Moderatör bir ilanı tutarlı gerekçelerle onaylayabilir veya reddedebilir
+- Statü geçişleri ürün ve politika belgeleriyle uyumludur
+- Admin ekranları operasyonel yoğunluk altında anlaşılır kalır
 
-- Public pages share a coherent layout
-- Header includes login and post listing CTA
-- Mobile nav is usable
+#### Task B2 — Kullanıcı güvenliği ve kötüye kullanım önlemlerini sertleştir
 
----
+- raporlama, oran sınırlama ve satıcı güven sinyallerini gözden geçir
+- sahte ödeme linki, WhatsApp dolandırıcılığı ve tekrar eden abuse senaryolarını ele al
+- veri, auth ve public surface güvenliğini teknik belgelerle uyumlu tut
 
-### Task 2.2 — Homepage
+##### Acceptance Criteria
 
-Build homepage with:
-
-- hero search
-- quick filters
-- featured listings
-- latest listings
-- trust section
-
-#### Acceptance Criteria
-
-- Responsive layout
-- Listing cards render consistently
-- Search UI feels clean and simple
+- Abuse riskleri için ürün, politika ve teknik güvenlik dokümanları hizalıdır
+- Public mutation yüzeylerinde koruma katmanları nettir
+- Moderasyon ve güven belgeleri uygulama için referans verebilir durumdadır
 
 ---
 
-### Task 2.3 — Listings page
+### Phase C — Monetization and Professional Sellers
 
-Build listings search/results page with:
+#### Task C1 — Freemium ve doping modelini ürün akışına bağla
 
-- grid layout
-- filter sidebar on desktop
-- filter drawer on mobile
-- sorting controls
-- pagination or load-more
+- bireysel ücretsiz ilan modelini koru
+- doping, öne çıkarma ve profesyonel plan yüzeylerini sadeleştir
+- ücretli katmanları kullanıcı güvenini zedelemeden konumlandır
 
-#### Acceptance Criteria
+##### Acceptance Criteria
 
-- Filters update visible results
-- Empty state exists
-- Loading state exists
+- Ücretsiz temel değer önerisi bozulmaz
+- Doping ve planlar ürün stratejisiyle tutarlıdır
+- Kurumsal kullanıcı farkı anlaşılır ama karmaşık değildir
 
----
+#### Task C2 — Premium servisleri kritik yol dışında konumlandır
 
-### Task 2.4 — Listing detail page
+- ekspertiz, araç geçmişi ve AI destekli ilan oluşturma gibi servisleri ikincil katman olarak ele al
+- ana ilan verme akışını bu servislerden bağımsız tut
 
-Build detail page with:
+##### Acceptance Criteria
 
-- image gallery
-- pricing and metadata
-- description
-- seller card
-- WhatsApp CTA
-- report action
-- similar listings
-
-#### Acceptance Criteria
-
-- SEO-friendly structure
-- Mobile layout is clean
-- Trust-oriented information hierarchy
+- Premium servisler opsiyonel katman olarak konumlanır
+- Dış servis veya kota problemi ana akışı bozmaz
 
 ---
 
-## Phase 3 — Auth and Profile
+### Phase D — Release Readiness and Governance
 
-### Task 3.1 — Auth integration
+#### Task D2 — Release gate ve operasyonel hazırlığı netleştir
 
-Implement register/login using Supabase Auth.
+- lint, typecheck, build ve hedefli test kapılarını tek yerde topla
+- incident, rollback, env ve cron prosedürlerini güncel tut
+- ücretsiz tier kısıtları altında fail-gracefully davranışını doğrula
 
-Primary method:
+##### Acceptance Criteria
 
-- email + password
+- Release readiness kriterleri tek belgede anlaşılırdır
+- Runbook operasyon ekibi için yeterince nettir
+- Kritik entegrasyonların degrade davranışı belgelenmiştir
 
-#### Acceptance Criteria
+#### Task D3 — Dokümantasyon yönetişimini kalıcı hale getir
 
-- Users can register
-- Users can sign in
-- Protected routes redirect correctly
+- hangi bilginin hangi belgede yaşadığını tanımla
+- aktif, referans, audit ve archive ayrımını koru
+- yeni belge ekleme ve eski belgeyi düşürme kuralları oluştur
 
----
+##### Acceptance Criteria
 
-### Task 3.2 — Dashboard shell
-
-Build dashboard shell and navigation.
-
-#### Acceptance Criteria
-
-- Authenticated users can access dashboard
-- Unauthenticated users cannot
-
----
-
-### Task 3.3 — Profile page
-
-Build editable profile page.
-
-Fields:
-
-- full name
-- phone
-- city
-- avatar optional
-
-#### Acceptance Criteria
-
-- User can update profile
-- Validation and error handling exist
+- Belge sahipliği ve güncelleme beklentisi açıktır
+- Tekrar ve çelişki riski azaltılmıştır
+- Yeni ekip üyesi doğru belgeyi hızlıca bulabilir
 
 ---
 
-### Task 3.4 — Favorites
-
-Implement favorites flow and favorites page.
-
-#### Acceptance Criteria
-
-- User can add/remove favorites
-- Favorites persist
-- Empty state exists
-
----
-
-## Phase 4 — Listing Creation
-
-### Task 4.1 — Listing create form
-
-Build listing creation form for cars only.
-
-Required fields:
-
-- title
-- brand
-- model
-- year
-- mileage
-- fuel_type
-- transmission
-- price
-- city
-- district
-- description
-- images
-
-Rules:
-
-- minimum 3 images
-- validation on client and server
-
-#### Acceptance Criteria
-
-- Form works on mobile
-- Validation messages are clear
-- Submission works end-to-end
-
----
-
-### Task 4.2 — Image upload
-
-Integrate Supabase Storage.
-
-Rules:
-
-- allowed mime types only
-- max size documented and enforced
-- upload progress or loading feedback shown
-
-#### Acceptance Criteria
-
-- Images upload successfully
-- Image previews work
-- Invalid files are rejected
-
----
-
-### Task 4.3 — My listings page
-
-Create dashboard page for the user's own listings.
-
-Features:
-
-- view listings
-- edit draft or pending listing
-- archive listing
-- see moderation status
-
-#### Acceptance Criteria
-
-- Users only see their own listings
-- Status badge is visible
-
----
-
-## Phase 5 — Admin
-
-### Task 5.1 — Admin gate and role checks
-
-Implement admin-only access.
-
-#### Acceptance Criteria
-
-- Non-admin users cannot access admin pages
-- Admin can access moderation dashboard
-
----
-
-### Task 5.2 — Listing moderation
-
-Build admin page with:
-
-- pending listings table/grid
-- approve/reject actions
-- review flow
-
-#### Acceptance Criteria
-
-- Admin can approve or reject pending listings
-- Status changes persist
-
----
-
-### Task 5.3 — Reports moderation
-
-Build admin page for reports.
-
-#### Acceptance Criteria
-
-- Admin can review reports
-- Admin can update report status
-
----
-
-## Phase 6 — Search, Filters, SEO
-
-### Task 6.1 — URL-driven filters
-
-Connect filters to URL search params.
-
-#### Acceptance Criteria
-
-- Filter state is shareable by URL
-- Refresh preserves state
-
----
-
-### Task 6.2 — SEO metadata
-
-Implement metadata for:
-
-- homepage
-- listings index
-- listing detail pages
-
-#### Acceptance Criteria
-
-- Dynamic titles/descriptions exist
-- Detail pages expose clean metadata
-
----
-
-## Phase 7 — Polish
-
-### Task 7.1 — State audit
-
-Audit all pages for:
-
-- [x] loading (skeletons implemented for listings)
-- [x] empty (verified)
-- [x] error (handled)
-- [x] disabled states (verified in wizard)
-
-### Task 7.2 — Accessibility and responsiveness audit
-
-- [x] labels
-- [x] keyboard navigation
-- [x] focus states
-- [x] touch targets
-- [x] mobile breakpoints (new vaul drawer)
-
-### Task 7.3 — Performance & Security Hardening
-
-- [x] XSS Sanitization
-- [x] CSRF Protection
-- [x] Image Optimization & Blur Placeholders
-
-### Task 7.4 — Extended Features (Complete)
-
-- [x] Site-wide Skeleton Loader system
-- [x] Detailed Expert Inspection wizard (Engine/Gearbox)
-- [x] Bundle size optimization
-- [x] Dark Mode (Koyu Tema) Altyapısı ve Toggle
-
----
-
-## Phase 8 — Advanced Marketplace Features & Scaling
-
-### Task 8.1 — SEO Landing Page Depth
-
-- [x] Create dynamic landing pages for combinations like `[Brand]` in `[City]`
-- [x] Implement breadcrumbs and JSON-LD for better crawlability
-- [x] Create an XML sitemap generator that includes all approved listings
-
-### Task 8.2 — Admin Operational Excellence
-
-- [x] Multi-step moderation flows with predefined rejection reasons
-- [x] Activity tracking for moderator performance
-- [x] Bulk notification sending for maintenance or updates
-
-### Task 8.3 — PWA Support & Mobile Polish
-
-- [x] Implement manifest.json and service worker for "Add to Home Screen"
-- [x] Offline caching for recently viewed listings
-- [x] Native-like transitions between pages
-- [x] Service worker (`public/sw.js`) with cache-first strategy for static assets and listing pages
-- [x] `useServiceWorker` hook for SW registration with update handling
-- [x] `PWAProvider` wrapping app to register SW and request notification permission
-
-### Task 8.4 — Transparency & Market Price Indexing (Complete)
-
-- [x] Resolve all data-layer lint/type inconsistencies
-
----
-
-## Phase 10 — Performance, Testing & Launch Readiness
-
-### Task 10.1 — Performance Audit & Code Splitting
-
-- [x] Run `npm run build` with `@next/bundle-analyzer`
-- [x] Use `next/dynamic` for heavy client components (Charts, Modals)
-- [x] Implement `priority` on above-the-fold images
-
-#### Acceptance Criteria
-
-- Initial bundle size reduced by 15%+
-- Lighthouse performance score > 90 on mobile
-
-### Task 10.2 — E2E Testing Coverage
-
-- [x] Implement Comprehensive Listing Flow test
-- [x] Implement Authentication & Persistence test
-- [x] Implement Admin Moderation workflow test
-
-#### Acceptance Criteria
-
-- Critical paths are covered by Playwright
-- Tests pass in CI-like local environment
-
-### Task 10.3 — Final Security & RLS Audit
-
-- [x] Ensure Service Role keys are NOT exposed in client bundles
-- [x] Verify all tables have RLS enabled
-- [x] Test edge cases for "Profile" and "Listing" ownership
-
-#### Acceptance Criteria
-
-- No RLS gaps found
-- Security policies align with AGENTS.md mission
-
----
-
-## Phase 25 — Marketplace Hardening & Core Depth
-
-### Task 25.2 — Real-time In-App Chat (POST-MVP / SECONDARY)
-
-_Note: WhatsApp remains the primary contact method as per AGENTS.md._
-If prioritized in future:
-
-- Create `chats` and `messages` services.
-- Integrate dashboard messages UI with realtime subscription.
-- Add "Message Seller" button (secondary to WhatsApp) to listing detail page.
-- Implement unread message indicators.
-
-#### Acceptance Criteria
-
-- Users can start chats only if WhatsApp is unavailable or as secondary.
-- Messages are sent and received in real-time.
-- Only participants can access their chats (RLS).
-
-### Task 25.3 — Price History & Market Analysis
-
-Track price changes and show detailed market valuation.
-
-- Implement `listing_price_history` tracking (trigger/service).
-- Build price history chart component for listing detail pages.
-- Refine Market Value algorithm to include damage status and paint/replaced parts impact.
-- Display "Transparency Report" for market valuation in the UI.
-
-#### Acceptance Criteria
-
-- Price changes are logged automatically.
-- Charts show history clearly.
-- Market value estimations reflect car condition precisely.
-
-### Task 25.4 — Filter Polish & Data Scaling
-
-Fix UI bugs and populate the marketplace with high-quality data.
-
-- Fix `RangeSlider` z-index and reactivity issues.
-- Expand `seed-supabase-demo.mjs` with 20+ diverse car listings.
-- Include realistic damage reports and price histories in seed data.
-
-#### Acceptance Criteria
-
-- Slider handles work smoothly without overlapping issues.
-- Marketplace feels "lived-in" with diverse inventory.
-
----
-
-## Phase 27 — Build Stabilization & Data Resilience
-
-### Task 27.1 — Analytics & Data Fetching Hardening
-
-Resolve build-time type errors and runtime 404 issues in listing retrieval.
-
-- [x] Refactor Admin Analytics service and client for type safety.
-- [x] Fix Supabase join syntax in `listingSelect`.
-- [x] Implement aggressive fallback logic for data fetching.
-
-#### Acceptance Criteria
-
-- `npm run build` passes without errors.
-- Listing detail pages load reliably even during schema drift.
-- Admin analytics dashboard accurately reflects current and historical KPIs.
-
----
-
-## Phase 26 — Post-MVP Monetization & Automation (Completed)
-
-### Task 26.1 — Iyzico Payment Activation
-
-Activate the existing Iyzico skeleton for real transactions.
-
-- [x] Set `IYZICO_API_KEY` and `IYZICO_SECRET_KEY` in Vercel.
-- [x] Deploy `add-payments-webhook-support.sql` to seed plans and enable webhooks.
-- [x] Connect `listing-doping-panel` to the real checkout flow.
-- [x] Implement `balance_credits` display in dashboard.
-- [x] Implement mandatory identity verification for billing compliance.
-
-#### Acceptance Criteria
-
-- [x] Users can purchase doping/highlighting plans.
-- [x] Payments are processed via Iyzico 3DS flow.
-- [x] Listing status updates automatically after successful payment.
-
-### Task 26.2 — Saved Searches & Email Alerts
-
-Automate "Search Result" notifications.
-
-- [x] Activate `RESEND_API_KEY`.
-- [x] Connect the built-in Cron job (`/api/saved-searches/notify`) to Resend.
-- [x] Ensure email templates are localized in Turkish.
-- [x] Add "Save Search" UI to marketplace.
-
-#### Acceptance Criteria
-
-- [x] Users receive emails when new listings match their saved searches.
-- [x] Unsubscribe links work correctly.
-
----
-
-## Phase 28 — Hardening & Architectural Maturity
-
-### Task 28.1 — Domain Unit Testing (Complete)
-
-- [x] Implement unit tests for `archiveListingUseCase`
-- [x] Implement unit tests for `bumpListingUseCase`
-- [x] Implement unit tests for `ListingStatusMachine`
-- [x] Implement unit tests for `TrustScoreCalculator`
-
-### Task 28.2 — Centralized Error Handling (Complete)
-
-- [x] Create `AppErrorBoundary` with support for `AppError` codes
-- [x] Integrate boundary into `app/error.tsx` (Global)
-- [x] Integrate boundary into `AdminListingsModeration` (Feature)
-
-### Task 28.3 — RLS Integration Testing (Complete)
-
-- [x] Create integration test infrastructure for Supabase
-- [x] Verify RLS policies for Anonymous read/write
-- [x] Verify RLS policies for Draft listings privacy
-
-### Task 28.4 — Server Actions Migration (Complete)
-
-- [x] Consolidate listing actions into `app/dashboard/listings/actions.ts`
-- [x] Consolidate favorite actions into `app/dashboard/favorites/actions.ts`
-- [x] Remove legacy `listing-actions.ts` service
-
----
-
-## Phase 29 — Production Security & Performance Hardening (Complete)
-
-### Task 29.1 — Supabase Client Resilience
-- [x] Harden public client singleton with lazy initialization and max-age expiration.
-- [x] Prevent stale connections in serverless (Vercel) environments.
-
-### Task 29.2 — Query Efficiency & Marketplace Integrity
-- [x] Optimize COUNT queries to use Supabase head/count (Exact) instead of fetching all IDs.
-- [x] Enforce strict separation of public/admin clients to prevent accidental RLS bypass.
-- [x] Implement keyset (cursor-based) pagination support in query builder.
-
-### Task 29.3 — Atomic Domain Operations
-- [x] Refactor doping expiry into a single atomic PL/pgSQL RPC function.
-- [x] Eliminate race conditions in cron-based status updates.
-
-### Task 29.4 — Security Utilities Hardening
-- [x] Harden CSRF `isValidRequestOrigin` to explicitly reject "null" origins.
-- [x] Add in-memory fallback to distributed rate limiting for infrastructure outages.
-- [x] Implement robust `ErrorBoundary` with localization and retry support.
-
----
-
----
-
-## Phase 30 — Infrastructure Hardening & Messaging Maturity (Complete)
-
-### Phase 30: Architectural Hardening & Messaging Maturity ✅
-- [x] Refactor Monolithic ApiClient into Domain Services
-- [x] Fix Admin/Browser Client Singleton Stale Key Risks
-- [x] Implement Atomic Chat Operations (RPC)
-- [x] Resolve 401 Redirect Loop Guard in ApiClient
-- [x] Optimize In-Memory Rate Limit Cleanup (Memory Leak Prevention)
-- [x] Remove Runtime Dynamic Imports in Listing Submission Flow
-- [x] Add Archive/Unarchive Messaging Logic
-- [x] Final Production Build Validation
-- [x] Enhance MessageBubble with delivery/read status and timestamps.
-
----
-
----
-
-## Phase 31 — Final Architectural & Security Resolution
-
-### Task 31.1 — Critical Bug Resolution
-- [x] Fix Root Layout structural integrity (missing tags).
-- [x] Resolve stale state management in `loginAction`/`registerAction`.
-- [x] Fix memory leak in `inMemoryStore` rate limiter.
-- [x] Consolidate CSRF protection into a single source of truth.
-
-### Task 31.2 — Validator Modularization
-- [x] Split monolithic `listing.ts` validator into a modular directory structure.
-
-### Task 31.3 — Library & Utility Refactoring
-- [x] Refactor `src/lib/utils/` "dump" into structured domain directories (`api`, `datetime`, `env`, etc.).
-- [x] Clean up deprecated filtering code in `ListingFiltersService`.
-
-### Task 31.4 — PWA & Metadata Polish
-- [x] Fix hydration warnings and ensure mobile-first viewport settings.
-
----
-
-## Phase 32 — Critical Security & Transactional Integrity
-
-### Task 32.1 — Security & RLS Hardening
-- [x] Replace Admin Client with Server Client in user-facing `getStoredUserListings`.
-- [x] Implement Rate Limit development parity (higher thresholds vs total bypass).
-- [x] Strengthen middleware JWT validation using `supabase.auth.getUser()`.
-
-### Task 32.2 — Transactional Integrity & Resilience
-- [x] Implement atomic `process_payment_webhook` RPC to prevent partial failures.
-- [x] Update payment webhook handler to use centralized atomic logic.
-- [x] Implement proactive admin client reset mechanism for key rotation recovery.
-
-### Task 32.3 — Maintainability & Discoverability
-- [x] Consolidate utilities into domain directories.
-- [x] Implement barrel exports in `src/lib/index.ts` for better discoverability.
-
----
-
-## Phase 33 — Competitor Advantage & Trust Hardening ✅
-- [x] **Task 33.1: Fraud Warning System**
-  - [x] Create `fraud-warning-banner.tsx` for listing details.
-  - [x] Warning about fake payment links/WhatsApp scams.
-- [x] **Task 33.2: Listing Edit Flow Hardening**
-  - [x] Lock car identity fields (Brand, Model, Year, Plate, Photos) once approved.
-  - [x] Only allow editing Price and Description for approved listings.
-- [x] **Task 33.3: WhatsApp Live Support**
-  - [x] Add floating `whatsapp-support.tsx` for marketplace visitors.
-- [x] **Task 33.4: Listing Questions System**
-  - [x] Public Q&A section on listing pages.
-  - [x] Sellers can answer questions directly.
-- [x] **Task 33.5: Smart Price Widget**
-  - [x] Visual price meter (Min/Avg/Max) on listing details.
-- [x] **Task 33.6: Phone Privacy Badge**
-  - [x] Reassurance badges about phone number protection.
-- [x] **Task 33.7: Trust Badges**
-  - [x] "Verified Seller", "Old Member", "High Rating" badges.
-
----
-
-## Phase 34 — Sustainable Monetization & Professional Tiers ✅
-
-### Task 34.1 — Subscription Tiers Logic ✅
-
-Implement the tiered subscription model for professional sellers.
-
-- [x] Define `Individual`, `Pro`, and `Corporate Fleet` limits in code.
-- [x] Implement `user_type` based listing quotas (3 vs 50 vs 200).
-- [x] Add "Pro" badge to profiles and listings for subscribers.
-
-#### Acceptance Criteria
-- [x] Users with 'Pro' plan can post more than 3 listings.
-- [x] Quota enforcement works correctly in `checkListingLimit`.
-
-### Task 34.2 — User Credits & Wallet UI ✅
-
-Enable users to top up balance for faster doping purchases.
-
-- [x] Create `src/components/dashboard/wallet-card.tsx`.
-- [x] Implement credit purchase flow via Iyzico.
-- [x] Use credits as a priority payment method for doping.
-
-#### Acceptance Criteria
-- [x] User can see their balance in the dashboard.
-- [x] Credits are deducted correctly when purchasing doping.
-
-### Task 34.3 — AI Listing Assistant (Layer 3) ✅
-
-Use AI to help users write professional car descriptions.
-
-- [x] Integrate OpenAI/Gemini to generate descriptions from car specs.
-- [x] Add "AI ile Yaz" button to the listing creation form.
-- [x] Monetize as a one-time service (e.g., 99 TL).
-
-#### Acceptance Criteria
-- [x] AI generates relevant descriptions based on car brand, model, and condition.
-
-### Task 34.4 — Marketplace Analytics (Layer 4) ✅
-
-Provide deeper market insights for professional sellers.
-
-- [x] Build a "Market Analytics" dashboard for Pro users.
-- [x] Show demand trends for specific brands/models.
-- [x] Exportable market reports.
-
-
----
-
-## Phase 44 — Production Stability & Zero-Error Build (Complete)
-
-### Task 44.1 — Build Pipeline Hardening
-- [x] Resolve all 38 ESLint errors and 15+ TypeCheck errors.
-- [x] Achieve a clean `npm run build` with no warnings.
-- [x] Fix `server-only` leakage in admin service layer (BUILD-02).
-
-### Task 44.2 — Migration Audit & Sequence Normalization
-- [x] Renumber migrations (0106-0110 -> 0101-0113) to fix collisions.
-- [x] Verify index coverage for marketplace performance.
-- [x] Remove redundant documentation and draft SQL files.
-
-### Task 44.3 — UI/UX & Security Infrastructure
-- [x] Fix `AppErrorBoundary` navigation warnings (UI-01).
-- [x] Harden API Client error handling and JSON parsing (API-01).
-- [x] Document and fix IPv6 normalization logic (SEC-01).
-
----
+## Historical Delivery Log Snapshot
+
+Aşağıdaki başlıklar tarihsel bağlamı korumak için özet seviyede tutulur. Ayrıntılı uygulama kayıtları [`PROGRESS.md`](PROGRESS.md) içinde, bazı tarihsel teknik denetimler ise [`docs/audit`](docs/audit) altında bulunur.
+
+### Completed Foundations
+
+- Bootstrap ve temel proje kurulumu tamamlandı
+- Shared validators ve temel domain tipleri oluşturuldu
+- Public marketplace UI omurgası hayata geçirildi
+- Auth, dashboard ve profile akışları eklendi
+- Listing creation ve image upload akışları bağlandı
+- Admin moderasyon ve reports yüzeyleri kuruldu
+- URL-driven filters ve temel SEO metadata desteği sağlandı
+
+### Completed Hardening Themes
+
+- Server actions odaklı servis mimarisi yaygınlaştırıldı
+- RLS ve güvenlik sertleştirmeleri uygulandı
+- Performans, responsive UX ve accessibility iyileştirmeleri yapıldı
+- Production build, lint ve typecheck istikrarı sağlandı
+- Free-tier uyumluluğu ve graceful degradation yaklaşımı işlendi
 
 ## Final Definition of Done
 
-The MVP is complete when:
+MVP teslimi aşağıdaki koşullar sürdürülebilir biçimde sağlandığında kabul edilir:
 
-- [x] user can register and sign in
-- [x] user can create a car listing with images
-- [x] listings can be browsed and filtered
-- [x] listing details are viewable with WhatsApp CTA
-- [x] users can favorite listings
-- [x] users can report listings
-- [x] admin can moderate pending and reported listings
-- [x] app is responsive
-- [x] app lints, typechecks, and builds
-- [x] documentation is aligned with code
-- [x] payment system is hardened and compliant
-- [x] marketplace integrity is secured (banned user filtering)
-
----
-
-## Phase 57 — Production Stabilization & Diagnostic Recovery
-
-### Task 57.1 — Migration Reconciliation
-- [x] Align `public._migrations` schema in production with local application requirements.
-- [x] Populate migration history with correct checksums to resolve tracking drift.
-- [x] Update `migration-manager.mjs` to handle production-specific column differences if any persist.
-
-- [x] Audit all `SECURITY DEFINER` functions for public execution risks.
-- [x] Revoke `EXECUTE` on sensitive functions from `anon` and `authenticated` roles.
-- [x] Resolve lint warnings in `header-mobile-nav.tsx`.
-- [x] Optimize `ListingsPage` server-side filtering logic.
-- [x] Enable "Leaked Password Protection" in Supabase Auth (Manual Action completed via dashboard).
-- [x] Harden database performance with missing indexes and consolidated RLS policies.
-
-#### Acceptance Criteria
-- `/api/health-check` returns 200 Healthy in production.
-- Migration manager reports "All caught up" in production environment.
-- No SECURITY DEFINER functions are executable by anonymous users.
-- Server-side exceptions are visible in Sentry/Vercel logs.
----
- 
-## Phase 60 — Marketplace Infrastructure Stabilization & UI Excellence
- 
-### Task 60.1 — Marketplace Service Consolidation [Critical]
-- [x] Deprecate redundant `queries/get-public-listings.ts`.
-- [x] Centralize all marketplace data fetching into `marketplace-listings.ts`.
-- [x] Standardize API signatures and optimize DB projection via `marketplaceListingSelect`.
-- [x] Implement on-demand signed URL generation for expert reports.
- 
-### Task 60.2 — Design System & Wizard Refactor [High]
-- [x] Enhance `DesignInput` with `labelExtra`, `leftAddon`, and `rightAddon` support.
-- [x] Standardize `ChoiceGroup` with integrated design system labeling and error handling.
-- [x] Refactor `VehicleInfoStep` and `DetailsStep` to use standardized components.
-- [x] Upgrade informational banners in `InspectionStep` and `PhotosStep` to premium "glass" style.
- 
-### Task 60.3 — Build Stability & Type Safety
-- [x] Resolve all type errors and lint warnings in the refactored wizard steps.
-- [x] Verify production build stability with `npm run typecheck`.
- 
-#### Acceptance Criteria
-- No duplicate service logic for marketplace queries.
-- Consistent labeling and typography across all listing wizard steps.
-- `npm run typecheck` passes without errors.
-- Visual excellence achieved in the listing creation flow.
----
- 
-## Phase 61 — Free-Tier Optimization & Resource Auditing
- 
-### Task 61.1 — Zero-Cost Architecture Audit [Critical]
-- [x] **Backend Architect:** Audit Supabase and Redis usage. Ensure efficient indexing to minimize read/write operations and stay within free tier connection/usage limits. @completed(2026-04-30)
-- [x] **Frontend Wizard:** Audit client-side assets and bundle size to minimize Vercel bandwidth consumption. @completed(2026-04-30)
-- [x] **Security Reviewer:** Audit API security to prevent scraping/attacks that could drain free-tier resources (Rate limiting is key). @completed(2026-04-30)
-- [x] **PM:** Review all 3rd party services (Resend, Iyzico, OpenAI) and ensure they are on free plans or usage-based (zero fixed cost). @completed(2026-04-30)
- 
-### Task 61.2 — AI & External Service Graceful Degradation
-- [x] Implement local or open-source alternatives for AI features (e.g., HuggingFace Inference API free tier or Gemini Free tier). @completed(2026-04-30)
-- [x] Ensure the app remains 100% functional even if external free-tier quotas are exhausted. @completed(2026-04-30)
-- [x] Remove any logic that assumes a paid API key or subscription. @completed(2026-04-30)
- 
-### Task 61.3 — Resource Optimization & Cleanup
-- [x] Implement `pg_cron` job for `phone_reveal_logs` cleanup (30 days retention). @completed(2026-04-30)
-- [x] Implement aggressive caching for static marketplace data to save Supabase/Redis hits. @completed(2026-04-30)
-- [x] Optimize image storage and transformations (Supabase Storage Free Tier limits). @completed(2026-04-30)
-
-### Task 61.4 — Admin Question Moderation & Notifications [High]
-- [x] Create Admin Dashboard for moderating `listing_questions`. @completed(2026-04-30)
-- [x] Implement approve/reject/delete actions for questions. @completed(2026-04-30)
-- [x] Add automated notifications for sellers (new question) and askers (answer provided). @completed(2026-04-30)
-- [x] Integrate with Admin Sidebar. @completed(2026-04-30)
-
-#### Acceptance Criteria
-- No component requires a credit card or monthly subscription to run.
-- All 3rd party integrations have a documented "Free Tier" path.
-- App handles "Quota Exceeded" errors gracefully across all features.
-- Admins can manage all marketplace Q&A from a single dashboard.
-
----
-
-## Phase 62 — Pre-Launch Polish & Deployment
-
-### Task 62.1 — Frontend/UI Polish
-- [x] Review UI for mobile responsiveness issues (overflows, padding).
-- [x] Ensure loading states and smooth transitions are present for a "Premium" feel.
-
-### Task 62.2 — Backend/Database Final Review
-- [x] Verify Supabase schema, RLS policies, and `pg_cron` jobs are production-ready.
-- [x] Cleanup unused draft tables or duplicate columns if any exist.
-
-### Task 62.3 — DevOps/Deployment Execution
-- [x] Ensure all Vercel and Supabase production environment variables are documented and set.
-- [x] Validate Vercel deployment builds successfully.
-- [x] Confirm error tracking mechanisms are active.
-
----
-
-## Phase 63 — UI/UX Hardening & Accessibility ✅
-
-### Task 63.1 — Global Accessibility (A11y) Remediation ✅
-- [x] Implement focus trapping and keyboard navigation for all modals using Radix UI.
-- [x] Fix orphaned form labels and ensure proper input associations in all shared forms.
-- [x] Add ARIA live regions for dynamic result updates and status feedback.
-- [x] Ensure all interactive icons have accessible names and correct ARIA roles.
-
-### Task 63.2 — Touch Target Optimization ✅
-- [x] Standardize all interactive controls to a minimum 44x44px hit area per WCAG.
-- [x] Increase touch targets for mobile navigation, header icons, and gallery controls.
-
-### Task 63.3 — PWA & UX Stabilization ✅
-- [x] Stabilize PWA installation flow using native `beforeinstallprompt` events.
-- [x] Implement robust loading states and success/error announcements.
-
-#### Acceptance Criteria
-- [x] Platform passes basic accessibility audits (Lighthouse A11y > 95).
-- [x] All critical forms are navigable and usable by screen readers.
-- [x] PWA installation works reliably on supported mobile browsers.
-
----
-
-## Phase 63 — Accessibility & Codebase Quality Hardening ✅
-
-### Task 63.1 — Accessibility (A11y) Implementation
-- [x] Standardize touch targets to 44x44px minimum across all navigation and gallery controls.
-- [x] Implement Radix-based focus management for all modals and lightboxes.
-- [x] Add dynamic ARIA labels and live regions for user feedback (copy actions, filters).
-- [x] Ensure strict label-input association using `useId` in design system components.
-
-### Task 63.2 — PWA Stability & Performance
-- [x] Stabilize PWA installation flow with native `beforeinstallprompt` handling.
-- [x] Implement platform-specific installation instructions (iOS Safari).
-- [x] Optimize asset delivery for mobile network conditions.
-
-### Task 63.3 — Codebase Sanitization
-- [x] Eliminate all ESLint warnings and errors across the project.
-- [x] Achieve zero-warning production build (`npm run build`).
-- [x] Refactor explicit 'any' types in critical service layers (`listing-submission-persistence`).
-- [x] Fix synchronous `setState` warnings in effects (`Listing360View`).
-
-#### Acceptance Criteria
-- [x] `npm run build` passes with zero warnings.
-- [x] Lighthouse Accessibility score > 95.
-- [x] PWA installation prompt triggers reliably on supported browsers.
-
----
-
-## Phase 78 — End-to-End Code Review & Production Hardening ✅
-
-### Task 78.1 — Architecture & Structure Review ✅
-- [x] Service layer pattern compliance (*-records.ts, *-logic.ts, *-actions.ts)
-- [x] Component size limits enforced (<250 lines)
-- [x] Dead code / unused imports removed
-- [x] Deprecated patterns identified and refactored
-
-### Task 78.2 — Component & UI State Coverage ✅
-- [x] Loading states for all major pages
-- [x] Empty states with helpful messages
-- [x] Error boundaries for critical pages
-- [x] Form loading and validation UX
-
-### Task 78.3 — Service Layer & Query Quality ✅
-- [x] SELECT * replaced with explicit projections in hot paths
-- [x] Null guards added to all record functions
-- [x] Error handling consistent across service layer
-- [x] RLS compliance verified
-
-### Task 78.4 — Database & RLS Security ✅
-- [x] All tables have RLS enabled
-- [x] Banned user filtering at query level
-- [x] Foreign key integrity verified
-- [x] Index coverage verified
-
-### Task 78.5 — Security & Input Validation ✅
-- [x] XSS vulnerability scan clean
-- [x] CSRF protection implemented
-- [x] Rate limiting on all critical endpoints
-- [x] Zod validation on all public inputs
-
-### Task 78.6 — Performance & Bundle ✅
-- [x] Code splitting with dynamic imports
-- [x] Image optimization with next/image
-- [x] SEO metadata on all public pages
-- [x] Hybrid pagination (SSR + infinite scroll)
-
-### Task 78.7 — Mobile UX & Accessibility ✅
-- [x] Mobile-first responsive design
-- [x] Touch targets 44x44px minimum
-- [x] Keyboard navigation with focus indicators
-- [x] ARIA labels and live regions
-
-### Task 78.8 — Documentation & Final Validation ✅
-- [x] PROGRESS.md updated with Phase 78
-- [x] TASKS.md updated with Phase 78
-- [x] CODE_REVIEW_PLAN.md created
-- [x] `npm run typecheck` → 0 errors
-- [x] `npm run lint` → 0 errors, 0 warnings
-- [x] Production build ready
-
+- kullanıcı kayıt olabilir ve giriş yapabilir
+- kullanıcı otomobil ilanı oluşturabilir
+- ilanlar bulunabilir, filtrelenebilir ve detay sayfasında incelenebilir
+- satıcıya WhatsApp CTA üzerinden ulaşılabilir
+- kullanıcı favori ve raporlama akışlarını kullanabilir
+- admin ilan ve rapor moderasyonu yapabilir
+- uygulama mobil-first davranır
+- [`npm run lint`](package.json:10), [`npm run typecheck`](package.json:11) ve [`npm run build`](package.json:8) temizdir
+- dokümantasyon, ürün yönü ve operasyonel gerçeklik birbiriyle uyumludur

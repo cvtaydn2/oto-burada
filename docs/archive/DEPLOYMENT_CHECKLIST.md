@@ -1,7 +1,9 @@
 # Deployment Checklist - Security Audit Fixes
 
-**Date**: 2026-04-30  
-**Version**: Phase 28.5  
+> Historical archive note: Bu belge artık aktif operasyon runbook'u değildir. Buradaki adımlar ve belge adları, 2026-04-30 tarihli belirli bir deployment hazırlık anını yansıtır. Güncel operasyon prosedürleri için [`RUNBOOK.md`](../../RUNBOOK.md), release kapıları için [`docs/RELEASE_READINESS.md`](../RELEASE_READINESS.md) ve dokümantasyon sınıflandırması için [`docs/INDEX.md`](../INDEX.md) kullanılmalıdır.
+
+**Date**: 2026-04-30
+**Version**: Phase 28.5
 **Status**: Ready for Deployment ✅
 
 ---
@@ -15,12 +17,18 @@
 - [x] All tests passing (if applicable)
 
 ### ✅ Documentation
+
+> Archive context: Bu bölümde geçen [`CRITICAL_FIXES_APPLIED.md`](../../CRITICAL_FIXES_APPLIED.md) ve [`AUDIT_SUMMARY.md`](../../AUDIT_SUMMARY.md) gibi isimler tarihsel deployment anındaki çalışma setine aittir. Bu belge adlarının bugün aktif repo omurgasında görünmemesi normaldir; güncel doğrulama kaydı [`PROGRESS.md`](../../PROGRESS.md), güncel katalog ise [`docs/INDEX.md`](../INDEX.md) üzerinden izlenmelidir.
+
 - [x] `CRITICAL_FIXES_APPLIED.md` - Comprehensive fix documentation
 - [x] `AUDIT_SUMMARY.md` - Executive summary
 - [x] `PROGRESS.md` - Updated with Phase 28.5
 - [x] `DEPLOYMENT_CHECKLIST.md` - This file
 
 ### ✅ Database Migrations
+
+> Historical migration note: Bu listedeki migration numaraları o deployment penceresinin hedefleridir; bugünün zorunlu sıradaki migration listesi olarak yorumlanmamalıdır.
+
 - [ ] **REQUIRED**: Apply migration 0134 (Chat Rate Limit)
 - [ ] **REQUIRED**: Apply migration 0135 (Atomic Ban User)
 

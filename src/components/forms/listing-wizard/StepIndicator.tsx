@@ -1,8 +1,7 @@
 "use client";
 
-import { Car, Check, CheckCircle2, Settings, ShieldCheck } from "lucide-react";
+import { Camera, Car, Check, FileText } from "lucide-react";
 
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 
 interface StepIndicatorProps {
@@ -11,23 +10,22 @@ interface StepIndicatorProps {
 }
 
 const stepsConfig = [
-  { label: "Araç", icon: Car },
-  { label: "Detay Başlık", icon: Settings },
-  { label: "Kondisyon", icon: ShieldCheck },
-  { label: "Medya", icon: CheckCircle2 },
+  { label: "Araç Bilgileri", icon: Car },
+  { label: "İlan Detayları", icon: FileText },
+  { label: "Fotoğraflar", icon: Camera },
 ] as const;
 
-export function StepIndicator({ currentStep }: StepIndicatorProps) {
+export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
   return (
     <div className="mb-8 md:mb-12 px-2 -mx-2 overflow-x-auto scrollbar-hide">
-      <div className="flex justify-between items-center relative min-w-[480px]">
+      <div className="flex min-w-[360px] items-center justify-between relative">
         {/* Background Track */}
         <div className="absolute left-0 top-[22px] w-full h-1.5 bg-slate-100 rounded-full z-0" />
 
         {/* Active Progress Line */}
         <div
           className="absolute left-0 top-[22px] h-1.5 bg-primary rounded-full z-[1] transition-all duration-700 ease-out"
-          style={{ width: `${(currentStep / (stepsConfig.length - 1)) * 100}%` }}
+          style={{ width: `${(currentStep / Math.max(totalSteps - 1, 1)) * 100}%` }}
         />
 
         {stepsConfig.map((step, index) => {
