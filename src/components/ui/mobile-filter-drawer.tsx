@@ -1,7 +1,7 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Loader2, SlidersHorizontal } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,8 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ListingsFilterPanel } from "@/features/marketplace/components/listings-filter-panel";
+import { useFilterResultCount } from "@/features/marketplace/hooks/use-filter-result-count";
+import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 interface MobileFilterDrawerProps {
@@ -45,6 +47,20 @@ export function MobileFilterDrawer({
     }
     return value !== undefined && value !== "";
   }).length;
+
+  const hasDraftChanges = useMemo(
+    () => JSON.stringify(draftFilters) !== JSON.stringify(filters),
+    [draftFilters, filters]
+  );
+
+  const { count: previewCount, isLoading: isPreviewLoading } = useFilterResultCount(
+    draftFilters,
+    resultCount ?? 0,
+    {
+      debounceMs: 350,
+      enabled: isOpen,
+    }
+  );
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -77,10 +93,19 @@ export function MobileFilterDrawer({
     setIsOpen(false);
   };
 
-  const applyLabel =
-    typeof resultCount === "number"
-      ? `${resultCount.toLocaleString("tr-TR")} ilanı göster`
-      : `${draftActiveCount} filtre uygula`;
+  const resultLabel = previewCount.toLocaleString("tr-TR");
+  const ctaLabel = isPreviewLoading
+    ? "Sonuçlar güncelleniyor..."
+    : previewCount === 0
+      ? "Uygula · sonuç bulunamadı"
+      : `Uygula · ${resultLabel} ilanı gör`;
+  const helperCopy = isPreviewLoading
+    ? "Taslak filtrelere göre sonuç önizlemesi hazırlanıyor."
+    : previewCount === 0
+      ? "Bu taslakla sonuç yok. Filtreleri daraltmak yerine gevşetmeyi deneyin."
+      : hasDraftChanges
+        ? `Uyguladığınızda ${resultLabel} ilan açılacak.`
+        : `${resultLabel} ilan şu anki filtrelerle eşleşiyor.`;
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -122,19 +147,50 @@ export function MobileFilterDrawer({
         </div>
 
         <DrawerFooter className="border-t border-border/50 bg-background/80 pt-4 backdrop-blur-md">
-          <div className="flex gap-3">
-            <DrawerClose asChild>
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                className="h-12 flex-1 rounded-xl font-bold"
-              >
-                Temizle
+          <div className="space-y-3">
+            <div
+              className={cn(
+                "rounded-2xl border px-4 py-3 transition-colors",
+                isPreviewLoading
+                  ? "border-border/60 bg-muted/40"
+                  : previewCount === 0
+                    ? "border-amber-200 bg-amber-50/80"
+                    : "border-emerald-200 bg-emerald-50/80"
+              )}
+            >
+              <p className="text-sm font-bold text-foreground">
+                {isPreviewLoading
+                  ? "Canlı sonuç önizlemesi güncelleniyor"
+                  : previewCount === 0
+                    ? "Bu taslakla ilan bulunamadı"
+                    : `${resultLabel} ilan önizlemede eşleşti`}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{helperCopy}</p>
+            </div>
+
+            <div className="flex gap-3">
+              <DrawerClose asChild>
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  className="h-12 flex-1 rounded-xl font-bold"
+                >
+                  Temizle
+                </Button>
+              </DrawerClose>
+              <Button onClick={handleApply} className="h-12 flex-1 rounded-xl font-bold">
+                <span className="flex items-center justify-center gap-2">
+                  {isPreviewLoading && <Loader2 className="size-4 animate-spin" />}
+                  <span>{ctaLabel}</span>
+                </span>
               </Button>
-            </DrawerClose>
-            <Button onClick={handleApply} className="h-12 flex-1 rounded-xl font-bold">
-              {applyLabel}
-            </Button>
+            </div>
+
+            {!isPreviewLoading && draftActiveCount > 0 && (
+              <p className="text-center text-[11px] font-medium leading-4 text-muted-foreground">
+                Filtreleri kaydetmek için uygula; kapatınca mevcut sonuçlar korunur.
+              </p>
+            )}
           </div>
         </DrawerFooter>
       </DrawerContent>

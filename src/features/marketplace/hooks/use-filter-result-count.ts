@@ -5,18 +5,32 @@ import { useDeferredValue, useEffect, useState } from "react";
 import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
 import { type ListingFilters } from "@/types";
 
-export function useFilterResultCount(filters: ListingFilters, initialCount: number = 0) {
+interface UseFilterResultCountOptions {
+  debounceMs?: number;
+  enabled?: boolean;
+}
+
+export function useFilterResultCount(
+  filters: ListingFilters,
+  initialCount: number = 0,
+  options: UseFilterResultCountOptions = {}
+) {
   const [count, setCount] = useState(initialCount);
   const [isLoading, setIsLoading] = useState(false);
   const deferredFilters = useDeferredValue(filters);
+  const { debounceMs = 600, enabled = true } = options;
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const controller = new AbortController();
 
     const timer = setTimeout(async () => {
       const params = createSearchParamsFromListingFilters({
         ...deferredFilters,
-        limit: 1, // Minimize payload
+        limit: 1,
         page: 1,
       });
 
@@ -44,13 +58,13 @@ export function useFilterResultCount(filters: ListingFilters, initialCount: numb
           setIsLoading(false);
         }
       }
-    }, 600);
+    }, debounceMs);
 
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [deferredFilters]);
+  }, [debounceMs, deferredFilters, enabled]);
 
-  return { count, isLoading };
+  return { count, isLoading: enabled ? isLoading : false };
 }

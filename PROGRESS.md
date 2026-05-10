@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 106. Task A2 — Mobile Drawer Live Result Preview CTA Pass
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A2 micro-improvement by preserving the mobile marketplace drawer’s staged draft/apply contract while making the bottom apply area reflect the current draft’s likely outcome more clearly through live result preview feedback and clearer CTA states.
+
+### 106.1 Draft-Aware Live Count Reuse Without Route Changes
+- Extended [`useFilterResultCount()`](src/features/marketplace/hooks/use-filter-result-count.ts:13) with lightweight `enabled` and `debounceMs` options so existing result-count fetching can be reused in narrower UX contexts without introducing a new backend contract or route.
+- Kept the existing URL-based listings count source intact by continuing to query the current [`/api/listings`](src/features/marketplace/hooks/use-filter-result-count.ts:41) path with serialized filter params and a minimal payload request.
+- Limited preview polling to the drawer-open state only, so background count fetches do not expand outside the mobile staged-editing surface.
+
+### 106.2 Mobile Drawer Preview Surface Clarifies Draft Impact
+- Updated [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:32) to compute a live preview count from `draftFilters` instead of reusing only the currently applied total.
+- Added a compact preview status panel above the footer actions that communicates three explicit states: loading preview, zero matching results, and non-zero matching results.
+- Preserved the staged apply model by keeping all deep filter interactions inside local draft state until the user explicitly taps the apply action.
+
+### 106.3 Apply CTA Copy Now Explains the Next Step More Clearly
+- Reframed the bottom CTA in [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:97) so it now says what applying will do, not just that a count exists, using distinct copy for updating, no-result, and positive-result states.
+- Added subtle helper copy beneath the preview panel to explain whether the visible result count reflects the current live filters or the user’s modified draft and to remind users that closing the drawer without apply preserves the existing results.
+- Kept the existing apply callback and URL navigation contract unchanged by continuing to invoke the same `onApply(draftFilters)` path.
+
+### 106.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/components/ui/mobile-filter-drawer.tsx src/features/marketplace/hooks/use-filter-result-count.ts`](package.json:12) ✅
+
+### 106.5 Remaining Risk
+- The live preview still depends on the current public listings API response timing, so users can briefly see the loading state before the drawer footer settles on a final count.
+- Draft-change detection currently relies on serialized filter object comparison inside [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:51), which is acceptable for the current flat filter shape but should be revisited if nested filter structures are introduced later.
+
+---
+
 ## 105. Task A2 — Active Filter Tag Instant Reversal Pass
 
 **Date**: 2026-05-11
