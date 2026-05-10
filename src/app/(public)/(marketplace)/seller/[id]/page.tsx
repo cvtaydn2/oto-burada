@@ -1,4 +1,5 @@
 import { Car, Star } from "lucide-react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ListingCard } from "@/components/shared/listing-card";
@@ -16,12 +17,36 @@ import {
 import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
 import { getSellerTrustSummary } from "@/features/profile/services/profile-trust";
 import { getSellerReviews, getSellerReviewStats } from "@/features/profile/services/seller-reviews";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { type Listing } from "@/types";
 
 interface SellerProfilePageProps {
   params: Promise<{
     id: string;
   }>;
+}
+
+export async function generateMetadata({ params }: SellerProfilePageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const sellerId = resolvedParams.id;
+  const seller = await getMarketplaceSeller(sellerId);
+
+  if (!seller) {
+    return {
+      title: "Satıcı Bulunamadı | OtoBurada",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const sellerName = seller.businessName || seller.fullName || "Satıcı";
+
+  return {
+    title: `${sellerName} | OtoBurada Satıcı Profili`,
+    description: `${sellerName} profiline ait araç ilanlarını ve değerlendirmelerini inceleyin.`,
+    alternates: {
+      canonical: buildAbsoluteUrl(`/seller/${sellerId}`),
+    },
+  };
 }
 
 export default async function SellerProfilePage({ params }: SellerProfilePageProps) {

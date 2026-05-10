@@ -1,4 +1,5 @@
 import { ArrowLeft, CheckCircle2, FileSpreadsheet, Info } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -6,6 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/features/auth/lib/session";
 import { BulkImportWizard } from "@/features/modules/components/dashboard/bulk-import-wizard";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
+
+export const metadata: Metadata = {
+  title: "Toplu İlan Yükleme | OtoBurada",
+  description:
+    "Kurumsal satıcılar için toplu CSV içe aktarma akışını kullanarak araç girişini hızlandırın.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/bulk-import"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function BulkImportPage() {
   await requireUser();

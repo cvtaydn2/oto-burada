@@ -1,4 +1,5 @@
 import { Activity, Database, Monitor, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { AdminBroadcastPanel } from "@/features/admin-moderation/components/admin-broadcast-panel";
@@ -22,12 +23,26 @@ import { getRecentAdminModerationActions } from "@/features/admin-moderation/ser
 import { getPersistenceHealth } from "@/features/admin-moderation/services/persistence-health";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { getStoredReports } from "@/features/reports/services/report-submissions";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { captureServerError } from "@/lib/telemetry-server";
 
 type AsyncErrorResult = { error: string };
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Genel Bakış | OtoBurada",
+  description:
+    "Kritik sistem metriklerini, moderasyon akışını ve yönetim yüzeylerini genel bakış panelinden izleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminOverviewPage() {
   await requireAdminUser();

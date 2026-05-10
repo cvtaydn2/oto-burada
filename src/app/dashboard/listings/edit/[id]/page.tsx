@@ -1,4 +1,5 @@
 import { ChevronLeft, ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -6,10 +7,27 @@ import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { getUserRole, requireUser } from "@/features/auth/lib/session";
 import { getListingById } from "@/features/marketplace/services/marketplace-listings";
 import { getStoredProfileById } from "@/features/profile/services/profile-records";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
 interface EditListingPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: EditListingPageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  return {
+    title: "İlan Düzenle | OtoBurada Dashboard",
+    description: "Mevcut ilanınızı güncelleyip yeniden moderasyon akışına hazırlayın.",
+    alternates: {
+      canonical: buildAbsoluteUrl(`/dashboard/listings/edit/${id}`),
+    },
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
 }
 
 export default async function EditListingPage({ params }: EditListingPageProps) {

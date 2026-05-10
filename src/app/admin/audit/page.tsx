@@ -7,12 +7,14 @@ import {
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +34,19 @@ interface AdminActionWithProfile {
 }
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Audit Kayıtları | OtoBurada",
+  description:
+    "Admin işlemlerinin zaman, hedef ve açıklama bağlamıyla izlendiği audit kayıtlarını inceleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/audit"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminAuditPage({
   searchParams,

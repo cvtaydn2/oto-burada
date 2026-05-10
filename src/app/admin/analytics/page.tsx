@@ -1,9 +1,11 @@
 import { TrendingUp } from "lucide-react";
+import type { Metadata } from "next";
 import dynamicImport from "next/dynamic";
 import { Suspense } from "react";
 
 import { getAdminAnalytics } from "@/features/admin-moderation/services/analytics";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 const AdminAnalyticsClient = dynamicImport(
   () =>
@@ -20,6 +22,19 @@ const AdminAnalyticsClient = dynamicImport(
 );
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Analitik | OtoBurada",
+  description:
+    "Yönetim paneli analitik görünümünde temel performans, trend ve operasyon metriklerini inceleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/analytics"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface AdminAnalyticsPageProps {
   searchParams: Promise<{ range?: string }>;

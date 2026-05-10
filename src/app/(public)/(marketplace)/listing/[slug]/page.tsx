@@ -14,7 +14,7 @@ import { FraudWarningBanner } from "@/components/shared/fraud-warning-banner";
 import { ListingCard } from "@/components/shared/listing-card";
 import { getCleanDescription, getListingBreadcrumbs } from "@/domain/logic/listing-factory";
 import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
-import { getAuthContext, getCurrentUser } from "@/features/auth/lib/session";
+import { getAuthContext } from "@/features/auth/lib/session";
 import { DamageReportCard } from "@/features/marketplace/components/damage-report-card";
 import { ExpertInspectionCard } from "@/features/marketplace/components/expert-inspection-card";
 import { ExpertPdfButton } from "@/features/marketplace/components/expert-pdf-button";
@@ -76,8 +76,8 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { slug } = await params;
 
-  const [currentUser, rawListing] = await Promise.all([
-    getCurrentUser(),
+  const [{ user: currentUser, dbProfile }, rawListing] = await Promise.all([
+    getAuthContext(),
     getMarketplaceListingBySlug(slug),
   ]);
 
@@ -87,7 +87,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     const storedListing = await getStoredListingBySlug(slug, { includeBanned: true });
 
     if (storedListing) {
-      const { dbProfile } = await getAuthContext();
       const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
       const isOwner = currentUser.id === storedListing.sellerId;
 

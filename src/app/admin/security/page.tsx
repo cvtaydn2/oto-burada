@@ -1,4 +1,5 @@
 import { AlertTriangle, Ban, Shield, ShieldAlert, TrendingUp } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { InfoBlock, MetricCard } from "@/components/admin/security-stats";
@@ -6,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -37,6 +39,19 @@ interface SecurityPageData {
     reasonCounts: Record<string, number>;
   };
 }
+
+export const metadata: Metadata = {
+  title: "Admin Güvenlik Operasyonları | OtoBurada",
+  description:
+    "Abuse logları, yasaklı IP kayıtları ve güvenlik sinyallerini yönetim panelinden izleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/security"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const REASON_STYLES: Record<string, string> = {
   honeypot: "border-red-200 bg-red-50 text-red-800",

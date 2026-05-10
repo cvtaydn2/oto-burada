@@ -1,6 +1,9 @@
 import { ArrowRight, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 const PLATFORM_PILLARS = [
   {
@@ -28,6 +31,15 @@ const OPERATING_PRINCIPLES = [
   "Bireysel kullanıcılar için ücretsiz ilan yayınını koruruz.",
   "Mobilde daha hızlı karar verilebilmesi için gereksiz yoğunluktan kaçınırız.",
 ] as const;
+
+export const metadata: Metadata = {
+  title: "Hakkımızda | OtoBurada",
+  description:
+    "OtoBurada'nın sade, güvenli ve mobil öncelikli araç ilan deneyimini neden inşa ettiğini keşfedin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/about"),
+  },
+};
 
 export default function AboutPage() {
   return (

@@ -1,10 +1,24 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { requireUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 interface PaymentsPageProps {
   searchParams: Promise<{ status?: string; token?: string; message?: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Ödeme Yönlendirmesi | OtoBurada Dashboard",
+  description: "Ödeme sonucu sayfasına güvenli şekilde yönlendirilirsiniz.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/payments"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
   await requireUser();

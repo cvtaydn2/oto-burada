@@ -1,4 +1,5 @@
 import { Search, ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -14,8 +15,22 @@ import {
   getPendingQuestions,
 } from "@/features/admin-moderation/services/questions";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Soru Moderasyonu | OtoBurada",
+  description:
+    "İlanlara gelen kullanıcı sorularını güvenli moderasyon akışıyla inceleyin ve yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/questions"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface AdminQuestionsPageProps {
   searchParams: Promise<{ q?: string; page?: string; status?: string }>;

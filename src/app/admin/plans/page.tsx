@@ -1,4 +1,5 @@
 import { CreditCard, ShoppingBag, TrendingUp, Users } from "lucide-react";
+import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
 import { PlansTable } from "@/features/admin-moderation/components/plans-table";
@@ -8,11 +9,25 @@ import {
   getPlanStats,
 } from "@/features/admin-moderation/services/plans";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { safeFormatDate } from "@/lib/datetime/date-utils";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Paket Yönetimi | OtoBurada",
+  description:
+    "Paket envanterini, satış özetini ve satın alma geçmişini yönetim panelinden inceleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/plans"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminPlansPage() {
   await requireAdminUser();

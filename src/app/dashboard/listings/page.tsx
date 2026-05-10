@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ListingCreateForm } from "@/components/forms/listing-create-form";
@@ -11,10 +12,23 @@ import type {
   DashboardListingsPageData,
 } from "@/features/marketplace/types/dashboard-listings";
 import { getStoredProfileById } from "@/features/profile/services/profile-records";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { mergeCityOptions } from "@/features/shared/services/live-reference-data";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "İlanlarım | OtoBurada Dashboard",
+  description: "Kendi ilanlarınızı oluşturun, düzenleyin ve moderasyon durumlarını yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/listings"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface DashboardListingsPageProps {
   searchParams?: Promise<{

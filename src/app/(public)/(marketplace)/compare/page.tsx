@@ -45,7 +45,7 @@ export async function generateMetadata({ searchParams }: ComparePageProps): Prom
       canonical: buildAbsoluteUrl("/compare"),
     },
     robots: {
-      index: ids.length > 1,
+      index: false,
       follow: true,
     },
   };

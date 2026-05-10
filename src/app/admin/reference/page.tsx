@@ -1,12 +1,26 @@
 import { Database, Filter } from "lucide-react";
+import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
 import { BrandsManager } from "@/features/admin-moderation/components/brands-manager";
 import { UserSearch } from "@/features/admin-moderation/components/user-search";
 import { getBrands } from "@/features/admin-moderation/services/reference";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Referans Veriler | OtoBurada",
+  description: "Marka, model ve referans araç veritabanını yönetim panelinden yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/reference"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminReferencePage({
   searchParams,

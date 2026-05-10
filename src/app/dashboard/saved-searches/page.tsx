@@ -1,10 +1,26 @@
+import type { Metadata } from "next";
+
 import { requireUser } from "@/features/auth/lib/session";
 import { SavedSearchesPanel } from "@/features/marketplace/components/saved-searches-panel";
 import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
 import { getStoredSavedSearchesByUser } from "@/features/marketplace/services/saved-search-records";
 import { buildSavedSearchSummary } from "@/features/marketplace/services/saved-search-utils";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Kayıtlı Aramalar | OtoBurada Dashboard",
+  description:
+    "Kaydettiğiniz filtre kombinasyonlarını yeniden açın ve arama bildirim tercihlerinizi yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/saved-searches"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardSavedSearchesPage() {
   const user = await requireUser();

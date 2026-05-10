@@ -150,7 +150,7 @@ export default async function HomePage() {
         )}
 
         <section className="mx-auto max-w-7xl px-3 py-8 sm:px-4 sm:py-10 md:px-6 md:py-12">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
                 Yeni İlanlar

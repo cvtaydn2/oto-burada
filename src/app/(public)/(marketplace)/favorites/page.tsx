@@ -1,12 +1,27 @@
 import { ChevronLeft } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getCurrentUser } from "@/features/auth/lib/session";
 import { getDatabaseFavoriteIds } from "@/features/favorites/services/favorite-records";
 import { FavoritesPageClient } from "@/features/marketplace/components/favorites-page-client";
 import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Favori İlanlar | OtoBurada",
+  description:
+    "Beğendiğiniz araç ilanlarını tek listede toplayın, takip edin ve daha sonra kolayca karşılaştırın.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/favorites"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function FavoritesPage() {
   const user = await getCurrentUser();

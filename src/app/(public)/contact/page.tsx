@@ -7,16 +7,21 @@ import {
   Phone,
   ShieldCheck,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ContactForm } from "@/components/shared/contact-form";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { FEATURES } from "@/lib/features";
 
 export const revalidate = 300;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "İletişim | OtoBurada",
   description: "OtoBurada ile iletişime geçin. Soru, öneri veya işbirliği için ekibimize ulaşın.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/contact"),
+  },
 };
 
 const CONTACT_CHANNELS = [

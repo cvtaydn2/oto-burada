@@ -1,4 +1,5 @@
 import { ArrowRight, Package, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -6,6 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/features/auth/lib/session";
 import { getGalleryListings, getGalleryStats } from "@/features/marketplace/services";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
+
+export const metadata: Metadata = {
+  title: "Stok Yönetimi | OtoBurada Dashboard",
+  description: "Galeri stoğunuzu, aktif ilanlarınızı ve satış özetinizi tek panelden yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/stok"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function StockDashboardPage() {
   const user = await requireUser();
@@ -13,13 +27,13 @@ export default async function StockDashboardPage() {
   const listings = await getGalleryListings(user.id, { limit: 12 });
 
   return (
-    <div className="mx-auto max-w-[1440px] px-3 sm:px-4 py-6 sm:py-8 lg:px-10 lg:py-12 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-[1440px] space-y-6 px-3 py-6 sm:px-4 sm:py-8 lg:px-10 lg:py-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">Stok Yönetimi</h1>
           <p className="text-muted-foreground text-sm">Galeri stoğunuzu yönetin</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Link href="/dashboard/bulk-import">
             <Button variant="outline" className="gap-2">
               <Plus className="h-4 w-4" />

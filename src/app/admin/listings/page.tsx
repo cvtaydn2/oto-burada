@@ -1,4 +1,5 @@
 import { Search, ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +10,21 @@ import { ListingsModeration } from "@/features/admin-moderation/components/listi
 import { SimplePagination } from "@/features/admin-moderation/components/simple-pagination";
 import { getAdminInventory } from "@/features/admin-moderation/services/inventory";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin İlan Yönetimi | OtoBurada",
+  description: "Moderasyon kuyruğunu, yayındaki ilanları ve arşiv geçmişini tek akışta yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/listings"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface AdminListingsPageProps {
   searchParams: Promise<{ q?: string; page?: string; status?: string }>;

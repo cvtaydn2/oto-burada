@@ -1,3 +1,16 @@
+import type { Metadata } from "next";
+
+import { buildAbsoluteUrl } from "@/features/seo/lib";
+
+export const metadata: Metadata = {
+  title: "Gizlilik Politikası | OtoBurada",
+  description:
+    "OtoBurada üzerinde hangi verilerin toplandığını, nasıl işlendiğini ve gizlilik tercihlerinizi nasıl yönettiğimizi inceleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/legal/privacy"),
+  },
+};
+
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">

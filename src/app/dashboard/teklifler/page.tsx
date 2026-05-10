@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,9 +9,22 @@ import {
   getOffersForUser,
   getOffersReceived,
 } from "@/features/offers/services/offers/offer-actions";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { formatPrice } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Teklifler | OtoBurada Dashboard",
+  description: "Verdiğiniz ve aldığınız teklifleri tek yerden takip edip yanıtlayın.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/teklifler"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function OffersDashboardPage() {
   const user = await requireUser();
@@ -21,7 +35,7 @@ export default async function OffersDashboardPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-3 sm:px-4 py-6 sm:py-8 lg:px-10 lg:py-12 space-y-8">
+    <div className="mx-auto max-w-[1440px] space-y-8 px-3 py-6 sm:px-4 sm:py-8 lg:px-10 lg:py-12">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold">Teklifler</h1>
         <p className="text-muted-foreground text-sm">Verdiğiniz ve aldığınız teklifler</p>

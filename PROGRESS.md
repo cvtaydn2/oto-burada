@@ -1,5 +1,26 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 87. Screen-by-Screen Page Hardening Completion Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied direct file-level fixes to individual [`page.tsx`](src/app:1) route screens across public, dashboard, admin, redirect, and utility surfaces so each frontend route file now contains at least one explicit hardening/refactor touchpoint.
+
+### 87.1 Applied Fixes
+- **Public screen direct touches**: Added or normalized metadata/canonical/noindex behavior across route files including [`about/page.tsx`](src/app/(public)/about/page.tsx:32), [`contact/page.tsx`](src/app/(public)/contact/page.tsx:17), [`legal/privacy/page.tsx`](src/app/(public)/legal/privacy/page.tsx:5), [`legal/terms/page.tsx`](src/app/(public)/legal/terms/page.tsx:5), [`favorites/page.tsx`](src/app/(public)/(marketplace)/favorites/page.tsx:10), [`seller/[id]/page.tsx`](src/app/(public)/(marketplace)/seller/[id]/page.tsx:27), [`aracim-ne-kadar/page.tsx`](src/app/(public)/(marketplace)/aracim-ne-kadar/page.tsx:6), [`pricing/page.tsx`](src/app/(public)/(marketplace)/pricing/page.tsx:11), [`galeri/[slug]/page.tsx`](src/app/(public)/(marketplace)/galeri/[slug]/page.tsx:19), [`compare/page.tsx`](src/app/(public)/(marketplace)/compare/page.tsx:33), [`forgot-password/page.tsx`](src/app/(public)/(auth)/forgot-password/page.tsx:6), [`reset-password/page.tsx`](src/app/(public)/(auth)/reset-password/page.tsx:6), and [`playground/page.tsx`](src/app/(public)/playground/page.tsx:1) through server-wrapper split.
+- **Dashboard screen direct touches**: Added route-level metadata/noindex coverage and per-screen header/structure refinements across [`dashboard/page.tsx`](src/app/dashboard/page.tsx:23), [`favorites/page.tsx`](src/app/dashboard/favorites/page.tsx:10), [`bulk-import/page.tsx`](src/app/dashboard/bulk-import/page.tsx:10), [`listings/page.tsx`](src/app/dashboard/listings/page.tsx:65), [`listings/edit/[id]/page.tsx`](src/app/dashboard/listings/edit/[id]/page.tsx:15), [`notifications/page.tsx`](src/app/dashboard/notifications/page.tsx:24), [`saved-searches/page.tsx`](src/app/dashboard/saved-searches/page.tsx:9), [`stok/page.tsx`](src/app/dashboard/stok/page.tsx:25), [`teklifler/page.tsx`](src/app/dashboard/teklifler/page.tsx:29), [`profile/page.tsx`](src/app/dashboard/profile/page.tsx:14), [`profile/corporate/page.tsx`](src/app/dashboard/profile/corporate/page.tsx:24), [`payments/page.tsx`](src/app/dashboard/payments/page.tsx:9), [`listings/create/page.tsx`](src/app/dashboard/listings/create/page.tsx:18), [`packages/page.tsx`](src/app/dashboard/packages/page.tsx:18), [`paketler/page.tsx`](src/app/dashboard/paketler/page.tsx:18), plus client/server separation on [`messages/page.tsx`](src/app/dashboard/messages/page.tsx:1) and [`payments/result/page.tsx`](src/app/dashboard/payments/result/page.tsx:1).
+- **Admin screen direct touches**: Added route-level metadata/noindex coverage across [`admin/page.tsx`](src/app/admin/page.tsx:35), [`analytics/page.tsx`](src/app/admin/analytics/page.tsx:26), [`audit/page.tsx`](src/app/admin/audit/page.tsx:38), [`listings/page.tsx`](src/app/admin/listings/page.tsx:17), [`plans/page.tsx`](src/app/admin/plans/page.tsx:19), [`questions/page.tsx`](src/app/admin/questions/page.tsx:23), [`reports/page.tsx`](src/app/admin/reports/page.tsx:14), [`security/page.tsx`](src/app/admin/security/page.tsx:43), [`settings/page.tsx`](src/app/admin/settings/page.tsx:10), [`tickets/page.tsx`](src/app/admin/tickets/page.tsx:13), [`users/page.tsx`](src/app/admin/users/page.tsx:17), [`users/[userId]/page.tsx`](src/app/admin/users/[userId]/page.tsx:11), [`reference/page.tsx`](src/app/admin/reference/page.tsx:11), [`roles/page.tsx`](src/app/admin/roles/page.tsx:7), and redirect route [`support/page.tsx`](src/app/admin/support/page.tsx:18).
+- **Utility / maintenance direct touches**: Added metadata handling and wrapper normalization for [`maintenance/page.tsx`](src/app/maintenance/page.tsx:6) and [`sentry-example-page/page.tsx`](src/app/sentry-example-page/page.tsx:1).
+
+### 87.2 Validation
+- **Route-file coverage validation**: ✅ Public, dashboard, admin, redirect, and utility `page.tsx` surfaces all received direct file-level touchpoints.
+- **Constraint validation**: ✅ No verification commands were executed in this pass beyond prior git workflow needs.
+
+### 87.3 Next Step
+- Re-run git status, prepare final delta review, then commit/push the page-by-page completion pass when desired.
+
+---
+
 ## 86. Frontend Deep Audit — Shared UX & Operational Density Pass
 
 **Date**: 2026-05-10

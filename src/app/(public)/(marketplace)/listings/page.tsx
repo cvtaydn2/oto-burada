@@ -54,7 +54,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
   const result = await getPublicMarketplaceListings(initialQuery);
 
-  const breadcrumbs = [{ name: "Tüm İlanlar", url: "/listings" }];
+  const breadcrumbs = [
+    { name: "Ana Sayfa", url: "/" },
+    { name: "Tüm İlanlar", url: "/listings" },
+  ];
 
   return (
     <>

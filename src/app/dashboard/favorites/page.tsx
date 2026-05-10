@@ -1,11 +1,25 @@
 import { Heart } from "lucide-react";
+import type { Metadata } from "next";
 
 import { requireUser } from "@/features/auth/lib/session";
 import { getDatabaseFavoriteIds } from "@/features/favorites/services/favorite-records";
 import { FavoritesPageClient } from "@/features/marketplace/components/favorites-page-client";
 import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Dashboard Favoriler | OtoBurada",
+  description: "Takip ettiğiniz araç ilanlarını dashboard içinde tek listede yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/favorites"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardFavoritesPage() {
   const user = await requireUser();

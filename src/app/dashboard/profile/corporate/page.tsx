@@ -7,6 +7,7 @@ import {
   MapPin,
   XCircle,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CorporateProfileForm } from "@/components/forms/corporate-profile-form";
@@ -17,9 +18,23 @@ import {
   buildProfileFromAuthUser,
   getStoredProfileById,
 } from "@/features/profile/services/profile-records";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { trust } from "@/lib/ui-strings";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Kurumsal Mağaza Ayarları | OtoBurada Dashboard",
+  description:
+    "Kurumsal galeri bilgilerinizi, mağaza görünürlüğünüzü ve işletme doğrulama durumunuzu yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/profile/corporate"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function CorporateSettingsPage() {
   const user = await requireUser();

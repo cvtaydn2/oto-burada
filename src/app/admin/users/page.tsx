@@ -1,4 +1,5 @@
 import { ShieldCheck, UserCog } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,22 @@ import { UserSearch } from "@/features/admin-moderation/components/user-search";
 import { UserStatsBar } from "@/features/admin-moderation/components/user-stats-bar";
 import { getAllUsers } from "@/features/admin-moderation/services/admin/user-list";
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Kullanıcı Yönetimi | OtoBurada",
+  description:
+    "Platform kullanıcılarını, rollerini, doğrulama durumlarını ve hesap hareketlerini yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/users"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminUserManagementPage({
   searchParams,

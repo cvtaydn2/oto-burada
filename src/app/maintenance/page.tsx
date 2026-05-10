@@ -1,7 +1,22 @@
 import { Hammer, LogIn, MessageSquare } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
+import { buildAbsoluteUrl } from "@/features/seo/lib";
+
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: "Bakım Modu | OtoBurada",
+  description: "OtoBurada bakım çalışması sırasında geçici bakım sayfası gösterilir.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/maintenance"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function MaintenancePage() {
   return (

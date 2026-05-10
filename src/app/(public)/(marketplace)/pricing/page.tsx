@@ -7,11 +7,15 @@ import { CorporatePlansSection } from "@/features/marketplace/components/pricing
 import { DopingPackagesSection } from "@/features/marketplace/components/pricing/doping-packages-section";
 import { FreeFeaturesSection } from "@/features/marketplace/components/pricing/free-features-section";
 import { ADDITIONAL_FEATURES } from "@/features/marketplace/lib/pricing-data";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 
 export const metadata: Metadata = {
   title: "Fiyatlandırma - OtoBurada Ücretsiz İlan & Doping Paketleri",
   description:
     "OtoBurada ilan verme tamamen ücretsiz. Doping paketleri fiyatı piyasanın 1/10'u. Kurumsal planlar ile profesyonel araç satışları yapın. Şeffaf fiyatlandırma ile en iyi dönüşümü yaşayın.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/pricing"),
+  },
 };
 
 const TRUST_BADGES = [

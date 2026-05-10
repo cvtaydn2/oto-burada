@@ -1,15 +1,29 @@
 import { Building2, CheckCircle2, Mail, Phone, ShieldCheck, User } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { IdentityVerificationForm } from "@/components/forms/identity-verification-form";
 import { ProfileForm } from "@/components/forms/profile-form";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { getDashboardProfilePageData } from "@/features/profile/services/profile/profile-actions";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { Profile } from "@/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Hesap ve Profil | OtoBurada Dashboard",
+  description: "Profil bilgilerinizi, iletişim ayarlarınızı ve doğrulama durumunuzu yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard/profile"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardProfilePage() {
   const { viewData, cityOptions, userEmail } = await getDashboardProfilePageData();

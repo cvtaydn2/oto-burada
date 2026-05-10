@@ -1,12 +1,17 @@
 import { BadgeCheck, Calculator, CarFront, Info, TrendingUp } from "lucide-react";
+import type { Metadata } from "next";
 
 import { ValuationForm } from "@/features/marketplace/components/valuation-form";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Aracım Ne Kadar? | Ücretsiz Araç Değerleme",
   description:
     "Arabanızın güncel piyasa değerini saniyeler içinde öğrenin. Gerçek ilan verilerine dayalı, yapay zeka destekli fiyat tahmini.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/aracim-ne-kadar"),
+  },
 };
 
 export default async function AracimNeKadarPage() {
@@ -21,7 +26,7 @@ export default async function AracimNeKadarPage() {
           <div className="absolute top-0 left-0 h-full w-full bg-[radial-gradient(circle_at_20%_30%,#4f46e5_0,transparent_50%)]" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <div className="relative mx-auto max-w-7xl space-y-6 px-4 text-center sm:px-6 lg:px-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/10 border border-white/20 text-xs font-bold uppercase tracking-widest text-primary-foreground mb-4">
             <Calculator size={14} />
             Yapay Zeka Destekli Değerleme
@@ -37,8 +42,8 @@ export default async function AracimNeKadarPage() {
       </section>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-5xl px-4 -mt-12">
-        <div className="grid lg:grid-cols-[1fr_350px] gap-8">
+      <div className="mx-auto -mt-12 max-w-5xl px-4">
+        <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
           {/* Main Form Area */}
           <div className="bg-card rounded-2xl p-8 md:p-12 shadow-sm shadow-slate-200 border border-border">
             <div className="flex items-center gap-4 mb-8">

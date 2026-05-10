@@ -1,13 +1,27 @@
 import { Clock3, MessageSquare, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 
 import { requireAdminUser } from "@/features/auth/lib/session";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { AdminTicketList } from "@/features/support/components/admin-ticket-list";
 import type { TicketStatus } from "@/features/support/services/ticket-service";
 import { getAllTickets, getTicketCount } from "@/features/support/services/ticket-service";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Destek Talepleri | OtoBurada",
+  description:
+    "Destek taleplerini, kuyruk durumunu ve admin yanıt akışını yönetim panelinden takip edin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/tickets"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminTicketsPage({
   searchParams,

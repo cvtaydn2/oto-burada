@@ -1,5 +1,5 @@
 import { Car, Eye } from "lucide-react";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
@@ -8,6 +8,7 @@ import { ListingCard } from "@/components/shared/listing-card";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/features/auth/lib/session";
 import { getGalleryBySlug, recordGalleryView } from "@/features/marketplace/services";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { logger } from "@/lib/logger";
 
 interface GalleryPageProps {
@@ -34,6 +35,9 @@ export async function generateMetadata({ params }: GalleryPageProps): Promise<Me
     title: `${name} | OtoBurada Kurumsal Galeri`,
     description:
       data.profile.businessDescription || `${name} galerisinin tüm araç ilanlarını keşfedin.`,
+    alternates: {
+      canonical: buildAbsoluteUrl(`/galeri/${slug}`),
+    },
   };
 }
 

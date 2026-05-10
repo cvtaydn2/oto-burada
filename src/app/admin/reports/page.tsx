@@ -1,13 +1,28 @@
 import { ShieldAlert, TriangleAlert } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { ReportsModeration } from "@/features/admin-moderation/components/reports-moderation";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { getStoredReports } from "@/features/reports/services/report-submissions";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Admin Kullanıcı Raporları | OtoBurada",
+  description:
+    "Topluluk bildirimlerini, riskli raporları ve moderasyon kararlarını yönetim panelinden izleyin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/admin/reports"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminReportsPage({
   searchParams,

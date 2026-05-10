@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { requireUser } from "@/features/auth/lib/session";
@@ -16,9 +17,23 @@ import {
   buildProfileFromAuthUser,
   getStoredProfileById,
 } from "@/features/profile/services/profile-records";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import type { Listing, Profile } from "@/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Dashboard | OtoBurada",
+  description:
+    "İlanlarınızı, favorilerinizi, mesajlarınızı ve hesap durumunuzu tek panelden yönetin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/dashboard"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardPage() {
   const user = await requireUser();

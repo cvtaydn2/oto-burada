@@ -1,3 +1,16 @@
+import type { Metadata } from "next";
+
+import { buildAbsoluteUrl } from "@/features/seo/lib";
+
+export const metadata: Metadata = {
+  title: "Kullanım Şartları | OtoBurada",
+  description:
+    "OtoBurada platformunu kullanırken geçerli olan ilan kurallarını, moderasyon ilkelerini ve kullanım koşullarını okuyun.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/legal/terms"),
+  },
+};
+
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
