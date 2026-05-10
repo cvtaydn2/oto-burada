@@ -18,6 +18,7 @@ import { MyListingsBulkActions } from "./my-listings-bulk-actions";
 interface MyListingsPanelProps {
   activeEditId?: string;
   initialShowForm?: boolean;
+  trustFilter?: "incomplete";
   listings: DashboardListingSummary[];
   currentPage: number;
   pageSize: number;
@@ -29,6 +30,7 @@ interface MyListingsPanelProps {
 export function MyListingsPanel({
   activeEditId,
   initialShowForm = false,
+  trustFilter,
   listings,
   currentPage,
   pageSize,
@@ -129,6 +131,17 @@ export function MyListingsPanel({
     window.setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
+  const clearTrustFilter = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("trust");
+    params.delete("edit");
+    params.delete("focus");
+    params.set("page", "1");
+
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   return (
     <div className="space-y-6">
       <MyListingsAlerts archiveError={archiveError} bumpMessage={bumpMessage} />
@@ -184,7 +197,23 @@ export function MyListingsPanel({
         </Button>
       )}
 
-      {totalCount === 0 && !showForm && (
+      {totalCount === 0 && !showForm && trustFilter === "incomplete" && (
+        <EmptyState
+          title="Bu sayfada güven eksiği ilan kalmadı"
+          description="Ekspertiz, hasar veya Tramer detayı eksik ilan görünmüyor. Filtreyi kapatıp tüm ilan listene dönebilirsin."
+          icon={<Rocket size={48} className="text-primary" />}
+          primaryAction={{
+            label: "Tüm ilanları göster",
+            onClick: clearTrustFilter,
+          }}
+          secondaryAction={{
+            label: "Yeni ilan oluştur",
+            onClick: () => setShowForm(true),
+          }}
+        />
+      )}
+
+      {totalCount === 0 && !showForm && !trustFilter && (
         <EmptyState
           title="Henüz İlanınız Yok"
           description="Hayalindeki arabayı satmak ya da yenisini almak için hemen ilk adımını at. İlan vermek tamamen ücretsiz!"
@@ -203,6 +232,34 @@ export function MyListingsPanel({
 
       {totalCount > 0 && (
         <div className="space-y-6">
+          {trustFilter === "incomplete" && (
+            <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-blue-950 shadow-sm sm:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                    Aktif filtre
+                  </p>
+                  <p className="text-sm font-semibold leading-6 text-blue-950">
+                    Yalnız güven detayı eksik ilanlar gösteriliyor.
+                  </p>
+                  <p className="text-xs font-medium leading-5 text-blue-900/80">
+                    Ekspertiz, hasar veya Tramer bilgisi eksik ilanlara odaklanıyorsun. Filtreyi
+                    kapatınca tüm ilan görünümüne dönersin.
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={clearTrustFilter}
+                  className="inline-flex items-center justify-center rounded-xl border-blue-200 bg-white text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700 shadow-sm hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800"
+                >
+                  Tüm ilanları göster
+                </Button>
+              </div>
+            </div>
+          )}
+
           <MyListingsBulkActions
             allPageSelected={allPageSelected}
             paginatedCount={listings.length}
@@ -221,6 +278,7 @@ export function MyListingsPanel({
               <DashboardListingCard
                 key={listing.id}
                 listing={listing as unknown as Listing}
+                trustFilter={trustFilter}
                 currentTime={currentTime}
                 isSelected={selectedIds.includes(listing.id)}
                 isArchiving={archivingId === listing.id}

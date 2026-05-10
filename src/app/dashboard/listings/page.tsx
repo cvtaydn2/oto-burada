@@ -40,6 +40,7 @@ interface DashboardListingsPageProps {
     listing?: string;
     page?: string;
     pageSize?: string;
+    trust?: string;
   }>;
 }
 
@@ -102,6 +103,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const editId = resolvedSearchParams?.edit ?? null;
   const createdListingId = resolvedSearchParams?.listing ?? null;
   const focusMode = resolvedSearchParams?.focus === "trust" ? "trust" : "default";
+  const trustFilter = resolvedSearchParams?.trust === "incomplete" ? "incomplete" : undefined;
   const page = parsePositiveInt(resolvedSearchParams?.page, 1);
   const pageSize = clampPageSize(resolvedSearchParams?.pageSize);
 
@@ -122,9 +124,6 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     selectedListing?.city ?? "",
   ]);
   const isEmailVerified = data.profile?.emailVerified ?? false;
-  const approvedCountOnPage = data.listingsPage.items.filter(
-    (listing) => listing.status === "approved"
-  ).length;
   const isEditingExisting = data.editing.status === "loaded";
   const trustReminderEligibleListings = data.listingsPage.items.filter(
     (listing) =>
@@ -132,6 +131,12 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   );
   const missingTrustCount = trustReminderEligibleListings.length;
   const firstTrustReminderListing = trustReminderEligibleListings[0] ?? null;
+  const displayedListings =
+    trustFilter === "incomplete" ? trustReminderEligibleListings : data.listingsPage.items;
+  const isTrustFilterActive = trustFilter === "incomplete";
+  const displayedApprovedCount = displayedListings.filter(
+    (listing) => listing.status === "approved"
+  ).length;
 
   return (
     <div className="space-y-8">
@@ -142,8 +147,10 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-foreground">İlanlarım</h2>
             <p className="mt-1 text-sm font-medium italic text-muted-foreground">
-              Toplam {data.listingsPage.totalCount} ilanın var. Bu sayfadaki{" "}
-              {data.listingsPage.items.length} ilandan {approvedCountOnPage} tanesi yayında.
+              Toplam {data.listingsPage.totalCount} ilanın var. Bu görünümde{" "}
+              {displayedListings.length} ilan gösteriliyor ve {displayedApprovedCount} tanesi
+              yayında.
+              {isTrustFilterActive ? " Güven eksiği odağı aktif." : ""}
             </p>
           </div>
 
@@ -193,12 +200,22 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
                 </p>
               </div>
 
-              <Link
-                href={`/dashboard/listings?edit=${firstTrustReminderListing.id}&focus=trust`}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
-              >
-                Eksik güven detaylarını tamamla
-              </Link>
+              <div className="flex flex-col gap-2 sm:items-end">
+                {!isTrustFilterActive ? (
+                  <Link
+                    href="/dashboard/listings?trust=incomplete"
+                    className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-white px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-100"
+                  >
+                    Eksik ilanlara odaklan
+                  </Link>
+                ) : null}
+                <Link
+                  href={`/dashboard/listings?edit=${firstTrustReminderListing.id}&focus=trust${isTrustFilterActive ? "&trust=incomplete" : ""}`}
+                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
+                >
+                  Eksik güven detaylarını tamamla
+                </Link>
+              </div>
             </div>
           </div>
         ) : null}
@@ -249,7 +266,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             </div>
             {createdListingId ? (
               <Link
-                href={`/dashboard/listings?edit=${createdListingId}&focus=trust`}
+                href={`/dashboard/listings?edit=${createdListingId}&focus=trust${isTrustFilterActive ? "&trust=incomplete" : ""}`}
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
               >
                 Güven artırıcı detayları ekle
@@ -268,10 +285,11 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
       <MyListingsPanel
         activeEditId={selectedListing?.id}
         initialShowForm={hasRequestedCreate && !isEditingExisting}
-        listings={data.listingsPage.items}
+        trustFilter={trustFilter}
+        listings={displayedListings}
         currentPage={data.listingsPage.page}
         pageSize={data.listingsPage.pageSize}
-        totalCount={data.listingsPage.totalCount}
+        totalCount={displayedListings.length}
         userId={user.id}
       >
         <div className="mt-8 rounded-2xl border border-border bg-card p-8 shadow-sm">

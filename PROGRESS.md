@@ -1,5 +1,34 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 94. Task A1 — Dashboard Trust Focus Filter Flow
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 product slice by turning the existing dashboard trust reminder into a reversible focus flow, so sellers can jump into a trust-only listings view instead of manually scanning mixed listing cards.
+
+### 94.1 Query-Param Trust Focus Entry
+- Extended [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx:96) to accept a lightweight `trust=incomplete` query param and derive a page-local trust focus mode without adding any backend or schema work.
+- Reused the existing listing-level trust signals already exposed on dashboard listing summaries, so the focus state stays aligned with the current optional ekspertiz / hasar / Tramer reminder logic.
+
+### 94.2 Summary CTA to Focused Listings View
+- Updated the top trust summary in [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx:185) with a dedicated “Eksik ilanlara odaklan” CTA that routes sellers into the filtered dashboard view when the shortcut is valuable.
+- Preserved the existing direct edit CTA to [`focus=trust`](src/app/dashboard/listings/page.tsx:211) and made it retain the trust filter context when the filtered mode is already active.
+
+### 94.3 Active Filter Visibility & Reversible State
+- Updated [`MyListingsPanel`](src/features/marketplace/components/my-listings-panel.tsx:30) to render an explicit active-filter banner only while trust focus is enabled, with a clear reset action that removes `trust`, `edit`, and `focus` query state and returns to the full listings view.
+- Added a dedicated empty state for the filtered mode so sellers see “trust gap cleared” feedback instead of the generic no-listings message when no incomplete-trust listings remain on the current page.
+- Updated [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:60) so edit and trust reminder links preserve the active trust filter context while the seller works through multiple incomplete listings.
+
+### 94.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/dashboard/listings/page.tsx src/features/marketplace/components/my-listings-panel.tsx src/features/marketplace/components/dashboard-listing-card.tsx`](package.json:12) ✅
+
+### 94.5 Remaining Risk
+- The trust focus remains page-scoped and works on the currently fetched dashboard page only; incomplete-trust listings on other pagination pages are not merged into the filtered result for this MVP slice.
+- The current implementation filters in memory on already loaded items, so pagination totals in focus mode intentionally reflect the visible filtered subset rather than a separate server-side filtered dataset.
+
+---
+
 ## 93. Task A1 — Dashboard Trust Reminder Follow-Up
 
 **Date**: 2026-05-10

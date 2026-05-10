@@ -48,6 +48,7 @@ const statusClassMap: Record<Listing["status"], string> = {
 
 interface DashboardListingCardProps {
   listing: Listing;
+  trustFilter?: "incomplete";
   isSelected?: boolean;
   onToggleSelect?: () => void;
   isArchiving?: boolean;
@@ -59,6 +60,7 @@ interface DashboardListingCardProps {
 
 export function DashboardListingCard({
   listing,
+  trustFilter,
   isSelected = false,
   onToggleSelect,
   isArchiving = false,
@@ -105,6 +107,7 @@ export function DashboardListingCard({
     : 0;
 
   const dopingItems = getListingDopingDisplayItems(listing);
+  const trustQuery = trustFilter === "incomplete" ? "&trust=incomplete" : "";
 
   return (
     <div
@@ -223,7 +226,7 @@ export function DashboardListingCard({
 
                 {shouldShowTrustReminder && (
                   <Link
-                    href={`/dashboard/listings?edit=${listing.id}&focus=trust`}
+                    href={`/dashboard/listings?edit=${listing.id}&focus=trust${trustQuery}`}
                     className="w-full rounded-2xl border border-blue-200 bg-blue-50/80 px-3 py-3 text-left text-blue-900 transition-all hover:border-blue-300 hover:bg-blue-100/80 sm:w-auto sm:min-w-[320px]"
                   >
                     <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
@@ -253,7 +256,7 @@ export function DashboardListingCard({
 
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
               <Link
-                href={`/dashboard/listings?edit=${listing.id}`}
+                href={`/dashboard/listings?edit=${listing.id}${trustQuery}`}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border/60 bg-background px-3 text-xs font-semibold text-muted-foreground transition-all hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
                 aria-label="İlanı düzenle"
               >
