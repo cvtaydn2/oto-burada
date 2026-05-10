@@ -14,6 +14,12 @@ export interface DashboardListingSummary {
   updatedAt: string | null;
   publishedAt: string | null;
   version: number;
+  tramerAmount?: number | null;
+  damageStatusJson?: Record<string, string> | null;
+  expertInspection?: {
+    hasInspection: boolean;
+    inspectionDate?: string;
+  } | null;
 }
 
 export interface DashboardEditableListing {

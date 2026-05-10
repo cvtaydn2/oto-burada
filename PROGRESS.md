@@ -1,5 +1,28 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 93. Task A1 — Dashboard Trust Reminder Follow-Up
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 product slice by surfacing a visible but non-blocking trust-completion reminder directly inside the seller's dashboard listing cards, reusing the existing `focus=trust` edit flow and existing listing trust fields without introducing new backend workflows or schema changes.
+
+### 93.1 Dashboard Reminder Placement
+- Extended [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx) with a mobile-first inline reminder surface that appears directly on eligible listing cards instead of adding a heavier dashboard-wide panel.
+- The reminder is intentionally secondary and only appears where it adds product value: listings in `draft`, `pending`, or `approved` state that still lack ekspertiz, hasar, and Tramer trust details.
+
+### 93.2 Reused Trust Signals & Routing
+- Expanded [`DashboardListingSummary`](src/features/marketplace/types/dashboard-listings.ts) and the page data mapping in [`getDashboardListingsPageData()`](src/features/marketplace/services/dashboard-listings-actions.ts:102) to expose existing trust-related fields already present on listings.
+- The reminder links sellers to the existing trust-focused edit entry point via [`/dashboard/listings?edit=<id>&focus=trust`](src/features/marketplace/components/dashboard-listing-card.tsx:214), so the implementation reuses the current optional trust edit experience instead of creating a new form or mutation path.
+
+### 93.3 Validation
+- Pending in this iteration until command verification completes.
+
+### 93.4 Remaining Risk
+- The reminder currently treats any entered Tramer value, damage declaration, or ekspertiz presence as sufficient completion; it does not score nuance or completeness beyond those existing fields.
+- Listings missing trust detail but not present on the current dashboard page will only show the reminder when that page of results is viewed.
+
+---
+
 ## 92. Task A1 — Post-Create Trust CTA Follow-Up
 
 **Date**: 2026-05-10

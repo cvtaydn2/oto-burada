@@ -35,6 +35,14 @@ function toDashboardListingSummary(listing: Listing): DashboardListingSummary {
     updatedAt: listing.updatedAt ?? null,
     publishedAt: listing.createdAt ?? null,
     version: listing.version,
+    tramerAmount: listing.tramerAmount ?? null,
+    damageStatusJson: listing.damageStatusJson ?? null,
+    expertInspection: listing.expertInspection
+      ? {
+          hasInspection: Boolean(listing.expertInspection.hasInspection),
+          inspectionDate: listing.expertInspection.inspectionDate,
+        }
+      : null,
   };
 }
 

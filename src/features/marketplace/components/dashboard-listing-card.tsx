@@ -70,6 +70,15 @@ export function DashboardListingCard({
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
   const now = new Date(currentTime > 0 ? currentTime : 0);
+  const hasDamageDeclaration = Boolean(
+    listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
+  );
+  const hasTrustDetails =
+    Boolean(listing.expertInspection?.hasInspection) ||
+    hasDamageDeclaration ||
+    typeof listing.tramerAmount === "number";
+  const shouldShowTrustReminder =
+    !hasTrustDetails && ["draft", "pending", "approved"].includes(listing.status);
 
   const BUMP_COOLDOWN_HOURS = 24;
 
@@ -199,17 +208,41 @@ export function DashboardListingCard({
                 <span className="truncate">{listing.city}</span>
               </div>
 
-              {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
-                <Link
-                  href="/dashboard/profile"
-                  className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-amber-600 transition-all hover:bg-amber-500 hover:text-white"
-                >
-                  <div className="size-1.5 rounded-full bg-current" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
-                    Güveni Artır
-                  </span>
-                </Link>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
+                  <Link
+                    href="/dashboard/profile"
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-amber-600 transition-all hover:bg-amber-500 hover:text-white"
+                  >
+                    <div className="size-1.5 rounded-full bg-current" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
+                      Güveni Artır
+                    </span>
+                  </Link>
+                )}
+
+                {shouldShowTrustReminder && (
+                  <Link
+                    href={`/dashboard/listings?edit=${listing.id}&focus=trust`}
+                    className="w-full rounded-2xl border border-blue-200 bg-blue-50/80 px-3 py-3 text-left text-blue-900 transition-all hover:border-blue-300 hover:bg-blue-100/80 sm:w-auto sm:min-w-[320px]"
+                  >
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                          Güven detayı eksik
+                        </p>
+                        <p className="text-xs font-medium leading-5 text-blue-900/85">
+                          Ekspertiz, hasar veya Tramer bilgisi eklersen ilanın alıcıya daha güven
+                          verici görünür.
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                        Tamamla
+                      </span>
+                    </div>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
 
