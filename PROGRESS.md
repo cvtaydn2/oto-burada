@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 105. Task A2 — Active Filter Tag Instant Reversal Pass
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A2 micro-improvement by standardizing the results-top active filter tag rail on the same instant URL-driven interaction model as the primary quick filters and sort controls, while preserving the existing staged mobile drawer/sidebar editing contract for deeper filter composition.
+
+### 105.1 Unified Instant Remove Path for Active Filter Tags
+- Updated [`ActiveFilterTags`](src/features/marketplace/components/active-filter-tags.tsx:17) so every tag-removal action now routes through marketplace instant-apply helpers instead of mixing draft-only state mutation with immediate navigation.
+- Removed the component-local split between direct [`setFilters`](src/features/marketplace/components/active-filter-tags.tsx:55) + [`applyFilters`](src/features/marketplace/components/active-filter-tags.tsx:56) calls and plain [`handleFilterChange()`](src/features/marketplace/components/active-filter-tags.tsx:63) draft updates.
+- Active tag removal now consistently updates the canonical listings URL and refreshes result state in one click across brand, model, trim, city, district, specs, mileage, Tramer, search query, and ekspertiz tags.
+
+### 105.2 Dependency Reset Chains Preserved in Shared Marketplace Logic
+- Added [`applyInstantFilterChange()`](src/features/marketplace/hooks/use-marketplace-logic.ts:78) to [`useMarketplaceLogic()`](src/features/marketplace/hooks/use-marketplace-logic.ts:28) as the shared instant-remove helper for single-key reversals.
+- Preserved dependency cleanup inside the shared logic path: removing `brand` also clears `model` and `carTrim`, removing `model` also clears `carTrim`, and removing `city` also clears `district`.
+- Kept range-style removals such as price and year grouped through the existing [`applyImmediateFilterPatch()`](src/features/marketplace/hooks/use-marketplace-logic.ts:101) flow so paired filter resets still behave atomically.
+
+### 105.3 Page Reset, URL Shareability, and Drawer Scope Safety
+- All active-tag instant removals now reset `page` to `1`, matching the behavior already established for Task A2 primary instant controls.
+- Canonical query serialization and refresh recovery remain intact because every tag reversal still passes through [`canonicalizeMarketplaceFilters()`](src/features/marketplace/hooks/use-marketplace-logic.ts:51) and [`buildMarketplaceSearchParams()`](src/features/marketplace/hooks/use-marketplace-logic.ts:59).
+- Updated [`ListingsPageClient`](src/features/marketplace/components/listings-page-client.tsx:52) wiring so only the results-top active tag rail consumes the new instant helper, while [`MarketplaceSidebar`](src/features/marketplace/components/listings-page-client.tsx:191) and drawer-driven detailed editing remain on the staged draft/apply contract.
+
+### 105.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/hooks/use-marketplace-logic.ts src/features/marketplace/components/active-filter-tags.tsx src/features/marketplace/components/listings-page-client.tsx`](package.json:12) ✅
+
+### 105.5 Remaining Risk
+- Instant reversal is now standardized for the active tag rail only; users can still create staged draft differences inside sidebar/drawer controls until they explicitly apply, which is intentional in this iteration.
+- The new single-key helper currently encodes only the known dependency chains (`brand -> model/carTrim`, `model -> carTrim`, `city -> district`), so future dependent marketplace filters should extend this shared path deliberately.
+
+---
+
 ## 104. Task A2 — Instant-Apply Marketplace Primary Controls
 
 **Date**: 2026-05-11

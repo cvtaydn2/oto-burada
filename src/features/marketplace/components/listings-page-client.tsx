@@ -51,7 +51,6 @@ export function ListingsPageClient({
 }: ListingsPageClientProps) {
   const {
     filters,
-    setFilters,
     isPending,
     viewMode,
     setViewMode,
@@ -68,6 +67,7 @@ export function ListingsPageClient({
     isFetchingNextPage,
     fetchNextPage,
     handleFilterChange,
+    applyInstantFilterChange,
     applyImmediateFilterPatch,
     handleReset,
     applyFilters,
@@ -175,10 +175,9 @@ export function ListingsPageClient({
 
           <ActiveFilterTags
             filters={filters}
-            handleFilterChange={handleFilterChange}
+            applyInstantFilterChange={applyInstantFilterChange}
             handleReset={handleReset}
-            applyFilters={applyFilters}
-            setFilters={setFilters}
+            applyImmediateFilterPatch={applyImmediateFilterPatch}
           />
 
           <DroppedFiltersAlert

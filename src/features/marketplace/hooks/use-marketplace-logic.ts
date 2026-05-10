@@ -75,6 +75,29 @@ export function useMarketplaceLogic({
     [activeQuery, router]
   );
 
+  const applyInstantFilterChange = useCallback(
+    <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
+      const nextFilters: ListingFilters = { ...draftFilters, [key]: value, page: 1 };
+
+      if (key === "brand") {
+        nextFilters.model = undefined;
+        nextFilters.carTrim = undefined;
+      }
+
+      if (key === "model") {
+        nextFilters.carTrim = undefined;
+      }
+
+      if (key === "city") {
+        nextFilters.district = undefined;
+      }
+
+      setDraftFilters(nextFilters);
+      applyFilters(nextFilters, false);
+    },
+    [draftFilters, applyFilters]
+  );
+
   const applyImmediateFilterPatch = useCallback(
     (patch: Partial<ListingFilters>, options?: { scroll?: boolean }) => {
       const nextFilters: ListingFilters = {
@@ -189,6 +212,7 @@ export function useMarketplaceLogic({
     isFetchingNextPage,
     fetchNextPage: stableFetchNextPage,
     handleFilterChange,
+    applyInstantFilterChange,
     applyImmediateFilterPatch,
     handleReset,
     applyFilters,

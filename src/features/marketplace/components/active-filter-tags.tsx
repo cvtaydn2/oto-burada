@@ -6,18 +6,22 @@ import { type ListingFilters } from "@/types";
 
 interface ActiveFilterTagsProps {
   filters: ListingFilters;
-  handleFilterChange: <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => void;
+  applyInstantFilterChange: <K extends keyof ListingFilters>(
+    key: K,
+    value: ListingFilters[K]
+  ) => void;
   handleReset: () => void;
-  applyFilters: (newFilters: ListingFilters, immediate: boolean) => void;
-  setFilters: (filters: ListingFilters) => void;
+  applyImmediateFilterPatch: (
+    patch: Partial<ListingFilters>,
+    options?: { scroll?: boolean }
+  ) => void;
 }
 
 export function ActiveFilterTags({
   filters,
-  handleFilterChange,
+  applyInstantFilterChange,
   handleReset,
-  applyFilters,
-  setFilters,
+  applyImmediateFilterPatch,
 }: ActiveFilterTagsProps) {
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
     if (key === "limit" || key === "sort" || key === "page") return false;
@@ -44,45 +48,31 @@ export function ActiveFilterTags({
         {filters.brand && (
           <FilterTag
             label={filters.brand}
-            onRemove={() => {
-              const nextFilters = {
-                ...filters,
-                brand: undefined,
-                carTrim: undefined,
-                model: undefined,
-                page: 1,
-              };
-              setFilters(nextFilters);
-              applyFilters(nextFilters, true);
-            }}
+            onRemove={() => applyInstantFilterChange("brand", undefined)}
           />
         )}
         {filters.model && (
           <FilterTag
             label={filters.model}
-            onRemove={() => handleFilterChange("model", undefined)}
+            onRemove={() => applyInstantFilterChange("model", undefined)}
           />
         )}
         {filters.carTrim && (
           <FilterTag
             label={filters.carTrim}
-            onRemove={() => handleFilterChange("carTrim", undefined)}
+            onRemove={() => applyInstantFilterChange("carTrim", undefined)}
           />
         )}
         {filters.city && (
           <FilterTag
             label={filters.city}
-            onRemove={() => {
-              const nextFilters = { ...filters, city: undefined, district: undefined, page: 1 };
-              setFilters(nextFilters);
-              applyFilters(nextFilters, true);
-            }}
+            onRemove={() => applyInstantFilterChange("city", undefined)}
           />
         )}
         {filters.district && (
           <FilterTag
             label={filters.district}
-            onRemove={() => handleFilterChange("district", undefined)}
+            onRemove={() => applyInstantFilterChange("district", undefined)}
           />
         )}
         {filters.fuelType && (
@@ -94,7 +84,7 @@ export function ActiveFilterTags({
                   ? "Dizel"
                   : filters.fuelType
             }
-            onRemove={() => handleFilterChange("fuelType", undefined)}
+            onRemove={() => applyInstantFilterChange("fuelType", undefined)}
           />
         )}
         {filters.transmission && (
@@ -106,51 +96,43 @@ export function ActiveFilterTags({
                   ? "Manuel"
                   : "Yarı Otomatik"
             }
-            onRemove={() => handleFilterChange("transmission", undefined)}
+            onRemove={() => applyInstantFilterChange("transmission", undefined)}
           />
         )}
         {(filters.minPrice || filters.maxPrice) && (
           <FilterTag
             label={`${filters.minPrice ? formatTL(filters.minPrice) : "0"} — ${filters.maxPrice ? formatTL(filters.maxPrice) : "∞"}`}
-            onRemove={() => {
-              const f = { ...filters, minPrice: undefined, maxPrice: undefined, page: 1 };
-              setFilters(f);
-              applyFilters(f, true);
-            }}
+            onRemove={() => applyImmediateFilterPatch({ minPrice: undefined, maxPrice: undefined })}
           />
         )}
         {(filters.minYear || filters.maxYear) && (
           <FilterTag
             label={`Model ${filters.minYear ?? "eski"}-${filters.maxYear ?? "güncel"}`}
-            onRemove={() => {
-              const nextFilters = { ...filters, minYear: undefined, maxYear: undefined, page: 1 };
-              setFilters(nextFilters);
-              applyFilters(nextFilters, true);
-            }}
+            onRemove={() => applyImmediateFilterPatch({ minYear: undefined, maxYear: undefined })}
           />
         )}
         {filters.maxMileage !== undefined && (
           <FilterTag
             label={`Max ${filters.maxMileage.toLocaleString("tr-TR")} km`}
-            onRemove={() => handleFilterChange("maxMileage", undefined)}
+            onRemove={() => applyInstantFilterChange("maxMileage", undefined)}
           />
         )}
         {filters.maxTramer !== undefined && (
           <FilterTag
             label={`Max ${filters.maxTramer.toLocaleString("tr-TR")} TL tramer`}
-            onRemove={() => handleFilterChange("maxTramer", undefined)}
+            onRemove={() => applyInstantFilterChange("maxTramer", undefined)}
           />
         )}
         {filters.query && (
           <FilterTag
             label={`"${filters.query}"`}
-            onRemove={() => handleFilterChange("query", undefined)}
+            onRemove={() => applyInstantFilterChange("query", undefined)}
           />
         )}
         {filters.hasExpertReport && (
           <FilterTag
             label="Ekspertizli"
-            onRemove={() => handleFilterChange("hasExpertReport", undefined)}
+            onRemove={() => applyInstantFilterChange("hasExpertReport", undefined)}
           />
         )}
       </div>
