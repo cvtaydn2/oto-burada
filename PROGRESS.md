@@ -1,5 +1,31 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 108. Task A2 — Adaptive Discovery Guidance Summary
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A2 micro-improvement by turning the passive listings result count surface into a lightweight adaptive guidance band that suggests the next sensible discovery move after filters are applied, without changing backend contracts, filter mechanics, or the existing zero-result flow.
+
+### 108.1 Result Summary Now Gives Contextual Next-Step Guidance
+- Updated [`ListingsResultsSummary`](src/features/marketplace/components/listings-results-summary.tsx:18) so the results-top summary now derives a small guidance state instead of showing only passive count copy.
+- Added three primary decision modes based on the current result set size: broad result sets, narrow result sets, and balanced result sets, each with short calm copy that nudges the user toward the next likely comparison or refinement step.
+- Kept the surface intentionally lightweight by using advisory text only; no new mandatory CTA system, action button, or route behavior was introduced.
+
+### 108.2 Guidance Uses Existing Marketplace Context Only
+- Updated [`ListingsPageClient`](src/features/marketplace/components/listings-page-client.tsx:113) to pass the current active filter count into the summary so the component can slightly adjust its wording when the user has already started narrowing the set.
+- Corrected the summary page-size source to use the live [`filters.limit`](src/features/marketplace/components/listings-page-client.tsx:113) fallback chain instead of the initial query only, keeping the visible range and page-size select aligned after page-size changes.
+- Preserved the existing empty-state contract by continuing to render the separate [`EmptyState`](src/features/marketplace/components/listings-page-client.tsx:274) path whenever there are zero listings.
+
+### 108.3 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/components/listings-results-summary.tsx src/features/marketplace/components/listings-page-client.tsx`](package.json:12) ✅
+
+### 108.4 Remaining Risk
+- The broad, narrow, and balanced thresholds are currently simple static heuristics inside [`ListingsResultsSummary`](src/features/marketplace/components/listings-results-summary.tsx:5), so future tuning may be needed once real user interaction data clarifies where decision overload meaningfully starts.
+- Guidance copy currently keys off result count and active filter count only; it does not yet reflect richer intent signals such as sort mode, brand specificity, or whether the user is browsing infinite-scroll continuation versus the first page.
+
+---
+
 ## 107. Task A2 — Mobile Drawer Instant Quick-Decision Rail
 
 **Date**: 2026-05-11

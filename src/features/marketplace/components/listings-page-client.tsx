@@ -110,7 +110,7 @@ export function ListingsPageClient({
     return () => observer.disconnect();
   }, [observerCallback]);
 
-  const currentLimit = initialQuery.limit;
+  const currentLimit = filters.limit ?? initialQuery.limit;
   const visibleStart = total === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
   const visibleEnd = Math.min(currentPage * currentLimit, total);
   const showPagination = !hasNextPage && totalPages > 1;
@@ -208,6 +208,7 @@ export function ListingsPageClient({
                   visibleStart={visibleStart}
                   visibleEnd={visibleEnd}
                   currentLimit={currentLimit}
+                  activeFiltersCount={activeFiltersCount}
                   handlePageSizeChange={handlePageSizeChange}
                 />
 
