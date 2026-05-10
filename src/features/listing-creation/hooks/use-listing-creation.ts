@@ -29,6 +29,7 @@ interface UseListingCreationProps {
   cities: CityOption[];
   initialListing?: Listing | null;
   isEmailVerified: boolean;
+  successRedirectPath?: string;
 }
 
 const STEP_LABELS = ["Araç Bilgileri", "İlan Detayları", "Fotoğraflar"] as const;
@@ -51,6 +52,7 @@ export function useListingCreation({
   initialValues,
   initialListing,
   isEmailVerified,
+  successRedirectPath,
 }: UseListingCreationProps) {
   const router = useRouter();
   const { trackEvent } = useAnalytics();
@@ -527,7 +529,7 @@ export function useListingCreation({
     });
 
     if (isEditing) {
-      router.push("/dashboard/listings?updated=true");
+      router.push(successRedirectPath ?? "/dashboard/listings?updated=true");
       return;
     }
 

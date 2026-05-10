@@ -1,5 +1,35 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 97. Task A1 — Trust Incomplete Next Listing Flow
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement so sellers using the existing `trust=incomplete` dashboard focus can save one trust-focused listing and continue directly into the next incomplete listing on the same page without re-scanning the list, while preserving existing query-param routing and avoiding backend or schema changes.
+
+### 97.1 Deterministic Page-Scoped Next Listing Resolution
+- Updated [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx) to compute the current trust-focused listing’s position inside the already loaded page-scoped `trust=incomplete` subset and derive a deterministic next incomplete listing from that in-memory order.
+- Kept the behavior intentionally page-local per scope: no new server filtering, pagination merge, migration, or global workflow state was introduced.
+
+### 97.2 Save-to-Next Trust Redirect Flow
+- Extended [`ListingCreateForm`](src/components/forms/listing-create-form.tsx), [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx), and [`useListingCreation()`](src/features/listing-creation/hooks/use-listing-creation.ts:50) so trust-focused edit mode can receive a lightweight success redirect path.
+- After a successful trust-focused save from the filtered dashboard flow, the existing edit mutation now redirects either to the next incomplete listing with preserved `focus=trust` and `trust=incomplete` params or back to the filtered list with a completion state when no more incomplete listings remain.
+- This preserves the existing create flow and normal edit success behavior outside the trust-incomplete path.
+
+### 97.3 Clear Progress and Completion Feedback
+- Added explicit success-state messaging in [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx) for both outcomes: automatic move to the next incomplete listing and completion of the current page’s trust-incomplete set.
+- Updated the trust-focused form context panel in [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx) so sellers can see in advance whether save will move them to another incomplete listing or finish the page-scoped trust pass.
+- When no next listing exists, the filtered list now leaves the seller with a clear “completed” state instead of a generic updated message.
+
+### 97.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/dashboard/listings/page.tsx src/components/forms/listing-create-form.tsx src/components/forms/listing-create-form-renderer.tsx src/features/listing-creation/hooks/use-listing-creation.ts`](package.json:12) ✅
+
+### 97.5 Remaining Risk
+- The next-listing transition is intentionally based on the currently loaded dashboard page order only, so incomplete listings on other pagination pages still require page-by-page progression.
+- The flow assumes the in-memory filtered ordering remains the correct user-facing sequence at save time; concurrent edits in another session could still change which listings remain incomplete before the next page load.
+
+---
+
 ## 96. Task A1 — Trust Focus Edit Directness Pass
 
 **Date**: 2026-05-10

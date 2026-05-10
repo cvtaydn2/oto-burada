@@ -31,6 +31,12 @@ interface ListingCreateFormRendererProps {
   initialValues: { city: string; whatsappPhone: string };
   isEmailVerified?: boolean;
   focusMode?: "default" | "trust";
+  successRedirectPath?: string;
+  trustFlowTransition?: {
+    mode: "next" | "done";
+    nextListingTitle: string | null;
+    remainingCount: number;
+  };
 }
 
 export function ListingCreateFormRenderer({
@@ -40,6 +46,8 @@ export function ListingCreateFormRenderer({
   initialValues,
   isEmailVerified = false,
   focusMode = "default",
+  successRedirectPath,
+  trustFlowTransition,
 }: ListingCreateFormRendererProps) {
   const {
     form,
@@ -62,7 +70,14 @@ export function ListingCreateFormRenderer({
     submitListing,
     setSubmitState,
     submitIntentRef,
-  } = useListingCreation({ brands, cities, initialListing, initialValues, isEmailVerified });
+  } = useListingCreation({
+    brands,
+    cities,
+    initialListing,
+    initialValues,
+    isEmailVerified,
+    successRedirectPath,
+  });
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const isBotProtectionEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
@@ -264,12 +279,19 @@ export function ListingCreateFormRenderer({
                   <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/80">
                     Bu bölümde yalnız ekspertiz, hasar beyanı ve Tramer detaylarına odaklanın.
                     Kaydettiğiniz anda ilan kartındaki güven eksiği uyarısı güncellenir.
+                    {trustFlowTransition?.mode === "next"
+                      ? " Bu sayfada başka eksik ilan varsa bir sonrakine otomatik geçilir."
+                      : " Son eksik ilana geldiysen tamamlandığında filtre içinde net başarı mesajı görürsün."}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-emerald-200/80 bg-white/80 px-4 py-3 text-xs font-semibold leading-5 text-emerald-900 sm:max-w-xs">
-                  {missingTrustItems.length > 0
-                    ? `Öncelik verilecek eksikler: ${missingTrustItems.map((item) => item.label).join(", ")}.`
-                    : "Eksik görünen alan kalmadı. İstersen bilgileri daha net hale getirip yeniden kaydedebilirsin."}
+                  {trustFlowTransition?.mode === "next" && trustFlowTransition.nextListingTitle
+                    ? `Kaydetme sonrası sıradaki eksik ilan: ${trustFlowTransition.nextListingTitle}.`
+                    : trustFlowTransition?.mode === "done"
+                      ? "Bu sayfadaki son eksik ilandasın. Kaydetme sonrası filtre içinde tamamlandı mesajı gösterilir."
+                      : missingTrustItems.length > 0
+                        ? `Öncelik verilecek eksikler: ${missingTrustItems.map((item) => item.label).join(", ")}.`
+                        : "Eksik görünen alan kalmadı. İstersen bilgileri daha net hale getirip yeniden kaydedebilirsin."}
                 </div>
               </div>
 

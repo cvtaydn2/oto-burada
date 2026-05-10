@@ -41,6 +41,8 @@ interface DashboardListingsPageProps {
     page?: string;
     pageSize?: string;
     trust?: string;
+    trustSaved?: string;
+    remainingTrustCount?: string;
   }>;
 }
 
@@ -109,6 +111,13 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const createdListingId = resolvedSearchParams?.listing ?? null;
   const focusMode = resolvedSearchParams?.focus === "trust" ? "trust" : "default";
   const trustFilter = resolvedSearchParams?.trust === "incomplete" ? "incomplete" : undefined;
+  const trustSaveState =
+    resolvedSearchParams?.trustSaved === "next"
+      ? "next"
+      : resolvedSearchParams?.trustSaved === "done"
+        ? "done"
+        : null;
+  const remainingTrustCount = parsePositiveInt(resolvedSearchParams?.remainingTrustCount, 0);
   const page = parsePositiveInt(resolvedSearchParams?.page, 1);
   const pageSize = clampPageSize(resolvedSearchParams?.pageSize);
 
@@ -140,6 +149,24 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const displayedListings =
     trustFilter === "incomplete" ? trustReminderEligibleListings : data.listingsPage.items;
   const isTrustFilterActive = trustFilter === "incomplete";
+  const selectedTrustListingIndex =
+    selectedListing && isTrustFilterActive && focusMode === "trust"
+      ? trustReminderEligibleListings.findIndex((listing) => listing.id === selectedListing.id)
+      : -1;
+  const nextIncompleteTrustListing =
+    selectedTrustListingIndex >= 0
+      ? (trustReminderEligibleListings[selectedTrustListingIndex + 1] ?? null)
+      : null;
+  const remainingTrustCountAfterSave =
+    selectedTrustListingIndex >= 0
+      ? Math.max(trustReminderEligibleListings.length - (selectedTrustListingIndex + 1), 0)
+      : 0;
+  const trustSaveRedirectPath =
+    selectedListing && isTrustFilterActive && focusMode === "trust"
+      ? nextIncompleteTrustListing
+        ? `/dashboard/listings?edit=${nextIncompleteTrustListing.id}&focus=trust&trust=incomplete&updated=true&trustSaved=next&remainingTrustCount=${remainingTrustCountAfterSave}`
+        : "/dashboard/listings?trust=incomplete&updated=true&trustSaved=done&remainingTrustCount=0"
+      : undefined;
   const displayedApprovedCount = displayedListings.filter(
     (listing) => listing.status === "approved"
   ).length;
@@ -282,7 +309,51 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         </div>
       )}
 
-      {hasUpdatedListing && (
+      {hasUpdatedListing && trustSaveState === "next" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-emerald-950 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                Güven detayı kaydedildi
+              </p>
+              <p className="text-sm font-semibold leading-6 text-emerald-950">
+                Sıradaki eksik ilana otomatik geçtin.
+              </p>
+              <p className="text-xs font-medium leading-5 text-emerald-900/80">
+                Bu sayfada tamamlanacak {remainingTrustCount} eksik ilan daha kaldı. Aynı akışla
+                listeden ayrılmadan devam edebilirsin.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {hasUpdatedListing && trustSaveState === "done" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-emerald-950 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                Güven akışı tamamlandı
+              </p>
+              <p className="text-sm font-semibold leading-6 text-emerald-950">
+                Bu sayfadaki eksik güven detaylarını bitirdin.
+              </p>
+              <p className="text-xs font-medium leading-5 text-emerald-900/80">
+                Artık filtrelenmiş listede eksik ilan görünmüyor. İstersen tüm ilan görünümüne dönüp
+                diğer düzenlemelere devam edebilirsin.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/listings"
+              className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-100"
+            >
+              Tüm ilanlara dön
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {hasUpdatedListing && !trustSaveState && (
         <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-xs font-semibold text-emerald-700">
           İlanın güncellendi.
         </div>
@@ -320,6 +391,16 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             cities={mergedCities}
             isEmailVerified={isEmailVerified}
             focusMode={focusMode}
+            successRedirectPath={trustSaveRedirectPath}
+            trustFlowTransition={
+              selectedListing && isTrustFilterActive && focusMode === "trust"
+                ? {
+                    mode: nextIncompleteTrustListing ? "next" : "done",
+                    nextListingTitle: nextIncompleteTrustListing?.title ?? null,
+                    remainingCount: remainingTrustCountAfterSave,
+                  }
+                : undefined
+            }
           />
         </div>
       </MyListingsPanel>

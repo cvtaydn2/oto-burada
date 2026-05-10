@@ -10,6 +10,12 @@ interface ListingCreateFormProps {
   initialListing?: DashboardEditableListing | null;
   isEmailVerified?: boolean;
   focusMode?: "default" | "trust";
+  successRedirectPath?: string;
+  trustFlowTransition?: {
+    mode: "next" | "done";
+    nextListingTitle: string | null;
+    remainingCount: number;
+  };
 }
 
 function adaptInitialListing(
