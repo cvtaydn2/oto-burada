@@ -31,13 +31,21 @@ interface UseListingCreationProps {
   isEmailVerified: boolean;
 }
 
-const STEP_LABELS = [
-  "Araç Bilgileri",
-  "Fiyat ve İletişim",
-  "Ekspertiz (İsteğe Bağlı)",
-  "Fotoğraflar",
-];
+const STEP_LABELS = ["Araç Bilgileri", "İlan Detayları", "Fotoğraflar"] as const;
+const TOTAL_STEPS = STEP_LABELS.length;
 const DRAFT_STORAGE_KEY = "oto_burada_listing_draft_v2";
+
+function normalizeDraftStep(step: number) {
+  if (step <= 0) {
+    return 0;
+  }
+
+  if (step >= TOTAL_STEPS - 1) {
+    return TOTAL_STEPS - 1;
+  }
+
+  return step;
+}
 
 export function useListingCreation({
   initialValues,
@@ -113,7 +121,7 @@ export function useListingCreation({
           const age = Date.now() - parsed.timestamp;
           if (age < 24 * 60 * 60 * 1000) {
             reset({ ...formDefaultValues, ...parsed.values });
-            setCurrentStep(parsed.step || 0);
+            setCurrentStep(normalizeDraftStep(parsed.step));
           } else {
             // Expired draft - clean up
             localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -146,7 +154,7 @@ export function useListingCreation({
           DRAFT_STORAGE_KEY,
           JSON.stringify({
             values: watchedValues,
-            step: currentStep,
+            step: normalizeDraftStep(currentStep),
             timestamp: Date.now(),
           })
         );
@@ -291,7 +299,7 @@ export function useListingCreation({
         stepIndex: currentStep,
         timeSpentSeconds,
       });
-      setCurrentStep((prev) => Math.min(prev + 1, STEP_LABELS.length - 1));
+      setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [currentStep, trigger, trackEvent]);
@@ -499,7 +507,12 @@ export function useListingCreation({
       return;
     }
 
-    setSubmitState({ status: "success", message: "İlan başarıyla kaydedildi." });
+    setSubmitState({
+      status: "success",
+      message: isEditing
+        ? "İlan güncellemeniz kaydedildi. Moderasyon ekibi değişiklikleri inceleyip yayına devam ettirecek."
+        : "İlanınız incelemeye alındı. Moderasyon kontrolünden sonra yayına açılacak.",
+    });
     submitIntentRef.current = true; // Signal for cleanup effect
 
     // Clear draft on success
@@ -507,10 +520,18 @@ export function useListingCreation({
       localStorage.removeItem(DRAFT_STORAGE_KEY);
     }
 
+    const nextListingId = response.data!.listing.id;
+
     trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, {
-      listingId: response.data!.listing.id,
+      listingId: nextListingId,
     });
-    router.push("/dashboard/listings?created=pending");
+
+    if (isEditing) {
+      router.push("/dashboard/listings?updated=true");
+      return;
+    }
+
+    router.push(`/dashboard/listings?created=pending&listing=${nextListingId}`);
   };
 
   return {
@@ -518,7 +539,7 @@ export function useListingCreation({
     fieldArray,
     currentStep,
     setCurrentStep,
-    totalSteps: STEP_LABELS.length,
+    totalSteps: TOTAL_STEPS,
     submitState,
     uploadStates,
     isPlateLoading,

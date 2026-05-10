@@ -36,6 +36,8 @@ interface DashboardListingsPageProps {
     created?: string;
     edit?: string;
     updated?: string;
+    focus?: string;
+    listing?: string;
     page?: string;
     pageSize?: string;
   }>;
@@ -84,6 +86,8 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const hasCreatedPendingListing = resolvedSearchParams?.created === "pending";
   const hasUpdatedListing = resolvedSearchParams?.updated === "true";
   const editId = resolvedSearchParams?.edit ?? null;
+  const createdListingId = resolvedSearchParams?.listing ?? null;
+  const focusMode = resolvedSearchParams?.focus === "trust" ? "trust" : "default";
   const page = parsePositiveInt(resolvedSearchParams?.page, 1);
   const pageSize = clampPageSize(resolvedSearchParams?.pageSize);
 
@@ -164,8 +168,45 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
       )}
 
       {hasCreatedPendingListing && (
-        <div className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-xs font-semibold text-blue-700">
-          İlanın oluşturuldu. Şu anda moderasyon incelemesinde.
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 text-blue-900 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-700">
+                İlanın incelemeye alındı
+              </p>
+              <h3 className="text-lg font-semibold leading-tight text-blue-950">
+                Moderasyon ekibi ilanını kontrol ediyor.
+              </h3>
+              <p className="max-w-2xl text-sm font-medium leading-6 text-blue-800/90">
+                Bu sırada ilanın henüz yayında görünmez. İnceleme tamamlandığında uygun ilanlar
+                otomatik olarak yayına alınır.
+              </p>
+            </div>
+            <div className="rounded-xl border border-blue-200 bg-white/70 px-4 py-3 text-xs font-semibold leading-5 text-blue-800 sm:max-w-xs">
+              Fotoğraflar, açıklama ve iletişim bilgilerin net olduğu ilanlar genelde daha hızlı
+              onaylanır.
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-blue-200/80 bg-white/80 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="space-y-1">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
+                Opsiyonel güven artırıcı adım
+              </p>
+              <p className="text-sm font-medium leading-6 text-blue-900/85">
+                İstersen şimdi ekspertiz, hasar ve Tramer bilgilerini ekleyerek ilanını daha güven
+                verici hale getirebilirsin. Bu adım zorunlu değil ve yayına girmeni bekletmez.
+              </p>
+            </div>
+            {createdListingId ? (
+              <Link
+                href={`/dashboard/listings?edit=${createdListingId}&focus=trust`}
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
+              >
+                Güven artırıcı detayları ekle
+              </Link>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -187,15 +228,16 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         <div className="mt-8 rounded-2xl border border-border bg-card p-8 shadow-sm">
           <div className="mb-8 border-b border-border/50 pb-6">
             <h3 className="text-xl font-bold text-foreground">
-              {isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}
+              {isEditingExisting ? "İlanı Düzenle" : "3 Adımda İlan Oluştur"}
             </h3>
             <p className="mt-1 text-xs font-medium text-muted-foreground">
-              Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.
+              Temel bilgileri ve en az 3 fotoğrafı ekleyin, ilanınızı moderasyon incelemesine
+              gönderin.
             </p>
           </div>
 
           <ListingCreateForm
-            key={selectedListing?.id ?? "create-listing"}
+            key={`${selectedListing?.id ?? "create-listing"}-${focusMode}`}
             initialListing={selectedListing}
             initialValues={{
               city: data.profile?.city ?? "",
@@ -204,6 +246,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             brands={mergedBrands}
             cities={mergedCities}
             isEmailVerified={isEmailVerified}
+            focusMode={focusMode}
           />
         </div>
       </MyListingsPanel>

@@ -1,6 +1,14 @@
 "use client";
 
-import { AlertCircle, Car, CheckCircle2, ChevronRight, LoaderCircle } from "lucide-react";
+import {
+  AlertCircle,
+  Car,
+  CheckCircle2,
+  ChevronRight,
+  LoaderCircle,
+  ShieldCheck,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { BotProtection } from "@/components/shared/bot-protection";
@@ -22,6 +30,7 @@ interface ListingCreateFormRendererProps {
   initialListing?: Listing | null;
   initialValues: { city: string; whatsappPhone: string };
   isEmailVerified?: boolean;
+  focusMode?: "default" | "trust";
 }
 
 export function ListingCreateFormRenderer({
@@ -30,6 +39,7 @@ export function ListingCreateFormRenderer({
   initialListing,
   initialValues,
   isEmailVerified = false,
+  focusMode = "default",
 }: ListingCreateFormRendererProps) {
   const {
     form,
@@ -56,6 +66,7 @@ export function ListingCreateFormRenderer({
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const isBotProtectionEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  const shouldHighlightTrustFields = isEditing && focusMode === "trust";
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (!isEmailVerifiedLocally && !isEditing) {
@@ -94,12 +105,12 @@ export function ListingCreateFormRenderer({
             {currentStep + 1} / {totalSteps}
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 lg:text-6xl">
-            {isEditing ? "İlanınızı düzenleyin" : "Yeni ilan yayınlayın"}
+            {isEditing ? "İlanınızı düzenleyin" : "Yeni ilanınızı incelemeye gönderin"}
           </h1>
           <p className="mt-4 max-w-2xl text-lg font-medium leading-relaxed text-slate-600 mx-auto">
             {isEditing
-              ? "İlanınızın bilgilerini güncelleyin ve tekrar yayınlayın."
-              : "Araç bilginizi girin, fotoğraflarınızı yükleyin ve saniyeler içinde ilanınızı yayınlayın."}
+              ? "İlanınızın bilgilerini güncelleyin. Değişiklikler moderasyon kontrolünden sonra yayında kalır."
+              : "3 kısa adımda aracınızı ekleyin, fotoğraflarınızı yükleyin ve ilanınızı moderasyon incelemesine gönderin."}
           </p>
         </div>
 
@@ -127,8 +138,37 @@ export function ListingCreateFormRenderer({
                 onRemoveImage={handleRemoveImage}
               />
             )}
-            {currentStep === 3 && <InspectionStep form={form} />}
           </div>
+
+          {shouldHighlightTrustFields && (
+            <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">
+                    <ShieldCheck className="size-3" />
+                    Opsiyonel güven artırıcı alanlar
+                  </div>
+                  <h2 className="text-xl font-bold tracking-tight text-emerald-950">
+                    İlanını daha güven verici hale getir
+                  </h2>
+                  <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/80">
+                    Ekspertiz, hasar ve Tramer detayları zorunlu değil. Ancak bu bilgileri eklemek
+                    alıcıların ilanını daha hızlı değerlendirmesine yardımcı olur.
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/listings"
+                  className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800 transition-all hover:border-emerald-300 hover:bg-emerald-50"
+                >
+                  İlanlarıma dön
+                </Link>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-emerald-200/80 bg-white/80 p-4 sm:p-5">
+                <InspectionStep form={form} />
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
             <Button
@@ -163,12 +203,12 @@ export function ListingCreateFormRenderer({
                   Object.values(uploadStates).some((s) => s.status === "uploading") ? (
                     <>
                       <LoaderCircle size={18} className="animate-spin" />
-                      Yayınlanıyor...
+                      İncelemeye gönderiliyor...
                     </>
                   ) : isEditing ? (
-                    "Güncelle"
+                    "Güncellemeyi kaydet"
                   ) : (
-                    "Yayınla"
+                    "İncelemeye gönder"
                   )}
                 </Button>
               </div>

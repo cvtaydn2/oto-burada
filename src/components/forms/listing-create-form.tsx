@@ -9,6 +9,7 @@ interface ListingCreateFormProps {
   cities: CityOption[];
   initialListing?: DashboardEditableListing | null;
   isEmailVerified?: boolean;
+  focusMode?: "default" | "trust";
 }
 
 function adaptInitialListing(

@@ -1,5 +1,150 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 92. Task A1 — Post-Create Trust CTA Follow-Up
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal implementation slice for [`TASKS.md`](TASKS.md) Task A1 by adding a post-create optional trust-completion path that reuses the existing edit surface and optional inspection UI without expanding the backend contract.
+
+### 92.1 Post-Create CTA Routing
+- Updated [`useListingCreation()`](src/features/listing-creation/hooks/use-listing-creation.ts:50) so successful new listing creation now redirects to [`/dashboard/listings?created=pending&listing=<id>`](src/features/listing-creation/hooks/use-listing-creation.ts:534) and preserves the created listing id for follow-up actions.
+- Updated edit success behavior in [`useListingCreation()`](src/features/listing-creation/hooks/use-listing-creation.ts:529) so listing updates return to the dashboard with `updated=true` instead of reusing the create-success pending state.
+
+### 92.2 Success-State Trust Booster CTA
+- Expanded the moderation success panel in [`src/app/dashboard/listings/page.tsx`](src/app/dashboard/listings/page.tsx) with a secondary trust-building CTA that explicitly offers optional ekspertiz, hasar, and Tramer enrichment after the fast create flow is complete.
+- The CTA routes the seller into the existing inline edit experience using [`/dashboard/listings?edit=<id>&focus=trust`](src/app/dashboard/listings/page.tsx:192), keeping the primary create path short while exposing a clear next step for higher-trust listings.
+
+### 92.3 Edit Surface Reuse for Optional Trust Details
+- Extended [`ListingCreateForm`](src/components/forms/listing-create-form.tsx) and [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx) with a lightweight `focusMode` prop.
+- When `focusMode="trust"`, the existing edit form now renders a dedicated optional trust section using the preserved [`InspectionStep`](src/components/forms/listing-wizard/steps/InspectionStep.tsx), so sellers can add ekspertiz and damage details without any new backend workflow.
+- The trust section is visually secondary, mobile-friendly, and clearly marked as optional so it supports quality uplift without making create feel longer.
+
+### 92.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/dashboard/listings/page.tsx src/components/forms/listing-create-form.tsx src/components/forms/listing-create-form-renderer.tsx src/features/listing-creation/hooks/use-listing-creation.ts`](package.json:12) ✅
+
+### 92.5 Remaining Risk
+- The optional trust section currently appears only through the dedicated `focus=trust` edit entry point; there is not yet a separate per-listing dashboard badge or reminder card for sellers who skip the success-state CTA.
+- The reused [`InspectionStep`](src/components/forms/listing-wizard/steps/InspectionStep.tsx) is intentionally broader than a tiny CTA-only form, but it stays within scope by reusing existing UI and the current validation contract.
+
+---
+
+## 91. Task A1 — Listing Create Flow First Slice
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the first narrow implementation slice for [`TASKS.md`](TASKS.md) Marketplace Core Stability / Task A1 to shorten the critical listing creation path without changing the server contract, moderation pipeline, or minimum photo rules.
+
+### 91.1 Create Flow Simplification
+- Reduced the create wizard in [`src/components/forms/listing-create-form-renderer.tsx`](src/components/forms/listing-create-form-renderer.tsx) from 4 rendered steps to 3 rendered steps: vehicle info, listing details, and photos.
+- Removed the standalone ekspertiz step from the create critical path so optional inspection data no longer behaves like a blocking wizard step.
+- Preserved the existing mutation flow, image upload path, and minimum 3 photo requirement by leaving the photos step and validation model intact.
+
+### 91.2 Step Semantics & Draft Safety
+- Updated wizard labels and progress semantics in [`src/features/listing-creation/hooks/use-listing-creation.ts`](src/features/listing-creation/hooks/use-listing-creation.ts) and [`src/components/forms/listing-wizard/StepIndicator.tsx`](src/components/forms/listing-wizard/StepIndicator.tsx) so labels now match the actual render order.
+- Added safe draft-step normalization so previously saved 4-step draft positions restore into the new 3-step flow without breaking the create screen.
+
+### 91.3 Moderation-Aligned Copy & Success State
+- Rewrote create CTA and helper copy in [`src/components/forms/listing-create-form-renderer.tsx`](src/components/forms/listing-create-form-renderer.tsx) to reflect that new listings are sent to moderation review rather than instantly published.
+- Strengthened the `created=pending` success state in [`src/app/dashboard/listings/page.tsx`](src/app/dashboard/listings/page.tsx) with a more explicit moderation review panel and clearer next-step expectations.
+- Updated the dashboard create panel heading and helper copy to reinforce the new 3-step, moderation-first flow.
+
+### 91.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+
+### 91.5 Remaining Risk
+- [`src/components/forms/listing-wizard/steps/InspectionStep.tsx`](src/components/forms/listing-wizard/steps/InspectionStep.tsx) remains in the codebase as reusable optional UI, but it is no longer part of the primary create wizard path.
+- Edit-mode redirect behavior in [`useListingCreation()`](src/features/listing-creation/hooks/use-listing-creation.ts:50) was intentionally left untouched except for moderation-aligned success messaging to avoid widening Task A1 scope.
+
+---
+
+## 90. Documentation Consistency Final Alignment Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied narrow markdown-only consistency fixes to remove the remaining ambiguity between normative source-of-truth order, onboarding reading order, historical audit framing, and archive-era document references.
+
+### 90.1 Source-of-Truth vs Reading Order Alignment
+- Updated [`AGENTS.md`](AGENTS.md) so the documentation hierarchy is explicitly defined as a normative priority order rather than an onboarding sequence.
+- Updated [`README.md`](README.md) to separate the document backbone from the suggested onboarding navigation and to state that conflict resolution follows the normative hierarchy.
+- Updated [`docs/INDEX.md`](docs/INDEX.md) so its reading-order section is clearly positioned as onboarding guidance, while normative precedence is delegated back to [`AGENTS.md`](AGENTS.md) and [`README.md`](README.md).
+- Updated [`docs/DOCUMENTATION_GOVERNANCE.md`](docs/DOCUMENTATION_GOVERNANCE.md) to clarify that cataloging and reading guidance are distinct from source-of-truth conflict resolution.
+
+### 90.2 Historical Audit Framing Cleanup
+- Updated [`docs/audit/README.md`](docs/audit/README.md) so historical P0/P1/P2 findings are explicitly framed as point-in-time audit outputs, not as today’s live incident or backlog list.
+- Clarified that the missing Faz 1 markdown file is a historical preservation gap only, not a current operational defect, and redirected present-day database truth to [`database/schema.snapshot.sql`](database/schema.snapshot.sql), migrations, and [`PROGRESS.md`](PROGRESS.md).
+- Tightened the wording around the historical priority section so it reads as archived triage context instead of an active sprint instruction set.
+
+### 90.3 Archive Context Cleanup
+- Updated [`docs/archive/DEPLOYMENT_CHECKLIST.md`](docs/archive/DEPLOYMENT_CHECKLIST.md) so historical document names such as `CRITICAL_FIXES_APPLIED.md` and `AUDIT_SUMMARY.md` are explicitly framed as archive-era references rather than expected current backbone documents.
+- Added a note that the listed migration steps and verification items belong to that specific deployment window and should not be interpreted as the repository’s current required release checklist.
+
+### 90.4 Result
+- The remaining documentation ambiguity identified in the independent verification pass has been addressed with targeted wording changes only.
+- Active backbone documents remain intact, historical materials remain preserved, and the distinction between normative precedence, onboarding flow, audit history, and archive context is now explicit.
+
+---
+
+## 89. Historical Markdown Relocation & Documentation Consistency Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Moved remaining historical markdown artifacts into visible audit and archive areas, left root-level redirect stubs where needed, and reconciled index and governance links with the new active versus audit versus archive separation.
+
+### 89.1 Markdown Relocation
+- Preserved the canonical historical runtime notes under [`docs/archive/RUNTIME_ERRORS_FIX.md`](docs/archive/RUNTIME_ERRORS_FIX.md) and converted [`docs/RUNTIME_ERRORS_FIX.md`](docs/RUNTIME_ERRORS_FIX.md) into a short redirect notice.
+- Preserved the completed review plan under [`docs/audit/CODE_REVIEW_PLAN.md`](docs/audit/CODE_REVIEW_PLAN.md) and converted [`CODE_REVIEW_PLAN.md`](CODE_REVIEW_PLAN.md) into a root-level relocation notice.
+- Preserved the verified architecture audit under [`docs/audit/ARCHITECTURE_REVIEW_REPORT.md`](docs/audit/ARCHITECTURE_REVIEW_REPORT.md) and converted [`ARCHITECTURE_REVIEW_REPORT.md`](ARCHITECTURE_REVIEW_REPORT.md) into a root-level relocation notice.
+
+### 89.2 Classification & Link Alignment
+- Updated [`docs/INDEX.md`](docs/INDEX.md) so the active set remains unchanged while historical runtime notes now live under archive and historical review materials live under audit.
+- Updated [`docs/DOCUMENTATION_GOVERNANCE.md`](docs/DOCUMENTATION_GOVERNANCE.md) to reflect the preferred physical relocation model plus redirect-note pattern for retired markdown documents.
+- Updated [`docs/audit/README.md`](docs/audit/README.md) and [`docs/archive/DEPLOYMENT_CHECKLIST.md`](docs/archive/DEPLOYMENT_CHECKLIST.md) so audit and archive content is explicitly labeled as historical or secondary.
+
+### 89.3 Consistency Check Notes
+- Verified that [`README.md`](README.md), [`RUNBOOK.md`](RUNBOOK.md), [`docs/SECURITY.md`](docs/SECURITY.md), and [`docs/SERVICE_ARCHITECTURE.md`](docs/SERVICE_ARCHITECTURE.md) do not contain obvious broken references caused by this relocation pass.
+- Removed the obvious broken direct link to missing phase 1 audit content from [`docs/audit/README.md`](docs/audit/README.md) by downgrading it to a retained summary note instead of a dead file reference.
+- Kept root-level markdown redirect stubs in place to avoid breaking existing historical references inside [`PROGRESS.md`](PROGRESS.md) and other older documents.
+
+### 89.4 Remaining Risk
+- The full standalone phase 1 audit markdown file is still not present in the repository; only its summary reference remains in [`docs/audit/README.md`](docs/audit/README.md).
+- Historical documents may still reference old paths indirectly, but the retained redirect stubs prevent those references from becoming hard-dead entry points.
+
+---
+
+## 88. Documentation Backbone Consolidation
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Reframed the repository documentation around a smaller, role-driven active set so product, trust, monetization, release, governance, and architecture references are now clearly separated from backlog, progress, operations, audit, and archive materials.
+
+### 88.1 Created Active Documents
+- Added [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md) as the primary product vision, user, and value proposition reference.
+- Added [`docs/TRUST_AND_SAFETY.md`](docs/TRUST_AND_SAFETY.md) to define the product-level trust model, abuse posture, and user safety principles.
+- Added [`docs/MODERATION_POLICY.md`](docs/MODERATION_POLICY.md) to formalize moderation intent, decision categories, and escalation expectations.
+- Added [`docs/MONETIZATION.md`](docs/MONETIZATION.md) to define the freemium, doping, professional seller, and premium services model.
+- Added [`docs/RELEASE_READINESS.md`](docs/RELEASE_READINESS.md) to centralize production release gates across quality, security, product, and operations.
+- Added [`docs/DOCUMENTATION_GOVERNANCE.md`](docs/DOCUMENTATION_GOVERNANCE.md) to define document ownership, categorization, and update rules.
+- Added [`docs/GLOSSARY.md`](docs/GLOSSARY.md) to standardize recurring marketplace, moderation, security, and release terminology.
+
+### 88.2 Revised Core Documents
+- Rewrote [`README.md`](README.md) as a concise entry point with explicit routing to the documentation backbone.
+- Reframed [`TASKS.md`](TASKS.md) as an active backlog and acceptance-criteria document instead of a mixed historical dump.
+- Rewrote [`RUNBOOK.md`](RUNBOOK.md) to focus on deploy, environment, migration, incident, rollback, cron, and operational readiness.
+- Rewrote [`docs/SECURITY.md`](docs/SECURITY.md) as the technical security reference and aligned it with trust, moderation, and runbook documents.
+- Rewrote [`docs/SERVICE_ARCHITECTURE.md`](docs/SERVICE_ARCHITECTURE.md) around the current `*-actions.ts`, `*-records.ts`, `*-logic.ts`, and `*-client.ts` pattern.
+- Rebuilt [`docs/INDEX.md`](docs/INDEX.md) as the central catalog with explicit Core, Active, Reference, Audit, and Archive groupings.
+
+### 88.3 Deliberate Constraints
+- No non-markdown files were modified or removed in this pass.
+- No markdown files were physically moved in this pass; classification was clarified first in the index, per approved scope.
+- [`AGENTS.md`](AGENTS.md) was intentionally left untouched except as the stable constitutional reference.
+
+### 88.4 Next Step
+- Continue future cleanup by aligning remaining secondary reference documents with the new governance model and pruning stale cross-links only when implementation scope allows.
+
+---
+
 ## 87. Screen-by-Screen Page Hardening Completion Pass
 
 **Date**: 2026-05-10
