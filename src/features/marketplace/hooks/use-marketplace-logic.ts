@@ -75,6 +75,20 @@ export function useMarketplaceLogic({
     [activeQuery, router]
   );
 
+  const applyImmediateFilterPatch = useCallback(
+    (patch: Partial<ListingFilters>, options?: { scroll?: boolean }) => {
+      const nextFilters: ListingFilters = {
+        ...draftFilters,
+        ...patch,
+        page: 1,
+      };
+
+      setDraftFilters(nextFilters);
+      applyFilters(nextFilters, options?.scroll ?? false);
+    },
+    [draftFilters, applyFilters]
+  );
+
   const handleReset = useCallback(() => {
     const cleanFilters: ListingFilters = { page: 1, limit: 12, sort: "newest" };
     setDraftFilters(cleanFilters);
@@ -175,6 +189,7 @@ export function useMarketplaceLogic({
     isFetchingNextPage,
     fetchNextPage: stableFetchNextPage,
     handleFilterChange,
+    applyImmediateFilterPatch,
     handleReset,
     applyFilters,
     refetch,

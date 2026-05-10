@@ -34,7 +34,10 @@ interface MarketplaceControlsProps {
   setViewMode: (v: "grid" | "list") => void;
   isSortOpen: boolean;
   setIsSortOpen: (v: boolean) => void;
-  handleFilterChange: <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => void;
+  applyImmediateFilterPatch: (
+    patch: Partial<ListingFilters>,
+    options?: { scroll?: boolean }
+  ) => void;
   handleReset: () => void;
   applyFilters: (filters: ListingFilters, immediate?: boolean) => void;
   userId?: string | null;
@@ -50,7 +53,7 @@ export function MarketplaceControls({
   setViewMode,
   isSortOpen,
   setIsSortOpen,
-  handleFilterChange,
+  applyImmediateFilterPatch,
   handleReset,
   applyFilters,
   userId,
@@ -145,7 +148,10 @@ export function MarketplaceControls({
                 <li key={option.value}>
                   <Button
                     onClick={() => {
-                      handleFilterChange("sort", option.value as ListingFilters["sort"]);
+                      applyImmediateFilterPatch(
+                        { sort: option.value as ListingFilters["sort"] },
+                        { scroll: false }
+                      );
                       setIsSortOpen(false);
                     }}
                     className={cn(

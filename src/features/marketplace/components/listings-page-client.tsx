@@ -68,6 +68,7 @@ export function ListingsPageClient({
     isFetchingNextPage,
     fetchNextPage,
     handleFilterChange,
+    applyImmediateFilterPatch,
     handleReset,
     applyFilters,
     refetch,
@@ -150,7 +151,7 @@ export function ListingsPageClient({
                 setViewMode={setViewMode}
                 isSortOpen={isSortOpen}
                 setIsSortOpen={setIsSortOpen}
-                handleFilterChange={handleFilterChange}
+                applyImmediateFilterPatch={applyImmediateFilterPatch}
                 handleReset={handleReset}
                 applyFilters={applyFilters}
                 userId={userId}
@@ -160,7 +161,7 @@ export function ListingsPageClient({
 
             <MarketplaceQuickFilters
               filters={filters}
-              handleFilterChange={handleFilterChange}
+              applyImmediateFilterPatch={applyImmediateFilterPatch}
               handleReset={handleReset}
             />
           </div>

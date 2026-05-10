@@ -1,5 +1,41 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 104. Task A2 — Instant-Apply Marketplace Primary Controls
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the first high-impact Task A2 slice by promoting the highest-frequency marketplace discovery controls from draft-only state changes into instant URL-driven primary actions, while preserving the existing mobile drawer and broader filter panel “draft düzenle -> uygula” model for deeper filtering.
+
+### 104.1 Shared Instant-Apply Helper in Marketplace Logic
+- Added [`applyImmediateFilterPatch()`](src/features/marketplace/hooks/use-marketplace-logic.ts:78) to [`useMarketplaceLogic()`](src/features/marketplace/hooks/use-marketplace-logic.ts:28) so primary controls can merge a narrow filter patch onto the current draft state, reset `page` to `1`, and immediately drive [`applyFilters()`](src/features/marketplace/hooks/use-marketplace-logic.ts:49).
+- Kept the existing `draftFilters` versus `activeQuery` architecture intact so detailed filter editing can still remain staged until explicit apply inside the drawer/panel flows.
+- Preserved URL shareability by continuing to route every instant change through the same canonical query serialization path used by the broader marketplace filter system.
+
+### 104.2 Quick Filters Now Apply Immediately
+- Updated [`MarketplaceQuickFilters`](src/features/marketplace/components/marketplace-quick-filters.tsx:16) so `Ekspertizli`, `Fiyatı Düşen`, and `En Yeni` no longer only mutate local draft state.
+- Quick-filter taps now immediately push the canonical query to the listings URL and refresh the result set using the shared helper, while still allowing the `Tümü` reset action to clear filters through the existing reset flow.
+- This specifically reduces friction on the most common top-rail exploration actions without altering lower-frequency detailed filter behaviors.
+
+### 104.3 Sort Selection Now Applies Immediately
+- Updated [`MarketplaceControls`](src/features/marketplace/components/marketplace-controls.tsx:28) so sort menu selection now uses the same instant-apply helper instead of only updating draft state.
+- Selecting a sort option now immediately updates the URL, refreshes results, and resets pagination to the first page, matching user expectations for a primary marketplace ranking control.
+- Kept the existing sort popover UI and detailed mobile drawer behavior unchanged outside the immediate apply interaction model.
+
+### 104.4 Page Wiring and Scope Safety
+- Updated [`ListingsPageClient`](src/features/marketplace/components/listings-page-client.tsx:52) to pass the new instant-apply helper into the quick-filter and sort control surfaces only.
+- Left [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:30) and deeper filter editing flows on the existing explicit apply contract, preserving the “taslak düzenle -> uygula” model for broader filter combinations.
+- Pagination reset remains intentional for these primary discovery controls because changing sort or quick-filter intent should restart the result journey from page `1`.
+
+### 104.5 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/hooks/use-marketplace-logic.ts src/features/marketplace/components/listings-page-client.tsx src/features/marketplace/components/marketplace-controls.tsx src/features/marketplace/components/marketplace-quick-filters.tsx`](package.json:12) ✅
+
+### 104.6 Remaining Risk
+- The instant-apply helper currently resets `page` to `1` for all callers, which is intentional for quick filters and sort, but future reuse should stay limited to primary discovery controls unless that pagination reset is also desired elsewhere.
+- Detailed filters in the drawer/sidebar still mix staged editing and some direct tag-removal behaviors, so the marketplace now intentionally uses a hybrid model rather than a fully unified instant-apply system.
+
+---
+
 ## 103. Task A1 — Trust Incomplete CTA Hierarchy Pass
 
 **Date**: 2026-05-11

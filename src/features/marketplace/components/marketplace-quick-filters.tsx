@@ -3,7 +3,6 @@
 import { BadgeCheck, Star, TrendingDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { marketplace } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { type ListingFilters } from "@/types";
@@ -17,13 +16,16 @@ const QUICK_FILTERS = [
 
 interface MarketplaceQuickFiltersProps {
   filters: ListingFilters;
-  handleFilterChange: (key: keyof ListingFilters, value: unknown) => void;
+  applyImmediateFilterPatch: (
+    patch: Partial<ListingFilters>,
+    options?: { scroll?: boolean }
+  ) => void;
   handleReset: () => void;
 }
 
 export function MarketplaceQuickFilters({
   filters,
-  handleFilterChange,
+  applyImmediateFilterPatch,
   handleReset,
 }: MarketplaceQuickFiltersProps) {
   return (
@@ -42,11 +44,15 @@ export function MarketplaceQuickFilters({
               if (qf.type === "reset") {
                 handleReset();
               } else if (qf.type === "expert") {
-                handleFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true);
+                applyImmediateFilterPatch({
+                  hasExpertReport: filters.hasExpertReport ? undefined : true,
+                });
               } else if (qf.type === "price_low") {
-                handleFilterChange("sort", filters.sort === "price_asc" ? "newest" : "price_asc");
+                applyImmediateFilterPatch({
+                  sort: filters.sort === "price_asc" ? "newest" : "price_asc",
+                });
               } else if (qf.type === "newest") {
-                handleFilterChange("sort", "newest");
+                applyImmediateFilterPatch({ sort: "newest" });
               }
             }}
             className={cn(
