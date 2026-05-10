@@ -328,19 +328,20 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         </div>
       )}
 
-      {hasUpdatedListing && trustSaveState === "done" && (
+      {hasUpdatedListing && trustSaveState === "done" && displayedListings.length > 0 && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-emerald-950 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                Güven akışı tamamlandı
+                Sayfa kapsamındaki trust turu tamamlandı
               </p>
               <p className="text-sm font-semibold leading-6 text-emerald-950">
-                Bu sayfadaki eksik güven detaylarını bitirdin.
+                Bu görünümdeki son eksik ilanı da tamamladın.
               </p>
               <p className="text-xs font-medium leading-5 text-emerald-900/80">
-                Artık filtrelenmiş listede eksik ilan görünmüyor. İstersen tüm ilan görünümüne dönüp
-                diğer düzenlemelere devam edebilirsin.
+                Bu mesaj yalnız şu an açık olan `trust=incomplete` görünümü için geçerli. Aynı
+                sayfada artık trust hatırlatması gerektiren ilan kalmadı; başka sayfalarda eksik
+                ilan varsa onları kendi görünümünde görmeye devam edersin.
               </p>
             </div>
             <Link
@@ -363,6 +364,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         activeEditId={selectedListing?.id}
         initialShowForm={hasRequestedCreate && !isEditingExisting}
         trustFilter={trustFilter}
+        trustCompletionState={trustSaveState === "done" ? "done" : null}
         listings={displayedListings}
         currentPage={data.listingsPage.page}
         pageSize={data.listingsPage.pageSize}

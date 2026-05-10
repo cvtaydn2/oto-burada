@@ -19,6 +19,7 @@ interface MyListingsPanelProps {
   activeEditId?: string;
   initialShowForm?: boolean;
   trustFilter?: "incomplete";
+  trustCompletionState?: "done" | null;
   listings: DashboardListingSummary[];
   currentPage: number;
   pageSize: number;
@@ -31,6 +32,7 @@ export function MyListingsPanel({
   activeEditId,
   initialShowForm = false,
   trustFilter,
+  trustCompletionState = null,
   listings,
   currentPage,
   pageSize,
@@ -197,21 +199,70 @@ export function MyListingsPanel({
         </Button>
       )}
 
-      {totalCount === 0 && !showForm && trustFilter === "incomplete" && (
-        <EmptyState
-          title="Bu sayfada güven eksiği ilan kalmadı"
-          description="Ekspertiz, hasar veya Tramer detayı eksik ilan görünmüyor. Filtreyi kapatıp tüm ilan listene dönebilirsin."
-          icon={<Rocket size={48} className="text-primary" />}
-          primaryAction={{
-            label: "Tüm ilanları göster",
-            onClick: clearTrustFilter,
-          }}
-          secondaryAction={{
-            label: "Yeni ilan oluştur",
-            onClick: () => setShowForm(true),
-          }}
-        />
-      )}
+      {totalCount === 0 &&
+        !showForm &&
+        trustFilter === "incomplete" &&
+        trustCompletionState === "done" && (
+          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 text-emerald-950 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                  Sayfa kapsamındaki tur tamamlandı
+                </p>
+                <h3 className="text-lg font-semibold leading-tight text-emerald-950">
+                  Bu görünümdeki son eksik trust ilanını da kaydettin.
+                </h3>
+                <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/85">
+                  Bu kapanış yalnız şu an açık olan filtreli sayfa için geçerli. Bu yüzden trust
+                  hatırlatmaları bu görünümde doğal olarak sustu; diğer sayfalarda eksik ilan varsa
+                  onları kendi sayfasında görmeye devam edersin.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-200 bg-white/80 p-4 text-xs font-semibold leading-5 text-emerald-900 sm:max-w-sm">
+                Sıradaki adım olarak tüm ilan görünümüne dönüp genel düzenlemelerine devam edebilir
+                ya da yeni ilan oluşturabilirsin.
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button
+                type="button"
+                onClick={clearTrustFilter}
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-emerald-700"
+              >
+                Tüm ilanlara dön
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center justify-center rounded-xl border-emerald-200 bg-white px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800"
+              >
+                Yeni ilan oluştur
+              </Button>
+            </div>
+          </div>
+        )}
+
+      {totalCount === 0 &&
+        !showForm &&
+        trustFilter === "incomplete" &&
+        trustCompletionState !== "done" && (
+          <EmptyState
+            title="Bu sayfada güven eksiği ilan kalmadı"
+            description="Ekspertiz, hasar veya Tramer detayı eksik ilan görünmüyor. Filtreyi kapatıp tüm ilan listene dönebilirsin."
+            icon={<Rocket size={48} className="text-primary" />}
+            primaryAction={{
+              label: "Tüm ilanları göster",
+              onClick: clearTrustFilter,
+            }}
+            secondaryAction={{
+              label: "Yeni ilan oluştur",
+              onClick: () => setShowForm(true),
+            }}
+          />
+        )}
 
       {totalCount === 0 && !showForm && !trustFilter && (
         <EmptyState
