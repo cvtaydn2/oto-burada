@@ -14,16 +14,24 @@ class SentryExampleFrontendError extends Error {
 
 export function SentryExampleClientPage() {
   const [hasSentError, setHasSentError] = useState(false);
-  const [isConnected, setIsConnected] = useState(true);
+  const isSentryEnabled =
+    process.env.NODE_ENV === "production" ||
+    process.env.NEXT_PUBLIC_ENABLE_SENTRY_IN_DEV === "true";
+  const [isConnected, setIsConnected] = useState(isSentryEnabled);
 
   useEffect(() => {
     Sentry.logger.info("Sentry example page loaded");
+
+    if (!isSentryEnabled) {
+      return;
+    }
+
     async function checkConnectivity() {
       const result = await Sentry.diagnoseSdkConnectivity();
       setIsConnected(result !== "sentry-unreachable");
     }
     checkConnectivity();
-  }, []);
+  }, [isSentryEnabled]);
 
   return (
     <div>
@@ -94,8 +102,9 @@ export function SentryExampleClientPage() {
         ) : !isConnected ? (
           <div className="connectivity-error">
             <p>
-              It looks like network requests to Sentry are being blocked, which will prevent errors
-              from being captured. Try disabling your ad-blocker to complete the test.
+              {isSentryEnabled
+                ? "It looks like network requests to Sentry are being blocked, which will prevent errors from being captured. Try disabling your ad-blocker to complete the test."
+                : "Sentry test surface is disabled outside production unless NEXT_PUBLIC_ENABLE_SENTRY_IN_DEV=true is set."}
             </p>
           </div>
         ) : (

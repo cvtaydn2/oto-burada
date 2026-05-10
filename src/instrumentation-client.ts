@@ -4,8 +4,12 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+const isSentryEnabled =
+  process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_ENABLE_SENTRY_IN_DEV === "true";
+
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  enabled: isSentryEnabled,
 
   // Add optional integrations for additional features
   integrations: [
