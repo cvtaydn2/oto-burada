@@ -28,5 +28,20 @@
       "frontend",
       "açısından"
     ]
+  },
+  {
+    "id": 1778416813592,
+    "date": "2026-05-10",
+    "category": "decision",
+    "task": "Aşağıdaki görevi sadece FRONTEND açısından analiz et ve çözümünü üret. \nÖNEMLİ: Bir önceki adımda ol",
+    "decision": "kamusal yüzde “Galeri”, ayarlar tarafında “Kurumsal Profil” veya “Galeri Bilgileri”.",
+    "files_affected": [],
+    "tags": [
+      "aşağıdaki",
+      "görevi",
+      "sadece",
+      "frontend",
+      "açısından"
+    ]
   }
 ]

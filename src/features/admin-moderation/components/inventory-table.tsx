@@ -300,7 +300,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                     {listing.images?.[0] ? (
                       <Image
                         src={supabaseImageUrl(listing.images[0].url, 160, 90)}
-                        alt=""
+                        alt={listing.title}
                         fill
                         sizes="64px"
                         className="object-cover"
@@ -316,14 +316,35 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                   <div className="min-w-0 flex-1 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h3 className="truncate text-sm font-bold text-foreground">
+                        <h3 className="line-clamp-2 text-sm font-bold leading-5 text-foreground">
                           {listing.title}
                         </h3>
                         <p className="mt-1 text-xs font-medium text-muted-foreground">
                           {listing.brand} {listing.model} • {listing.year}
                         </p>
                       </div>
-                      {renderActionsMenu(listing)}
+                      <div className="shrink-0">{renderActionsMenu(listing)}</div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href={`/listing/${listing.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-9 items-center rounded-xl border border-border/70 bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        İlanı Aç
+                      </a>
+                      {listing.seller?.businessSlug ? (
+                        <a
+                          href={`/galeri/${listing.seller.businessSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-9 items-center rounded-xl border border-border/70 bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                        >
+                          Galeri
+                        </a>
+                      ) : null}
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -369,7 +390,8 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
 
         <div className="hidden overflow-hidden rounded-2xl border border-border/70 lg:block">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full min-w-[720px] text-left">
+              <caption className="sr-only">Admin envanter ilan tablosu</caption>
               <thead>
                 <tr className="border-b border-border/70 bg-muted/30">
                   <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
@@ -401,7 +423,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                             {listing.images?.[0] ? (
                               <Image
                                 src={supabaseImageUrl(listing.images[0].url, 128, 70)}
-                                alt=""
+                                alt={listing.title}
                                 fill
                                 sizes="48px"
                                 className="object-cover"
@@ -414,7 +436,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <span className="block max-w-[260px] truncate text-sm font-bold text-foreground xl:max-w-[340px]">
+                            <span className="block max-w-[220px] truncate text-sm font-bold text-foreground xl:max-w-[300px] 2xl:max-w-[340px]">
                               {listing.title}
                             </span>
                             <span className="text-[11px] font-medium text-muted-foreground">

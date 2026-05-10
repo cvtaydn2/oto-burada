@@ -22,23 +22,25 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
   const { city: citySlug } = resolvedParams;
 
   const references = await getLiveMarketplaceReferenceData();
-  const city = references.cities.find((c) => c.slug === citySlug)?.city ?? normalizeSlug(citySlug);
+  const city =
+    references.cities.find((c) => c.slug.toLowerCase() === citySlug.toLowerCase())?.city ??
+    normalizeSlug(citySlug);
 
   const filters: ListingFilters = {
     city,
   };
 
-  const metadata = buildListingsMetadata(filters);
+  const metadata: Metadata = buildListingsMetadata(filters) as Metadata;
 
   // Custom SEO-optimized title for City landing pages
   metadata.title = `${city} Satılık İkinci El Araba İlanları | OtoBurada`;
   metadata.description = `${city} genelindeki en güncel satılık ikinci el araba ilanlarını incele. ${city}'da uygun fiyatlı araçları keşfet, güvenle satın al veya sat.`;
 
-  (metadata as Record<string, unknown>).alternates = {
+  metadata.alternates = {
     canonical: buildAbsoluteUrl(`/satilik-araba/${citySlug}`),
   };
 
-  return metadata as Metadata;
+  return metadata;
 }
 
 export default async function CityPage({ params }: CityPageProps) {
@@ -46,7 +48,7 @@ export default async function CityPage({ params }: CityPageProps) {
   const { city: citySlug } = resolvedParams;
 
   const references = await getLiveMarketplaceReferenceData();
-  const city = references.cities.find((c) => c.slug === citySlug)?.city;
+  const city = references.cities.find((c) => c.slug.toLowerCase() === citySlug.toLowerCase())?.city;
 
   if (!city) {
     notFound();

@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 
 export interface EmptyStateProps {
@@ -76,7 +77,7 @@ export function EmptyState({
               asChild={!!primaryAction.href}
             >
               {primaryAction.href ? (
-                <a href={primaryAction.href}>{primaryAction.label}</a>
+                <Link href={primaryAction.href}>{primaryAction.label}</Link>
               ) : (
                 primaryAction.label
               )}
@@ -92,7 +93,7 @@ export function EmptyState({
               asChild={!!secondaryAction.href}
             >
               {secondaryAction.href ? (
-                <a href={secondaryAction.href}>{secondaryAction.label}</a>
+                <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
               ) : (
                 secondaryAction.label
               )}

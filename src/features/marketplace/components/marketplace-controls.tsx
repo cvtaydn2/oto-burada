@@ -4,7 +4,6 @@ import { ArrowDownUp } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { marketplace } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";

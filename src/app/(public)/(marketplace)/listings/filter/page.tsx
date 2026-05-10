@@ -34,8 +34,10 @@ export default async function ListingsFilterPage({ searchParams }: FilterPagePro
 
   const brandSlug = resolvedParams?.brand;
   const citySlug = resolvedParams?.city;
+  const sort: NonNullable<ListingFilters["sort"]> = "newest";
+
   const initialFilters: ListingFilters = {
-    sort: "newest",
+    sort,
     page: 1,
     limit: 12,
     ...(brandSlug ? { brand: resolveBrandSlugToName(references.brands, String(brandSlug)) } : {}),

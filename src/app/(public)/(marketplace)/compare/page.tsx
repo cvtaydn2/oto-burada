@@ -1,10 +1,12 @@
 import { BarChart3, ChevronLeft, SearchX } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ListingCard } from "@/components/shared/listing-card";
 import { CompareRemoveButton } from "@/features/marketplace/components/compare-remove-button";
 import { CompareShareButton } from "@/features/marketplace/components/compare-share-button";
 import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { formatNumber } from "@/lib/utils/format";
 import { formatPrice } from "@/lib/utils/format";
 import type { Listing } from "@/types";
@@ -26,6 +28,27 @@ function parseCompareIds(idsParam: string | string[] | undefined): string[] {
     .filter((id) => /^[0-9a-f-]{36}$/i.test(id));
 
   return Array.from(new Set(candidateIds)).slice(0, 4);
+}
+
+export async function generateMetadata({ searchParams }: ComparePageProps): Promise<Metadata> {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const ids = parseCompareIds(resolvedSearchParams?.ids);
+
+  return {
+    title:
+      ids.length > 1
+        ? `Araç Karşılaştırma (${ids.length}) | OtoBurada`
+        : "Araç Karşılaştırma | OtoBurada",
+    description:
+      "Fiyat, kilometre ve teknik özellikleri yan yana karşılaştırarak daha hızlı karar verin.",
+    alternates: {
+      canonical: buildAbsoluteUrl("/compare"),
+    },
+    robots: {
+      index: ids.length > 1,
+      follow: true,
+    },
+  };
 }
 
 export default async function ComparePage({ searchParams }: ComparePageProps) {

@@ -20,7 +20,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 
 const ADMIN_NAV_ITEMS = [

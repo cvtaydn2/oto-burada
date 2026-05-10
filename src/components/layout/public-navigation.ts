@@ -35,21 +35,18 @@ export const navigationConfig: NavigationItem[] = [
     label: "Favoriler",
     icon: Heart,
     requiresAuth: true,
-    showInBottomNav: true,
   },
   {
     href: "/login",
     label: "Giriş",
     icon: LogIn,
     requiresGuest: true,
-    showInBottomNav: true,
   },
   {
     href: "/register",
     label: "Kayıt Ol",
     icon: UserPlus,
     requiresGuest: true,
-    showInBottomNav: true,
   },
   {
     href: "/admin",

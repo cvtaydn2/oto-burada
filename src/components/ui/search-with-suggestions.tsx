@@ -7,7 +7,6 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
 

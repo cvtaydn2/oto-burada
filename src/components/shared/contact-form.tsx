@@ -86,20 +86,22 @@ export function ContactForm() {
 
   if (status === "success") {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
-        <div className="flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-400">
           <CheckCircle2 size={32} />
         </div>
-        <h3 className="text-xl font-bold text-foreground">Mesajınız İletildi</h3>
-        <p className="text-sm text-muted-foreground max-w-sm">
+        <h3 className="text-xl font-bold text-foreground">Mesajınız iletildi</h3>
+        <p className="max-w-sm text-sm leading-6 text-muted-foreground">
           Mesajınızı aldık. Ekibimiz en kısa sürede size dönüş yapacak.
         </p>
         <Button
+          type="button"
+          variant="outline"
           onClick={() => {
             setStatus("idle");
             setForm({ name: "", email: "", subject: SUBJECTS[0], message: "" });
           }}
-          className="mt-2 text-xs font-bold text-primary hover:underline"
+          className="mt-2 rounded-xl"
         >
           Yeni mesaj gönder
         </Button>
@@ -109,9 +111,9 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-          <Label htmlFor="contact-name" className="block text-xs font-bold text-gray-700 mb-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="contact-name" className="text-xs font-bold text-foreground">
             Adınız Soyadınız *
           </Label>
           <Input
@@ -120,12 +122,12 @@ export function ContactForm() {
             required
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-12 rounded-xl border-border/80 bg-background px-4 text-sm"
             placeholder="Adınız Soyadınız"
           />
         </div>
-        <div>
-          <Label htmlFor="contact-email" className="block text-xs font-bold text-gray-700 mb-2">
+        <div className="space-y-2">
+          <Label htmlFor="contact-email" className="text-xs font-bold text-foreground">
             E-posta Adresiniz *
           </Label>
           <Input
@@ -134,37 +136,37 @@ export function ContactForm() {
             required
             value={form.email}
             onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-12 rounded-xl border-border/80 bg-background px-4 text-sm"
             placeholder="ornek@email.com"
           />
         </div>
       </div>
-      <div>
-        <Label htmlFor="contact-subject" className="block text-xs font-bold text-gray-700 mb-2">
+      <div className="space-y-2">
+        <Label htmlFor="contact-subject" className="text-xs font-bold text-foreground">
           Konu
         </Label>
         <select
           id="contact-subject"
           value={form.subject}
           onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value as Subject }))}
-          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-card transition focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="h-12 w-full rounded-xl border border-border/80 bg-background px-4 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           {SUBJECTS.map((s) => (
             <option key={s}>{s}</option>
           ))}
         </select>
       </div>
-      <div>
-        <Label htmlFor="contact-message" className="block text-xs font-bold text-gray-700 mb-2">
+      <div className="space-y-2">
+        <Label htmlFor="contact-message" className="text-xs font-bold text-foreground">
           Mesajınız *
         </Label>
         <textarea
           id="contact-message"
-          rows={4}
+          rows={5}
           required
           value={form.message}
           onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
-          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-none transition focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="min-h-[140px] w-full rounded-xl border border-border/80 bg-background px-4 py-3 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           placeholder="Mesajınızı buraya yazın..."
         />
       </div>
@@ -172,25 +174,15 @@ export function ContactForm() {
         Honeypot field — hidden from real users via CSS, not `display:none` or
         `type="hidden"` (bots skip those). Bots fill it in; the API rejects them.
       */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          width: "1px",
-          height: "1px",
-          overflow: "hidden",
-        }}
-      >
+      <div aria-hidden="true" className="absolute left-[-9999px] h-px w-px overflow-hidden">
         <Label htmlFor="_hp">Boş bırakın</Label>
         <Input id="_hp" name="_hp" type="text" tabIndex={-1} autoComplete="off" />
       </div>
-      {/* Turnstile widget (invisible challenge) */}
       {isTurnstileEnabled && <div ref={containerRef} className="flex justify-center" />}
       <Button
         type="submit"
         disabled={status === "loading"}
-        className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        className="h-12 w-full rounded-xl text-sm font-semibold"
       >
         {status === "loading" ? (
           <>
@@ -205,7 +197,7 @@ export function ContactForm() {
       {status === "error" && (
         <p
           role="alert"
-          className="text-sm text-red-600 font-medium text-center animate-in fade-in slide-in-from-top-1"
+          className="animate-in slide-in-from-top-1 text-center text-sm font-medium text-destructive"
         >
           {errorMessage ||
             "Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın."}

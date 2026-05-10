@@ -55,14 +55,14 @@ export function DashboardShell({
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                <Link href="/dashboard/pricing" className="min-w-0">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                <Link href="/dashboard/pricing" className="min-w-0 sm:max-w-full">
                   <Badge
                     variant="secondary"
                     className="flex h-auto min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-amber-200/70 bg-amber-50 px-3 py-2 text-center text-amber-800 transition-colors hover:bg-amber-100 sm:h-9 sm:w-auto sm:justify-start sm:py-0"
                   >
                     <Coins size={14} className="shrink-0 text-amber-500" />
-                    <span className="font-bold">{balanceCredits} İlan Hakkı</span>
+                    <span className="font-bold">{balanceCredits} kredi</span>
                   </Badge>
                 </Link>
                 {isAdmin && (

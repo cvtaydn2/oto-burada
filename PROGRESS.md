@@ -1,5 +1,72 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 86. Frontend Deep Audit — Shared UX & Operational Density Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied third-phase deep frontend fixes targeting shared navigation normalization, design-system drift in contact/support flows, and mobile operational usability in admin review surfaces.
+
+### 86.1 Applied Fixes
+- **Header action normalization ([site-header-auth.tsx](src/components/layout/site-header-auth.tsx))**: Rebalanced header action density by converting icon-only surfaces into clearer progressive labels on larger widths while preserving compact behavior on smaller viewports.
+- **Design-system alignment ([contact-form.tsx](src/components/shared/contact-form.tsx))**: Replaced hardcoded gray/blue/red styling with project token-based borders, spacing, focus states, and success/error presentation so contact flow now matches the rest of public UI.
+- **Mobile moderation usability ([inventory-table.tsx](src/features/admin-moderation/components/inventory-table.tsx))**: Added direct preview shortcuts to listing cards, improved card title wrapping, and fixed image `alt` semantics for safer moderation on narrow screens.
+- **Support queue readability ([admin-ticket-card.tsx](src/features/support/components/admin-ticket-card.tsx))**: Reduced extra-wide layout dependency, improved card stacking behavior, clamped long descriptions on small screens, and made action panel sticky on supported widths for faster ticket handling.
+- **Shared cleanup continuation ([faq-accordion.tsx](src/components/shared/faq-accordion.tsx), [search-with-suggestions.tsx](src/components/ui/search-with-suggestions.tsx), [marketplace-controls.tsx](src/features/marketplace/components/marketplace-controls.tsx), [marketplace-sidebar.tsx](src/features/marketplace/components/marketplace-sidebar.tsx))**: Removed more dead imports from shared and marketplace-facing surfaces to reduce maintenance noise.
+
+### 86.2 Validation
+- **Code-path validation**: ✅ Updated shared, dashboard, and admin surfaces were re-checked after patching.
+- **Constraint validation**: ✅ No CLI commands executed during this deep audit pass.
+
+### 86.3 Next Step
+- Prepare git commit scope and run repository validation when command execution is explicitly desired for commit/push workflow.
+
+---
+
+## 85. Frontend UX & Navigation Density Review Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied second-phase frontend review fixes focused on shared layout/navigation density, mobile cognitive load, and cleanup of repeated dead imports in key shared surfaces.
+
+### 85.1 Applied Fixes
+- **Bottom nav simplification ([public-navigation.ts](src/components/layout/public-navigation.ts))**: Removed guest auth actions and authenticated favorites entry from bottom-nav exposure so the mobile shell no longer overloads the primary bar with low-priority destinations.
+- **Dashboard nav de-duplication ([dashboard-header.tsx](src/features/dashboard/components/dashboard-header.tsx))**: Hid the extra horizontal quick-tab strip on medium+ layouts where the persistent sidebar already provides primary navigation, reducing repeated IA and visual competition.
+- **Shared layout cleanup ([desktop-nav.tsx](src/components/layout/desktop-nav.tsx), [footer-nav-link.tsx](src/components/layout/footer-nav-link.tsx), [mobile-nav.tsx](src/components/layout/mobile-nav.tsx), [dashboard-navigation.tsx](src/components/layout/dashboard-navigation.tsx), [admin-sidebar.tsx](src/components/layout/admin-sidebar.tsx))**: Removed dead `import {} from "@/lib";` remnants from common navigation surfaces to reduce noise and improve maintainability.
+- **Dashboard shared component cleanup ([dashboard-listings-table.tsx](src/features/dashboard/components/dashboard-listings-table.tsx), [dashboard-quick-links.tsx](src/features/dashboard/components/dashboard-quick-links.tsx))**: Removed repeated dead imports from high-traffic dashboard blocks.
+
+### 85.2 Validation
+- **Code-path validation**: ✅ Shared navigation and layout surfaces re-checked after edits.
+- **Constraint validation**: ✅ No CLI commands executed, per request.
+
+### 85.3 Next Step
+- Continue with remaining second-phase fixes for table density, form design-system alignment, and responsive operational surfaces.
+
+---
+
+## 84. Frontend Screen Review Hardening Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied high-priority fixes discovered during full frontend screen-by-screen review. Focused on canonical route consistency, metadata hardening, dead import cleanup, safer logging, and removal of broad admin `select("*")` query patterns.
+
+### 84.1 Applied Fixes
+- **Filter page metadata/canonical hardening ([page.tsx](src/app/(public)/(marketplace)/listings/filter/page.tsx))**: Added [`generateMetadata()`](src/app/(public)/(marketplace)/listings/filter/page.tsx:58) with canonical URL and aligned initial filter synthesis to route params.
+- **SEO landing slug consistency ([page.tsx](src/app/(public)/(marketplace)/satilik/[brand]/[[...city]]/page.tsx), [page.tsx](src/app/(public)/(marketplace)/satilik-araba/[city]/page.tsx))**: Switched brand/city resolution to slug-based matching, added invalid city fail-fast behavior, and normalized canonical metadata handling.
+- **Compare screen discoverability ([page.tsx](src/app/(public)/(marketplace)/compare/page.tsx))**: Added metadata generation, canonical handling, and `robots` behavior for low-signal comparison states.
+- **Auth / verify-email metadata hardening ([page.tsx](src/app/(public)/verify-email/page.tsx), [page.tsx](src/app/(public)/(auth)/login/page.tsx), [page.tsx](src/app/(public)/(auth)/register/page.tsx))**: Added explicit metadata, canonical URLs, and `noindex` semantics for account flow screens.
+- **Dashboard cleanup ([page.tsx](src/app/dashboard/pricing/page.tsx), [page.tsx](src/app/dashboard/teklifler/page.tsx))**: Replaced raw anchor navigation with [`Link`](src/app/dashboard/pricing/page.tsx:81), removed dead import noise, and preserved App Router semantics.
+- **Support fallback observability ([page.tsx](src/app/(public)/support/page.tsx))**: Replaced silent ticket-loading fallback with structured logger reporting.
+- **Admin query narrowing ([page.tsx](src/app/admin/audit/page.tsx), [page.tsx](src/app/admin/security/page.tsx))**: Replaced broad `select("*")` calls with explicit column projections and removed dead imports.
+
+### 84.2 Validation
+- **Code-path validation**: ✅ All modified screens re-reviewed after patching for route, metadata, and query integrity.
+- **Constraint validation**: ✅ No CLI commands executed, per request.
+
+### 84.3 Next Step
+- Run a follow-up typecheck/lint/build verification pass when command execution is allowed again.
+
+---
+
 ## 83. Marketplace Filtering Grid Optimization & Hydration Stabilization
 
 **Date**: 2026-05-10

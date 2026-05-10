@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { requireAdminUser } from "@/features/auth/lib/session";
-import {} from "@/lib";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { cn } from "@/lib/utils";
 
@@ -46,9 +45,19 @@ export default async function AdminAuditPage({
 
   const supabase = createSupabaseAdminClient();
 
-  let baseQuery = supabase
-    .from("admin_actions")
-    .select("*, profiles!admin_actions_admin_user_id_fkey(full_name)", { count: "exact" });
+  let baseQuery = supabase.from("admin_actions").select(
+    `
+      id,
+      action,
+      admin_user_id,
+      target_id,
+      target_type,
+      note,
+      created_at,
+      profiles!admin_actions_admin_user_id_fkey(full_name)
+    `,
+    { count: "exact" }
+  );
 
   if (q) {
     baseQuery = baseQuery.or(`action.ilike.%${q}%,note.ilike.%${q}%`);

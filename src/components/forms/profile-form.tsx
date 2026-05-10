@@ -1,11 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Mail, MapPin, UserRound } from "lucide-react";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, Camera, CheckCircle2, Loader2, Mail, MapPin, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { EmailVerificationDialog } from "@/features/auth/components/email-verification-dialog";
 import {
-  ProfileUpdateInput,
+  type ProfileUpdateInput,
   profileUpdateInputSchema,
 } from "@/features/profile/lib/profile-validators";
 import { updateProfileInformationAction } from "@/features/profile/services/profile/profile-actions";
@@ -58,7 +57,9 @@ export function ProfileForm({
     },
   });
 
-  const watchedValues = form.watch();
+  const watchedValues = useWatch({
+    control: form.control,
+  });
 
   async function onSubmit(values: ProfileUpdateInput) {
     startTransition(async () => {
@@ -84,7 +85,7 @@ export function ProfileForm({
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-5">
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <UserRound className="size-4 text-primary" />
@@ -174,7 +175,7 @@ export function ProfileForm({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="mb-1 flex items-center justify-between">
                       <FormLabel className="text-sm font-medium text-foreground">Telefon</FormLabel>
                       {!isVerifiedLocally && (
                         <Button
@@ -218,7 +219,7 @@ export function ProfileForm({
                       </FormControl>
                       <SelectContent className="max-h-60 rounded-xl">
                         {cityOptions.map((city) => (
-                          <SelectItem key={city} value={city} className="rounded-lg cursor-pointer">
+                          <SelectItem key={city} value={city} className="cursor-pointer rounded-lg">
                             {city}
                           </SelectItem>
                         ))}
@@ -269,11 +270,11 @@ export function ProfileForm({
                 )}
               />
 
-              <div className="rounded-xl border border-border bg-muted/20 p-4 flex flex-col justify-center">
+              <div className="flex flex-col justify-center rounded-xl border border-border bg-muted/20 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
                   Tavsiye
                 </p>
-                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground font-medium">
+                <p className="mt-1.5 text-xs font-medium leading-relaxed text-muted-foreground">
                   Resim eklemek ilan güveninizi artırır.
                 </p>
               </div>
@@ -284,7 +285,7 @@ export function ProfileForm({
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full h-12 text-base font-semibold rounded-xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+              className="h-12 w-full rounded-xl text-base font-semibold shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
             >
               {isPending ? (
                 <>

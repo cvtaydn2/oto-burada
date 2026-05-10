@@ -14,7 +14,6 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useNavigation } from "@/hooks/use-navigation";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
 

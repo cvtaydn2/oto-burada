@@ -26,10 +26,10 @@ export async function generateMetadata({ params }: LandingPageProps): Promise<Me
   const references = await getLiveMarketplaceReferenceData();
 
   const brand =
-    references.brands.find((b) => b.brand.toLowerCase() === brandSlug.toLowerCase())?.brand ??
+    references.brands.find((b) => b.slug.toLowerCase() === brandSlug.toLowerCase())?.brand ??
     normalizeSlug(brandSlug);
   const city = citySlug
-    ? (references.cities.find((c) => c.city.toLowerCase() === citySlug.toLowerCase())?.city ??
+    ? (references.cities.find((c) => c.slug.toLowerCase() === citySlug.toLowerCase())?.city ??
       normalizeSlug(citySlug))
     : undefined;
 
@@ -59,7 +59,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
 
   const references = await getLiveMarketplaceReferenceData();
   const brand = references.brands.find(
-    (b) => b.brand.toLowerCase() === brandSlug.toLowerCase()
+    (b) => b.slug.toLowerCase() === brandSlug.toLowerCase()
   )?.brand;
 
   if (!brand) {
@@ -67,8 +67,12 @@ export default async function LandingPage({ params }: LandingPageProps) {
   }
 
   const city = citySlug
-    ? references.cities.find((c) => c.city.toLowerCase() === citySlug.toLowerCase())?.city
+    ? references.cities.find((c) => c.slug.toLowerCase() === citySlug.toLowerCase())?.city
     : undefined;
+
+  if (citySlug && !city) {
+    notFound();
+  }
 
   const initialFilters: ListingFilters = {
     brand,

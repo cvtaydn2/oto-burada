@@ -69,7 +69,7 @@ export function ForgotPasswordForm() {
           </div>
 
           {state?.message ? (
-            <div className="space-y-4 rounded-[1.6rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-6">
+            <div className="space-y-4 rounded-[1.6rem] border border-emerald-200 bg-emerald-50 p-5 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/30 sm:p-6">
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-emerald-700">{state.message}</p>
                 {submittedEmail ? (
@@ -90,7 +90,7 @@ export function ForgotPasswordForm() {
                 </Link>
                 <Link
                   href="/forgot-password"
-                  className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                  className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-emerald-200 bg-background px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100/70"
                 >
                   Başka e-posta dene
                 </Link>
@@ -132,7 +132,7 @@ export function ForgotPasswordForm() {
                 {state?.error && (
                   <div
                     role="alert"
-                    className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600"
+                    className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive"
                   >
                     {state.error}
                   </div>

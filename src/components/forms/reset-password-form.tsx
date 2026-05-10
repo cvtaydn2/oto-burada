@@ -68,7 +68,7 @@ export function ResetPasswordForm() {
           </div>
 
           {state?.success ? (
-            <div className="space-y-3 rounded-[1.6rem] border border-emerald-200 bg-emerald-50 p-5 text-center sm:p-6">
+            <div className="space-y-3 rounded-[1.6rem] border border-emerald-200 bg-emerald-50 p-5 text-center shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/30 sm:p-6">
               <ShieldCheck className="mx-auto text-emerald-500" size={36} />
               <p className="text-base font-semibold text-emerald-700">
                 Şifreniz başarıyla güncellendi.
@@ -147,7 +147,7 @@ export function ResetPasswordForm() {
                 {state?.error && (
                   <div
                     role="alert"
-                    className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600"
+                    className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive"
                   >
                     {state.error}
                   </div>

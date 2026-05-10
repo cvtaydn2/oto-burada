@@ -8,7 +8,6 @@ import {
   getOffersForUser,
   getOffersReceived,
 } from "@/features/offers/services/offers/offer-actions";
-import {} from "@/lib";
 import { formatPrice } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";

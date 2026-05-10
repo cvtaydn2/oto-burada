@@ -1,11 +1,22 @@
 import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ResendVerificationButton } from "@/features/auth/components/resend-verification-button";
+import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { createSupabaseServerClient } from "@/lib/server";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "E-posta Doğrulama | OtoBurada",
+  description:
+    "Hesabınızı güvenli şekilde aktifleştirmek için e-posta adresinizi doğrulayın veya doğrulama e-postasını yeniden gönderin.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/verify-email"),
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function VerifyEmailPage() {

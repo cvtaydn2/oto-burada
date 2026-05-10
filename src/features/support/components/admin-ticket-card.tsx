@@ -73,7 +73,7 @@ export const AdminTicketCard = React.memo(function AdminTicketCard({
 
   return (
     <article className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm transition-all hover:border-border hover:shadow-md sm:p-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+      <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={cn("border font-semibold", STATUS_BADGES[ticket.status])}>
@@ -103,12 +103,12 @@ export const AdminTicketCard = React.memo(function AdminTicketCard({
             <h3 className="text-base font-semibold leading-snug text-foreground sm:text-lg">
               {ticket.subject}
             </h3>
-            <p className="text-sm leading-6 text-muted-foreground break-words whitespace-pre-wrap">
+            <p className="line-clamp-6 text-sm leading-6 text-muted-foreground break-words whitespace-pre-wrap sm:line-clamp-none">
               {ticket.description}
             </p>
           </div>
 
-          <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
             <div className="rounded-xl bg-muted/30 px-3 py-2 border border-border/10">
               <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
                 Oluşturulma
@@ -127,7 +127,7 @@ export const AdminTicketCard = React.memo(function AdminTicketCard({
                   : "Yanıt veya durum kararı bekliyor"}
               </span>
             </div>
-            <div className="rounded-xl bg-muted/30 px-3 py-2 border border-border/10 sm:col-span-2 xl:col-span-1">
+            <div className="rounded-xl bg-muted/30 px-3 py-2 border border-border/10 sm:col-span-2">
               <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
                 Sonraki önerilen adım
               </span>
@@ -151,8 +151,8 @@ export const AdminTicketCard = React.memo(function AdminTicketCard({
           )}
         </div>
 
-        <div className="w-full xl:w-72 xl:flex-none">
-          <div className="rounded-2xl border border-border/70 bg-muted/20 p-3 sm:p-4">
+        <div className="w-full 2xl:w-72 2xl:flex-none">
+          <div className="rounded-2xl border border-border/70 bg-muted/20 p-3 sm:sticky sm:top-4 sm:p-4">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
               Hızlı işlemler
             </p>

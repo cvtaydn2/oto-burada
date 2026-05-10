@@ -1,5 +1,6 @@
 import { ShieldCheck, Zap } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { getPublicPricingPlans } from "@/features/admin-moderation/services/plans";
 import { requireUser } from "@/features/auth/lib/session";
@@ -78,18 +79,18 @@ export default async function PricingPage() {
               oluşturabilir veya moderasyondaki ilanlarını takip edebilirsin.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a
+              <Link
                 href="/dashboard/listings?create=true"
                 className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Yeni ilan oluştur
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/dashboard/listings"
                 className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
               >
                 İlan durumunu kontrol et
-              </a>
+              </Link>
             </div>
           </div>
         ) : (

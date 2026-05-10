@@ -53,7 +53,7 @@ export const AdminTicketListHeader = React.memo(function AdminTicketListHeader({
             </h4>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <SummaryPill icon={LifeBuoy} label="Toplam" value={totalCount} tone="default" />
             <SummaryPill icon={Clock3} label="Açık" value={openCount} tone="warning" />
             <SummaryPill icon={ShieldCheck} label="Çözüldü" value={resolvedCount} tone="success" />
@@ -85,7 +85,7 @@ export const AdminTicketListHeader = React.memo(function AdminTicketListHeader({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap">
         <FilterChip
           active={filter === "all"}
           onClick={() => onFilterChange("all")}

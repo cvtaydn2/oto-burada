@@ -1,952 +1,1475 @@
-<write_file path="src/features/profile/lib/profile-form-schema.ts">
+<write_file path="src/features/marketplace/services/query-normalizers.ts">
 import { z } from "zod";
 
-export const profileFormSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .min(3, "Ad soyad en az 3 karakter olmalıdır.")
-    .max(120, "Ad soyad en fazla 120 karakter olabilir."),
-  phone: z
-    .string()
-    .trim()
-    .min(10, "Telefon en az 10 karakter olmalıdır.")
-    .max(20, "Telefon en fazla 20 karakter olabilir."),
-  city: z
-    .string()
-    .trim()
-    .min(2, "Şehir seçiniz.")
-    .max(80, "Şehir en fazla 80 karakter olabilir."),
-  avatarUrl: z
-    .union([
-      z.literal(""),
-      z.string().trim().url("Geçerli bir URL giriniz.").max(500, "Avatar URL çok uzun."),
-    ])
-    .default(""),
-});
+const uuidSchema = z.string().uuid();
 
-export type ProfileFormValues = z.infer<typeof profileFormSchema>;
-
-function normalizeString(value: unknown): string {
-  if (typeof value !== "string") {
-    return "";
+function getFirstValue(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    return value[0];
   }
 
-  return value.trim();
+  return value;
 }
 
-export function sanitizeProfileFormValues(
-  input: Partial<Record<keyof ProfileFormValues, unknown>> | null | undefined
-): ProfileFormValues {
+export function parseCompareIdsParam(idsParam: string | string[] | undefined): string[] {
+  if (!idsParam) return [];
+
+  const raw = Array.isArray(idsParam) ? idsParam.join(",") : idsParam;
+
+  const parsed = raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => uuidSchema.safeParse(value))
+    .filter((result): result is z.SafeParseSuccess<string> => result.success)
+    .map((result) => result.data);
+
+  return Array.from(new Set(parsed)).slice(0, 4);
+}
+
+export function parsePositiveIntParam(
+  value: string | string[] | undefined,
+  fallback: number
+): number {
+  const raw = getFirstValue(value);
+  const parsed = Number(raw);
+
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+export function parseBoundedIntParam(
+  value: string | string[] | undefined,
+  fallback: number,
+  max: number
+): number {
+  return Math.min(parsePositiveIntParam(value, fallback), max);
+}
+
+export function parseOptionalNumberParam(
+  value: string | string[] | undefined
+): number | undefined {
+  const raw = getFirstValue(value);
+
+  if (!raw) return undefined;
+
+  const parsed = Number(raw);
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export function parseOptionalStringParam(
+  value: string | string[] | undefined
+): string | undefined {
+  const raw = getFirstValue(value)?.trim();
+
+  return raw ? raw : undefined;
+}
+
+export function parseBooleanFlagParam(value: string | string[] | undefined): boolean {
+  const raw = getFirstValue(value);
+
+  if (raw === undefined) return false;
+
+  const normalized = raw.trim().toLowerCase();
+
+  return normalized !== "false" && normalized !== "0" && normalized !== "off";
+}
+</write_file>
+
+<write_file path="src/features/marketplace/services/filter-route-resolvers.ts">
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
+
+import {
+  parseBooleanFlagParam,
+  parseOptionalNumberParam,
+  parseOptionalStringParam,
+} from "@/features/marketplace/services/query-normalizers";
+
+function resolveBrandSlugToName(
+  brands: BrandCatalogItem[],
+  slug: string | undefined
+): string | undefined {
+  if (!slug) return undefined;
+
+  const match = brands.find((brand) => brand.slug.toLowerCase() === slug.toLowerCase());
+  return match?.brand;
+}
+
+function resolveCitySlugToName(cities: CityOption[], slug: string | undefined): string | undefined {
+  if (!slug) return undefined;
+
+  const match = cities.find((city) => city.slug.toLowerCase() === slug.toLowerCase());
+  return match?.city;
+}
+
+export function buildMarketplaceInitialFiltersFromRoute(params: {
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+  searchParams?: Record<string, string | string[] | undefined>;
+}): ListingFilters {
+  const { brands, cities, searchParams } = params;
+
+  const brand = resolveBrandSlugToName(
+    brands,
+    parseOptionalStringParam(searchParams?.brand)
+  );
+  const city = resolveCitySlugToName(cities, parseOptionalStringParam(searchParams?.city));
+  const query = parseOptionalStringParam(searchParams?.query);
+  const model = parseOptionalStringParam(searchParams?.model);
+  const minPrice = parseOptionalNumberParam(searchParams?.minPrice);
+  const maxPrice = parseOptionalNumberParam(searchParams?.maxPrice);
+  const minYear = parseOptionalNumberParam(searchParams?.minYear);
+  const maxYear = parseOptionalNumberParam(searchParams?.maxYear);
+  const fuelType = parseOptionalStringParam(searchParams?.fuelType);
+  const transmission = parseOptionalStringParam(searchParams?.transmission);
+  const hasExpertReport = parseBooleanFlagParam(searchParams?.hasExpertReport);
+
   return {
-    fullName: normalizeString(input?.fullName),
-    phone: normalizeString(input?.phone),
-    city: normalizeString(input?.city),
-    avatarUrl: normalizeString(input?.avatarUrl),
+    sort: "newest",
+    page: 1,
+    limit: 12,
+    ...(brand ? { brand } : {}),
+    ...(city ? { city } : {}),
+    ...(query ? { query } : {}),
+    ...(model ? { model } : {}),
+    ...(minPrice !== undefined ? { minPrice } : {}),
+    ...(maxPrice !== undefined ? { maxPrice } : {}),
+    ...(minYear !== undefined ? { minYear } : {}),
+    ...(maxYear !== undefined ? { maxYear } : {}),
+    ...(fuelType ? { fuelType } : {}),
+    ...(transmission ? { transmission } : {}),
+    ...(hasExpertReport ? { hasExpertReport: true } : {}),
   };
 }
 </write_file>
 
-<write_file path="src/features/profile/lib/profile-validators.ts">
-import { z } from "zod";
+<write_file path="src/features/marketplace/services/dashboard-listing-route-state.ts">
+import type { BrandCatalogItem } from "@/types";
 
 import {
-  profileFormSchema,
-  sanitizeProfileFormValues,
-  type ProfileFormValues,
-} from "@/features/profile/lib/profile-form-schema";
+  parseBoundedIntParam,
+  parseOptionalStringParam,
+} from "@/features/marketplace/services/query-normalizers";
 
-export const profileUpdateInputSchema = profileFormSchema;
+interface DashboardListingsRouteSearchParams {
+  create?: string;
+  created?: string;
+  edit?: string;
+  updated?: string;
+  page?: string;
+  pageSize?: string;
+}
 
-export const profileActionResultSchema = z.discriminatedUnion("status", [
-  z.object({
-    status: z.literal("success"),
-    message: z.string(),
-  }),
-  z.object({
-    status: z.literal("error"),
-    message: z.string(),
-    fieldErrors: z
-      .object({
-        fullName: z.array(z.string()).optional(),
-        phone: z.array(z.string()).optional(),
-        city: z.array(z.string()).optional(),
-        avatarUrl: z.array(z.string()).optional(),
-      })
-      .default({}),
-    values: z.object({
-      fullName: z.string(),
-      phone: z.string(),
-      city: z.string(),
-      avatarUrl: z.string(),
-    }),
-  }),
-]);
+interface MergeListingFormBrandsParams {
+  brands: BrandCatalogItem[];
+  selectedBrand?: string | null;
+  selectedModel?: string | null;
+}
 
-export type ProfileUpdateInput = z.infer<typeof profileUpdateInputSchema>;
-export type ProfileActionResult = z.infer<typeof profileActionResultSchema>;
+export function parseDashboardListingsRouteState(
+  searchParams?: DashboardListingsRouteSearchParams
+) {
+  const create = searchParams?.create === "true";
+  const created = searchParams?.created === "pending";
+  const updated = searchParams?.updated === "true";
+  const editId = parseOptionalStringParam(searchParams?.edit) ?? null;
+  const page = parseBoundedIntParam(searchParams?.page, 1, Number.MAX_SAFE_INTEGER);
+  const pageSize = parseBoundedIntParam(searchParams?.pageSize, 10, 100);
 
-export function normalizeProfileActionValues(rawInput: unknown): ProfileFormValues {
-  if (typeof rawInput !== "object" || rawInput === null) {
-    return sanitizeProfileFormValues(undefined);
+  return {
+    create,
+    created,
+    updated,
+    editId,
+    page,
+    pageSize,
+  };
+}
+
+export function mergeListingFormBrands({
+  brands,
+  selectedBrand,
+  selectedModel,
+}: MergeListingFormBrandsParams): BrandCatalogItem[] {
+  if (!selectedBrand) {
+    return brands;
   }
 
-  return sanitizeProfileFormValues(
-    rawInput as Partial<Record<keyof ProfileFormValues, unknown>>
-  );
+  const hasBrand = brands.some((item) => item.brand === selectedBrand);
+
+  if (hasBrand) {
+    return brands;
+  }
+
+  return [
+    ...brands,
+    {
+      brand: selectedBrand,
+      slug: selectedBrand.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+      name: selectedBrand,
+      models: selectedModel ? [{ name: selectedModel, trims: [] }] : [],
+    },
+  ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"));
 }
 </write_file>
 
-<write_file path="src/features/profile/services/profile-records.ts">
-import "server-only";
-
-import type { User } from "@supabase/supabase-js";
-
-import type { ProfileUpdateInput } from "@/features/profile/lib/profile-validators";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Profile } from "@/types";
-
-export interface ProfileRow {
-  id: string;
-  full_name: string | null;
-  phone: string | null;
-  city: string | null;
-  avatar_url: string | null;
-  email_verified: boolean | null;
-  is_verified: boolean | null;
-  verification_status: "pending" | "approved" | "rejected" | null;
-}
-
-function normalizeVerificationStatus(
-  value: ProfileRow["verification_status"]
-): "pending" | "approved" | "rejected" | "unverified" {
-  if (value === "pending" || value === "approved" || value === "rejected") {
-    return value;
-  }
-
-  return "unverified";
-}
-
-export async function getProfileRowByUserId(userId: string): Promise<ProfileRow | null> {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select(
-      "id, full_name, phone, city, avatar_url, email_verified, is_verified, verification_status"
-    )
-    .eq("id", userId)
-    .maybeSingle<ProfileRow>();
-
-  if (error) {
-    throw new Error(`Failed to load profile: ${error.message}`);
-  }
-
-  return data;
-}
-
-export async function updateProfileRecord(params: {
-  userId: string;
-  input: ProfileUpdateInput;
-}): Promise<void> {
-  const supabase = await createServerSupabaseClient();
-
-  const { error } = await supabase.from("profiles").upsert(
-    {
-      id: params.userId,
-      full_name: params.input.fullName,
-      phone: params.input.phone,
-      city: params.input.city,
-      avatar_url: params.input.avatarUrl || null,
-    },
-    {
-      onConflict: "id",
+<write_file path="src/features/offers/services/offers/offer-normalizers.ts">
+type RawOfferListing =
+  | null
+  | {
+      id?: string | null;
+      slug?: string | null;
+      title?: string | null;
+      price?: number | null;
     }
-  );
+  | Array<{
+      id?: string | null;
+      slug?: string | null;
+      title?: string | null;
+      price?: number | null;
+    }>;
 
-  if (error) {
-    throw new Error(`Failed to update profile: ${error.message}`);
-  }
+type RawOfferStatus = "pending" | "accepted" | "rejected" | "counter_offer" | "cancelled";
+
+type RawOffer = {
+  id: string;
+  listing_id: string;
+  offered_price: number;
+  message: string | null;
+  status: string;
+  counter_price: number | null;
+  counter_message: string | null;
+  listing?: RawOfferListing;
+};
+
+export interface OfferListItem {
+  id: string;
+  listingId: string;
+  offeredPrice: number;
+  message: string | null;
+  status: RawOfferStatus;
+  counterPrice: number | null;
+  counterMessage: string | null;
+  listing: {
+    id: string;
+    slug: string | null;
+    title: string;
+    price: number | null;
+  } | null;
 }
 
-export async function getStoredProfileById(userId: string): Promise<Profile | null> {
-  const row = await getProfileRowByUserId(userId);
+function normalizeOfferStatus(status: string): RawOfferStatus {
+  if (
+    status === "pending" ||
+    status === "accepted" ||
+    status === "rejected" ||
+    status === "counter_offer" ||
+    status === "cancelled"
+  ) {
+    return status;
+  }
 
-  if (!row) {
+  return "pending";
+}
+
+function normalizeSingleListing(input: RawOfferListing | undefined): OfferListItem["listing"] {
+  const candidate = Array.isArray(input) ? input[0] ?? null : input ?? null;
+
+  if (!candidate?.id) {
     return null;
   }
 
   return {
-    id: row.id,
-    fullName: row.full_name ?? "",
-    phone: row.phone ?? "",
-    city: row.city ?? "",
-    avatarUrl: row.avatar_url ?? "",
-    emailVerified: Boolean(row.email_verified),
-    isVerified: Boolean(row.is_verified),
-    verificationStatus: normalizeVerificationStatus(row.verification_status),
-  } as Profile;
+    id: candidate.id,
+    slug: candidate.slug ?? null,
+    title: candidate.title ?? "İlan",
+    price: typeof candidate.price === "number" ? candidate.price : null,
+  };
 }
 
-export function buildProfileFromAuthUser(user: User): Profile {
+export function normalizeOffer(raw: RawOffer): OfferListItem {
   return {
-    id: user.id,
-    fullName: typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "",
-    phone: typeof user.user_metadata?.phone === "string" ? user.user_metadata.phone : "",
-    city: typeof user.user_metadata?.city === "string" ? user.user_metadata.city : "",
-    avatarUrl:
-      typeof user.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : "",
-    emailVerified: Boolean(user.email_confirmed_at),
-    isVerified: false,
-    verificationStatus: "unverified",
-  } as Profile;
-}
-</write_file>
-
-<write_file path="src/features/profile/services/profile-logic.ts">
-import "server-only";
-
-import type { User } from "@supabase/supabase-js";
-
-import { requireUser } from "@/features/auth/lib/session";
-import type { ProfileFormValues } from "@/features/profile/lib/profile-form-schema";
-import { sanitizeProfileFormValues } from "@/features/profile/lib/profile-form-schema";
-import {
-  getProfileRowByUserId,
-  type ProfileRow,
-} from "@/features/profile/services/profile-records";
-import {
-  getLiveMarketplaceReferenceData,
-  mergeCityOptions,
-} from "@/features/shared/services/live-reference-data";
-
-export interface DashboardProfileViewModel {
-  profile: {
-    id: string;
-    email: string;
-    emailVerified: boolean;
-    isVerified: boolean;
-    verificationStatus: "pending" | "approved" | "rejected" | "unverified";
-    fullName: string;
-    phone: string;
-    city: string;
-    avatarUrl: string;
-  };
-  formDefaults: ProfileFormValues;
-  cityOptions: string[];
-  completion: number;
-}
-
-function normalizeVerificationStatus(
-  value: string | null | undefined
-): "pending" | "approved" | "rejected" | "unverified" {
-  if (value === "pending" || value === "approved" || value === "rejected") {
-    return value;
-  }
-
-  return "unverified";
-}
-
-export function toArray<T>(value: T | T[] | null | undefined): T[] {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-  if (value == null) {
-    return [];
-  }
-
-  return [value];
-}
-
-export function buildDashboardProfileViewModel(params: {
-  authUser: User;
-  profileRow: ProfileRow | null;
-  cityOptions: string[];
-}): DashboardProfileViewModel {
-  const { authUser, profileRow, cityOptions } = params;
-
-  const formDefaults = sanitizeProfileFormValues({
-    fullName: profileRow?.full_name,
-    phone: profileRow?.phone,
-    city: profileRow?.city,
-    avatarUrl: profileRow?.avatar_url,
-  });
-
-  const completion = Math.round(
-    ([formDefaults.fullName, formDefaults.phone, formDefaults.city].filter((value) => value.length > 0)
-      .length /
-      3) *
-      100
-  );
-
-  return {
-    profile: {
-      id: authUser.id,
-      email: authUser.email ?? "",
-      emailVerified: Boolean(profileRow?.email_verified ?? authUser.email_confirmed_at),
-      isVerified: Boolean(profileRow?.is_verified),
-      verificationStatus: normalizeVerificationStatus(profileRow?.verification_status),
-      fullName: formDefaults.fullName,
-      phone: formDefaults.phone,
-      city: formDefaults.city,
-      avatarUrl: formDefaults.avatarUrl,
-    },
-    formDefaults,
-    cityOptions,
-    completion,
+    id: raw.id,
+    listingId: raw.listing_id,
+    offeredPrice: raw.offered_price,
+    message: raw.message ?? null,
+    status: normalizeOfferStatus(raw.status),
+    counterPrice: raw.counter_price ?? null,
+    counterMessage: raw.counter_message ?? null,
+    listing: normalizeSingleListing(raw.listing),
   };
 }
 
-export async function getDashboardProfilePageData(): Promise<DashboardProfileViewModel> {
-  const user = await requireUser();
-
-  const [profileRow, references] = await Promise.all([
-    getProfileRowByUserId(user.id),
-    getLiveMarketplaceReferenceData(),
-  ]);
-
-  const mergedCities = mergeCityOptions(references.cities, [profileRow?.city ?? ""]);
-  const cityOptions = mergedCities.map((item) => item.city);
-
-  return buildDashboardProfileViewModel({
-    authUser: user,
-    profileRow,
-    cityOptions,
-  });
+export function normalizeOfferList(rawOffers: RawOffer[]): OfferListItem[] {
+  return rawOffers.map(normalizeOffer);
 }
 </write_file>
 
-<write_file path="src/features/profile/lib/profile-actions.ts">
-"use server";
+<write_file path="src/app/(public)/(marketplace)/compare/page.tsx">
+import { BarChart3, ChevronLeft, SearchX } from "lucide-react";
+import Link from "next/link";
 
-import { revalidatePath } from "next/cache";
+import { ListingCard } from "@/components/shared/listing-card";
+import { CompareRemoveButton } from "@/features/marketplace/components/compare-remove-button";
+import { CompareShareButton } from "@/features/marketplace/components/compare-share-button";
+import { parseCompareIdsParam } from "@/features/marketplace/services/query-normalizers";
+import { getMarketplaceListingsByIds } from "@/features/marketplace/services/marketplace-listings";
+import { formatNumber, formatPrice } from "@/lib/utils/format";
+import type { Listing } from "@/types";
 
-import { requireUser } from "@/features/auth/lib/session";
-import type { ProfileFormValues } from "@/features/profile/lib/profile-form-schema";
-import {
-  normalizeProfileActionValues,
-  profileActionResultSchema,
-  profileUpdateInputSchema,
-  type ProfileActionResult,
-} from "@/features/profile/lib/profile-validators";
-import { updateProfileRecord } from "@/features/profile/services/profile-records";
+export const dynamic = "force-dynamic";
 
-export async function updateProfileAction(rawInput: unknown): Promise<ProfileActionResult> {
-  const user = await requireUser();
-  const values = normalizeProfileActionValues(rawInput);
-
-  const parsed = profileUpdateInputSchema.safeParse(values);
-
-  if (!parsed.success) {
-    return profileActionResultSchema.parse({
-      status: "error",
-      message: "Profil bilgileri doğrulanamadı.",
-      fieldErrors: parsed.error.flatten().fieldErrors,
-      values,
-    });
-  }
-
-  await updateProfileRecord({
-    userId: user.id,
-    input: parsed.data,
-  });
-
-  revalidatePath("/dashboard/profile");
-
-  return profileActionResultSchema.parse({
-    status: "success",
-    message: "Profil başarıyla güncellendi.",
-  });
+interface ComparePageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export async function updateProfileActionFromFormData(
-  formData: FormData
-): Promise<ProfileActionResult> {
-  const values: Partial<Record<keyof ProfileFormValues, unknown>> = {
-    fullName: formData.get("fullName"),
-    phone: formData.get("phone"),
-    city: formData.get("city"),
-    avatarUrl: formData.get("avatarUrl"),
-  };
+export default async function ComparePage({ searchParams }: ComparePageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const ids = parseCompareIdsParam(resolvedSearchParams?.ids);
+  const listings = ids.length > 0 ? await getMarketplaceListingsByIds(ids) : [];
 
-  return updateProfileAction(values);
-}
-</write_file>
+  const listingsById = new Map(listings.map((listing) => [listing.id, listing]));
+  const orderedListings = ids
+    .map((id) => listingsById.get(id))
+    .filter((listing): listing is Listing => listing !== undefined);
 
-<write_file path="src/features/profile/components/profile-form-card.tsx">
-"use client";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Camera, CheckCircle2, Mail, MapPin, UserRound } from "lucide-react";
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { updateProfileAction } from "@/features/profile/lib/profile-actions";
-import {
-  profileFormSchema,
-  type ProfileFormValues,
-} from "@/features/profile/lib/profile-form-schema";
-
-interface ProfileFormCardProps {
-  defaultValues: ProfileFormValues;
-  cityOptions: string[];
-  isEmailVerified: boolean;
-}
-
-export function ProfileFormCard({
-  defaultValues,
-  cityOptions,
-  isEmailVerified,
-}: ProfileFormCardProps) {
-  const [isPending, startTransition] = useTransition();
-  const [serverMessage, setServerMessage] = useState<{
-    status: "success" | "error";
-    text: string;
-  } | null>(null);
-
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues,
-    mode: "onBlur",
-  });
-
-  const watchedFullName = form.watch("fullName");
-  const watchedCity = form.watch("city");
-  const watchedAvatarUrl = form.watch("avatarUrl");
-
-  function setFieldErrors(fieldErrors: Partial<Record<keyof ProfileFormValues, string[]>>) {
-    if (fieldErrors.fullName?.[0]) {
-      form.setError("fullName", { message: fieldErrors.fullName[0] });
-    }
-
-    if (fieldErrors.phone?.[0]) {
-      form.setError("phone", { message: fieldErrors.phone[0] });
-    }
-
-    if (fieldErrors.city?.[0]) {
-      form.setError("city", { message: fieldErrors.city[0] });
-    }
-
-    if (fieldErrors.avatarUrl?.[0]) {
-      form.setError("avatarUrl", { message: fieldErrors.avatarUrl[0] });
-    }
-  }
-
-  function onSubmit(values: ProfileFormValues) {
-    setServerMessage(null);
-
-    startTransition(() => {
-      void (async () => {
-        const result = await updateProfileAction(values);
-
-        if (result.status === "error") {
-          setFieldErrors(result.fieldErrors);
-          setServerMessage({ status: "error", text: result.message });
-          return;
-        }
-
-        form.reset(values);
-        setServerMessage({ status: "success", text: result.message });
-      })();
-    });
-  }
+  const hasEnoughListingsToCompare = orderedListings.length > 1;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-white">
-          <UserRound size={18} />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-foreground">Kimlik Bilgileri</h3>
-          <p className="text-xs font-medium text-muted-foreground">
-            Bireysel bilgileriniz ilanlarınızda görünür.
+    <div className="mx-auto max-w-[1280px] space-y-8 px-5 py-8 lg:px-6 lg:py-10">
+      <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+        <div className="max-w-2xl">
+          <div className="mb-4 flex items-center gap-3">
+            <Link
+              href="/listings"
+              aria-label="İlanlara dön"
+              className="flex size-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-transform hover:bg-muted/30"
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Link>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Araç Karşılaştırma
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold leading-tight text-foreground md:text-4xl">
+            Araç karşılaştır
+          </h1>
+          <p className="mt-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
+            Fiyat, kilometre ve teknik özellikleri yan yana görerek daha hızlı karar ver.
           </p>
         </div>
+        {hasEnoughListingsToCompare && (
+          <CompareShareButton ids={orderedListings.map((item) => item.id)} />
+        )}
       </div>
 
-      <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <UserRound className="size-4 text-primary" />
-              Tam Ad
+      {orderedListings.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+            <SearchX className="size-7" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Karşılaştırılacak ilan bulunamadı</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+            Karşılaştırma için en az iki ilan seçin. Listeleme sayfasından beğendiğiniz araçları
+            ekleyip tekrar deneyebilirsiniz.
+          </p>
+          <Link
+            href="/listings"
+            className="mt-6 inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+          >
+            İlanlara Git
+          </Link>
+        </div>
+      ) : (
+        <>
+          {!hasEnoughListingsToCompare && (
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-5 py-4 text-sm font-medium text-blue-800">
+              Teknik karşılaştırma tablosunu gösterebilmek için en az iki ilan gerekir. Aşağıdaki
+              ilana ek olarak bir araç daha seçerek tam karşılaştırmayı açabilirsiniz.
             </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {watchedFullName || "Henüz eklenmedi"}
-            </p>
+          )}
+
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {orderedListings.map((listing) => {
+              const otherIds = orderedListings
+                .filter((item) => item.id !== listing.id)
+                .map((item) => item.id)
+                .join(",");
+
+              return (
+                <div key={listing.id} className="relative">
+                  <CompareRemoveButton otherIds={otherIds} />
+                  <ListingCard listing={listing} showInsights={false} />
+                </div>
+              );
+            })}
           </div>
 
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Mail className="size-4 text-primary" />
-                E-posta
+          {hasEnoughListingsToCompare && (
+            <section className="rounded-2xl border border-border bg-card p-5 sm:p-7">
+              <div className="mb-4 flex items-center gap-2">
+                <BarChart3 className="size-5 text-primary" />
+                <h2 className="text-lg font-bold text-foreground">Hızlı teknik karşılaştırma</h2>
               </div>
-              {isEmailVerified ? (
-                <CheckCircle2 className="size-4 text-emerald-500" />
-              ) : (
-                <AlertCircle className="size-4 text-amber-500" />
-              )}
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {isEmailVerified ? "Doğrulandı" : "Doğrulanmadı"}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <MapPin className="size-4 text-primary" />
-              Şehir
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {watchedCity || "Henüz eklenmedi"}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary">
-              <Camera className="size-3" />
-              Avatar
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {watchedAvatarUrl ? "URL hazır" : "Opsiyonel"}
-            </p>
-          </div>
-        </div>
-
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-          <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <UserRound className="size-5" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Temel Profil Bilgileri
-              </h3>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Güven için ad, telefon ve şehir alanlarını eksiksiz doldurun. Bu bilgiler ilan
-                akışlarında destekleyici sinyal olarak kullanılır.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="fullName">Ad Soyad</Label>
-              <Input
-                id="fullName"
-                {...form.register("fullName")}
-                aria-invalid={!!form.formState.errors.fullName}
-                className="h-12 rounded-xl"
-              />
-              {form.formState.errors.fullName && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.fullName.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefon</Label>
-              <Input
-                id="phone"
-                type="tel"
-                {...form.register("phone")}
-                aria-invalid={!!form.formState.errors.phone}
-                className="h-12 rounded-xl"
-              />
-              {form.formState.errors.phone && (
-                <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="city">Şehir</Label>
-              <select
-                id="city"
-                {...form.register("city")}
-                aria-invalid={!!form.formState.errors.city}
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary aria-invalid:border-destructive"
-              >
-                <option value="">Şehir seç</option>
-                {cityOptions.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-              {form.formState.errors.city && (
-                <p className="text-sm text-destructive">{form.formState.errors.city.message}</p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-          <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <Camera className="size-5" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Avatar ve Son Kayıt
-              </h3>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Avatar alanı opsiyoneldir. Şu an URL ile çalışır; dilersen boş bırakabilirsin.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-2">
-            <Label htmlFor="avatarUrl">Avatar URL (opsiyonel)</Label>
-            <Input
-              id="avatarUrl"
-              {...form.register("avatarUrl")}
-              aria-invalid={!!form.formState.errors.avatarUrl}
-              className="h-12 rounded-xl"
-            />
-            {form.formState.errors.avatarUrl && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.avatarUrl.message}
-              </p>
-            )}
-          </div>
-        </section>
-
-        {!isEmailVerified && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-sm text-amber-900">
-            E-posta adresiniz henüz doğrulanmamış görünüyor. İlan yayın akışında sorun yaşamamak
-            için gelen kutunuzdaki doğrulama bağlantısını kontrol edin.
-          </div>
-        )}
-
-        {serverMessage && (
-          <div
-            className={
-              serverMessage.status === "success"
-                ? "rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm text-emerald-900"
-                : "rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-            }
-          >
-            {serverMessage.text}
-          </div>
-        )}
-
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="h-11 rounded-xl px-5"
-          >
-            {isPending ? "Kaydediliyor..." : "Profili Kaydet"}
-          </Button>
-        </div>
-      </form>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left">
+                  <thead>
+                    <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+                      <th className="px-3 py-3 font-semibold">Kriter</th>
+                      {orderedListings.map((listing) => (
+                        <th key={listing.id} className="px-3 py-3 font-semibold">
+                          {listing.brand} {listing.model}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm">
+                    <tr className="border-b border-border/70">
+                      <th className="px-3 py-3 font-semibold text-foreground">Fiyat</th>
+                      {orderedListings.map((listing) => (
+                        <td key={listing.id} className="px-3 py-3 font-medium">
+                          {formatPrice(listing.price)} TL
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b border-border/70">
+                      <th className="px-3 py-3 font-semibold text-foreground">Yıl</th>
+                      {orderedListings.map((listing) => (
+                        <td key={listing.id} className="px-3 py-3">
+                          {listing.year}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b border-border/70">
+                      <th className="px-3 py-3 font-semibold text-foreground">Kilometre</th>
+                      {orderedListings.map((listing) => (
+                        <td key={listing.id} className="px-3 py-3">
+                          {formatNumber(listing.mileage)} km
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b border-border/70">
+                      <th className="px-3 py-3 font-semibold text-foreground">Yakıt</th>
+                      {orderedListings.map((listing) => (
+                        <td key={listing.id} className="px-3 py-3">
+                          {listing.fuelType}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <th className="px-3 py-3 font-semibold text-foreground">Şanzıman</th>
+                      {orderedListings.map((listing) => (
+                        <td key={listing.id} className="px-3 py-3">
+                          {listing.transmission}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+        </>
+      )}
     </div>
   );
 }
 </write_file>
 
-<write_file path="src/components/forms/profile-form.tsx">
-"use client";
+<write_file path="src/app/(public)/(marketplace)/listings/filter/page.tsx">
+import type { Metadata } from "next";
 
-import { ProfileFormCard } from "@/features/profile/components/profile-form-card";
-import type { ProfileFormValues } from "@/features/profile/lib/profile-form-schema";
+import { AdvancedFilterPage } from "@/features/marketplace/components/advanced-filter-page";
+import { buildMarketplaceInitialFiltersFromRoute } from "@/features/marketplace/services/filter-route-resolvers";
+import { getFilteredMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 
-interface ProfileFormProps {
-  action?: (
-    state: unknown,
-    formData: FormData
-  ) => Promise<unknown>;
-  initialValues: {
-    fullName: string;
-    phone: string;
-    city: string;
-    avatarUrl: string;
-  };
-  cityOptions: string[];
-  isEmailVerified?: boolean;
+export const metadata: Metadata = {
+  title: "Gelişmiş Filtreleme | OtoBurada",
+  description: "Detaylı kriterlerle hayalinizdeki aracı bulun.",
+};
+
+interface FilterPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export function ProfileForm({
-  initialValues,
-  cityOptions,
-  isEmailVerified = false,
-}: ProfileFormProps) {
-  const defaultValues: ProfileFormValues = {
-    fullName: initialValues.fullName,
-    phone: initialValues.phone,
-    city: initialValues.city,
-    avatarUrl: initialValues.avatarUrl,
-  };
+export default async function ListingsFilterPage({ searchParams }: FilterPageProps) {
+  const resolvedParams = searchParams ? await searchParams : undefined;
+
+  const [references, result] = await Promise.all([
+    getLiveMarketplaceReferenceData(),
+    getFilteredMarketplaceListings({ sort: "newest", page: 1, limit: 1 }),
+  ]);
+
+  const initialFilters = buildMarketplaceInitialFiltersFromRoute({
+    brands: references.brands,
+    cities: references.cities,
+    searchParams: resolvedParams,
+  });
 
   return (
-    <ProfileFormCard
-      defaultValues={defaultValues}
-      cityOptions={cityOptions}
-      isEmailVerified={isEmailVerified}
+    <AdvancedFilterPage
+      brands={references.brands}
+      cities={references.cities}
+      initialFilters={initialFilters}
+      totalCount={result.total}
     />
   );
 }
 </write_file>
 
-<write_file path="src/components/forms/identity-verification-form.tsx">
-"use client";
+<write_file path="src/app/dashboard/listings/page.tsx">
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
-import { Mail, ShieldCheck } from "lucide-react";
+import { ListingCreateForm } from "@/components/forms/listing-create-form";
+import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
+import { requireUser } from "@/features/auth/lib/session";
+import { MyListingsPanel } from "@/features/marketplace/components/my-listings-panel";
+import {
+  mergeListingFormBrands,
+  parseDashboardListingsRouteState,
+} from "@/features/marketplace/services/dashboard-listing-route-state";
+import { getDashboardListingsPageData } from "@/features/marketplace/services/dashboard-listings-actions";
+import { getStoredProfileById } from "@/features/profile/services/profile-records";
+import { mergeCityOptions } from "@/features/shared/services/live-reference-data";
+import { cn } from "@/lib/utils";
 
-interface IdentityVerificationFormProps {
-  isVerified: boolean;
+export const dynamic = "force-dynamic";
+
+interface DashboardListingsPageProps {
+  searchParams?: Promise<{
+    create?: string;
+    created?: string;
+    edit?: string;
+    updated?: string;
+    page?: string;
+    pageSize?: string;
+  }>;
 }
 
-export function IdentityVerificationForm({ isVerified }: IdentityVerificationFormProps) {
-  if (isVerified) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/30 p-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm shadow-emerald-100">
-          <ShieldCheck size={20} />
-        </div>
-        <div>
-          <h4 className="text-sm font-bold text-emerald-900">Kimliğiniz Doğrulandı</h4>
-          <p className="text-xs text-emerald-700/80">Güvenli profil rozetine sahipsiniz.</p>
-        </div>
-        <ShieldCheck className="ml-auto text-emerald-500" size={20} />
-      </div>
-    );
-  }
+export default async function DashboardListingsPage({ searchParams }: DashboardListingsPageProps) {
+  const user = await requireUser();
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
+  const routeState = parseDashboardListingsRouteState(resolvedSearchParams);
+
+  const [data, sellerProfile] = await Promise.all([
+    getDashboardListingsPageData({
+      userId: user.id,
+      page: routeState.page,
+      pageSize: routeState.pageSize,
+      editId: routeState.editId,
+    }),
+    getStoredProfileById(user.id),
+  ]);
+
+  const selectedListing = data.editing.status === "loaded" ? data.editing.listing : null;
+  const mergedBrands = mergeListingFormBrands({
+    brands: data.references.brands,
+    selectedBrand: selectedListing?.brand,
+    selectedModel: selectedListing?.model,
+  });
+  const mergedCities = mergeCityOptions(data.references.cities, [
+    data.profile?.city ?? "",
+    selectedListing?.city ?? "",
+  ]);
+  const isEmailVerified = data.profile?.emailVerified ?? false;
+  const approvedCountOnPage = data.listingsPage.items.filter(
+    (listing) => listing.status === "approved"
+  ).length;
+  const isEditingExisting = data.editing.status === "loaded";
 
   return (
-    <div className="flex items-start gap-4 rounded-xl border border-border bg-muted/30 p-5">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
-        <Mail size={20} />
+    <div className="space-y-8">
+      <AccountTrustNotice seller={sellerProfile ?? null} />
+
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">İlanlarım</h2>
+          <p className="mt-1 text-sm font-medium italic text-muted-foreground">
+            Toplam {data.listingsPage.totalCount} ilanın var. Bu sayfadaki{" "}
+            {data.listingsPage.items.length} ilandan {approvedCountOnPage} tanesi yayında.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-xl border px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
+              isEmailVerified
+                ? "border-emerald-100 bg-emerald-50/50 text-emerald-600"
+                : "border-amber-100 bg-amber-50/50 text-amber-600"
+            )}
+          >
+            <div
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                isEmailVerified ? "bg-emerald-500" : "bg-amber-500"
+              )}
+            />
+            {isEmailVerified ? "Doğrulanmış" : "Doğrulanmadı"}
+          </div>
+
+          <Link
+            href="/dashboard/listings?create=true"
+            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90"
+            aria-label="Yeni İlan Ver"
+          >
+            <Plus size={18} />
+            YENİ İLAN
+          </Link>
+        </div>
       </div>
-      <div>
-        <h4 className="text-sm font-bold text-foreground/90">E-posta Doğrulama</h4>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir. Kayıt sırasında
-          gönderilen doğrulama bağlantısını kontrol edin.
-        </p>
-      </div>
+
+      {data.editing.status === "not_found" && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/50 p-4 text-xs font-semibold text-amber-700">
+          Düzenlemek istediğin ilan bulunamadı.
+        </div>
+      )}
+
+      {data.editing.status === "forbidden" && (
+        <div className="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/50 p-4 text-xs font-semibold text-red-700">
+          Bu ilanı düzenleme yetkin yok.
+        </div>
+      )}
+
+      {routeState.created && (
+        <div className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-xs font-semibold text-blue-700">
+          İlanın oluşturuldu. Şu anda moderasyon incelemesinde.
+        </div>
+      )}
+
+      {routeState.updated && (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-xs font-semibold text-emerald-700">
+          İlanın güncellendi.
+        </div>
+      )}
+
+      <MyListingsPanel
+        activeEditId={selectedListing?.id}
+        initialShowForm={routeState.create && !isEditingExisting}
+        listings={data.listingsPage.items}
+        currentPage={data.listingsPage.page}
+        pageSize={data.listingsPage.pageSize}
+        totalCount={data.listingsPage.totalCount}
+        userId={user.id}
+      >
+        <div className="mt-8 rounded-2xl border border-border bg-card p-8 shadow-sm">
+          <div className="mb-8 border-b border-border/50 pb-6">
+            <h3 className="text-xl font-bold text-foreground">
+              {isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}
+            </h3>
+            <p className="mt-1 text-xs font-medium text-muted-foreground">
+              Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.
+            </p>
+          </div>
+
+          <ListingCreateForm
+            key={selectedListing?.id ?? "create-listing"}
+            initialListing={selectedListing}
+            initialValues={{
+              city: data.profile?.city ?? "",
+              whatsappPhone: data.profile?.phone ?? "",
+            }}
+            brands={mergedBrands}
+            cities={mergedCities}
+            isEmailVerified={isEmailVerified}
+          />
+        </div>
+      </MyListingsPanel>
     </div>
   );
 }
 </write_file>
 
-<write_file path="src/app/dashboard/profile/page.tsx">
-import {
-  Building2,
-  CheckCircle2,
-  Clock3,
-  Mail,
-  Phone,
-  ShieldCheck,
-  User,
-} from "lucide-react";
-import Link from "next/link";
+<write_file path="src/app/dashboard/messages/page.tsx">
+"use client";
 
-import { IdentityVerificationForm } from "@/components/forms/identity-verification-form";
-import { ProfileFormCard } from "@/features/profile/components/profile-form-card";
-import { getDashboardProfilePageData } from "@/features/profile/services/profile-logic";
-import { trust } from "@/lib/ui-strings";
+import { ArrowLeft, MessageCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export const dynamic = "force-dynamic";
+import { useAuthUser } from "@/components/shared/auth-provider";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ChatList } from "@/features/chat/components/chat-list";
+import { ChatWindow } from "@/features/chat/components/chat-window";
+import { useCreateChat } from "@/hooks/use-chat-queries";
 
-interface VerificationItemProps {
-  label: string;
-  isVerified?: boolean;
-  isPending?: boolean;
-}
+import { useMediaQuery } from "@/hooks/use-media-query";
 
-function VerificationItem({
-  label,
-  isVerified = false,
-  isPending = false,
-}: VerificationItemProps) {
-  if (isPending) {
+export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const { userId, isReady: isAuthResolved, isAuthenticated } = useAuthUser();
+
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const createChatMutation = useCreateChat();
+  const hasHandledPrefillRef = useRef(false);
+  const [showSessionNotFound, setShowSessionNotFound] = useState(false);
+  const [prefillError, setPrefillError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isAuthResolved && !isAuthenticated) {
+      timer = setTimeout(() => {
+        setShowSessionNotFound(true);
+      }, 1000);
+    } else {
+      timer = setTimeout(() => {
+        setShowSessionNotFound(false);
+      }, 0);
+    }
+    return () => clearTimeout(timer);
+  }, [isAuthResolved, isAuthenticated]);
+
+  const handleChatSelect = useCallback((chatId: string) => {
+    setSelectedChatId(chatId);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setSelectedChatId(null);
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthResolved || !userId || hasHandledPrefillRef.current) {
+      return;
+    }
+
+    const listingId = searchParams.get("new");
+    const sellerId = searchParams.get("seller");
+
+    if (!listingId || !sellerId) {
+      hasHandledPrefillRef.current = true;
+      return;
+    }
+
+    hasHandledPrefillRef.current = true;
+    setPrefillError(null);
+
+    void createChatMutation
+      .mutateAsync({
+        listingId,
+        sellerId,
+        buyerId: userId,
+      })
+      .then((chat) => {
+        if (chat?.id) {
+          setSelectedChatId(chat.id);
+          return;
+        }
+
+        setPrefillError("Sohbet başlatılamadı. Lütfen birazdan tekrar deneyin.");
+      })
+      .catch(() => {
+        setPrefillError(
+          "Sohbet başlatılamadı. İlan sahibine WhatsApp ile ulaşabilir veya daha sonra tekrar deneyebilirsiniz."
+        );
+      });
+  }, [isAuthResolved, userId, searchParams, createChatMutation]);
+
+  const showChatList = !isMobile || !selectedChatId;
+  const showChatWindow = !isMobile || selectedChatId;
+
+  if (!isAuthResolved || (!isAuthenticated && !showSessionNotFound)) {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/60 p-3">
-        <span className="text-sm font-medium text-foreground/90">{label}</span>
-        <div className="flex items-center gap-2 text-amber-700">
-          <Clock3 size={14} />
-          <span className="text-xs font-bold uppercase tracking-wide">Yakında</span>
-        </div>
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md rounded-3xl border-border/60 p-8 text-center shadow-sm">
+          <MessageCircle className="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Mesajlar yükleniyor...</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !userId) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md rounded-3xl border-border/60 p-8 text-center shadow-sm">
+          <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            Oturum bulunamadı. Lütfen yeniden giriş yapın.
+          </p>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
-      <span className="text-sm font-medium text-foreground/90">{label}</span>
-      {isVerified ? (
-        <div className="flex items-center gap-2 text-emerald-600">
-          <CheckCircle2 size={14} />
-          <span className="text-xs font-bold uppercase tracking-wide">Doğrulandı</span>
+    <div className="flex h-full flex-col gap-4 p-3 sm:p-4 lg:flex-row">
+      {prefillError && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 lg:basis-full">
+          {prefillError}
         </div>
-      ) : (
-        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground/70">
-          Bekliyor
-        </span>
+      )}
+
+      {showChatList && (
+        <Card
+          className={`${isMobile && selectedChatId ? "hidden" : ""} flex min-h-[calc(100vh-14rem)] flex-1 flex-col overflow-hidden rounded-3xl border-border/60 p-4 shadow-sm md:p-5 lg:max-w-[380px]`}
+        >
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground md:text-xl">Mesajlarım</h2>
+              <p className="text-xs text-muted-foreground">
+                Tüm ilan görüşmelerin burada listelenir.
+              </p>
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <ChatList
+              userId={userId}
+              onChatSelect={handleChatSelect}
+              selectedChatId={selectedChatId || undefined}
+            />
+          </div>
+        </Card>
+      )}
+
+      {showChatWindow && (
+        <Card
+          className={`${!isMobile && !selectedChatId ? "hidden lg:flex" : ""} flex min-h-[calc(100vh-14rem)] flex-1 flex-col overflow-hidden rounded-3xl border-border/60 shadow-sm`}
+        >
+          {isMobile && selectedChatId && (
+            <div className="border-b px-3 py-2.5">
+              <Button variant="ghost" size="icon" onClick={handleBack}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {selectedChatId ? (
+            <ChatWindow chatId={selectedChatId} userId={userId} onBack={handleBack} />
+          ) : (
+            <div className="flex h-full items-center justify-center p-5 text-center">
+              <div className="max-w-md rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-10">
+                <MessageCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-medium text-foreground">Bir konuşma seçin</h3>
+                <p className="text-sm text-muted-foreground">
+                  Soldaki listeden bir sohbet açarak araç sahibiyle görüşmeye başlayabilirsiniz.
+                </p>
+              </div>
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );
 }
+</write_file>
 
-export default async function DashboardProfilePage() {
-  const data = await getDashboardProfilePageData();
-  const hasPhone = Boolean(data.profile.phone);
-  const showBenefits =
-    !data.profile.isVerified && data.profile.verificationStatus !== "pending";
+<write_file path="src/app/dashboard/pricing/page.tsx">
+import { ShieldCheck, Zap } from "lucide-react";
+import type { Metadata } from "next";
+
+import { getPublicPricingPlans } from "@/features/admin-moderation/services/plans";
+import { requireUser } from "@/features/auth/lib/session";
+import { DopingStore } from "@/features/dashboard/components/doping-store";
+import { PlanSelector } from "@/features/dashboard/components/plan-selector";
+import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
+
+export const metadata: Metadata = {
+  title: "Paketler & Üyelik Planları | Oto Burada",
+  description:
+    "İlanlarınızı öne çıkarmak için doping alın veya kurumsal üyelik planlarına göz atın.",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function PricingPage() {
+  const user = await requireUser();
+
+  const [plans, { listings }] = await Promise.all([
+    getPublicPricingPlans(),
+    getStoredUserListings(user.id),
+  ]);
+
+  const approvedListings = listings.filter((listing) => listing.status === "approved");
 
   return (
-    <div className="space-y-4 px-3 sm:space-y-6 sm:px-4">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <User className="text-muted-foreground" size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-              Yönetim Merkezi
-            </span>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Hesap & Profil</h1>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Hesap bilgilerinizi ve doğrulama durumunuzu yönetin.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="flex items-center justify-end gap-2">
-              <span className="text-xl font-bold text-foreground">{data.completion}%</span>
-              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full bg-emerald-500 transition-all"
-                  style={{ width: `${data.completion}%` }}
-                />
-              </div>
+    <div className="space-y-16 pb-20">
+      <section className="space-y-8">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                Garantili
+              </span>
+              <h2 className="text-3xl font-black tracking-tight text-foreground">
+                Üyelik Planları
+              </h2>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-              Profil Tamamlandı
+            <p className="max-w-xl text-sm font-medium text-muted-foreground">
+              Bireysel kullanıcılar için ilan vermek her zaman ücretsizdir. Profesyonel satıcılar
+              daha yüksek kapasite için plan seçebilir.
             </p>
           </div>
         </div>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-4">
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <ShieldCheck size={16} className="text-primary" />
-              <h3 className="text-sm font-bold text-foreground">Doğrulama Durumu</h3>
+        <PlanSelector plans={plans} />
+      </section>
+
+      <hr className="border-border/50" />
+
+      <section className="space-y-8">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl border border-amber-100 bg-amber-50">
+              <Zap size={20} className="fill-amber-500/30 text-amber-500" />
             </div>
-            <div className="grid gap-2">
-              <VerificationItem label="E-posta" isVerified={data.profile.emailVerified} />
-              <VerificationItem
-                label="İşletme Profili"
-                isVerified={data.profile.isVerified}
-              />
-              <VerificationItem label="Kimlik (Yakında)" isPending={true} />
+            <h2 className="text-3xl font-black tracking-tight text-foreground">Doping Paketleri</h2>
+          </div>
+          <p className="max-w-xl text-sm font-medium text-muted-foreground">
+            İlanlarınızın daha hızlı satılması için öne çıkarma özelliklerini kullanın.
+            <span className="ml-1 text-primary">Piyasanın 1/10 fiyatına!</span>
+          </p>
+        </div>
+
+        {approvedListings.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-border bg-muted/30 p-16 text-center shadow-sm">
+            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl border border-border bg-background">
+              <Zap size={32} className="text-muted-foreground/30" />
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-foreground">Yayındaki ilan bulunamadı</h3>
+            <p className="mx-auto max-w-md text-sm text-muted-foreground">
+              Doping satın alabilmek için en az bir onaylı ilanın olması gerekiyor. İlanını şimdi
+              oluşturabilir veya moderasyondaki ilanlarını takip edebilirsin.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a
+                href="/dashboard/listings?create=true"
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Yeni ilan oluştur
+              </a>
+              <a
+                href="/dashboard/listings"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                İlan durumunu kontrol et
+              </a>
             </div>
           </div>
-
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Mail size={16} className="text-primary" />
-              <h3 className="text-sm font-bold text-foreground">İletişim Bilgileri</h3>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
-                <Mail size={14} className="shrink-0 text-muted-foreground/70" />
-                <span className="truncate text-sm font-medium text-foreground/90">
-                  {data.profile.email}
-                </span>
-              </div>
-
-              {hasPhone && (
-                <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
-                  <Phone size={14} className="shrink-0 text-muted-foreground/70" />
-                  <span className="text-sm font-medium text-foreground/90">
-                    {data.profile.phone}
-                  </span>
+        ) : (
+          <div className="space-y-16">
+            {approvedListings.map((listing) => (
+              <div
+                key={listing.id}
+                className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
+                <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <div className="min-w-0 flex-1">
+                    <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                      İLANINIZI ÖNE ÇIKARIN
+                    </p>
+                    <h3 className="truncate text-xl font-black text-foreground">{listing.title}</h3>
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <span>
+                        {listing.brand} {listing.model}
+                      </span>
+                      <span>•</span>
+                      <span>{listing.year}</span>
+                      <span>•</span>
+                      <span className="font-bold text-foreground">
+                        {listing.price.toLocaleString("tr-TR")} ₺
+                      </span>
+                    </div>
+                  </div>
+                  <div className="hidden items-center gap-2 rounded-xl border border-border bg-muted/50 px-4 py-2 sm:flex">
+                    <ShieldCheck size={16} className="text-emerald-500" />
+                    <span className="text-xs font-bold text-muted-foreground">GÜVENLİ ÖDEME</span>
+                  </div>
                 </div>
-              )}
-            </div>
+                <DopingStore listing={listing} />
+              </div>
+            ))}
           </div>
-
-          <Link
-            href="/dashboard/profile/corporate"
-            className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <Building2 size={18} />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Kurumsal Mağaza</h4>
-                <p className="text-xs text-muted-foreground">Ticarî araç alım satımı için</p>
-              </div>
-            </div>
-            <ShieldCheck size={18} className="shrink-0 text-primary" />
-          </Link>
-        </div>
-
-        <div className="space-y-4 lg:col-span-8">
-          <ProfileFormCard
-            defaultValues={data.formDefaults}
-            cityOptions={data.cityOptions}
-            isEmailVerified={data.profile.emailVerified}
-          />
-
-          <div className="rounded-xl border border-border bg-card p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <ShieldCheck size={18} className="text-primary" />
-              <div>
-                <h3 className="text-base font-bold text-foreground">Doğrulama Durumu</h3>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Güvenli bir alışveriş ortamı için kimlik doğrulaması önerilir.
-                </p>
-              </div>
-            </div>
-
-            {data.profile.verificationStatus === "pending" ? (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
-                <h4 className="text-sm font-bold text-amber-900">Doğrulama İncelemede</h4>
-                <p className="mt-1 text-sm text-amber-800/90">
-                  Gönderdiğiniz doğrulama bilgileri inceleniyor. Onaylandığında profil rozetiniz
-                  güncellenecektir.
-                </p>
-              </div>
-            ) : (
-              <IdentityVerificationForm isVerified={data.profile.isVerified} />
-            )}
-
-            {showBenefits && (
-              <div className="mt-6 rounded-xl border border-primary/10 bg-primary/5 p-4">
-                <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-primary">
-                  Doğrulamanın Avantajları
-                </h4>
-                <ul className="space-y-2">
-                  {trust.benefits.list.map((item, index) => (
-                    <li
-                      key={`${item}-${index}`}
-                      className="flex items-center gap-2 text-xs font-medium text-foreground/80"
-                    >
-                      <CheckCircle2 size={12} className="text-primary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        )}
+      </section>
     </div>
   );
 }
+</write_file>
+
+<write_file path="src/app/dashboard/stok/page.tsx">
+import { ArrowRight, Package, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireUser } from "@/features/auth/lib/session";
+import { getGalleryListings, getGalleryStats } from "@/features/marketplace/services";
+
+export default async function StockDashboardPage() {
+  const user = await requireUser();
+  const stats = await getGalleryStats(user.id);
+  const listings = await getGalleryListings(user.id, { limit: 12 });
+
+  return (
+    <div className="mx-auto max-w-[1440px] space-y-6 px-3 py-6 sm:px-4 sm:py-8 lg:px-10 lg:py-12">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">Stok Yönetimi</h1>
+          <p className="text-sm text-muted-foreground">Galeri stoğunuzu yönetin</p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/dashboard/bulk-import">
+            <Button variant="outline" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Toplu Yükle
+            </Button>
+          </Link>
+          <Link href="/dashboard/listings?create=true">
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Yeni İlan
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Aktif İlan</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Bekleyen</CardTitle>
+            <TrendingDown className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pending}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Arşivlenen</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.archived}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Satılan</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalSold}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold">Aktif Stok ({listings.length})</h2>
+          <Link
+            href="/dashboard/listings"
+            className="flex items-center gap-1 text-sm text-primary hover:underline"
+          >
+            Tümünü gör <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {listings.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border py-12 text-center">
+            <p className="mb-4 text-muted-foreground">Henüz ilanınız yok.</p>
+            <Link href="/dashboard/listings?create=true">
+              <Button>İlk İlanınızı Verin</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {listings.map((listing) => (
+              <Link
+                key={listing.id}
+                href={`/dashboard/listings?edit=${listing.id}`}
+                className="flex items-center gap-4 rounded-xl border border-border/50 p-3 transition-colors hover:bg-muted/30"
+              >
+                <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
+                  {listing.coverImage && (
+                    <Image
+                      src={listing.coverImage}
+                      alt={listing.title}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">
+                    {listing.year} {listing.brand} {listing.model}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {listing.city} • {listing.price.toLocaleString("tr-TR")} TL
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+</write_file>
+
+<write_file path="src/app/dashboard/teklifler/page.tsx">
+import Link from "next/link";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { requireUser } from "@/features/auth/lib/session";
+import { OfferActions } from "@/features/offers/components/offer-actions";
+import { OfferStatusBadge } from "@/features/offers/components/offer-status-badge";
+import { normalizeOfferList } from "@/features/offers/services/offers/offer-normalizers";
+import {
+  getOffersForUser,
+  getOffersReceived,
+} from "@/features/offers/services/offers/offer-actions";
+import { formatPrice } from "@/lib/utils/format";
+
+export const dynamic = "force-dynamic";
+
+export default async function OffersDashboardPage() {
+  const user = await requireUser();
+
+  const [rawMyOffers, rawReceivedOffers] = await Promise.all([
+    getOffersForUser(user.id),
+    getOffersReceived(user.id),
+  ]);
+
+  const myOffers = normalizeOfferList(rawMyOffers);
+  const receivedOffers = normalizeOfferList(rawReceivedOffers);
+
+  return (
+    <div className="mx-auto max-w-[1440px] space-y-8 px-3 py-6 sm:px-4 sm:py-8 lg:px-10 lg:py-12">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold">Teklifler</h1>
+        <p className="text-sm text-muted-foreground">Verdiğiniz ve aldığınız teklifler</p>
+      </div>
+
+      <section>
+        <h2 className="mb-4 text-lg font-bold">
+          Aldığım Teklifler{" "}
+          <span className="text-sm font-normal text-muted-foreground">
+            ({receivedOffers.length})
+          </span>
+        </h2>
+        {receivedOffers.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              Henüz teklif almadınız.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {receivedOffers.map((offer) => (
+              <Card key={offer.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <Link
+                        href={`/listing/${offer.listing?.slug ?? offer.listingId}`}
+                        className="block truncate text-sm font-semibold transition-colors hover:text-primary"
+                      >
+                        {offer.listing?.title ?? "İlan"}
+                      </Link>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                        <span>
+                          Teklif:{" "}
+                          <span className="font-bold text-foreground">
+                            {formatPrice(offer.offeredPrice)} TL
+                          </span>
+                        </span>
+                        {offer.listing?.price && (
+                          <span className="text-xs">
+                            (İlan: {formatPrice(offer.listing.price)} TL)
+                          </span>
+                        )}
+                      </div>
+                      {offer.message && (
+                        <p className="line-clamp-2 text-xs italic text-muted-foreground">
+                          &ldquo;{offer.message}&rdquo;
+                        </p>
+                      )}
+                      {offer.status === "counter_offer" && offer.counterPrice && (
+                        <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                          <span className="font-bold">Karşı Teklif:</span>{" "}
+                          {formatPrice(offer.counterPrice)} TL
+                          {offer.counterMessage && ` — ${offer.counterMessage}`}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                      <OfferStatusBadge status={offer.status} />
+                      {offer.status === "pending" && (
+                        <OfferActions
+                          offerId={offer.id}
+                          view="seller"
+                          offeredPrice={offer.offeredPrice}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-lg font-bold">
+          Verdiğim Teklifler{" "}
+          <span className="text-sm font-normal text-muted-foreground">({myOffers.length})</span>
+        </h2>
+        {myOffers.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              Henüz teklif vermediniz.{" "}
+              <Link href="/listings" className="text-primary hover:underline">
+                İlanları incele
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {myOffers.map((offer) => (
+              <Card key={offer.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <Link
+                        href={`/listing/${offer.listing?.slug ?? offer.listingId}`}
+                        className="block truncate text-sm font-semibold transition-colors hover:text-primary"
+                      >
+                        {offer.listing?.title ?? "İlan"}
+                      </Link>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                        <span>
+                          Teklifiniz:{" "}
+                          <span className="font-bold text-foreground">
+                            {formatPrice(offer.offeredPrice)} TL
+                          </span>
+                        </span>
+                        {offer.listing?.price && (
+                          <span className="text-xs">
+                            (İlan: {formatPrice(offer.listing.price)} TL)
+                          </span>
+                        )}
+                      </div>
+                      {offer.message && (
+                        <p className="line-clamp-2 text-xs italic text-muted-foreground">
+                          &ldquo;{offer.message}&rdquo;
+                        </p>
+                      )}
+                      {offer.status === "counter_offer" && offer.counterPrice && (
+                        <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                          <span className="font-bold">Satıcı Karşı Teklif Yaptı:</span>{" "}
+                          {formatPrice(offer.counterPrice)} TL
+                          {offer.counterMessage && ` — ${offer.counterMessage}`}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <OfferStatusBadge status={offer.status} />
+                      {offer.status === "counter_offer" && (
+                        <OfferActions
+                          offerId={offer.id}
+                          view="buyer"
+                          offeredPrice={offer.counterPrice || undefined}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+</write_file>
+
+<write_file path="src/app/admin/tickets/page.tsx">
+import { Clock3, MessageSquare, ShieldCheck } from "lucide-react";
+
+import { requireAdminUser } from "@/features/auth/lib/session";
+import { AdminTicketList } from "@/features/support/components/admin-ticket-list";
+import type { TicketStatus } from "@/features/support/services/ticket-service";
+import { getAllTickets, getTicketCount } from "@/features/support/services/ticket-service";
+import { cn } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminTicketsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; q?: string }>;
+}) {
+  await requireAdminUser();
+  const { status, q } = await searchParams;
+
+  const [allTickets, counts] = await Promise.all([getAllTickets(), getTicketCount()]);
+
+  const openCount = counts.open + counts.in_progress;
+  const resolvedCount = counts.resolved + counts.closed;
+
+  return (
+    <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+      <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+              Müşteri deneyimi
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Destek <span className="text-emerald-600">Talepleri</span>
+          </h1>
+          <p className="mt-1.5 max-w-2xl text-sm font-medium italic text-muted-foreground">
+            Gelen yardım çağrılarını, yanıt kayıtlarını ve kuyruk durumunu mobilde de okunabilir tek
+            yüzeyde yönetin.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm xl:max-w-sm">
+          <p className="font-semibold">Operasyon notu</p>
+          <p className="mt-1 text-xs leading-5 text-amber-800">
+            Yanıt eklemek ticket kaydına bağlamsal iz bırakır. Kapatma veya çözüm kararından önce
+            kısa bir admin cevabı bırakmanız önerilir.
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Açık kuyruk"
+          count={openCount}
+          hint="Yanıt veya inceleme bekliyor"
+          tone="warning"
+          icon={Clock3}
+        />
+        <StatCard
+          label="Açık"
+          count={counts.open}
+          hint="Henüz işlem alınmadı"
+          tone="warning-soft"
+          icon={MessageSquare}
+        />
+        <StatCard
+          label="İnceleniyor"
+          count={counts.in_progress}
+          hint="Admin aksiyonu başlatıldı"
+          tone="info"
+          icon={ShieldCheck}
+        />
+        <StatCard
+          label="Kapanan kayıt"
+          count={resolvedCount}
+          hint="Çözüldü veya kapatıldı"
+          tone="success"
+          icon={ShieldCheck}
+        />
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-border/60 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-2xl border border-border/70 bg-background text-emerald-500 shadow-sm">
+              <MessageSquare size={20} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-foreground sm:text-base">Tüm talepler</h2>
+              <p className="text-xs text-muted-foreground">
+                Toplam {allTickets.length} kayıt • filtreler ve aksiyonlar aşağıda
+              </p>
+            </div>
+          </div>
+          {openCount > 0 ? (
+            <div className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+              <div className="size-2 rounded-full bg-amber-500" />
+              {openCount} kayıt halen kuyrukta
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
+              <div className="size-2 rounded-full bg-emerald-500" />
+              Aktif kuyruk temiz görünüyor
+            </div>
+          )}
+        </div>
+
+        <AdminTicketList
+          tickets={allTickets}
+          initialStatus={(status as TicketStatus) ?? "all"}
+          initialQuery={q ?? ""}
+        />
+      </section>
+    </main>
+  );
+}
+
+function StatCard({
+  label,
+  count,
+  hint,
+  tone,
+  icon: Icon,
+}: {
+  label: string;
+  count: number;
+  hint: string;
+  tone: "warning" | "warning-soft" | "info" | "success";
+  icon: typeof Clock3;
+}) {
+  const toneClassName = {
+    warning: "border-amber-200 bg-amber-50 text-amber-800",
+    "warning-soft": "border-amber-100 bg-card text-amber-700",
+    info: "border-blue-200 bg-blue-50 text-blue-800",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  }[tone];
+
+  return (
+    <div className={cn("rounded-2xl border p-5 shadow-sm", toneClassName)}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em]">{label}</span>
+        <Icon className="size-4" />
+      </div>
+      <p className="mt-3 text-3xl font-bold leading-none">{count}</p>
+      <p className="mt-2 text-xs leading-5 opacity-90">{hint}</p>
+    </div>
+  );
+}
+</write_file>
+
+<write_file path="database/migrations/0107_chats_unique_listing_buyer_seller.sql">
+begin;
+
+create unique index if not exists chats_unique_listing_buyer_seller_idx
+  on public.chats (listing_id, buyer_id, seller_id);
+
+create index if not exists chats_buyer_id_idx
+  on public.chats (buyer_id);
+
+create index if not exists chats_seller_id_idx
+  on public.chats (seller_id);
+
+create index if not exists messages_chat_id_created_at_idx
+  on public.messages (chat_id, created_at desc);
+
+commit;
 </write_file>

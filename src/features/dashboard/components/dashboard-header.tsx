@@ -4,7 +4,6 @@ import { ClipboardList, LayoutDashboard, MessageSquare, Plus, Settings, Star } f
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {} from "@/lib";
 import { dashboard } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +52,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
         </div>
       </div>
 
-      <div className="mt-5 border-t border-border/70 pt-4 sm:mt-6 sm:pt-5">
+      <div className="mt-5 border-t border-border/70 pt-4 sm:mt-6 sm:pt-5 md:hidden">
         <div className="mb-2 flex items-center justify-between sm:hidden">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
             Sık kullanılanlar

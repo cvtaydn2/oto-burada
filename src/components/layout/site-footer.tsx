@@ -8,7 +8,7 @@ import { CURRENT_YEAR } from "@/lib/date-utils";
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },
   { href: "/listings", label: "Tüm İlanlar" },
-  { href: "/dashboard/listings", label: "Ücretsiz İlan Ver" },
+  { href: "/dashboard/listings?create=true", label: "Ücretsiz İlan Ver" },
   { href: "/login", label: "Giriş Yap" },
 ];
 
@@ -101,11 +101,11 @@ export async function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 text-center sm:flex-row sm:text-left">
           <p className="text-sm text-muted-foreground">
             © {CURRENT_YEAR} OtoBurada. Tüm hakları saklıdır.
           </p>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground sm:justify-end sm:gap-6">
             <Link href="/legal/privacy" className="transition-colors hover:text-primary">
               Gizlilik Politikası
             </Link>

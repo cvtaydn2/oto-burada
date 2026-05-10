@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/features/auth/lib/session";
 import { TicketForm } from "@/features/support/components/ticket-form";
 import { TicketList } from "@/features/support/components/ticket-list";
 import { getUserTickets } from "@/features/support/services/ticket-service";
+import { logger } from "@/lib/logger";
 
 const FAQ_CATEGORIES = [
   {
@@ -89,7 +90,10 @@ export default async function SupportPage() {
   if (user) {
     try {
       userTickets = await getUserTickets(user.id);
-    } catch {
+    } catch (error) {
+      logger.auth.error("[SupportPage] Failed to load user tickets", error, {
+        userId: user.id,
+      });
       userTickets = [];
     }
   }

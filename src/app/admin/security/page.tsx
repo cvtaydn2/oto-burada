@@ -70,10 +70,13 @@ async function getAbuseData(): Promise<SecurityPageData> {
   const [logsResult, bannedResult, statsResult] = await Promise.all([
     admin
       .from("contact_abuse_log")
-      .select("*")
+      .select("id, email, ip_address, reason, user_agent, metadata, created_at")
       .order("created_at", { ascending: false })
       .limit(100),
-    admin.from("ip_banlist").select("*").order("banned_at", { ascending: false }),
+    admin
+      .from("ip_banlist")
+      .select("id, ip_address, reason, banned_at, expires_at")
+      .order("banned_at", { ascending: false }),
     admin
       .from("contact_abuse_log")
       .select("reason")

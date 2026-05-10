@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 
@@ -45,24 +44,100 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 lg:p-8 shadow-sm">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm lg:p-8">
+      <div className="mb-8 flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-foreground tracking-tight">Son İlanlar</h3>
+          <h3 className="text-xl font-bold tracking-tight text-foreground">Son İlanlar</h3>
           <p className="text-xs font-medium text-muted-foreground">
             Aktif ilanlarının performansını buradan izle.
           </p>
         </div>
         <Link
           href="/dashboard/listings"
-          className="flex items-center gap-2 rounded-xl bg-muted h-10 px-5 text-[10px] font-bold uppercase tracking-widest text-foreground transition-all hover:bg-muted/80"
+          className="flex h-10 shrink-0 items-center gap-2 rounded-xl bg-muted px-5 text-[10px] font-bold uppercase tracking-widest text-foreground transition-all hover:bg-muted/80"
         >
           TÜMÜ
           <ChevronRight size={14} />
         </Link>
       </div>
 
-      <div className="-mx-6 overflow-x-auto px-6 lg:mx-0 lg:px-0">
+      <div className="space-y-3 md:hidden">
+        {listings.slice(0, 5).map((listing) => (
+          <article
+            key={listing.id}
+            className="rounded-2xl border border-border/70 bg-background p-4 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <Link
+                href={`/listing/${listing.slug}`}
+                className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-border bg-muted"
+              >
+                {listing.images?.[0]?.url ? (
+                  <Image
+                    src={listing.images[0].url}
+                    alt={listing.title}
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex size-full items-center justify-center bg-muted">
+                    <CarFront size={20} className="text-muted-foreground/30" />
+                  </div>
+                )}
+              </Link>
+              <div className="min-w-0 flex-1 space-y-3">
+                <div>
+                  <Link
+                    href={`/listing/${listing.slug}`}
+                    className="line-clamp-2 text-sm font-bold leading-5 tracking-tight text-foreground"
+                  >
+                    {listing.title}
+                  </Link>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                    {listing.year} &middot; {listing.brand}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <div className="text-sm font-bold tracking-tight text-foreground">
+                    {new Intl.NumberFormat("tr-TR").format(listing.price)} ₺
+                  </div>
+                  <div
+                    className={cn(
+                      "inline-flex items-center rounded-lg px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest",
+                      listing.status === "approved"
+                        ? "border border-emerald-100 bg-emerald-50 text-emerald-600"
+                        : listing.status === "pending"
+                          ? "border border-amber-100 bg-amber-50 text-amber-600"
+                          : "border border-border bg-muted text-muted-foreground/60"
+                    )}
+                  >
+                    {trust.admin.listingStatus[
+                      listing.status as keyof typeof trust.admin.listingStatus
+                    ] || listing.status}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                    <Eye size={12} className="text-muted-foreground/20" />
+                    {listing.viewCount ?? 0}
+                  </div>
+                  <Link
+                    href={`/dashboard/listings?edit=${listing.id}`}
+                    className="flex h-9 items-center justify-center rounded-xl bg-muted px-3 text-xs font-semibold text-muted-foreground transition-all hover:bg-foreground hover:text-background"
+                  >
+                    Düzenle
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="-mx-6 hidden overflow-x-auto px-6 md:block lg:mx-0 lg:px-0">
         <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
@@ -74,7 +149,7 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
           </thead>
           <tbody className="divide-y divide-border">
             {listings.slice(0, 5).map((listing) => (
-              <tr key={listing.id} className="group hover:bg-muted/20 transition-colors">
+              <tr key={listing.id} className="group transition-colors hover:bg-muted/20">
                 <td className="py-4 pr-4">
                   <Link href={`/listing/${listing.slug}`} className="flex items-center gap-3">
                     <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
@@ -93,17 +168,17 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate font-bold text-foreground text-sm leading-tight transition-colors group-hover:text-primary tracking-tight">
+                      <div className="truncate text-sm font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
                         {listing.title}
                       </div>
-                      <div className="text-[10px] font-bold text-muted-foreground/60 mt-1 uppercase tracking-wider">
+                      <div className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
                         {listing.year} &middot; {listing.brand}
                       </div>
                     </div>
                   </Link>
                 </td>
                 <td className="py-4">
-                  <div className="font-bold text-foreground text-sm tracking-tight">
+                  <div className="text-sm font-bold tracking-tight text-foreground">
                     {new Intl.NumberFormat("tr-TR").format(listing.price)} ₺
                   </div>
                 </td>
@@ -112,10 +187,10 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
                     className={cn(
                       "inline-flex items-center rounded-lg px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest",
                       listing.status === "approved"
-                        ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        ? "border border-emerald-100 bg-emerald-50 text-emerald-600"
                         : listing.status === "pending"
-                          ? "bg-amber-50 text-amber-600 border border-amber-100"
-                          : "bg-muted text-muted-foreground/60 border border-border"
+                          ? "border border-amber-100 bg-amber-50 text-amber-600"
+                          : "border border-border bg-muted text-muted-foreground/60"
                     )}
                   >
                     {trust.admin.listingStatus[
@@ -125,7 +200,7 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
                 </td>
                 <td className="py-4 text-right">
                   <div className="flex items-center justify-end gap-3">
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
                       <Eye size={12} className="text-muted-foreground/20" />
                       {listing.viewCount ?? 0}
                     </div>

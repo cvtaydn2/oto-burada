@@ -18,7 +18,7 @@ export async function SiteHeader({ searchSuggestions }: SiteHeaderProps) {
       role="banner"
     >
       <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-4 sm:px-5 lg:px-6">
-        <div className="flex items-center gap-8">
+        <div className="flex min-w-0 items-center gap-4 lg:gap-8">
           <Link
             href="/"
             prefetch={false}
@@ -39,7 +39,7 @@ export async function SiteHeader({ searchSuggestions }: SiteHeaderProps) {
           <DesktopNav />
         </div>
 
-        <div className="relative mx-8 hidden max-w-lg flex-1 lg:flex">
+        <div className="relative mx-4 hidden min-w-0 max-w-lg flex-1 lg:flex xl:mx-8">
           <SearchWithSuggestions
             placeholder="Marka, model veya kelime ara..."
             suggestions={searchSuggestions}
