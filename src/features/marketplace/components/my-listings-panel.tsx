@@ -294,9 +294,10 @@ export function MyListingsPanel({
                     Yalnız güven oranı 3/3 olmayan ilanlar gösteriliyor.
                   </p>
                   <p className="text-xs font-medium leading-5 text-blue-900/80">
-                    Ekspertiz, hasar veya Tramer bilgisi eksik ilanlara odaklanıyorsun. Karttaki
-                    aynı x/3 mantığı bu filtrede de geçerli; filtreyi kapatınca tüm ilan görünümüne
-                    dönersin.
+                    Ekspertiz, hasar veya Tramer bilgisi eksik ilanlara odaklanıyorsun. Bu görünümde
+                    kart içindeki trust tamamlama aksiyonu birincil yol; düzenle, arşivle, üste taşı
+                    ve doping gibi genel işlemler ise geri planda kalır. Filtreyi kapatınca tüm ilan
+                    görünümüne dönersin.
                   </p>
                 </div>
 

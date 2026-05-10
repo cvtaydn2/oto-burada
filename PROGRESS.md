@@ -1,5 +1,31 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 103. Task A1 — Trust Incomplete CTA Hierarchy Pass
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement by making the trust completion action visually dominant inside the existing `trust=incomplete` dashboard view, while demoting general listing management actions without removing them and preserving the normal dashboard hierarchy outside this focused trust context.
+
+### 103.1 Trust CTA as the Primary Path in Trust Mode
+- Updated [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:114) to detect when a card is being rendered inside the `trust=incomplete` flow and the listing still has incomplete trust details.
+- Strengthened the existing trust reminder surface in [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:258) with a clearer priority treatment, including stronger border/ring styling, an explicit “öncelikli adım” signal, and a filled CTA pill so trust completion reads as the main action on the card.
+- Kept the existing trust edit route contract intact by continuing to use the same page-scoped [`/dashboard/listings?edit=<id>&focus=trust&trust=incomplete`](src/features/marketplace/components/dashboard-listing-card.tsx:260) path.
+
+### 103.2 General Actions Demoted, Not Removed
+- Updated the secondary action rail in [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:355) so `Düzenle`, `Arşivle`, `Üste taşı`, and `Doping al` remain available but adopt a quieter muted treatment only during the trust-incomplete flow.
+- Reframed the helper copy above those actions in [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:356) to explicitly explain that trust completion is the primary route in this view and the rest are still accessible as secondary controls.
+- Updated the filter banner in [`MyListingsPanel`](src/features/marketplace/components/my-listings-panel.tsx:287) so the page-scoped trust context now says the trust CTA is primary and generic management actions intentionally recede into the background.
+
+### 103.3 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/components/dashboard-listing-card.tsx src/features/marketplace/components/my-listings-panel.tsx`](package.json:12) ✅
+
+### 103.4 Remaining Risk
+- The hierarchy change is visual only; users can still choose lower-priority actions during the trust tour, which is intentional for scope safety.
+- The trust-priority treatment still depends on the current page-scoped `trust=incomplete` context and simple trust field presence, so it does not represent account-wide backlog state or content quality.
+
+---
+
 ## 102. Task A1 — Post-Create Trust CTA Backlog Intelligence
 
 **Date**: 2026-05-10
