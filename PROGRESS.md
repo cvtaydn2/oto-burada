@@ -1,5 +1,34 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 95. Task A1 — Dashboard Trust Completion Checklist Surface
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 dashboard trust improvement by replacing the generic missing-trust card message with a compact completion checklist surface that makes ekspertiz, hasar beyanı, and Tramer status scannable at a glance while preserving the existing `focus=trust` edit flow.
+
+### 95.1 Compact Card-Level Completion Surface
+- Updated [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:70) so eligible listing cards now render an action-oriented trust completion panel instead of the previous generic “güven detayı eksik” message.
+- Kept the surface mobile-first and compact by using a small stacked card with tight spacing, a lightweight progress label, and three mini checklist chips rather than expanding the listing card into a larger detail module.
+
+### 95.2 Visible Per-Field Trust State
+- Reused existing listing trust fields already present on the card data shape to derive simple presence/absence state for ekspertiz, hasar beyanı, and Tramer without introducing scoring, backend workflow, or new routes.
+- Each trust item now shows explicit complete versus missing state so sellers can understand what remains with one quick scan before entering edit mode.
+- The trust CTA continues to route through the existing [`/dashboard/listings?edit=<id>&focus=trust`](src/features/marketplace/components/dashboard-listing-card.tsx:255) path and preserves the active trust filter context when present.
+
+### 95.3 Trust Incomplete Eligibility Alignment
+- Updated [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx:57) so the dashboard-level trust-incomplete filter remains aligned with the card surface by treating a listing as complete only when all three trust fields are present.
+- This keeps the top summary, focused list mode, and per-card checklist on the same simple field-presence rule set.
+
+### 95.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/dashboard/listings/page.tsx src/features/marketplace/components/dashboard-listing-card.tsx`](package.json:12) ✅
+
+### 95.5 Remaining Risk
+- The trust checklist still evaluates field presence only; it does not judge the quality, freshness, or completeness depth of entered ekspertiz, hasar, or Tramer content.
+- Trust focus remains page-scoped on the already loaded dashboard slice, so incomplete listings on other pagination pages are still discovered page by page in this MVP iteration.
+
+---
+
 ## 94. Task A1 — Dashboard Trust Focus Filter Flow
 
 **Date**: 2026-05-10

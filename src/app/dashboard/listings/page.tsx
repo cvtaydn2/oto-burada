@@ -54,18 +54,23 @@ function clampPageSize(value?: string) {
   return Math.min(parsed, 100);
 }
 
-function hasListingTrustDetails(
+function getListingTrustCompletion(
   listing: DashboardListingsPageData["listingsPage"]["items"][number]
 ) {
   const hasDamageDeclaration = Boolean(
     listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
   );
 
-  return (
-    Boolean(listing.expertInspection?.hasInspection) ||
-    hasDamageDeclaration ||
-    typeof listing.tramerAmount === "number"
-  );
+  const completedCount = [
+    Boolean(listing.expertInspection?.hasInspection),
+    hasDamageDeclaration,
+    typeof listing.tramerAmount === "number",
+  ].filter(Boolean).length;
+
+  return {
+    completedCount,
+    isComplete: completedCount === 3,
+  };
 }
 
 function mergeBrands(
@@ -127,7 +132,8 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const isEditingExisting = data.editing.status === "loaded";
   const trustReminderEligibleListings = data.listingsPage.items.filter(
     (listing) =>
-      ["draft", "pending", "approved"].includes(listing.status) && !hasListingTrustDetails(listing)
+      ["draft", "pending", "approved"].includes(listing.status) &&
+      !getListingTrustCompletion(listing).isComplete
   );
   const missingTrustCount = trustReminderEligibleListings.length;
   const firstTrustReminderListing = trustReminderEligibleListings[0] ?? null;

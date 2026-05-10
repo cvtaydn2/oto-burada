@@ -1,6 +1,15 @@
 "use client";
 
-import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw, Zap } from "lucide-react";
+import {
+  Archive,
+  ArrowUpCircle,
+  Check,
+  Loader2,
+  Pencil,
+  Rocket,
+  RotateCcw,
+  Zap,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -72,15 +81,32 @@ export function DashboardListingCard({
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
   const now = new Date(currentTime > 0 ? currentTime : 0);
+  const hasExpertInspection = Boolean(listing.expertInspection?.hasInspection);
   const hasDamageDeclaration = Boolean(
     listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
   );
-  const hasTrustDetails =
-    Boolean(listing.expertInspection?.hasInspection) ||
-    hasDamageDeclaration ||
-    typeof listing.tramerAmount === "number";
+  const hasTramer = typeof listing.tramerAmount === "number";
+  const trustChecklistItems = [
+    {
+      key: "expert-inspection",
+      label: "Ekspertiz",
+      completed: hasExpertInspection,
+    },
+    {
+      key: "damage-declaration",
+      label: "Hasar beyanı",
+      completed: hasDamageDeclaration,
+    },
+    {
+      key: "tramer",
+      label: "Tramer",
+      completed: hasTramer,
+    },
+  ] as const;
+  const completedTrustItemCount = trustChecklistItems.filter((item) => item.completed).length;
+  const isTrustIncomplete = completedTrustItemCount < trustChecklistItems.length;
   const shouldShowTrustReminder =
-    !hasTrustDetails && ["draft", "pending", "approved"].includes(listing.status);
+    isTrustIncomplete && ["draft", "pending", "approved"].includes(listing.status);
 
   const BUMP_COOLDOWN_HOURS = 24;
 
@@ -227,21 +253,62 @@ export function DashboardListingCard({
                 {shouldShowTrustReminder && (
                   <Link
                     href={`/dashboard/listings?edit=${listing.id}&focus=trust${trustQuery}`}
-                    className="w-full rounded-2xl border border-blue-200 bg-blue-50/80 px-3 py-3 text-left text-blue-900 transition-all hover:border-blue-300 hover:bg-blue-100/80 sm:w-auto sm:min-w-[320px]"
+                    className="w-full rounded-2xl border border-blue-200 bg-blue-50/85 px-3 py-3 text-left text-blue-900 transition-all hover:border-blue-300 hover:bg-blue-100/85 sm:w-auto sm:min-w-[320px]"
                   >
-                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
-                          Güven detayı eksik
-                        </p>
-                        <p className="text-xs font-medium leading-5 text-blue-900/85">
-                          Ekspertiz, hasar veya Tramer bilgisi eklersen ilanın alıcıya daha güven
-                          verici görünür.
-                        </p>
+                    <div className="flex flex-col gap-2.5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                            Güven detaylarını tamamla
+                          </p>
+                          <p className="text-xs font-medium leading-5 text-blue-900/85">
+                            Alıcıların ilk bakışta göreceği 3 güven alanında eksik kalanları
+                            tamamla.
+                          </p>
+                        </div>
+                        <span className="shrink-0 pt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                          {completedTrustItemCount}/3
+                        </span>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
-                        Tamamla
-                      </span>
+
+                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+                        {trustChecklistItems.map((item) => (
+                          <div
+                            key={item.key}
+                            className={cn(
+                              "flex items-center gap-2 rounded-xl border px-2.5 py-2 text-[11px] font-semibold leading-none transition-colors",
+                              item.completed
+                                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                : "border-blue-200/80 bg-white/70 text-blue-900"
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "flex size-4 shrink-0 items-center justify-center rounded-full border",
+                                item.completed
+                                  ? "border-emerald-500 bg-emerald-500 text-white"
+                                  : "border-blue-300 bg-blue-100 text-blue-700"
+                              )}
+                            >
+                              {item.completed ? (
+                                <Check className="size-3" />
+                              ) : (
+                                <span className="size-1.5 rounded-full bg-current" />
+                              )}
+                            </span>
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[11px] font-medium leading-4 text-blue-900/75">
+                          Mevcut düzenleme akışında sadece eksik kalan alanlara odaklan.
+                        </p>
+                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                          Tamamla
+                        </span>
+                      </div>
                     </div>
                   </Link>
                 )}
