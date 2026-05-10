@@ -7,6 +7,7 @@ import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
 import { requireUser } from "@/features/auth/lib/session";
 import { MyListingsPanel } from "@/features/marketplace/components/my-listings-panel";
 import {
+  getPostCreateTrustCtaConfig,
   getTrustBacklogSummary,
   getTrustCompletionSummary,
 } from "@/features/marketplace/lib/trust-ui";
@@ -132,6 +133,24 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const missingTrustCount = trustReminderEligibleListings.length;
   const trustBacklogSummary = getTrustBacklogSummary(trustReminderEligibleListings);
   const firstTrustReminderListing = trustReminderEligibleListings[0] ?? null;
+  const createdListing = createdListingId
+    ? (data.listingsPage.items.find((listing) => listing.id === createdListingId) ?? null)
+    : null;
+  const createdListingTrustSummary = createdListing
+    ? getTrustCompletionSummary(createdListing)
+    : null;
+  const fallbackTrustListing = trustReminderEligibleListings.find(
+    (listing) => listing.id !== createdListingId
+  );
+  const postCreateTrustCta =
+    createdListingId && createdListingTrustSummary
+      ? getPostCreateTrustCtaConfig({
+          createdListingId,
+          createdListingIsTrustComplete: createdListingTrustSummary.isComplete,
+          fallbackIncompleteListingId: fallbackTrustListing?.id ?? null,
+          trustFilter,
+        })
+      : null;
   const displayedListings =
     trustFilter === "incomplete" ? trustReminderEligibleListings : data.listingsPage.items;
   const isTrustFilterActive = trustFilter === "incomplete";
@@ -274,25 +293,29 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-blue-200/80 bg-white/80 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-            <div className="space-y-1">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
-                Opsiyonel güven artırıcı adım
-              </p>
-              <p className="text-sm font-medium leading-6 text-blue-900/85">
-                İstersen şimdi ekspertiz, hasar ve Tramer bilgilerini ekleyerek ilanını daha güven
-                verici hale getirebilirsin. Bu adım zorunlu değil ve yayına girmeni bekletmez.
-              </p>
+          {postCreateTrustCta ? (
+            <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-blue-200/80 bg-white/80 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="space-y-1">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
+                  Opsiyonel güven artırıcı adım
+                </p>
+                <p className="text-sm font-semibold leading-6 text-blue-950">
+                  {postCreateTrustCta.title}
+                </p>
+                <p className="text-sm font-medium leading-6 text-blue-900/85">
+                  {postCreateTrustCta.description}
+                </p>
+              </div>
+              {postCreateTrustCta.href && postCreateTrustCta.ctaLabel ? (
+                <Link
+                  href={postCreateTrustCta.href}
+                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
+                >
+                  {postCreateTrustCta.ctaLabel}
+                </Link>
+              ) : null}
             </div>
-            {createdListingId ? (
-              <Link
-                href={`/dashboard/listings?edit=${createdListingId}&focus=trust${isTrustFilterActive ? "&trust=incomplete" : ""}`}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
-              >
-                Güven artırıcı detayları ekle
-              </Link>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       )}
 

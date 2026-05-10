@@ -1,5 +1,30 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 102. Task A1 — Post-Create Trust CTA Backlog Intelligence
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement by making the post-create trust CTA choose the most sensible next page-scoped action after listing creation, prioritizing the newly created listing when its trust ratio is still below `3/3`, falling back to the current page backlog only when the created listing is already complete, and suppressing unnecessary trust editing when no visible incomplete backlog remains.
+
+### 102.1 Shared Post-Create CTA Decision Helper
+- Added [`getPostCreateTrustCtaConfig()`](src/features/marketplace/lib/trust-ui.ts:91) to [`trust-ui.ts`](src/features/marketplace/lib/trust-ui.ts) so the create-success panel now derives its title, body copy, CTA label, and target from one shared page-local decision helper.
+- Kept the branching order explicit and scope-safe: created listing first, then first other incomplete listing already visible on the same page, then a quiet no-CTA state when no page-local trust backlog remains.
+
+### 102.2 Smarter Create Success Trust Panel
+- Updated [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx:134) to resolve the newly created listing from the already loaded page data, compute its `x/3` trust state, and exclude it when choosing a fallback backlog target.
+- Replaced the blind post-create trust edit link in [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx:277) with context-aware copy and CTA behavior so sellers are not pushed back into the created listing when it is already `3/3` and another visible incomplete listing is the more logical next step.
+- When the created listing is already `3/3` and no other incomplete listing exists on the current page, the panel now stays calm and informational instead of surfacing a redundant trust CTA.
+
+### 102.3 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/dashboard/listings/page.tsx src/features/marketplace/lib/trust-ui.ts`](package.json:12) ✅
+
+### 102.4 Remaining Risk
+- The post-create decision still depends on the currently loaded dashboard page slice only, so incomplete listings that exist on other pagination pages are intentionally ignored by this CTA.
+- The helper still relies on simple trust field presence, so a newly created listing can count as `3/3` even when the trust content depth is minimal.
+
+---
+
 ## 101. Task A1 — Quiet Completed Trust Signal on Listing Cards
 
 **Date**: 2026-05-10

@@ -24,6 +24,13 @@ export interface TrustCompletionCardSignal {
   ctaLabel: string;
 }
 
+export interface PostCreateTrustCtaConfig {
+  title: string;
+  description: string;
+  href: string | null;
+  ctaLabel: string | null;
+}
+
 export function getTrustCompletionSummary(source: TrustCompletionSource): TrustCompletionSummary {
   const hasDamageDeclaration = Boolean(
     source.damageStatusJson && Object.keys(source.damageStatusJson).length > 0
@@ -78,6 +85,43 @@ export function getTrustCompletionCardSignal(
     title: "Güven detaylarını tamamla",
     description: "Alıcıların ilk bakışta göreceği güven alanlarında oranı tamamla.",
     ctaLabel: "Tamamla",
+  };
+}
+
+export function getPostCreateTrustCtaConfig(options: {
+  createdListingId: string;
+  createdListingIsTrustComplete: boolean;
+  fallbackIncompleteListingId?: string | null;
+  trustFilter?: "incomplete";
+}): PostCreateTrustCtaConfig {
+  const trustQuery = options.trustFilter === "incomplete" ? "&trust=incomplete" : "";
+
+  if (!options.createdListingIsTrustComplete) {
+    return {
+      title: "Önce yeni ilanın güven alanlarını tamamla",
+      description:
+        "Bu ilanda oran henüz 3/3 değil. İstersen şimdi ekspertiz, hasar ve Tramer detaylarını ekleyebilirsin.",
+      href: `/dashboard/listings?edit=${options.createdListingId}&focus=trust${trustQuery}`,
+      ctaLabel: "Yeni ilanda trust detaylarını ekle",
+    };
+  }
+
+  if (options.fallbackIncompleteListingId) {
+    return {
+      title: "Bu sayfadaki sıradaki eksik ilana geç",
+      description:
+        "Yeni oluşturduğun ilan 3/3 durumda. İstersen bu görünümde hâlâ eksik kalan ilk mantıklı ilana geçip trust backlog'unu buradan sürdürebilirsin.",
+      href: `/dashboard/listings?edit=${options.fallbackIncompleteListingId}&focus=trust${trustQuery}`,
+      ctaLabel: "Sıradaki eksik ilana geç",
+    };
+  }
+
+  return {
+    title: "Bu sayfada ek trust adımı gerekmiyor",
+    description:
+      "Yeni ilanının güven oranı 3/3. Bu görünümde ayrıca eksik trust backlog'u olmadığı için seni ekstra bir düzenleme akışına sokmuyoruz.",
+    href: null,
+    ctaLabel: null,
   };
 }
 
