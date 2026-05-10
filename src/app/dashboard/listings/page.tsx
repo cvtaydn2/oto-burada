@@ -53,6 +53,20 @@ function clampPageSize(value?: string) {
   return Math.min(parsed, 100);
 }
 
+function hasListingTrustDetails(
+  listing: DashboardListingsPageData["listingsPage"]["items"][number]
+) {
+  const hasDamageDeclaration = Boolean(
+    listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
+  );
+
+  return (
+    Boolean(listing.expertInspection?.hasInspection) ||
+    hasDamageDeclaration ||
+    typeof listing.tramerAmount === "number"
+  );
+}
+
 function mergeBrands(
   brands: DashboardListingsPageData["references"]["brands"],
   selectedListing: DashboardEditableListing | null
@@ -112,47 +126,82 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     (listing) => listing.status === "approved"
   ).length;
   const isEditingExisting = data.editing.status === "loaded";
+  const trustReminderEligibleListings = data.listingsPage.items.filter(
+    (listing) =>
+      ["draft", "pending", "approved"].includes(listing.status) && !hasListingTrustDetails(listing)
+  );
+  const missingTrustCount = trustReminderEligibleListings.length;
+  const firstTrustReminderListing = trustReminderEligibleListings[0] ?? null;
 
   return (
     <div className="space-y-8">
       <AccountTrustNotice seller={sellerProfile ?? null} />
 
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">İlanlarım</h2>
-          <p className="mt-1 text-sm font-medium italic text-muted-foreground">
-            Toplam {data.listingsPage.totalCount} ilanın var. Bu sayfadaki{" "}
-            {data.listingsPage.items.length} ilandan {approvedCountOnPage} tanesi yayında.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div
-            className={cn(
-              "flex items-center gap-2 rounded-xl border px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
-              isEmailVerified
-                ? "border-emerald-100 bg-emerald-50/50 text-emerald-600"
-                : "border-amber-100 bg-amber-50/50 text-amber-600"
-            )}
-          >
-            <div
-              className={cn(
-                "h-1.5 w-1.5 rounded-full",
-                isEmailVerified ? "bg-emerald-500" : "bg-amber-500"
-              )}
-            />
-            {isEmailVerified ? "Doğrulanmış" : "Doğrulanmadı"}
+      <div className="space-y-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">İlanlarım</h2>
+            <p className="mt-1 text-sm font-medium italic text-muted-foreground">
+              Toplam {data.listingsPage.totalCount} ilanın var. Bu sayfadaki{" "}
+              {data.listingsPage.items.length} ilandan {approvedCountOnPage} tanesi yayında.
+            </p>
           </div>
 
-          <Link
-            href="/dashboard/listings?create=true"
-            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90"
-            aria-label="Yeni İlan Ver"
-          >
-            <Plus size={18} />
-            YENİ İLAN
-          </Link>
+          <div className="flex items-center gap-4">
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-xl border px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
+                isEmailVerified
+                  ? "border-emerald-100 bg-emerald-50/50 text-emerald-600"
+                  : "border-amber-100 bg-amber-50/50 text-amber-600"
+              )}
+            >
+              <div
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  isEmailVerified ? "bg-emerald-500" : "bg-amber-500"
+                )}
+              />
+              {isEmailVerified ? "Doğrulanmış" : "Doğrulanmadı"}
+            </div>
+
+            <Link
+              href="/dashboard/listings?create=true"
+              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90"
+              aria-label="Yeni İlan Ver"
+            >
+              <Plus size={18} />
+              YENİ İLAN
+            </Link>
+          </div>
         </div>
+
+        {missingTrustCount > 0 && firstTrustReminderListing ? (
+          <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-blue-950 shadow-sm sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                  Güven detayı özeti
+                </p>
+                <p className="text-sm font-semibold leading-6 text-blue-950">
+                  Bu sayfadaki {missingTrustCount} ilanda ekspertiz, hasar veya Tramer bilgisi
+                  eksik.
+                </p>
+                <p className="text-xs font-medium leading-5 text-blue-900/80">
+                  Bu detaylar zorunlu değil ama alıcı güvenini artırır. Dilersen mevcut ilan kartı
+                  hatırlatmalarına ek olarak buradan da hızlıca tamamlayabilirsin.
+                </p>
+              </div>
+
+              <Link
+                href={`/dashboard/listings?edit=${firstTrustReminderListing.id}&focus=trust`}
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white shadow-sm transition-all hover:bg-blue-700"
+              >
+                Eksik güven detaylarını tamamla
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {data.editing.status === "not_found" && (

@@ -14,12 +14,17 @@
 - Expanded [`DashboardListingSummary`](src/features/marketplace/types/dashboard-listings.ts) and the page data mapping in [`getDashboardListingsPageData()`](src/features/marketplace/services/dashboard-listings-actions.ts:102) to expose existing trust-related fields already present on listings.
 - The reminder links sellers to the existing trust-focused edit entry point via [`/dashboard/listings?edit=<id>&focus=trust`](src/features/marketplace/components/dashboard-listing-card.tsx:214), so the implementation reuses the current optional trust edit experience instead of creating a new form or mutation path.
 
-### 93.3 Validation
+### 93.3 Dashboard Summary Escalation
+- Extended [`DashboardListingsPage`](src/app/dashboard/listings/page.tsx) with a compact top-area summary panel that appears only when the current dashboard page contains listings in `draft`, `pending`, or `approved` state with missing trust detail.
+- The summary reuses the same trust signals already used by [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx) so the new surface complements the existing card reminder instead of redefining eligibility.
+- Added a direct CTA from the top summary to the existing [`focus=trust`](src/app/dashboard/listings/page.tsx:195) edit flow, keeping the implementation light and action-oriented without adding new backend workflows.
+
+### 93.4 Validation
 - Pending in this iteration until command verification completes.
 
-### 93.4 Remaining Risk
+### 93.5 Remaining Risk
 - The reminder currently treats any entered Tramer value, damage declaration, or ekspertiz presence as sufficient completion; it does not score nuance or completeness beyond those existing fields.
-- Listings missing trust detail but not present on the current dashboard page will only show the reminder when that page of results is viewed.
+- The top summary is intentionally page-scoped for this slice, so listings with missing trust detail on other pagination pages are not counted until that page is opened.
 
 ---
 
