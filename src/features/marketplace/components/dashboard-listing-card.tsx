@@ -4,6 +4,7 @@ import {
   Archive,
   ArrowUpCircle,
   Check,
+  CheckCircle2,
   Loader2,
   Pencil,
   Rocket,
@@ -24,7 +25,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DopingStore } from "@/features/dashboard/components/doping-store";
-import { getSellerTrustUI, getTrustCompletionSummary } from "@/features/marketplace/lib/trust-ui";
+import {
+  getSellerTrustUI,
+  getTrustCompletionCardSignal,
+  getTrustCompletionSummary,
+} from "@/features/marketplace/lib/trust-ui";
 import {
   getListingDopingDisplayItems,
   getListingDopingStatusTone,
@@ -101,9 +106,11 @@ export function DashboardListingCard({
       completed: typeof listing.tramerAmount === "number" && Number.isFinite(listing.tramerAmount),
     },
   ] as const;
+  const trustSignal = getTrustCompletionCardSignal(trustCompletion);
   const isTrustIncomplete = !trustCompletion.isComplete;
-  const shouldShowTrustReminder =
-    isTrustIncomplete && ["draft", "pending", "approved"].includes(listing.status);
+  const isTrustEligibleStatus = ["draft", "pending", "approved"].includes(listing.status);
+  const shouldShowTrustReminder = isTrustIncomplete && isTrustEligibleStatus;
+  const shouldShowTrustCompletionSignal = trustCompletion.isComplete && isTrustEligibleStatus;
 
   const BUMP_COOLDOWN_HOURS = 24;
 
@@ -256,10 +263,10 @@ export function DashboardListingCard({
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
                           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
-                            Güven detaylarını tamamla
+                            {trustSignal.title}
                           </p>
                           <p className="text-xs font-medium leading-5 text-blue-900/85">
-                            Alıcıların ilk bakışta göreceği güven alanlarında oranı tamamla.
+                            {trustSignal.description}
                           </p>
                         </div>
                         <span className="shrink-0 pt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
@@ -302,10 +309,30 @@ export function DashboardListingCard({
                           Mevcut düzenleme akışında sadece eksik kalan alanlara odaklan.
                         </p>
                         <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
-                          Tamamla
+                          {trustSignal.ctaLabel}
                         </span>
                       </div>
                     </div>
+                  </Link>
+                )}
+
+                {shouldShowTrustCompletionSignal && (
+                  <Link
+                    href={`/dashboard/listings?edit=${listing.id}&focus=trust${trustQuery}`}
+                    className="inline-flex w-full items-start gap-2.5 rounded-xl border border-emerald-200/80 bg-emerald-50/45 px-3 py-2.5 text-left text-emerald-950 transition-all hover:border-emerald-300 hover:bg-emerald-50/70 sm:w-auto sm:max-w-[360px]"
+                  >
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                      <CheckCircle2 className="size-3.5" />
+                    </span>
+                    <span className="min-w-0 space-y-0.5">
+                      <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+                        <span>{trustSignal.title}</span>
+                        <span className="text-emerald-700/80">{trustCompletion.ratioLabel}</span>
+                      </span>
+                      <span className="block text-[11px] font-medium leading-4 text-emerald-900/80">
+                        {trustSignal.description}
+                      </span>
+                    </span>
                   </Link>
                 )}
               </div>

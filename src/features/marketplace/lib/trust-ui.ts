@@ -18,6 +18,12 @@ export interface TrustCompletionSummary {
   ratioLabel: string;
 }
 
+export interface TrustCompletionCardSignal {
+  title: string;
+  description: string;
+  ctaLabel: string;
+}
+
 export function getTrustCompletionSummary(source: TrustCompletionSource): TrustCompletionSummary {
   const hasDamageDeclaration = Boolean(
     source.damageStatusJson && Object.keys(source.damageStatusJson).length > 0
@@ -54,6 +60,24 @@ export function getTrustBacklogSummary(
     totalCount,
     remainingCount: Math.max(totalCount - completedCount, 0),
     ratioLabel: `${completedCount}/${totalCount}`,
+  };
+}
+
+export function getTrustCompletionCardSignal(
+  summary: TrustCompletionSummary
+): TrustCompletionCardSignal {
+  if (summary.isComplete) {
+    return {
+      title: "Güven artırıcı detaylar eklendi",
+      description: "Ekspertiz, hasar beyanı ve Tramer alanları bu ilanda görünür durumda.",
+      ctaLabel: "Gözden geçir",
+    };
+  }
+
+  return {
+    title: "Güven detaylarını tamamla",
+    description: "Alıcıların ilk bakışta göreceği güven alanlarında oranı tamamla.",
+    ctaLabel: "Tamamla",
   };
 }
 

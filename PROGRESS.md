@@ -1,5 +1,30 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 101. Task A1 — Quiet Completed Trust Signal on Listing Cards
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement by suppressing the incomplete-work reminder treatment on eligible `3/3` trust-complete dashboard listings and replacing it with a calmer completion signal, while preserving the louder reminder/checklist behavior for incomplete listings and avoiding backend, schema, or state-management changes.
+
+### 101.1 Shared Trust Card Copy Helper
+- Added [`getTrustCompletionCardSignal()`](src/features/marketplace/lib/trust-ui.ts:66) to [`trust-ui.ts`](src/features/marketplace/lib/trust-ui.ts) so card-level trust messaging now comes from a single helper instead of hardcoded inline strings.
+- Kept the completed-state copy intentionally modest: it describes that trust-increasing details were added, without implying verification, certification, or formal approval.
+
+### 101.2 Lower-Noise Completed Card Surface
+- Updated [`DashboardListingCard`](src/features/marketplace/components/dashboard-listing-card.tsx:70) so eligible `draft`, `pending`, and `approved` listings still show the existing checklist/reminder CTA when trust completion is below `3/3`.
+- Added a compact secondary completion signal for eligible `3/3` listings that uses lighter emerald styling, a smaller footprint, and a quieter “güven artırıcı detaylar eklendi” message instead of reusing the incomplete-work reminder weight.
+- Preserved the existing trust-focused edit entry path so sellers can still re-open the trust section from completed cards when they want to review details.
+
+### 101.3 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/components/dashboard-listing-card.tsx src/features/marketplace/lib/trust-ui.ts`](package.json:12) ✅
+
+### 101.4 Remaining Risk
+- Trust completion still reflects field presence only, so the quieter completed signal can appear even when the entered ekspertiz, hasar, or Tramer content is minimal rather than rich.
+- The completed signal is intentionally limited to eligible dashboard card statuses and does not change the page-level trust summary behavior when other incomplete listings still exist on the same page.
+
+---
+
 ## 100. Task A1 — Unified Trust Completion Ratio Language
 
 **Date**: 2026-05-10
