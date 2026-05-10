@@ -11,8 +11,8 @@ export const model = "claude-opus-4-6";
 // Aktif Oturum Durumu (Memory & Context)
 // Aktif Oturum Durumu (Memory & Context)
 export const activeContextFiles = new Set([
-  "src/app/dashboard/listings/page.tsx",
-  "src/components/forms/listing-create-form.tsx",
-  "src/features/marketplace/components/my-listings-panel.tsx"
+  "src/app/dashboard/profile/page.tsx",
+  "src/components/forms/profile-form.tsx",
+  "src/components/forms/identity-verification-form.tsx"
 ]);
 export const conversationHistory = [];

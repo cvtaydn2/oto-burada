@@ -3,18 +3,8 @@ import Link from "next/link";
 
 import { IdentityVerificationForm } from "@/components/forms/identity-verification-form";
 import { ProfileForm } from "@/components/forms/profile-form";
-import { updateProfileAction } from "@/features/auth/lib/profile-actions";
-import { requireUser } from "@/features/auth/lib/session";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
-import {
-  buildProfileFromAuthUser,
-  getStoredProfileById,
-} from "@/features/profile/services/profile-records";
-import {
-  getLiveMarketplaceReferenceData,
-  mergeCityOptions,
-} from "@/features/shared/services/live-reference-data";
-import {} from "@/lib";
+import { getDashboardProfilePageData } from "@/features/profile/services/profile/profile-actions";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { Profile } from "@/types";
@@ -22,21 +12,8 @@ import { Profile } from "@/types";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardProfilePage() {
-  const user = await requireUser();
-
-  const [storedProfile, references] = await Promise.all([
-    getStoredProfileById(user.id),
-    getLiveMarketplaceReferenceData(),
-  ]);
-  const profile = storedProfile ?? buildProfileFromAuthUser(user);
-  const cityOptions = mergeCityOptions(references.cities, [profile.city]);
-
-  const hasFullName = Boolean(profile.fullName);
-  const hasPhone = Boolean(profile.phone);
-  const hasCity = Boolean(profile.city);
-  const completion = Math.round(
-    ([hasFullName, hasPhone, hasCity].filter(Boolean).length / 3) * 100
-  );
+  const { viewData, cityOptions, userEmail } = await getDashboardProfilePageData();
+  const { profile, completionPercentage, normalizedValues } = viewData;
 
   return (
     <div className="space-y-4 sm:space-y-6 px-3 sm:px-4">
@@ -56,11 +33,11 @@ export default async function DashboardProfilePage() {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="flex items-center gap-2 justify-end">
-              <span className="text-xl font-bold text-foreground">{completion}%</span>
+              <span className="text-xl font-bold text-foreground">{completionPercentage}%</span>
               <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-emerald-500 transition-all"
-                  style={{ width: `${completion}%` }}
+                  style={{ width: `${completionPercentage}%` }}
                 />
               </div>
             </div>
@@ -95,14 +72,14 @@ export default async function DashboardProfilePage() {
             <div className="space-y-2">
               <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/30">
                 <Mail size={14} className="text-muted-foreground/70 shrink-0" />
-                <span className="text-sm font-medium text-foreground/90 truncate">
-                  {user.email}
-                </span>
+                <span className="text-sm font-medium text-foreground/90 truncate">{userEmail}</span>
               </div>
-              {hasPhone && (
+              {normalizedValues.phone && (
                 <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/30">
                   <Phone size={14} className="text-muted-foreground/70 shrink-0" />
-                  <span className="text-sm font-medium text-foreground/90">{profile.phone}</span>
+                  <span className="text-sm font-medium text-foreground/90">
+                    {normalizedValues.phone}
+                  </span>
                 </div>
               )}
             </div>
@@ -141,14 +118,13 @@ export default async function DashboardProfilePage() {
             </div>
 
             <ProfileForm
-              action={updateProfileAction}
               initialValues={{
-                fullName: profile.fullName,
-                phone: profile.phone,
-                city: profile.city,
-                avatarUrl: profile.avatarUrl ?? "",
+                fullName: normalizedValues.fullName,
+                phone: normalizedValues.phone,
+                city: normalizedValues.city,
+                avatarUrl: normalizedValues.avatarUrl,
               }}
-              cityOptions={cityOptions.map((item) => item.city)}
+              cityOptions={cityOptions}
               isEmailVerified={profile.emailVerified}
             />
           </div>
@@ -183,7 +159,7 @@ export default async function DashboardProfilePage() {
               </div>
             )}
 
-            <IdentityVerificationForm userId={user.id} isVerified={profile.isVerified} />
+            <IdentityVerificationForm userId={profile.id} isVerified={profile.isVerified} />
           </div>
         </div>
       </div>

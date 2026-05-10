@@ -1,234 +1,303 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Mail, MapPin, UserRound } from "lucide-react";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useActionState } from "react";
-import { useState } from "react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EmailVerificationDialog } from "@/features/auth/components/email-verification-dialog";
-import type { ProfileActionState } from "@/features/auth/lib/profile-actions";
+import {
+  ProfileUpdateInput,
+  profileUpdateInputSchema,
+} from "@/features/profile/lib/profile-validators";
+import { updateProfileInformationAction } from "@/features/profile/services/profile/profile-actions";
 
 interface ProfileFormProps {
-  action: (
-    state: ProfileActionState | undefined,
-    formData: FormData
-  ) => Promise<ProfileActionState>;
-  initialValues: {
-    fullName: string;
-    phone: string;
-    city: string;
-    avatarUrl: string;
-  };
+  initialValues: ProfileUpdateInput;
   cityOptions: string[];
   isEmailVerified?: boolean;
 }
 
-const initialState: ProfileActionState = {};
-
 export function ProfileForm({
-  action,
   initialValues,
   cityOptions,
   isEmailVerified = false,
 }: ProfileFormProps) {
-  const [state, formAction] = useActionState(action, initialState);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
   const [isVerifiedLocally, setIsVerifiedLocally] = useState(isEmailVerified);
 
-  const values = {
-    fullName: state.fields?.fullName ?? initialValues.fullName,
-    phone: state.fields?.phone ?? initialValues.phone,
-    city: state.fields?.city ?? initialValues.city,
-    avatarUrl: state.fields?.avatarUrl ?? initialValues.avatarUrl,
-  };
+  const form = useForm<ProfileUpdateInput>({
+    resolver: zodResolver(profileUpdateInputSchema),
+    defaultValues: {
+      fullName: initialValues.fullName ?? "",
+      phone: initialValues.phone ?? "",
+      city: initialValues.city ?? "",
+      avatarUrl: initialValues.avatarUrl ?? "",
+    },
+  });
+
+  const watchedValues = form.watch();
+
+  async function onSubmit(values: ProfileUpdateInput) {
+    startTransition(async () => {
+      try {
+        const result = await updateProfileInformationAction(values);
+
+        if (result.status === "success") {
+          toast.success(result.message);
+          router.refresh();
+        } else {
+          toast.error(result.message);
+          if (result.fieldErrors) {
+            Object.entries(result.fieldErrors).forEach(([key, msg]) => {
+              form.setError(key as keyof ProfileUpdateInput, { message: msg });
+            });
+          }
+        }
+      } catch {
+        toast.error("Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+      }
+    });
+  }
 
   return (
     <>
-      <form action={formAction} className="space-y-5">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <UserRound className="size-4 text-primary" />
-              Tam Ad
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.fullName || "Henüz eklenmedi"}
-            </p>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-5">
+        <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <UserRound className="size-4 text-primary" />
+            Tam Ad
           </div>
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Mail className="size-4 text-primary" />
-                E-posta
-              </div>
-              {isVerifiedLocally ? (
-                <CheckCircle2 className="size-4 text-emerald-500" />
-              ) : (
-                <AlertCircle className="size-4 text-amber-500" />
-              )}
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {isVerifiedLocally ? "Doğrulandı" : "Doğrulanmadı"}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <MapPin className="size-4 text-primary" />
-              Şehir
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.city || "Henüz eklenmedi"}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary">
-              <Camera className="size-3" />
-              Avatar
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.avatarUrl ? "URL hazır" : "Opsiyonel"}
-            </p>
-          </div>
+          <p className="mt-2 text-sm font-semibold text-foreground">
+            {watchedValues.fullName || "Henüz eklenmedi"}
+          </p>
         </div>
 
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-          <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <UserRound className="size-5" />
+        <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Mail className="size-4 text-primary" />
+              E-posta
             </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Temel Profil Bilgileri
-              </h3>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Güven için ad, telefon ve şehir alanlarını eksiksiz doldurun. Bu bilgiler ilan
-                akışlarında destekleyici sinyal olarak kullanılır.
-              </p>
-            </div>
+            {isVerifiedLocally ? (
+              <CheckCircle2 className="size-4 text-emerald-500" />
+            ) : (
+              <AlertCircle className="size-4 text-amber-500" />
+            )}
           </div>
+          <p className="mt-2 text-sm font-semibold text-foreground">
+            {isVerifiedLocally ? "Doğrulandı" : "Doğrulanmadı"}
+          </p>
+        </div>
 
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <Label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
-              <span>Ad Soyad</span>
-              <Input
-                type="text"
-                name="fullName"
-                defaultValue={values.fullName}
-                required
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
-              />
-            </Label>
+        <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <MapPin className="size-4 text-primary" />
+            Şehir
+          </div>
+          <p className="mt-2 text-sm font-semibold text-foreground">
+            {watchedValues.city || "Henüz eklenmedi"}
+          </p>
+        </div>
 
-            <div className="space-y-2 text-sm font-medium text-foreground">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="phone">Telefon</Label>
-                {!isVerifiedLocally && (
-                  <Button
-                    type="button"
-                    onClick={() => setIsVerifyDialogOpen(true)}
-                    className="text-xs font-bold text-primary hover:underline"
-                  >
-                    E-posta Doğrula
-                  </Button>
-                )}
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary">
+            <Camera className="size-3" />
+            Avatar
+          </div>
+          <p className="mt-2 text-sm font-semibold text-foreground">
+            {watchedValues.avatarUrl ? "URL hazır" : "Opsiyonel"}
+          </p>
+        </div>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <UserRound className="size-5" />
               </div>
-              <Input
-                id="phone"
-                type="tel"
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                  Temel Profil Bilgileri
+                </h3>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Güven için ad, telefon ve şehir alanlarını eksiksiz doldurun.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <FormField<ProfileUpdateInput>
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel className="text-sm font-medium text-foreground">Ad Soyad</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Ad Soyad"
+                        className="h-12 w-full rounded-xl border-input bg-background text-sm transition-colors"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField<ProfileUpdateInput>
+                control={form.control}
                 name="phone"
-                defaultValue={values.phone}
-                required
-                aria-invalid={!!state.error}
-                aria-describedby={state.error ? "profile-error" : undefined}
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary aria-invalid:border-destructive"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between mb-1">
+                      <FormLabel className="text-sm font-medium text-foreground">Telefon</FormLabel>
+                      {!isVerifiedLocally && (
+                        <Button
+                          type="button"
+                          variant="link"
+                          onClick={() => setIsVerifyDialogOpen(true)}
+                          className="h-auto p-0 text-xs font-bold text-primary hover:no-underline"
+                        >
+                          E-posta Doğrula
+                        </Button>
+                      )}
+                    </div>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="tel"
+                        placeholder="05xx..."
+                        className="h-12 w-full rounded-xl border-input bg-background text-sm transition-colors"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <Label className="block space-y-2 text-sm font-medium text-foreground">
-              <span>Şehir</span>
-              <select
+              <FormField<ProfileUpdateInput>
+                control={form.control}
                 name="city"
-                defaultValue={values.city}
-                required
-                aria-invalid={!!state.error}
-                aria-describedby={state.error ? "profile-error" : undefined}
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary aria-invalid:border-destructive"
-              >
-                <option value="">Şehir seç</option>
-                {cityOptions.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-            </Label>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-          <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <Camera className="size-5" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Avatar ve Son Kayıt
-              </h3>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Avatar alanı opsiyoneldir. Şu an URL ile çalışır; dilersen boş bırakabilirsin.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
-            <Label className="block space-y-2 text-sm font-medium text-foreground">
-              <span>Avatar URL (opsiyonel)</span>
-              <Input
-                type="url"
-                name="avatarUrl"
-                defaultValue={values.avatarUrl}
-                placeholder="https://..."
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-foreground">Şehir</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value || ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-12 w-full rounded-xl border-input bg-background text-sm">
+                          <SelectValue placeholder="Şehir seçiniz" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-60 rounded-xl">
+                        {cityOptions.map((city) => (
+                          <SelectItem key={city} value={city} className="rounded-lg cursor-pointer">
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </Label>
-
-            <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                Hazırlık Notu
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground font-medium">
-                Profil güncel olursa ilan detay sayfalarında daha güvenli ve düzenli bir satıcı
-                görünümü elde edilir.
-              </p>
             </div>
+          </section>
+
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <Camera className="size-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                  Profil Resmi
+                </h3>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Şu an resim linki (URL) ile çalışır, dilerseniz boş bırakabilirsiniz.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
+              <FormField<ProfileUpdateInput>
+                control={form.control}
+                name="avatarUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-foreground">
+                      Avatar URL (Opsiyonel)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        type="url"
+                        placeholder="https://..."
+                        className="h-12 w-full rounded-xl border-input bg-background text-sm transition-colors"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="rounded-xl border border-border bg-muted/20 p-4 flex flex-col justify-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Tavsiye
+                </p>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground font-medium">
+                  Resim eklemek ilan güveninizi artırır.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="w-full h-12 text-base font-semibold rounded-xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Güncelleniyor...
+                </>
+              ) : (
+                "Profili Güncelle"
+              )}
+            </Button>
           </div>
-        </section>
-
-        {state.error ? (
-          <p
-            id="profile-error"
-            role="alert"
-            className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive font-bold"
-          >
-            {state.error}
-          </p>
-        ) : null}
-
-        {state.success ? (
-          <p
-            role="status"
-            className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary font-bold"
-          >
-            {state.success}
-          </p>
-        ) : null}
-
-        <AuthSubmitButton label="Profili Güncelle" />
-      </form>
+        </form>
+      </Form>
 
       <EmailVerificationDialog
         isOpen={isVerifyDialogOpen}
