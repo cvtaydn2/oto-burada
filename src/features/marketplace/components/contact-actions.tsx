@@ -27,7 +27,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { OfferPanel } from "@/features/offers/components/offer-panel";
-import {} from "@/lib";
 import { captureClientEvent } from "@/lib/telemetry-client";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
@@ -41,6 +40,8 @@ interface ContactActionsProps {
   listingTitle?: string;
   listingPrice?: number;
   currentUserId?: string | null;
+  reportHref?: string;
+  surface?: "default" | "sticky";
 }
 
 const WHATSAPP_MESSAGE = "Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.";
@@ -58,15 +59,12 @@ function formatPhoneNumber(phone: string) {
 
 function normalizeWhatsAppPhone(phone: string) {
   const clean = phone.replace(/\D/g, "");
-  // 11 digits starting with 0 (e.g. 0532...) -> replace 0 with 90
   if (clean.length === 11 && clean.startsWith("0")) {
     return `90${clean.slice(1)}`;
   }
-  // 10 digits starting with 5 (e.g. 532...) -> prepend 90
   if (clean.length === 10 && clean.startsWith("5")) {
     return `90${clean}`;
   }
-  // 12 digits starting with 90 -> already good
   if (clean.length === 12 && clean.startsWith("90")) {
     return clean;
   }
@@ -91,6 +89,8 @@ export function ContactActions({
   listingTitle,
   listingPrice,
   currentUserId,
+  reportHref = "#ilan-bildir",
+  surface = "default",
 }: ContactActionsProps) {
   const router = useRouter();
   const [isRevealed, setIsRevealed] = useState(false);
@@ -99,6 +99,7 @@ export function ContactActions({
 
   const trustUI = getSellerTrustUI(seller);
   const { isContactable, isTrusted, label, subMessage, tone } = trustUI;
+  const isSticky = surface === "sticky";
 
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
   if (isOwnListing) {
@@ -115,7 +116,7 @@ export function ContactActions({
             : "border-border bg-muted/30 text-muted-foreground"
         )}
       >
-        <p className="mb-1 text-xs font-bold uppercase tracking-tight">Bu Sizin İlanınız</p>
+        <p className="mb-1 text-xs font-bold uppercase tracking-tight">Bu sizin ilanınız</p>
         {hasIssues && (
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{label}</p>
@@ -130,7 +131,7 @@ export function ContactActions({
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
         <p className="mb-1 text-xs font-bold leading-tight text-amber-900">{label}</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 leading-relaxed">
+        <p className="text-[10px] font-semibold uppercase tracking-wide leading-relaxed text-amber-700">
           {subMessage || trust.contactBlockedDesc}
         </p>
       </div>
@@ -160,18 +161,40 @@ export function ContactActions({
   const finalWhatsAppLink = whatsappLink ? (isMobile ? whatsappLink : whatsappWebLink) : null;
 
   return (
-    <div className="space-y-3 lg:space-y-3.5">
-      <div className="hidden items-center gap-2.5 rounded-2xl border border-indigo-100/50 bg-indigo-50/50 p-3 group lg:flex">
-        <div className="flex size-8 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm transition-transform group-hover:scale-110">
-          <ShieldAlert className="size-4" />
-        </div>
-        <div>
-          <p className="mb-1 text-[10px] font-bold uppercase tracking-widest leading-none text-indigo-700">
-            Güvenli İletişim
-          </p>
-          <p className="text-[11px] font-medium leading-none text-indigo-600/70">
-            WhatsApp öncelikli. Numara spam korumalı gösterilir.
-          </p>
+    <div className={cn("space-y-3", !isSticky && "lg:space-y-3.5")}>
+      <div
+        className={cn(
+          "rounded-2xl border p-3",
+          isSticky ? "border-emerald-100 bg-emerald-50/70" : "border-indigo-100/60 bg-indigo-50/60"
+        )}
+      >
+        <div className="flex items-start gap-2.5">
+          <div
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-xl shadow-sm",
+              isSticky ? "bg-white text-emerald-600" : "bg-white text-indigo-600"
+            )}
+          >
+            <ShieldAlert className="size-4" />
+          </div>
+          <div className="min-w-0">
+            <p
+              className={cn(
+                "mb-1 text-[10px] font-bold uppercase tracking-widest leading-none",
+                isSticky ? "text-emerald-700" : "text-indigo-700"
+              )}
+            >
+              Güvenli iletişim akışı
+            </p>
+            <p
+              className={cn(
+                "text-[11px] font-medium leading-5",
+                isSticky ? "text-emerald-800/80" : "text-indigo-700/80"
+              )}
+            >
+              Önce WhatsApp ile yaz, ardından gerekirse numarayı görerek aramaya geç.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -182,7 +205,7 @@ export function ContactActions({
             className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#25D366] bg-[#25D366] px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#1fb355] active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <MessageCircle className="size-5" />
-            {isRevealed ? "WhatsApp ile İletişime Geç" : "WhatsApp ile Yaz"}
+            {isRevealed ? "WhatsApp ile Hemen Yaz" : "WhatsApp ile Yaz"}
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-md rounded-3xl border border-border bg-card">
@@ -191,24 +214,24 @@ export function ContactActions({
               <ShieldAlert className="size-7" />
             </div>
             <AlertDialogTitle className="text-xl font-bold text-foreground">
-              Dolandırıcılık Uyarısı
+              Güvenli iletişim hatırlatması
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-4 text-muted-foreground" asChild>
               <div className="space-y-4">
-                <p>Güvenliğiniz için lütfen aşağıdaki kurallara uyun:</p>
+                <p>İletişime geçmeden önce şu iki adımı akılda tut:</p>
                 <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4 text-sm text-foreground/90">
                   <div className="flex gap-3">
                     <AlertTriangle className="size-5 shrink-0 text-amber-500" />
                     <span>
-                      <strong>Kapora Göndermeyin:</strong> Aracı görmeden, ekspertiz yaptırmadan
-                      kesinlikle ön ödeme yapmayın.
+                      <strong>Kapora göndermeyin:</strong> Aracı görmeden ve ekspertiz sürecini
+                      netleştirmeden ön ödeme yapmayın.
                     </span>
                   </div>
                   <div className="flex gap-3">
                     <AlertTriangle className="size-5 shrink-0 text-amber-500" />
                     <span>
-                      <strong>Resmi Satıcı:</strong> Ödemenizi sadece noter huzurunda, araç sahibi
-                      adına kayıtlı hesaba yapın.
+                      <strong>Ödemeyi resmi devirle eşleştirin:</strong> Noter ve ruhsat sahibi
+                      teyidi olmadan işlem tamamlamayın.
                     </span>
                   </div>
                 </div>
@@ -257,45 +280,24 @@ export function ContactActions({
         </AlertDialogContent>
       </AlertDialog>
 
-      {!isOwnListing && currentUserId && (
-        <Button
-          onClick={() => {
-            router.push(`/dashboard/messages?new=${listingId}&seller=${sellerId}`);
-            captureClientEvent("contact_chat_clicked", { listingId, sellerId });
-          }}
-          className="hidden h-12 w-full items-center justify-center gap-2 rounded-xl border border-blue-600 bg-blue-600 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95 lg:flex"
-        >
-          <MessageSquare className="size-5" />
-          Mesaj Gönder
-        </Button>
-      )}
-
-      {isTrusted && !isRevealed && (
-        <div className="mb-2 hidden items-center gap-2 rounded-xl border border-emerald-100/50 bg-emerald-50/50 p-3 lg:flex">
-          <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
-            Güvenilir Satıcı Bağlantısı Aktif
+      {(isTrusted || trustUI.isProfessional) && !isRevealed ? (
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-100/70 bg-emerald-50/60 px-3 py-2">
+          <div className="size-2 rounded-full bg-emerald-500" />
+          <p className="text-[11px] font-medium text-emerald-800">
+            {trustUI.isProfessional
+              ? "Kurumsal satıcı profili görünür durumda."
+              : "Satıcı değerlendirmeleri güven sinyali olarak görünür durumda."}
           </p>
         </div>
-      )}
+      ) : null}
 
-      {trustUI.isProfessional && (
-        <div className="hidden items-center gap-2 rounded-xl border border-green-100/50 bg-green-50/50 p-3 lg:flex">
-          <div className="size-5 rounded-full bg-green-100 flex items-center justify-center">
-            <span className="size-2 rounded-full bg-green-500" />
-          </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-green-700">
-            Profesyonel Satıcı
-          </p>
-        </div>
-      )}
-
-      <div className="relative">
+      <div className="grid gap-2 sm:grid-cols-2">
         {!isRevealed ? (
           <Button
             onClick={handleReveal}
             disabled={isLogging}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground transition-all hover:bg-muted active:scale-95 disabled:opacity-70"
+            variant="outline"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all hover:bg-muted active:scale-95 disabled:opacity-70"
           >
             {isLogging ? (
               <Loader2 className="size-5 animate-spin" />
@@ -307,10 +309,10 @@ export function ContactActions({
             )}
           </Button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:col-span-2">
             <a
               href={`tel:${revealedPhone}`}
-              className="flex flex-1 h-12 items-center justify-center gap-2 rounded-xl border border-border bg-muted px-4 text-sm font-bold text-foreground"
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-muted px-4 text-sm font-bold text-foreground"
             >
               <Phone className="size-5 text-primary" />
               {revealedPhone ? formatPhoneNumber(revealedPhone) : "N/A"}
@@ -330,9 +332,39 @@ export function ContactActions({
             </button>
           </div>
         )}
+
+        {!isOwnListing && currentUserId ? (
+          <Button
+            onClick={() => {
+              router.push(`/dashboard/messages?new=${listingId}&seller=${sellerId}`);
+              captureClientEvent("contact_chat_clicked", { listingId, sellerId });
+            }}
+            className={cn(
+              "flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white transition-all active:scale-95",
+              isSticky ? "bg-slate-700 hover:bg-slate-800" : "bg-blue-600 hover:bg-blue-700"
+            )}
+          >
+            <MessageSquare className="size-5" />
+            Mesaj Gönder
+          </Button>
+        ) : null}
       </div>
 
-      {listingTitle && listingPrice && listingSlug && (
+      <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] font-medium leading-5 text-muted-foreground">
+            Şüpheli bir durum fark edersen ilanı sakin biçimde moderasyona iletebilirsin.
+          </p>
+          <a
+            href={reportHref}
+            className="inline-flex items-center gap-1 text-[11px] font-bold text-foreground underline-offset-4 hover:text-primary hover:underline"
+          >
+            İlanı bildir
+          </a>
+        </div>
+      </div>
+
+      {listingTitle && listingPrice && listingSlug && !isSticky ? (
         <div className="hidden lg:block">
           <OfferPanel
             listingId={listingId}
@@ -343,7 +375,7 @@ export function ContactActions({
             sellerId={sellerId}
           />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

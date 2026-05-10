@@ -33,6 +33,7 @@ import { ListingGallery } from "@/features/marketplace/components/listing-galler
 import { ListingQuestions } from "@/features/marketplace/components/listing-questions";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/listings/utils";
+import { getListingTrustDecisionSummary } from "@/features/marketplace/lib/trust-ui";
 import { getMarketValuation } from "@/features/marketplace/services/listing-price-history";
 import {
   getMarketplaceListingBySlug,
@@ -125,6 +126,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
   // Description cleanup
   const cleanDescription = getCleanDescription(listing.description);
+  const trustDecision = getListingTrustDecisionSummary(listing);
 
   return (
     <>
@@ -185,6 +187,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 currentUserId={currentUser?.id}
                 isOwner={isOwner}
                 marketValuation={marketValuation}
+                trustDecision={trustDecision}
               />
 
               <ListingSellerInfo
@@ -314,7 +317,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </section>
 
             {/* Report Listing */}
-            <section className="rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6">
+            <section
+              id="ilan-bildir"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 sm:p-5 lg:p-6"
+            >
               <div className="mb-4 flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
                   <Flag size={20} />
@@ -362,6 +368,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         seller={seller}
         price={listing.price}
         currentUserId={currentUser?.id ?? null}
+        reportHref="#ilan-bildir"
       />
     </>
   );

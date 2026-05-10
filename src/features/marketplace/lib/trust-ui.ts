@@ -24,6 +24,13 @@ export interface TrustCompletionCardSignal {
   ctaLabel: string;
 }
 
+export interface ListingTrustDecisionSummary {
+  description: string;
+  highlights: string[];
+  ratioLabel: string;
+  title: string;
+}
+
 export interface PostCreateTrustCtaConfig {
   title: string;
   description: string;
@@ -48,6 +55,53 @@ export function getTrustCompletionSummary(source: TrustCompletionSource): TrustC
     remainingCount: TRUST_COMPLETION_TOTAL - completedCount,
     isComplete: completedCount === TRUST_COMPLETION_TOTAL,
     ratioLabel: `${completedCount}/${TRUST_COMPLETION_TOTAL}`,
+  };
+}
+
+export function getListingTrustDecisionSummary(
+  source: TrustCompletionSource
+): ListingTrustDecisionSummary {
+  const summary = getTrustCompletionSummary(source);
+
+  const highlights = [
+    source.expertInspection?.hasInspection ? "Ekspertiz bilgisi görünür" : null,
+    source.damageStatusJson && Object.keys(source.damageStatusJson).length > 0
+      ? "Hasar beyanı paylaşılmış"
+      : null,
+    typeof source.tramerAmount === "number" && Number.isFinite(source.tramerAmount)
+      ? "Tramer tutarı belirtilmiş"
+      : null,
+  ].filter((value): value is string => Boolean(value));
+
+  if (summary.completedCount === 0) {
+    return {
+      title: "İletişim öncesi güven detaylarını satıcıyla netleştir",
+      description:
+        "Bu ilanda ekspertiz, hasar ve Tramer alanları şu anda görünmüyor. İlk mesajında bu üç alanı net sormak güvenli karar vermeyi kolaylaştırır.",
+      highlights: ["Ekspertiz, hasar ve Tramer bilgisini ilk mesajda iste"],
+      ratioLabel: summary.ratioLabel,
+    };
+  }
+
+  if (summary.isComplete) {
+    return {
+      title: "Karar için temel güven detayları görünür",
+      description:
+        "Ekspertiz, hasar ve Tramer alanları ilanda görünür durumda. İlk temasta detay teyidi yaparak hızlıca netleşebilirsin.",
+      highlights,
+      ratioLabel: summary.ratioLabel,
+    };
+  }
+
+  return {
+    title:
+      summary.completedCount === 2
+        ? "Ana güven detaylarının çoğu görünür"
+        : "Bazı güven detayları görünür",
+    description:
+      "İlanda karar vermeyi kolaylaştıran bazı bilgiler var. Eksik kalan alanları ilk WhatsApp mesajında netleştirmek iyi bir sonraki adımdır.",
+    highlights,
+    ratioLabel: summary.ratioLabel,
   };
 }
 

@@ -20,6 +20,7 @@ interface MobileStickyActionsProps {
   seller?: Partial<Profile> | null;
   price: number;
   currentUserId?: string | null;
+  reportHref?: string;
 }
 
 export function MobileStickyActions({
@@ -30,6 +31,7 @@ export function MobileStickyActions({
   seller,
   price,
   currentUserId,
+  reportHref = "#ilan-bildir",
 }: MobileStickyActionsProps) {
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
 
@@ -57,8 +59,9 @@ export function MobileStickyActions({
               </div>
             </div>
 
-            <p className="max-w-[14rem] text-pretty text-[10px] font-medium leading-4 text-muted-foreground/75 sm:text-right">
-              Hızlı WhatsApp ve arama aksiyonları aşağıda hazır.
+            <p className="max-w-[16rem] text-pretty text-[10px] font-medium leading-4 text-muted-foreground/75 sm:text-right">
+              Sağ kolondaki karar sırası burada da korunur: önce WhatsApp, sonra diğer iletişim
+              seçenekleri.
             </p>
           </div>
 
@@ -71,6 +74,8 @@ export function MobileStickyActions({
               listingTitle={listingTitle}
               listingPrice={price}
               currentUserId={currentUserId}
+              reportHref={reportHref}
+              surface="sticky"
             />
           </div>
         </div>

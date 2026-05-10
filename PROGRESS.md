@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 109. Task A3 — Listing Detail Trust + Seller + Contact Decision Block
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the first high-impact Task A3 slice by reorganizing the listing detail above-the-fold decision area so trust signals, seller summary, and contact actions now form a clearer single decision hierarchy, with WhatsApp explicitly primary, calmer safety guidance, visible-but-secondary reporting access, and aligned mobile sticky behavior without any backend contract or schema change.
+
+### 109.1 Above-the-Fold Decision Hierarchy Now Starts with Trust Context
+- Updated [`ListingDetailPage`](src/app/(public)/(marketplace)/listing/[slug]/page.tsx:76) to derive a shared listing trust-decision summary from existing listing fields and pass it into the right-column decision stack.
+- Added [`getListingTrustDecisionSummary()`](src/features/marketplace/lib/trust-ui.ts:54) so the detail page can translate existing ekspertiz, hasar, and Tramer presence into calm decision copy and reusable trust highlights without introducing a new backend dependency.
+- Updated [`ListingPriceBox`](src/features/marketplace/components/listing-detail/listing-price-box.tsx:35) so price is immediately followed by a dedicated “karar özeti” panel before contact actions, helping users answer “neden şimdi iletişime geçeyim?” at first glance.
+
+### 109.2 Seller + Contact Surfaces Now Read as One Clear Trust-to-Action Flow
+- Reworked [`ListingSellerInfo`](src/features/marketplace/components/listing-detail/listing-seller-info.tsx:20) to present a tighter seller summary with explicit seller type, membership context, trust label, and short expectation-setting copy instead of a more loosely grouped identity card.
+- Reworked [`ContactActions`](src/features/marketplace/components/contact-actions.tsx:84) so WhatsApp is unmistakably the primary action, phone reveal stays secondary, message send remains available as a secondary option, and the report entry is visible as a quiet moderation path rather than a dominant alarm surface.
+- Kept the existing phone-reveal logging, chat navigation, and offer-panel contract intact while only changing hierarchy, copy, and presentational emphasis.
+
+### 109.3 Mobile Sticky and Desktop Right Column Are Now Intentionally Aligned
+- Updated [`MobileStickyActions`](src/features/marketplace/components/mobile-sticky-actions.tsx:25) so the sticky bar now mirrors the same contact ordering and trust framing used in the desktop right rail, including the same report destination anchor.
+- Added the shared report anchor target on [`ListingDetailPage`](src/app/(public)/(marketplace)/listing/[slug]/page.tsx:317) so both mobile and desktop secondary trust-exit links land on the same reporting section.
+- Reframed [`ListingSafetyNotice`](src/features/marketplace/components/listing-detail/listing-safety-notice.tsx:3) into calmer “güvenli karar notları” language that supports the main decision block without sounding overly alarmist.
+
+### 109.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/(public)/(marketplace)/listing/[slug]/page.tsx src/features/marketplace/components/listing-detail/listing-price-box.tsx src/features/marketplace/components/listing-detail/listing-seller-info.tsx src/features/marketplace/components/listing-detail/listing-safety-notice.tsx src/features/marketplace/components/contact-actions.tsx src/features/marketplace/components/mobile-sticky-actions.tsx src/features/marketplace/lib/trust-ui.ts`](package.json:12) ✅
+
+### 109.5 Remaining Risk
+- The new trust-decision summary still reflects field presence only, so a `3/3` trust state communicates visibility of core details rather than their depth or external verification quality.
+- Secondary actions are clearer and more intentionally demoted, but true conversion impact between WhatsApp, phone reveal, and internal message paths will still need real usage data to tune further.
+
+---
+
 ## 108. Task A2 — Adaptive Discovery Guidance Summary
 
 **Date**: 2026-05-11
