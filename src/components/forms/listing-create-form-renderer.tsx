@@ -84,34 +84,49 @@ export function ListingCreateFormRenderer({
   const shouldHighlightTrustFields = isEditing && focusMode === "trust";
   const trustSectionRef = useRef<HTMLDivElement | null>(null);
 
+  const watchedDamageStatus = form.watch("damageStatusJson");
+  const watchedTramerAmount = form.watch("tramerAmount");
+  const watchedExpertInspection = form.watch("expertInspection");
+
   const trustChecklist = useMemo(() => {
     const hasDamageDeclaration = Boolean(
-      initialListing?.damageStatusJson && Object.keys(initialListing.damageStatusJson).length > 0
+      watchedDamageStatus && Object.keys(watchedDamageStatus).length > 0
     );
+
+    const hasInspection = Boolean(watchedExpertInspection?.hasInspection);
+    const hasTramerAmount =
+      typeof watchedTramerAmount === "number" && Number.isFinite(watchedTramerAmount);
 
     return [
       {
         key: "inspection",
         label: "Ekspertiz özeti",
         description: "Aracın teknik durumunu hızlıca gösterir.",
-        completed: Boolean(initialListing?.expertInspection?.hasInspection),
+        actionLabel: "Ekspertiz bilgisi gir",
+        actionHint: "Mekanik durumu ve önemli notları işaretle.",
+        completed: hasInspection,
       },
       {
         key: "damage",
         label: "Hasar beyanı",
         description: "Kaporta ve değişen bilgisini görünür yapar.",
+        actionLabel: "Hasar/değişen bilgisini ekle",
+        actionHint: "Boyalı, değişen veya işlem görmüş parçaları seç.",
         completed: hasDamageDeclaration,
       },
       {
         key: "tramer",
         label: "Tramer tutarı",
         description: "Hasar geçmişini sayısal olarak netleştirir.",
-        completed: typeof initialListing?.tramerAmount === "number",
+        actionLabel: "Tramer tutarını belirt",
+        actionHint: "Kayıt yoksa 0 girebilir veya boş bırakabilirsin.",
+        completed: hasTramerAmount,
       },
     ] as const;
-  }, [initialListing]);
+  }, [watchedDamageStatus, watchedExpertInspection, watchedTramerAmount]);
 
   const missingTrustItems = trustChecklist.filter((item) => !item.completed);
+  const nextTrustAction = missingTrustItems[0] ?? null;
 
   useEffect(() => {
     if (!shouldHighlightTrustFields || !trustSectionRef.current) {
@@ -191,7 +206,7 @@ export function ListingCreateFormRenderer({
                     </p>
                     <p className="text-sm font-semibold leading-6 text-slate-900">
                       {missingTrustItems.length > 0
-                        ? `${missingTrustItems.length} alan hâlâ eksik. Form seni ilgili bölüme otomatik indirir.`
+                        ? `${missingTrustItems.length} alan hâlâ eksik. Aşağıda sadece sıradaki eksiklere odaklanabilirsin.`
                         : "3 alan da dolu görünüyor. Yine de bilgileri gözden geçirip kaydedebilirsin."}
                     </p>
                   </div>
@@ -203,6 +218,61 @@ export function ListingCreateFormRenderer({
                   </Link>
                 </div>
 
+                {missingTrustItems.length > 0 ? (
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4 sm:p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                          Sıradaki adımlar
+                        </p>
+                        <p className="text-sm font-semibold leading-6 text-blue-950">
+                          {nextTrustAction
+                            ? `Önce “${nextTrustAction.actionLabel}” adımını tamamla.`
+                            : "Eksik alanları aşağıdaki bölümde tamamlayabilirsin."}
+                        </p>
+                        <p className="text-xs font-medium leading-5 text-blue-900/80">
+                          Yeni kural yok; bu alanlar sadece alıcının ilandaki güven sinyallerini
+                          daha hızlı görmesine yardımcı olur.
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-blue-200 bg-white/80 px-4 py-3 text-xs font-semibold leading-5 text-blue-900 sm:max-w-xs">
+                        {trustFlowTransition?.mode === "next" &&
+                        trustFlowTransition.nextListingTitle
+                          ? `Kaydettiğinde sıradaki eksik ilan: ${trustFlowTransition.nextListingTitle}.`
+                          : trustFlowTransition?.mode === "done"
+                            ? "Bu sayfadaki son eksik ilandasın. Kaydettiğinde akış tamamlanmış görünecek."
+                            : "Kaydetmeden önce sadece eksik görünen kalemleri doldurman yeterli."}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-3">
+                      {missingTrustItems.map((item, index) => (
+                        <div
+                          key={item.key}
+                          className="rounded-2xl border border-blue-200 bg-white/90 p-4"
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="space-y-1">
+                              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                                Adım {index + 1}
+                              </p>
+                              <p className="text-sm font-semibold text-slate-900">
+                                {item.actionLabel}
+                              </p>
+                              <p className="text-xs font-medium leading-5 text-slate-600">
+                                {item.actionHint}
+                              </p>
+                            </div>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">
+                              Eksik
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="grid gap-3 sm:grid-cols-3">
                   {trustChecklist.map((item, index) => (
                     <div
@@ -210,7 +280,7 @@ export function ListingCreateFormRenderer({
                       className={
                         item.completed
                           ? "rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4"
-                          : "rounded-2xl border border-amber-200 bg-amber-50/80 p-4"
+                          : "rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
                       }
                     >
                       <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
@@ -218,16 +288,16 @@ export function ListingCreateFormRenderer({
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-900">{item.label}</p>
                       <p className="mt-1 text-xs font-medium leading-5 text-slate-600">
-                        {item.description}
+                        {item.completed ? item.description : item.actionLabel}
                       </p>
                       <p
                         className={
                           item.completed
                             ? "mt-3 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700"
-                            : "mt-3 text-xs font-bold uppercase tracking-[0.16em] text-amber-700"
+                            : "mt-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-500"
                         }
                       >
-                        {item.completed ? "Tamamlandı" : "Eksik"}
+                        {item.completed ? "Tamamlandı" : "Sırada"}
                       </p>
                     </div>
                   ))}
@@ -278,7 +348,8 @@ export function ListingCreateFormRenderer({
                   </h2>
                   <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/80">
                     Bu bölümde yalnız ekspertiz, hasar beyanı ve Tramer detaylarına odaklanın.
-                    Kaydettiğiniz anda ilan kartındaki güven eksiği uyarısı güncellenir.
+                    Üstteki sıradaki adımlar ile buradaki alanlar birebir eşleşir; eksik olanı girip
+                    kaydetmeniz yeterli.
                     {trustFlowTransition?.mode === "next"
                       ? " Bu sayfada başka eksik ilan varsa bir sonrakine otomatik geçilir."
                       : " Son eksik ilana geldiysen tamamlandığında filtre içinde net başarı mesajı görürsün."}
@@ -289,8 +360,8 @@ export function ListingCreateFormRenderer({
                     ? `Kaydetme sonrası sıradaki eksik ilan: ${trustFlowTransition.nextListingTitle}.`
                     : trustFlowTransition?.mode === "done"
                       ? "Bu sayfadaki son eksik ilandasın. Kaydetme sonrası filtre içinde tamamlandı mesajı gösterilir."
-                      : missingTrustItems.length > 0
-                        ? `Öncelik verilecek eksikler: ${missingTrustItems.map((item) => item.label).join(", ")}.`
+                      : nextTrustAction
+                        ? `Şimdi odak: ${nextTrustAction.actionLabel.toLowerCase()}.`
                         : "Eksik görünen alan kalmadı. İstersen bilgileri daha net hale getirip yeniden kaydedebilirsin."}
                 </div>
               </div>

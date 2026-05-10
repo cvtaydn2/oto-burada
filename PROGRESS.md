@@ -1,5 +1,31 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 98. Task A1 — Trust Mode Next-Steps Guidance Surface
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement by turning the existing `focus=trust` checklist into a short action-oriented guidance surface that tells sellers exactly what to fill before saving, while reusing the current edit form, existing query-param flow, and existing inspection section without backend or schema changes.
+
+### 98.1 Action-Led Missing Trust Guidance
+- Updated [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx) so trust mode now derives completion state from the live form values instead of only the initial listing snapshot.
+- Reframed missing trust items from passive status chips into short mobile-first next steps using explicit action copy for ekspertiz, hasar/değişen, and Tramer.
+- Kept the surface intentionally compact and non-blocking so it feels like trust guidance rather than a new validation rule.
+
+### 98.2 Visual Alignment with the Existing Inspection Surface
+- Added a compact “Sıradaki adımlar” guidance block above the trust-focused [`InspectionStep`](src/components/forms/listing-wizard/steps/InspectionStep.tsx) container in [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx).
+- Matched the guidance copy with the existing trust save/next-listing context so sellers can see both what to fill now and what happens after save without leaving the current flow.
+- Kept the standard create path and non-trust edit path unchanged by limiting the new behavior to `focus=trust` edit mode.
+
+### 98.3 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/components/forms/listing-create-form-renderer.tsx`](package.json:12) ✅
+
+### 98.4 Remaining Risk
+- Trust completeness still uses simple field-presence checks, so the guidance can only say what is missing, not whether the entered content is strong or detailed.
+- The live trust checklist now reacts to form changes in-session, but the trust mode still focuses only on the existing three optional trust fields in the current MVP scope.
+
+---
+
 ## 97. Task A1 — Trust Incomplete Next Listing Flow
 
 **Date**: 2026-05-10
