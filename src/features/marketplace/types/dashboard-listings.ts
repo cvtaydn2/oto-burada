@@ -38,6 +38,12 @@ export interface DashboardEditableListing {
   whatsappPhone: string;
   description: string;
   vin?: string | null;
+  tramerAmount?: number | null;
+  damageStatusJson?: Record<string, string> | null;
+  expertInspection?: {
+    hasInspection: boolean;
+    inspectionDate?: string;
+  } | null;
   status: DashboardListingStatus;
 }
 

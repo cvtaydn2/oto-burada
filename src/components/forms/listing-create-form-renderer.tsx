@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { BotProtection } from "@/components/shared/bot-protection";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,49 @@ export function ListingCreateFormRenderer({
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const isBotProtectionEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
   const shouldHighlightTrustFields = isEditing && focusMode === "trust";
+  const trustSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const trustChecklist = useMemo(() => {
+    const hasDamageDeclaration = Boolean(
+      initialListing?.damageStatusJson && Object.keys(initialListing.damageStatusJson).length > 0
+    );
+
+    return [
+      {
+        key: "inspection",
+        label: "Ekspertiz özeti",
+        description: "Aracın teknik durumunu hızlıca gösterir.",
+        completed: Boolean(initialListing?.expertInspection?.hasInspection),
+      },
+      {
+        key: "damage",
+        label: "Hasar beyanı",
+        description: "Kaporta ve değişen bilgisini görünür yapar.",
+        completed: hasDamageDeclaration,
+      },
+      {
+        key: "tramer",
+        label: "Tramer tutarı",
+        description: "Hasar geçmişini sayısal olarak netleştirir.",
+        completed: typeof initialListing?.tramerAmount === "number",
+      },
+    ] as const;
+  }, [initialListing]);
+
+  const missingTrustItems = trustChecklist.filter((item) => !item.completed);
+
+  useEffect(() => {
+    if (!shouldHighlightTrustFields || !trustSectionRef.current) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      trustSectionRef.current?.focus({ preventScroll: true });
+      trustSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [shouldHighlightTrustFields]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (!isEmailVerifiedLocally && !isEditing) {
@@ -99,23 +142,86 @@ export function ListingCreateFormRenderer({
   return (
     <div className="mx-auto min-h-screen w-full flex-1 bg-slate-50/50 px-4 py-6 sm:py-12 lg:px-8">
       <div className="mx-auto max-w-[1000px]">
-        <div className="mb-6 sm:mb-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-6 border border-slate-200 shadow-sm">
+        <div className="mb-6 text-center sm:mb-14">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 shadow-sm">
             <Car size={12} strokeWidth={3} />
-            {currentStep + 1} / {totalSteps}
+            {shouldHighlightTrustFields
+              ? "Hızlı güven tamamlama modu"
+              : `${currentStep + 1} / ${totalSteps}`}
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 lg:text-6xl">
-            {isEditing ? "İlanınızı düzenleyin" : "Yeni ilanınızı incelemeye gönderin"}
+            {shouldHighlightTrustFields
+              ? "Güven detaylarını doğrudan tamamlayın"
+              : isEditing
+                ? "İlanınızı düzenleyin"
+                : "Yeni ilanınızı incelemeye gönderin"}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg font-medium leading-relaxed text-slate-600 mx-auto">
-            {isEditing
-              ? "İlanınızın bilgilerini güncelleyin. Değişiklikler moderasyon kontrolünden sonra yayında kalır."
-              : "3 kısa adımda aracınızı ekleyin, fotoğraflarınızı yükleyin ve ilanınızı moderasyon incelemesine gönderin."}
+          <p className="mx-auto mt-4 max-w-2xl text-lg font-medium leading-relaxed text-slate-600">
+            {shouldHighlightTrustFields
+              ? "Bu modda odak ekspertiz, hasar beyanı ve Tramer bilgilerinde. Üstteki temel ilan adımları korunur, aşağıda eksik güven alanlarına doğrudan inersiniz."
+              : isEditing
+                ? "İlanınızın bilgilerini güncelleyin. Değişiklikler moderasyon kontrolünden sonra yayında kalır."
+                : "3 kısa adımda aracınızı ekleyin, fotoğraflarınızı yükleyin ve ilanınızı moderasyon incelemesine gönderin."}
           </p>
         </div>
 
         <div className="mb-6 sm:mb-10">
-          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+          {shouldHighlightTrustFields ? (
+            <div className="rounded-3xl border border-emerald-200 bg-white p-4 text-left shadow-sm sm:p-5">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                      Odak: güven artırıcı 3 alan
+                    </p>
+                    <p className="text-sm font-semibold leading-6 text-slate-900">
+                      {missingTrustItems.length > 0
+                        ? `${missingTrustItems.length} alan hâlâ eksik. Form seni ilgili bölüme otomatik indirir.`
+                        : "3 alan da dolu görünüyor. Yine de bilgileri gözden geçirip kaydedebilirsin."}
+                    </p>
+                  </div>
+                  <Link
+                    href="/dashboard/listings"
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100"
+                  >
+                    İlanlara dön
+                  </Link>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {trustChecklist.map((item, index) => (
+                    <div
+                      key={item.key}
+                      className={
+                        item.completed
+                          ? "rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4"
+                          : "rounded-2xl border border-amber-200 bg-amber-50/80 p-4"
+                      }
+                    >
+                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                        {index + 1}. alan
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-900">{item.label}</p>
+                      <p className="mt-1 text-xs font-medium leading-5 text-slate-600">
+                        {item.description}
+                      </p>
+                      <p
+                        className={
+                          item.completed
+                            ? "mt-3 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700"
+                            : "mt-3 text-xs font-bold uppercase tracking-[0.16em] text-amber-700"
+                        }
+                      >
+                        {item.completed ? "Tamamlandı" : "Eksik"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+          )}
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-6">
@@ -141,27 +247,30 @@ export function ListingCreateFormRenderer({
           </div>
 
           {shouldHighlightTrustFields && (
-            <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm sm:p-6">
+            <div
+              ref={trustSectionRef}
+              tabIndex={-1}
+              className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm outline-none sm:p-6"
+            >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">
                     <ShieldCheck className="size-3" />
-                    Opsiyonel güven artırıcı alanlar
+                    Doğrudan güven alanları
                   </div>
                   <h2 className="text-xl font-bold tracking-tight text-emerald-950">
-                    İlanını daha güven verici hale getir
+                    Eksik alanları burada tamamlayın
                   </h2>
                   <p className="max-w-2xl text-sm font-medium leading-6 text-emerald-900/80">
-                    Ekspertiz, hasar ve Tramer detayları zorunlu değil. Ancak bu bilgileri eklemek
-                    alıcıların ilanını daha hızlı değerlendirmesine yardımcı olur.
+                    Bu bölümde yalnız ekspertiz, hasar beyanı ve Tramer detaylarına odaklanın.
+                    Kaydettiğiniz anda ilan kartındaki güven eksiği uyarısı güncellenir.
                   </p>
                 </div>
-                <Link
-                  href="/dashboard/listings"
-                  className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800 transition-all hover:border-emerald-300 hover:bg-emerald-50"
-                >
-                  İlanlarıma dön
-                </Link>
+                <div className="rounded-2xl border border-emerald-200/80 bg-white/80 px-4 py-3 text-xs font-semibold leading-5 text-emerald-900 sm:max-w-xs">
+                  {missingTrustItems.length > 0
+                    ? `Öncelik verilecek eksikler: ${missingTrustItems.map((item) => item.label).join(", ")}.`
+                    : "Eksik görünen alan kalmadı. İstersen bilgileri daha net hale getirip yeniden kaydedebilirsin."}
+                </div>
               </div>
 
               <div className="mt-5 rounded-2xl border border-emerald-200/80 bg-white/80 p-4 sm:p-5">

@@ -63,6 +63,14 @@ function toDashboardEditableListing(listing: Listing): DashboardEditableListing 
     whatsappPhone: listing.whatsappPhone,
     description: listing.description,
     vin: listing.vin ?? null,
+    tramerAmount: listing.tramerAmount ?? null,
+    damageStatusJson: listing.damageStatusJson ?? null,
+    expertInspection: listing.expertInspection
+      ? {
+          hasInspection: Boolean(listing.expertInspection.hasInspection),
+          inspectionDate: listing.expertInspection.inspectionDate,
+        }
+      : null,
     status: listing.status,
   };
 }

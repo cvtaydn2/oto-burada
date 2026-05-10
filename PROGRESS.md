@@ -1,5 +1,35 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 96. Task A1 — Trust Focus Edit Directness Pass
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next minimal Task A1 trust-flow improvement by making the existing `focus=trust` listing edit experience more direct, more contextual, and more mobile-first without changing routes, backend contracts, moderation logic, or schema.
+
+### 96.1 In-Form Trust Context Surface
+- Extended [`DashboardEditableListing`](src/features/marketplace/types/dashboard-listings.ts) and [`getDashboardListingsPageData()`](src/features/marketplace/services/dashboard-listings-actions.ts:110) so the trust-focused edit form receives the existing ekspertiz, hasar, and Tramer values already present on the listing.
+- Updated [`ListingCreateFormRenderer`](src/components/forms/listing-create-form-renderer.tsx) to replace the generic trust focus header state with a clearer “hızlı güven tamamlama” context panel that explicitly repeats the three trust items inside the edit flow.
+- The new surface keeps the experience mobile-first by using a compact stacked checklist instead of adding a heavier sidebar or extra page.
+
+### 96.2 Direct Trust Completion Guidance
+- Added per-item completion state for ekspertiz özeti, hasar beyanı, and Tramer tutarı so sellers can immediately see which trust details are still missing after arriving from the dashboard reminder.
+- Added a focused trust summary panel above [`InspectionStep`](src/components/forms/listing-wizard/steps/InspectionStep.tsx) that repeats the exact missing items and explains that saving this section updates the dashboard trust reminder state.
+- Reused the existing `focus=trust` entry point and existing inspection form surface; no new route, mutation type, or backend logic was introduced.
+
+### 96.3 More Direct Entry Behavior
+- In trust focus mode, the standard wizard progress indicator is intentionally replaced with a simpler trust-specific context surface to reduce irrelevant navigation noise while preserving the existing form and submit flow.
+- Added automatic scroll and focus targeting to the trust section so sellers arriving from a trust reminder land directly on the relevant area instead of manually scanning the page.
+
+### 96.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/components/forms/listing-create-form-renderer.tsx src/features/marketplace/types/dashboard-listings.ts src/features/marketplace/services/dashboard-listings-actions.ts`](package.json:12) ✅
+
+### 96.5 Remaining Risk
+- Trust completion still uses simple field-presence checks, so a minimally filled ekspertiz or damage payload counts as complete even if its informational depth is weak.
+- Auto-scroll behavior depends on the browser scroll context and may feel slightly different across devices, though it remains intentionally lightweight for this MVP slice.
+
+---
+
 ## 95. Task A1 — Dashboard Trust Completion Checklist Surface
 
 **Date**: 2026-05-10
