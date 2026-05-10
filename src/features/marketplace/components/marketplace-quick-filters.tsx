@@ -21,15 +21,17 @@ interface MarketplaceQuickFiltersProps {
     options?: { scroll?: boolean }
   ) => void;
   handleReset: () => void;
+  className?: string;
 }
 
 export function MarketplaceQuickFilters({
   filters,
   applyImmediateFilterPatch,
   handleReset,
+  className,
 }: MarketplaceQuickFiltersProps) {
   return (
-    <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
+    <div className={cn("mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3", className)}>
       {QUICK_FILTERS.map((qf) => {
         const isActive =
           (qf.type === "expert" && filters.hasExpertReport === true) ||

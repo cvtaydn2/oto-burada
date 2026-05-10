@@ -74,6 +74,7 @@ export function MarketplaceControls({
             resultCount={total}
             onApply={(f) => applyFilters(f, true)}
             onReset={handleReset}
+            onInstantApplyPatch={applyImmediateFilterPatch}
           />
         </div>
 
@@ -86,6 +87,7 @@ export function MarketplaceControls({
             resultCount={total}
             onApply={(f) => applyFilters(f, true)}
             onReset={handleReset}
+            onInstantApplyPatch={applyImmediateFilterPatch}
           />
         </div>
 

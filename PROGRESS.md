@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 107. Task A2 — Mobile Drawer Instant Quick-Decision Rail
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A2 micro-improvement by separating the highest-frequency mobile drawer controls into an instant-apply top rail so users get the same immediate behavior they already see above the results list, while preserving the staged draft/apply contract for the deeper drawer sections below.
+
+### 107.1 Drawer Top Hierarchy Now Splits Instant vs Staged Intent
+- Updated [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:23) to introduce a dedicated “Hızlı Karar” section above the detailed filter panel, clarifying that some controls apply instantly while the lower sections remain draft-based.
+- Kept the detailed [`ListingsFilterPanel`](src/features/marketplace/components/listings-filter-panel.tsx:90) flow unchanged beneath that section so the drawer still supports multi-step staged refinement and explicit apply.
+- Added compact mobile-first helper copy that explains the behavioral split directly in the drawer instead of leaving users to infer it.
+
+### 107.2 Quick Filters Reused Inside the Drawer with Instant URL Updates
+- Reused [`MarketplaceQuickFilters`](src/features/marketplace/components/marketplace-quick-filters.tsx:17) inside the drawer rather than creating a second quick-filter implementation, extending it only with an optional layout class hook for narrow mobile rail presentation.
+- Wired drawer-top quick filters through a new [`onInstantApplyPatch`](src/components/ui/mobile-filter-drawer.tsx:31) prop so sort and expert-report quick actions continue to update the canonical listings URL and results immediately.
+- Preserved the established Task A2 pagination behavior by keeping these instant drawer actions on `page=1` resets, matching the top marketplace rail.
+
+### 107.3 Draft State Stays in Sync After Instant Actions
+- Updated the drawer-local instant handler in [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:89) so any instant quick-filter tap also mutates the drawer draft state before delegating to the shared marketplace instant-apply path.
+- Added a dedicated instant reset path in [`MobileFilterDrawer`](src/components/ui/mobile-filter-drawer.tsx:103) so the drawer’s draft snapshot stays aligned when the “Tümü” quick reset is triggered from the instant rail.
+- Kept the footer preview and lower apply CTA bound to `draftFilters`, ensuring the staged area reflects the latest live quick-filter state instead of drifting behind the URL.
+
+### 107.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/components/ui/mobile-filter-drawer.tsx src/features/marketplace/components/marketplace-controls.tsx src/features/marketplace/components/marketplace-quick-filters.tsx`](package.json:12) ✅
+
+### 107.5 Remaining Risk
+- The drawer now intentionally mixes instant and staged interactions in one surface with clearer hierarchy, but users still need to notice the helper copy to fully understand why upper and lower controls behave differently.
+- Quick-filter draft synchronization currently assumes patch-style updates for high-frequency controls only; if future instant controls introduce dependency-reset chains beyond the current sort/expert/reset scope, the drawer-local sync helper should be extended deliberately.
+
+---
+
 ## 106. Task A2 — Mobile Drawer Live Result Preview CTA Pass
 
 **Date**: 2026-05-11

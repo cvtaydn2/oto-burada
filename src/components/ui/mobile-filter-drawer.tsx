@@ -15,6 +15,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ListingsFilterPanel } from "@/features/marketplace/components/listings-filter-panel";
+import { MarketplaceQuickFilters } from "@/features/marketplace/components/marketplace-quick-filters";
 import { useFilterResultCount } from "@/features/marketplace/hooks/use-filter-result-count";
 import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
@@ -27,6 +28,7 @@ interface MobileFilterDrawerProps {
   resultCount?: number;
   onApply?: (filters: ListingFilters) => void;
   onReset?: () => void;
+  onInstantApplyPatch?: (patch: Partial<ListingFilters>, options?: { scroll?: boolean }) => void;
 }
 
 export function MobileFilterDrawer({
@@ -37,6 +39,7 @@ export function MobileFilterDrawer({
   resultCount,
   onApply,
   onReset,
+  onInstantApplyPatch,
 }: MobileFilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<ListingFilters>(filters);
@@ -81,6 +84,27 @@ export function MobileFilterDrawer({
       ...(key === "model" ? { carTrim: undefined } : {}),
       ...(key === "city" ? { district: undefined } : {}),
     }));
+  };
+
+  const handleInstantApplyPatch = (
+    patch: Partial<ListingFilters>,
+    options?: { scroll?: boolean }
+  ) => {
+    const nextDraftFilters: ListingFilters = {
+      ...draftFilters,
+      ...patch,
+      page: 1,
+    };
+
+    setDraftFilters(nextDraftFilters);
+    onInstantApplyPatch?.(patch, options);
+  };
+
+  const handleInstantReset = () => {
+    const nextDraftFilters: ListingFilters = { page: 1, limit: 12, sort: "newest" };
+
+    setDraftFilters(nextDraftFilters);
+    onReset?.();
   };
 
   const handleApply = () => {
@@ -135,7 +159,26 @@ export function MobileFilterDrawer({
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="overflow-y-auto px-1 py-2">
+        <div className="overflow-y-auto px-4 py-3">
+          <section className="mb-4 rounded-3xl border border-border/60 bg-card/60 p-4 shadow-sm shadow-slate-950/5">
+            <div className="space-y-1">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground">
+                Hızlı Karar
+              </p>
+              <p className="text-xs leading-5 text-muted-foreground">
+                Sık kullanılan kontroller sonuçları anında günceller. Detay filtreler aşağıda taslak
+                olarak kalır.
+              </p>
+            </div>
+
+            <MarketplaceQuickFilters
+              filters={draftFilters}
+              applyImmediateFilterPatch={handleInstantApplyPatch}
+              handleReset={handleInstantReset}
+              className="mt-3 flex-nowrap gap-2 overflow-x-auto pb-1 pr-1 sm:mt-3 sm:gap-2 [&::-webkit-scrollbar]:hidden"
+            />
+          </section>
+
           <ListingsFilterPanel
             brands={brands}
             cities={cities}
