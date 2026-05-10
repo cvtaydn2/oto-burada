@@ -7,6 +7,12 @@ import {
   type ListingRow,
   mapListingRow,
 } from "@/features/marketplace/services/mappers/listing-row.mapper";
+import {
+  canonicalizeMarketplaceFilters,
+  DEFAULT_MARKETPLACE_QUERY,
+  type MarketplaceListingsQuery,
+  serializeMarketplaceQuery,
+} from "@/features/marketplace/services/marketplace-query";
 import { getPublicSellerProfile } from "@/features/profile/services/profile-records";
 import { withNextCache } from "@/lib/cache";
 import { logger } from "@/lib/logger";
@@ -23,7 +29,7 @@ import {
 
 export { getStoredListingById, getStoredListingBySlug, getStoredListingsByIds };
 
-const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
+const SUPPORTED_RAW_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "brand",
   "model",
   "carTrim",
@@ -51,7 +57,7 @@ const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "validationError",
 ]);
 
-function sanitizeMarketplaceFilters(filters: ListingFilters): {
+function sanitizeRawMarketplaceFilters(filters: ListingFilters): {
   sanitized: ListingFilters;
   droppedKeys: string[];
 } {
@@ -59,7 +65,7 @@ function sanitizeMarketplaceFilters(filters: ListingFilters): {
   const droppedKeys: string[] = [];
 
   for (const [key, value] of Object.entries(filters)) {
-    if (SUPPORTED_MARKETPLACE_FILTER_KEYS.has(key as keyof ListingFilters)) {
+    if (SUPPORTED_RAW_MARKETPLACE_FILTER_KEYS.has(key as keyof ListingFilters)) {
       if (typeof value === "string") {
         (sanitized as Record<string, unknown>)[key] = value.replace(/<[^>]*>/g, "");
       } else {
@@ -71,31 +77,61 @@ function sanitizeMarketplaceFilters(filters: ListingFilters): {
   }
 
   if (droppedKeys.length > 0) {
-    logger.listings.warn("Dropping unsupported marketplace filter keys", { droppedKeys });
-    captureServerEvent("marketplace_filters_sanitized", { droppedKeys });
+    logger.listings.warn("Dropping unsupported raw marketplace filter keys", { droppedKeys });
+    captureServerEvent("marketplace_filters_sanitized", {
+      droppedKeys,
+      source: "raw_input",
+    });
   }
 
   return { sanitized, droppedKeys };
 }
 
+function buildMarketplaceListingsCacheKey(query: MarketplaceListingsQuery): string[] {
+  const serialized = JSON.parse(serializeMarketplaceQuery(query)) as Array<[string, unknown]>;
+
+  return ["public-listings", ...serialized.map(([key, value]) => `${key}:${String(value)}`)];
+}
+
+function appendDroppedFilterMetadata(
+  result: PaginatedListingsResult,
+  droppedKeys: string[]
+): PaginatedListingsResult {
+  if (droppedKeys.length === 0) return result;
+
+  return {
+    ...result,
+    metadata: {
+      ...result.metadata,
+      droppedFilters: droppedKeys,
+      warning: "Bazı filtreler desteklenmiyor ve uygulanmadı.",
+    },
+  };
+}
+
 export async function getFilteredMarketplaceListings(
-  filters: ListingFilters
+  query: MarketplaceListingsQuery
 ): Promise<PaginatedListingsResult> {
-  const { sanitized, droppedKeys } = sanitizeMarketplaceFilters(filters);
-  const result = await getPublicListings(sanitized);
+  // Since actual data implementation expects matching shape of Record type, cast safely
+  return getPublicListings(query as unknown as ListingFilters);
+}
 
-  if (droppedKeys.length > 0) {
-    return {
-      ...result,
-      metadata: {
-        ...result.metadata,
-        droppedFilters: droppedKeys,
-        warning: "Bazı filtreler desteklenmiyor ve uygulanmadı.",
-      },
-    };
-  }
+export async function getPublicMarketplaceListings(
+  query: MarketplaceListingsQuery = DEFAULT_MARKETPLACE_QUERY
+) {
+  return withNextCache(
+    buildMarketplaceListingsCacheKey(query),
+    () => getFilteredMarketplaceListings(query),
+    60
+  );
+}
 
-  return result;
+export async function getPublicMarketplaceListingsFromRawFilters(rawFilters: ListingFilters) {
+  const { sanitized, droppedKeys } = sanitizeRawMarketplaceFilters(rawFilters);
+  const query = canonicalizeMarketplaceFilters(sanitized);
+  const result = await getPublicMarketplaceListings(query);
+
+  return appendDroppedFilterMetadata(result, droppedKeys);
 }
 
 export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listing[]> {
@@ -170,29 +206,6 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
     () => getPublicSellerProfile(sellerId),
     300
   );
-}
-
-export async function getPublicMarketplaceListings(
-  filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }
-) {
-  const keyParts = [
-    "public-listings",
-    `p:${filters.page ?? 1}`,
-    `l:${filters.limit ?? 12}`,
-    `s:${filters.sort ?? "newest"}`,
-    `b:${filters.brand ?? "all"}`,
-    `m:${filters.model ?? "all"}`,
-    `c:${filters.city ?? "all"}`,
-    `q:${filters.query ?? ""}`,
-    `f:${filters.fuelType ?? ""}`,
-    `t:${filters.transmission ?? ""}`,
-    `minP:${filters.minPrice ?? ""}`,
-    `maxP:${filters.maxPrice ?? ""}`,
-    `minY:${filters.minYear ?? ""}`,
-    `maxY:${filters.maxYear ?? ""}`,
-  ];
-
-  return withNextCache(keyParts, () => getFilteredMarketplaceListings(filters), 60);
 }
 
 export async function getRecentMarketplaceListings(limit = 100) {

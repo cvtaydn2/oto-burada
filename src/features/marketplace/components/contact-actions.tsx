@@ -56,12 +56,31 @@ function formatPhoneNumber(phone: string) {
   return phone;
 }
 
+function normalizeWhatsAppPhone(phone: string) {
+  const clean = phone.replace(/\D/g, "");
+  // 11 digits starting with 0 (e.g. 0532...) -> replace 0 with 90
+  if (clean.length === 11 && clean.startsWith("0")) {
+    return `90${clean.slice(1)}`;
+  }
+  // 10 digits starting with 5 (e.g. 532...) -> prepend 90
+  if (clean.length === 10 && clean.startsWith("5")) {
+    return `90${clean}`;
+  }
+  // 12 digits starting with 90 -> already good
+  if (clean.length === 12 && clean.startsWith("90")) {
+    return clean;
+  }
+  return clean;
+}
+
 function getWhatsappLink(phone: string) {
-  return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  const normalized = normalizeWhatsAppPhone(phone);
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 }
 
 function getWhatsAppFallbackLink(phone: string) {
-  return `https://web.whatsapp.com/send?phone=${phone.replace(/\D/g, "")}&text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  const normalized = normalizeWhatsAppPhone(phone);
+  return `https://web.whatsapp.com/send?phone=${normalized}&text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 }
 
 export function ContactActions({

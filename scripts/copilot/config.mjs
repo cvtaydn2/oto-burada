@@ -9,5 +9,10 @@ export const baseUrl = process.env.CLAUDE_NETIVA_URL || "https://apiv3.netiva.co
 export const model = "claude-opus-4-6";
 
 // Aktif Oturum Durumu (Memory & Context)
-export const activeContextFiles = new Set();
+// Aktif Oturum Durumu (Memory & Context)
+export const activeContextFiles = new Set([
+  "src/app/dashboard/listings/page.tsx",
+  "src/components/forms/listing-create-form.tsx",
+  "src/features/marketplace/components/my-listings-panel.tsx"
+]);
 export const conversationHistory = [];

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1778404175628,
+    "date": "2026-05-10",
+    "category": "decision",
+    "task": "Aşağıdaki görevi sadece BACKEND, VERİTABANI ve GÜVENLİK açısından analiz et ve çözümünü üret:\n\nQA Aj",
+    "decision": "**Onay verilmemeli.**",
+    "files_affected": [],
+    "tags": [
+      "aşağıdaki",
+      "görevi",
+      "sadece",
+      "backend,",
+      "veri̇tabani"
+    ]
+  },
+  {
+    "id": 1778404534418,
+    "date": "2026-05-10",
+    "category": "decision",
+    "task": "Aşağıdaki görevi sadece FRONTEND açısından analiz et ve çözümünü üret. \nÖNEMLİ: Bir önceki adımda ol",
+    "decision": "UI iyi yönde, fakat **mimari doğrulama, veri kontratı netliği, type safety kanıtı ve bazı erişilebilirlik/UX ayrıntıları tamamlanmadan onay verilmemelidir**.",
+    "files_affected": [],
+    "tags": [
+      "aşağıdaki",
+      "görevi",
+      "sadece",
+      "frontend",
+      "açısından"
+    ]
+  }
+]

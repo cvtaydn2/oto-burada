@@ -5,7 +5,8 @@ import { BreadcrumbStructuredData, ListingStructuredData } from "@/components/se
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ListingsPageClient } from "@/features/marketplace/components/listings-page-client";
 import { normalizeSlug } from "@/features/marketplace/lib/slugs";
-import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { getPublicMarketplaceListingsFromRawFilters } from "@/features/marketplace/services/marketplace-listings";
+import { canonicalizeMarketplaceFilters } from "@/features/marketplace/services/marketplace-query";
 import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 import type { ListingFilters } from "@/types";
@@ -56,7 +57,8 @@ export default async function CityPage({ params }: CityPageProps) {
     sort: "newest",
   };
 
-  const listings = await getPublicMarketplaceListings(initialFilters);
+  const initialQuery = canonicalizeMarketplaceFilters(initialFilters);
+  const listings = await getPublicMarketplaceListingsFromRawFilters(initialFilters);
 
   const breadcrumbs = [
     { name: "Ana Sayfa", url: "/" },
@@ -92,6 +94,7 @@ export default async function CityPage({ params }: CityPageProps) {
         brands={references.brands}
         cities={references.cities}
         initialFilters={initialFilters}
+        initialQuery={initialQuery}
       />
     </>
   );

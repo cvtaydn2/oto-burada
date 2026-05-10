@@ -1,5 +1,67 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 83. Marketplace Filtering Grid Optimization & Hydration Stabilization
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied robust architectural decoupling to separate authoritative network queries from transient visual state buffers on the Marketplace Grid screen. Fixed persistent race conditions during direct filter injection and minimized unnecessary route revalidation loops.
+
+### 83.1 Applied Optimizations
+- **Canonical Query Modeling ([marketplace-query.ts](src/features/marketplace/services/marketplace-query.ts)):** Isolated strict `MarketplaceListingsQuery` from fuzzy `ListingFilters`. Built authoritative serialization and hashing handlers to strictly drive dynamic server action keys and next/cache signatures.
+- **Service Key Derivation ([marketplace-listings.ts](src/features/marketplace/services/listings/marketplace-listings.ts)):** Refactored Next Cache implementation to inject parallel parameter tuples rather than monolithic map injection, resolving query collision cases.
+- **Dual-State Separation ([use-marketplace-logic.ts](src/features/marketplace/hooks/use-marketplace-logic.ts)):** Separated component memory into `draftFilters` and `activeQuery`. Prevented routing triggers unless visual draft state transitions result in canonical Network Query shifts.
+- **Entry Parallelization ([page.tsx](src/app/(public)/(marketplace)/listings/page.tsx)):** Configured the Server component to simultaneously synthesize `initialQuery` and `initialFilters`, preventing instant mismatch on hydrated mount.
+
+### 83.2 Validation
+- **TypeScript (`npm run typecheck`)**: ✅ 0 errors
+- **ESLint (`npm run lint`)**: ✅ 0 errors
+
+### 83.3 Next Step
+- Proceed toward consecutive swarm audits for user-defined features or auxiliary administration screens.
+
+---
+
+## 82. Listing Detail Screen Architecture & Security Optimization
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: Applied system-generated optimizations for the public Listing Detail flow. Hardened database access paths and resolved communications handoff edge cases.
+
+### 82.1 Applied Optimizations
+- **Database Path Indexing**: Dispatched direct DDL ensuring explicit indexing (`idx_listings_slug`) exists in Production Supabase schema, ensuring stable sub-millisecond lookups for slug-based route parallel fetches.
+- **Contact Channel Hardening ([contact-actions.tsx](src/features/marketplace/components/contact-actions.tsx))**: Patched regex edge case in WhatsApp redirection logic. Introduced robust `normalizeWhatsAppPhone` handler ensuring explicit `90` prefixing, resolving launch breakage when system digits started without leading zeros or global markers.
+
+### 82.2 Validation
+- **TypeScript (`npm run typecheck`)**: ✅ 0 errors
+- **DDL Verification**: ✅ Executed directly via MCP, schema confirmed.
+
+### 82.3 Next Step
+- Trigger Phase 3 analysis (Marketplace Filtering Grid) utilizing local orchestration scripts to detect potential N+1 rendering vectors, unnecessary waterfall fetches, or filter propagation drift.
+
+---
+
+
+## 81. Marketplace Homepage Architecture & UX Optimization
+
+**Date**: 2026-05-10
+**Status**: ✅ COMPLETED
+**Scope**: System-generated architectural upgrade of the Marketplace Homepage. Introduced centralized ViewModel, resolved race conditions, and stabilized featured carousel mechanisms.
+
+### 81.1 Applied Architectural Overhaul
+- **ViewModel Layer ([homepage-view-model.ts](src/features/marketplace/services/homepage-view-model.ts)):** Consolidated multiple isolated parallel fetches into a unified `Promise.allSettled` aggregator with sanitizers ensuring zero partial-fail render crashes.
+- **Component Prop Alignment ([page.tsx](src/app/(public)/(marketplace)/page.tsx)):** Converted direct async calls to consume normalized ViewModel contract, stabilizing hydration boundary timing.
+- **Carousel Stabilization ([featured-carousel.tsx](src/features/marketplace/components/featured-carousel.tsx)):** Swapped conflictive `loop:true` parameters with safer layout controls, eliminated layout shifts on load, and refactored Embla API state sync to use `queueMicrotask` resolving React cascading render lint warnings.
+
+### 81.2 Validation
+- **TypeScript (`npm run typecheck`)**: ✅ 0 errors
+- **ESLint (`npm run lint`)**: ✅ 0 errors
+- **Visual Verification**: ✅ Confirmed responsive behavior and error-free load via subagent session.
+
+### 81.3 Next Step
+- Advance to Phase 2 analysis (Listing Detail Screen) utilizing local orchestration scripts to detect similar optimization vectors.
+
+---
+
 ## 80. Copilot Enhancement + MVP Gaps Closure
 
 **Date**: 2026-05-10

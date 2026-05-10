@@ -1,12 +1,14 @@
 "use client";
 
 import { Plus, Rocket, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { useListingActions } from "@/features/marketplace/hooks/use-listing-actions";
-import { type Listing } from "@/types";
+import type { DashboardListingSummary } from "@/features/marketplace/types/dashboard-listings";
+import type { Listing } from "@/types";
 
 import { DashboardListingCard } from "./dashboard-listing-card";
 import { ListingPagination } from "./listing-pagination";
@@ -16,7 +18,10 @@ import { MyListingsBulkActions } from "./my-listings-bulk-actions";
 interface MyListingsPanelProps {
   activeEditId?: string;
   initialShowForm?: boolean;
-  listings: Listing[];
+  listings: DashboardListingSummary[];
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
   userId?: string;
   children?: React.ReactNode;
 }
@@ -25,13 +30,24 @@ export function MyListingsPanel({
   activeEditId,
   initialShowForm = false,
   listings,
+  currentPage,
+  pageSize,
+  totalCount,
   userId,
   children,
 }: MyListingsPanelProps) {
+  const [prevProps, setPrevProps] = useState({ activeEditId, initialShowForm });
   const [showForm, setShowForm] = useState(Boolean(activeEditId) || initialShowForm);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+
+  if (prevProps.activeEditId !== activeEditId || prevProps.initialShowForm !== initialShowForm) {
+    setPrevProps({ activeEditId, initialShowForm });
+    setShowForm(Boolean(activeEditId) || initialShowForm);
+  }
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const {
     archivingId,
@@ -47,98 +63,70 @@ export function MyListingsPanel({
     handleBump,
     toggleSelect,
     clearSelection,
-  } = useListingActions(listings, userId);
+  } = useListingActions(listings as unknown as Listing[], userId);
 
-  const totalPages = Math.max(1, Math.ceil(listings.length / pageSize));
-  const paginatedListings = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return listings.slice(start, start + pageSize);
-  }, [listings, currentPage, pageSize]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const pageIds = listings.map((listing) => listing.id);
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
 
   useEffect(() => {
     clearSelection();
   }, [currentPage, pageSize, clearSelection]);
 
   useEffect(() => {
-    if (currentPage > totalPages) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  useEffect(() => {
     const id = window.setInterval(() => setCurrentTime(Date.now()), 60_000);
     return () => window.clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShowForm(Boolean(activeEditId) || initialShowForm);
-  }, [activeEditId, initialShowForm]);
+  const updateQuery = (nextPage: number, nextPageSize = pageSize) => {
+    const params = new URLSearchParams(searchParams.toString());
 
-  const pageIds = paginatedListings.map((l) => l.id);
-  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+    params.set("page", String(nextPage));
+    params.set("pageSize", String(nextPageSize));
+
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const toggleSelectAll = () => {
     if (allPageSelected) {
       setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
-    } else {
-      setSelectedIds((prev) => [...new Set([...prev, ...pageIds])]);
+      return;
     }
+
+    setSelectedIds((prev) => [...new Set([...prev, ...pageIds])]);
   };
 
   const exportCsv = () => {
-    const headers = [
-      "title",
-      "brand",
-      "model",
-      "year",
-      "mileage",
-      "fuel_type",
-      "transmission",
-      "price",
-      "city",
-      "district",
-      "whatsapp_phone",
-      "description",
-      "vin",
-    ];
-    const rows = listings.map((l) =>
+    const headers = ["title", "brand", "model", "year", "price", "city", "status"];
+
+    const rows = listings.map((listing) =>
       [
-        `"${l.title}"`,
-        l.brand,
-        l.model,
-        l.year,
-        l.mileage,
-        l.fuelType,
-        l.transmission,
-        l.price,
-        l.city,
-        l.district,
-        l.whatsappPhone,
-        `"${l.description.replace(/"/g, '""')}"`,
-        l.vin || "",
+        `"${listing.title.replace(/"/g, '""')}"`,
+        listing.brand,
+        listing.model,
+        listing.year,
+        listing.price,
+        listing.city,
+        listing.status,
       ].join(",")
     );
+
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
+
     link.href = url;
     link.setAttribute(
       "download",
-      `oto-burada-ilanlarim-${new Date().toISOString().split("T")[0]}.csv`
+      `oto-burada-ilanlarim-sayfa-${currentPage}-${new Date().toISOString().split("T")[0]}.csv`
     );
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    setTimeout(() => URL.revokeObjectURL(url), 100);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
+    window.setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   return (
@@ -149,7 +137,7 @@ export function MyListingsPanel({
         <div className="animate-in fade-in zoom-in-95 rounded-3xl border border-primary/10 bg-primary/[0.02] p-5 shadow-sm duration-500 sm:p-8">
           <div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8 sm:flex-nowrap sm:items-center">
             <div>
-              <h3 className="text-2xl font-bold text-foreground tracking-tight">
+              <h3 className="text-2xl font-bold tracking-tight text-foreground">
                 {activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}
               </h3>
               <p className="mt-1 text-sm font-medium text-muted-foreground">
@@ -196,7 +184,7 @@ export function MyListingsPanel({
         </Button>
       )}
 
-      {listings.length === 0 && !showForm && (
+      {totalCount === 0 && !showForm && (
         <EmptyState
           title="Henüz İlanınız Yok"
           description="Hayalindeki arabayı satmak ya da yenisini almak için hemen ilk adımını at. İlan vermek tamamen ücretsiz!"
@@ -213,33 +201,33 @@ export function MyListingsPanel({
         />
       )}
 
-      {listings.length > 0 && (
+      {totalCount > 0 && (
         <div className="space-y-6">
           <MyListingsBulkActions
             allPageSelected={allPageSelected}
-            paginatedCount={paginatedListings.length}
+            paginatedCount={listings.length}
             selectedCount={selectedIds.length}
             isBulkArchiving={isBulkArchiving}
             pageSize={pageSize}
             toggleSelectAll={toggleSelectAll}
             handleBulkArchive={handleBulkArchive}
             handleBulkDelete={handleBulkDelete}
-            setPageSize={handlePageSizeChange}
+            setPageSize={(size) => updateQuery(1, size)}
             exportCsv={exportCsv}
           />
 
           <div className="grid gap-4">
-            {paginatedListings.map((listing) => (
+            {listings.map((listing) => (
               <DashboardListingCard
                 key={listing.id}
-                listing={listing}
+                listing={listing as unknown as Listing}
+                currentTime={currentTime}
                 isSelected={selectedIds.includes(listing.id)}
-                onToggleSelect={() => toggleSelect(listing.id)}
                 isArchiving={archivingId === listing.id}
                 isBumping={bumpingId === listing.id}
-                currentTime={currentTime}
-                onArchive={handleArchive}
-                onBump={handleBump}
+                onToggleSelect={() => toggleSelect(listing.id)}
+                onArchive={() => handleArchive(listing.id)}
+                onBump={() => handleBump(listing.id)}
               />
             ))}
           </div>
@@ -247,9 +235,9 @@ export function MyListingsPanel({
           <ListingPagination
             currentPage={currentPage}
             totalPages={totalPages}
-            totalListings={listings.length}
             pageSize={pageSize}
-            onPageChange={setCurrentPage}
+            totalListings={totalCount}
+            onPageChange={(nextPage) => updateQuery(nextPage, pageSize)}
           />
         </div>
       )}

@@ -5,18 +5,16 @@ import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
 import { requireUser } from "@/features/auth/lib/session";
 import { MyListingsPanel } from "@/features/marketplace/components/my-listings-panel";
-import { getStoredUserListings } from "@/features/marketplace/services/listing-submissions";
+import { getDashboardListingsPageData } from "@/features/marketplace/services/dashboard-listings-actions";
+import type {
+  DashboardEditableListing,
+  DashboardListingsPageData,
+} from "@/features/marketplace/types/dashboard-listings";
 import { getStoredProfileById } from "@/features/profile/services/profile-records";
-import {
-  getLiveMarketplaceReferenceData,
-  mergeCityOptions,
-} from "@/features/shared/services/live-reference-data";
-import {} from "@/lib";
+import { mergeCityOptions } from "@/features/shared/services/live-reference-data";
 import { cn } from "@/lib/utils";
-import { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";
-// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 interface DashboardListingsPageProps {
   searchParams?: Promise<{
@@ -24,99 +22,113 @@ interface DashboardListingsPageProps {
     created?: string;
     edit?: string;
     updated?: string;
+    page?: string;
+    pageSize?: string;
   }>;
+}
+
+function parsePositiveInt(value?: string, fallback = 1) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function clampPageSize(value?: string) {
+  const parsed = parsePositiveInt(value, 10);
+  return Math.min(parsed, 100);
+}
+
+function mergeBrands(
+  brands: DashboardListingsPageData["references"]["brands"],
+  selectedListing: DashboardEditableListing | null
+) {
+  if (!selectedListing?.brand) {
+    return brands;
+  }
+
+  const hasBrand = brands.some((item) => item.brand === selectedListing.brand);
+
+  if (hasBrand) {
+    return brands;
+  }
+
+  return [
+    ...brands,
+    {
+      brand: selectedListing.brand,
+      slug: selectedListing.brand.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+      name: selectedListing.brand,
+      models: selectedListing.model ? [{ name: selectedListing.model, trims: [] }] : [],
+    },
+  ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"));
 }
 
 export default async function DashboardListingsPage({ searchParams }: DashboardListingsPageProps) {
   const user = await requireUser();
-  const metadata = user.user_metadata as {
-    city?: string;
-    phone?: string;
-  };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
   const hasRequestedCreate = resolvedSearchParams?.create === "true";
-  const editId = resolvedSearchParams?.edit;
-  const hasRequestedEdit = Boolean(editId);
   const hasCreatedPendingListing = resolvedSearchParams?.created === "pending";
   const hasUpdatedListing = resolvedSearchParams?.updated === "true";
+  const editId = resolvedSearchParams?.edit ?? null;
+  const page = parsePositiveInt(resolvedSearchParams?.page, 1);
+  const pageSize = clampPageSize(resolvedSearchParams?.pageSize);
 
-  // Paralel fetch
-  // PERFORMANCE FIX: Explicit limit to avoid loading too many listings in dashboard overview
-  // UX FIX: Explicitly fetch the listing being edited to avoid state loss if it's not in the first 20.
-  const [listingsResult, references, profile, specificListing] = await Promise.all([
-    getStoredUserListings(user.id, 1, 20), // Limit to 20 listings for dashboard
-    getLiveMarketplaceReferenceData(),
+  const [data, sellerProfile] = await Promise.all([
+    getDashboardListingsPageData({
+      userId: user.id,
+      page,
+      pageSize,
+      editId,
+    }),
     getStoredProfileById(user.id),
-    editId
-      ? import("@/features/marketplace/services/queries/get-listings").then((m) =>
-          m.getStoredListingById(editId)
-        )
-      : Promise.resolve(null),
   ]);
 
-  const storedListings = listingsResult.listings;
-
-  // UX FIX: Priority given to specificListing if it belongs to the user
-  const selectedListing =
-    specificListing && specificListing.sellerId === user.id
-      ? specificListing
-      : editId
-        ? (storedListings.find((l: Listing) => l.id === editId) ?? null)
-        : null;
-  const mergedBrands = references.brands.some((item) => item.brand === selectedListing?.brand)
-    ? references.brands
-    : selectedListing?.brand
-      ? [
-          ...references.brands,
-          {
-            brand: selectedListing.brand,
-            slug: selectedListing.brand.toLowerCase().replace(/[^a-z0-9]/g, "-"),
-            name: selectedListing.brand,
-            models: selectedListing.model ? [{ name: selectedListing.model, trims: [] }] : [],
-          },
-        ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"))
-      : references.brands;
-  const isEmailVerified = profile?.emailVerified ?? false;
-
-  const mergedCities = mergeCityOptions(references.cities, [
-    metadata.city ?? "",
+  const selectedListing = data.editing.status === "loaded" ? data.editing.listing : null;
+  const mergedBrands = mergeBrands(data.references.brands, selectedListing);
+  const mergedCities = mergeCityOptions(data.references.cities, [
+    data.profile?.city ?? "",
     selectedListing?.city ?? "",
-    profile?.city ?? "",
   ]);
-
-  const isEditingExisting = selectedListing !== null;
+  const isEmailVerified = data.profile?.emailVerified ?? false;
+  const approvedCountOnPage = data.listingsPage.items.filter(
+    (listing) => listing.status === "approved"
+  ).length;
+  const isEditingExisting = data.editing.status === "loaded";
 
   return (
     <div className="space-y-8">
-      <AccountTrustNotice seller={profile} />
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <AccountTrustNotice seller={sellerProfile ?? null} />
+
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-3xl font-bold text-foreground tracking-tight">İlanlarım</h2>
-          <p className="mt-1 text-sm text-muted-foreground font-medium italic">
-            Toplam {storedListings.length} ilandan{" "}
-            {storedListings.filter((l: Listing) => l.status === "approved").length} tanesi yayında.
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">İlanlarım</h2>
+          <p className="mt-1 text-sm font-medium italic text-muted-foreground">
+            Toplam {data.listingsPage.totalCount} ilanın var. Bu sayfadaki{" "}
+            {data.listingsPage.items.length} ilandan {approvedCountOnPage} tanesi yayında.
           </p>
         </div>
+
         <div className="flex items-center gap-4">
           <div
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] uppercase font-bold tracking-widest transition-all",
+              "flex items-center gap-2 rounded-xl border px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
               isEmailVerified
-                ? "bg-emerald-50/50 border-emerald-100 text-emerald-600"
-                : "bg-amber-50/50 border-amber-100 text-amber-600"
+                ? "border-emerald-100 bg-emerald-50/50 text-emerald-600"
+                : "border-amber-100 bg-amber-50/50 text-amber-600"
             )}
           >
             <div
               className={cn(
-                "w-1.5 h-1.5 rounded-full",
+                "h-1.5 w-1.5 rounded-full",
                 isEmailVerified ? "bg-emerald-500" : "bg-amber-500"
               )}
             />
             {isEmailVerified ? "Doğrulanmış" : "Doğrulanmadı"}
           </div>
+
           <Link
             href="/dashboard/listings?create=true"
-            className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-all flex items-center gap-2"
+            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90"
             aria-label="Yeni İlan Ver"
           >
             <Plus size={18} />
@@ -125,20 +137,26 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         </div>
       </div>
 
-      {hasRequestedEdit && !isEditingExisting && (
-        <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4 text-xs text-amber-700 font-semibold flex items-center gap-3">
-          İlan bulunamadı veya yetkiniz yok.
+      {data.editing.status === "not_found" && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/50 p-4 text-xs font-semibold text-amber-700">
+          Düzenlemek istediğin ilan bulunamadı.
+        </div>
+      )}
+
+      {data.editing.status === "forbidden" && (
+        <div className="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/50 p-4 text-xs font-semibold text-red-700">
+          Bu ilanı düzenleme yetkin yok.
         </div>
       )}
 
       {hasCreatedPendingListing && (
-        <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-xs text-blue-700 font-semibold flex items-center gap-3">
+        <div className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-xs font-semibold text-blue-700">
           İlanın oluşturuldu. Şu anda moderasyon incelemesinde.
         </div>
       )}
 
       {hasUpdatedListing && (
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-xs text-emerald-700 font-semibold flex items-center gap-3">
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-xs font-semibold text-emerald-700">
           İlanın güncellendi.
         </div>
       )}
@@ -146,24 +164,28 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
       <MyListingsPanel
         activeEditId={selectedListing?.id}
         initialShowForm={hasRequestedCreate && !isEditingExisting}
-        listings={storedListings}
+        listings={data.listingsPage.items}
+        currentPage={data.listingsPage.page}
+        pageSize={data.listingsPage.pageSize}
+        totalCount={data.listingsPage.totalCount}
         userId={user.id}
       >
-        <div className="mt-8 bg-card rounded-2xl border border-border p-8 shadow-sm">
-          <div className="mb-8 pb-6 border-b border-border/50">
+        <div className="mt-8 rounded-2xl border border-border bg-card p-8 shadow-sm">
+          <div className="mb-8 border-b border-border/50 pb-6">
             <h3 className="text-xl font-bold text-foreground">
               {isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}
             </h3>
-            <p className="text-xs text-muted-foreground font-medium mt-1">
+            <p className="mt-1 text-xs font-medium text-muted-foreground">
               Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.
             </p>
           </div>
+
           <ListingCreateForm
             key={selectedListing?.id ?? "create-listing"}
             initialListing={selectedListing}
             initialValues={{
-              city: metadata.city ?? "",
-              whatsappPhone: metadata.phone ?? "",
+              city: data.profile?.city ?? "",
+              whatsappPhone: data.profile?.phone ?? "",
             }}
             brands={mergedBrands}
             cities={mergedCities}

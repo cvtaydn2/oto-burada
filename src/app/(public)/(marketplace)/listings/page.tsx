@@ -8,20 +8,13 @@ import {
 import { ListingsPageClient } from "@/features/marketplace/components/listings-page-client";
 import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
 import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import {
+  buildMarketplaceFilterState,
+  canonicalizeMarketplaceFilters,
+} from "@/features/marketplace/services/marketplace-query";
 import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
 import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
 import { createSupabaseServerClient } from "@/lib/server";
-import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
-
-function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {
-  const match = brands.find((b) => b.slug.toLowerCase() === slug.toLowerCase());
-  return match?.brand;
-}
-
-function resolveCitySlugToName(cities: CityOption[], slug: string): string | undefined {
-  const match = cities.find((c) => c.slug.toLowerCase() === slug.toLowerCase());
-  return match?.city;
-}
 
 export const revalidate = 3600;
 
@@ -31,8 +24,9 @@ interface ListingsPageProps {
 
 export async function generateMetadata({ searchParams }: ListingsPageProps): Promise<Metadata> {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const filters = parseListingFiltersFromSearchParams(resolvedSearchParams);
-  return buildListingsMetadata(filters as unknown as Record<string, unknown>);
+  const rawFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
+  const query = canonicalizeMarketplaceFilters(rawFilters);
+  return buildListingsMetadata(query as unknown as Record<string, unknown>);
 }
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
@@ -42,19 +36,23 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     getLiveMarketplaceReferenceData(),
     (await createSupabaseServerClient()).auth.getUser(),
   ]);
+
   const user = authData?.user;
 
-  const parsedFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
-  const brandSlug = resolvedSearchParams?.brand;
-  const citySlug = resolvedSearchParams?.city;
+  const rawFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
+  const initialQuery = canonicalizeMarketplaceFilters(rawFilters, {
+    brands: references.brands,
+    cities: references.cities,
+  });
 
-  const initialFilters: ListingFilters = {
-    ...parsedFilters,
-    ...(brandSlug ? { brand: resolveBrandSlugToName(references.brands, String(brandSlug)) } : {}),
-    ...(citySlug ? { city: resolveCitySlugToName(references.cities, String(citySlug)) } : {}),
-  };
+  const initialFilters = buildMarketplaceFilterState({
+    rawFilters,
+    query: initialQuery,
+    brands: references.brands,
+    cities: references.cities,
+  });
 
-  const result = await getPublicMarketplaceListings(initialFilters);
+  const result = await getPublicMarketplaceListings(initialQuery);
 
   const breadcrumbs = [{ name: "Tüm İlanlar", url: "/listings" }];
 
@@ -76,6 +74,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           brands={references.brands}
           cities={references.cities}
           initialFilters={initialFilters}
+          initialQuery={initialQuery}
           userId={user?.id}
         />
       </div>

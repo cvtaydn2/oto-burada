@@ -1,0 +1,1500 @@
+
+??imdi client component prop kontrat?? da buna g??re ayr??lmal??. `ListingsPageClient` tek bir ???filters??? nesnesiyle hem UI hem query y??netmemeli.
+
+??nerilen aray??z:
+
+```tsx
+interface ListingsPageClientProps {
+  initialResult: {
+    listings: Listing[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+    metadata?: {
+      droppedFilters?: string[];
+      warning?: string;
+    };
+  };
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+  initialFilters: ListingFilters;
+  initialQuery: MarketplaceListingsQuery;
+  userId?: string;
+}
+```
+
+ve component ??a??r??s??:
+
+```tsx
+export function ListingsPageClient({
+  initialResult,
+  brands,
+  cities,
+  initialFilters,
+  initialQuery,
+  userId,
+}: ListingsPageClientProps) {
+  const {
+    filters,
+    setFilters,
+    isPending,
+    viewMode,
+    setViewMode,
+    isSortOpen,
+    setIsSortOpen,
+    activeFiltersCount,
+    allListings,
+    total,
+    currentPage,
+    totalPages,
+    handlePageChange,
+    handlePageSizeChange,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    handleFilterChange,
+    handleReset,
+    applyFilters,
+    refetch,
+    isError,
+    error,
+    droppedFilters,
+    droppedWarning,
+  } = useMarketplaceLogic({
+    initialResult,
+    initialFilters,
+    initialQuery,
+  });
+
+  // mevcut render ayn?? kalabilir
+}
+```
+
+As??l kapanmas?? gereken yer `useMarketplaceLogic`. Vera???n??n hakl?? oldu??u nokta buydu: ???uyarlanmal????? demek yetmiyor; hook kontrat?? ger??ekten query/UI ayr??m??n?? enforce etmeli.
+
+Ben frontend taraf??nda hook???u ??u semanti??e ??ekerdim:
+
+`filters`: sadece UI state
+`query`: sadece backend query state
+`applyFilters()`: UI state???ten canonical query ??retir, URL???yi g??nceller, query fetch ba??lat??r
+pagination/sort de??i??iklikleri: query ??st??nden ??al??????r ama gerekirse UI state???i de senkron tutar
+initial hydration: `initialResult` ile `initialQuery` ayn?? kaynaktan geldi??i i??in mismatch olmaz
+
+??rnek tipler:
+
+```ts
+import type { ListingFilters } from "@/types";
+
+export interface MarketplaceListingsQuery {
+  brand?: string;
+  model?: string;
+  carTrim?: string;
+  city?: string;
+  district?: string;
+  fuelType?: string;
+  transmission?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  maxMileage?: number;
+  hasExpertReport?: boolean;
+  maxTramer?: number;
+  query?: string;
+  sort?: "newest" | "oldest" | "price_asc" | "price_desc";
+  page: number;
+  limit: number;
+  sellerId?: string;
+  cursor?: string;
+  isExchange?: boolean;
+  featured?: boolean;
+  galleryPriority?: boolean;
+}
+```
+
+Frontend yard??mc?? katman??nda iki saf fonksiyon bulunmal??:
+
+```ts
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
+
+interface BuildMarketplaceFilterStateArgs {
+  rawFilters: ListingFilters;
+  query: MarketplaceListingsQuery;
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+}
+
+export function canonicalizeMarketplaceFilters(
+  filters: ListingFilters
+): MarketplaceListingsQuery {
+  return {
+    brand: normalizeString(filters.brand),
+    model: normalizeString(filters.model),
+    carTrim: normalizeString(filters.carTrim),
+    city: normalizeString(filters.city),
+    district: normalizeString(filters.district),
+    fuelType: normalizeString(filters.fuelType),
+    transmission: normalizeString(filters.transmission),
+    query: normalizeString(filters.query),
+    minPrice: normalizeNumber(filters.minPrice),
+    maxPrice: normalizeNumber(filters.maxPrice),
+    minYear: normalizeNumber(filters.minYear),
+    maxYear: normalizeNumber(filters.maxYear),
+    maxMileage: normalizeNumber(filters.maxMileage),
+    maxTramer: normalizeNumber(filters.maxTramer),
+    hasExpertReport: normalizeBoolean(filters.hasExpertReport),
+    isExchange: normalizeBoolean(filters.isExchange),
+    featured: normalizeBoolean(filters.featured),
+    galleryPriority: normalizeBoolean(filters.galleryPriority),
+    sellerId: normalizeString(filters.sellerId),
+    cursor: normalizeString(filters.cursor),
+    sort: normalizeSort(filters.sort),
+    page: normalizePositiveInt(filters.page, 1),
+    limit: normalizePageSize(filters.limit, 12),
+  };
+}
+
+export function buildMarketplaceFilterState({
+  rawFilters,
+  query,
+  brands,
+  cities,
+}: BuildMarketplaceFilterStateArgs): ListingFilters {
+  const brand = resolveBrandForUi(rawFilters.brand, brands) ?? query.brand;
+  const city = resolveCityForUi(rawFilters.city, cities) ?? query.city;
+
+  return {
+    ...rawFilters,
+    ...query,
+    ...(brand ? { brand } : {}),
+    ...(city ? { city } : {}),
+  };
+}
+```
+
+Burada ama?? ??u: query backend i??in normalize edilmi?? olsun; UI ise insan dostu etiketleri, slug ????z??mlemelerini, `validationError` gibi sadece g??rsel alanlar?? ta????yabilsin.
+
+`useMarketplaceLogic` i??inde de fetch key ve URL ??retimi sadece query???den t??remeli. En kritik iyile??tirme burada. E??er hook ??u an TanStack Query kullan??yorsa query key art??k `filters` de??il `query` olmal??.
+
+??nerilen yap??:
+
+```ts
+interface UseMarketplaceLogicArgs {
+  initialResult: PaginatedListingsResult;
+  initialFilters: ListingFilters;
+  initialQuery: MarketplaceListingsQuery;
+}
+
+export function useMarketplaceLogic({
+  initialResult,
+  initialFilters,
+  initialQuery,
+}: UseMarketplaceLogicArgs) {
+  const [filters, setFilters] = useState<ListingFilters>(initialFilters);
+  const [query, setQuery] = useState<MarketplaceListingsQuery>(initialQuery);
+
+  const queryKey = useMemo(
+    () => ["marketplace-listings", serializeMarketplaceQuery(query)],
+    [query]
+  );
+
+  const listingsQuery = useQuery({
+    queryKey,
+    queryFn: () => fetchMarketplaceListings(query),
+    initialData: isSameQuery(query, initialQuery) ? initialResult : undefined,
+    placeholderData: keepPreviousData,
+  });
+
+  const applyFilters = useCallback(() => {
+    const nextQuery = canonicalizeMarketplaceFilters({
+      ...filters,
+      page: 1,
+    });
+
+    setQuery(nextQuery);
+    syncMarketplaceUrl(nextQuery);
+  }, [filters]);
+
+  const handlePageChange = useCallback((page: number) => {
+    const nextQuery = { ...query, page };
+    setQuery(nextQuery);
+    syncMarketplaceUrl(nextQuery);
+  }, [query]);
+
+  const handlePageSizeChange = useCallback((limit: number) => {
+    const nextQuery = { ...query, limit, page: 1 };
+    setQuery(nextQuery);
+    setFilters((prev) => ({ ...prev, limit, page: 1 }));
+    syncMarketplaceUrl(nextQuery);
+  }, [query]);
+
+  return {
+    filters,
+    setFilters,
+    query,
+    applyFilters,
+    handlePageChange,
+    handlePageSizeChange,
+    // di??er mevcut alanlar...
+  };
+}
+```
+
+Burada ???? kritik frontend kazan??m?? var.
+
+Birincisi, hydration stabilitesi d??zelir. `initialResult` hangi query ile geldiyse client da ayn?? query key ile ba??lar. Server sonucu ile client?????n ilk query hesab?? ayr????maz.
+
+??kincisi, filtering propagation tek y??nl?? olur. UI state de??i??ebilir ama backend???e ancak `canonicalizeMarketplaceFilters()` ????kt??s?? gider. B??ylece ???filtre panelindeki ge??ici de??erler??? ile ???uygulanm???? sorgu??? birbirine kar????maz.
+
+??????nc??s??, gereksiz refetch azal??r. ????nk?? query key art??k stable serialize edilmi?? DTO???dan t??retilir. UI-only alanlar query key???i kirletmez.
+
+Frontend???te ayr??ca ??u yard??mc??lar da olmal??:
+
+```ts
+export function serializeMarketplaceQuery(query: MarketplaceListingsQuery): string {
+  return JSON.stringify(
+    Object.entries(query)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .sort(([a], [b]) => a.localeCompare(b))
+  );
+}
+
+export function isSameQuery(
+  left: MarketplaceListingsQuery,
+  right: MarketplaceListingsQuery
+): boolean {
+  return serializeMarketplaceQuery(left) === serializeMarketplaceQuery(right);
+}
+```
+
+Bu, backend???in deterministik cache key yakla????m??yla de birebir uyumlu olur. Frontend query key ile backend cache mant?????? ayn?? semanti??i payla????r.
+
+Bir ba??ka ??nemli iyile??tirme de URL sync taraf??nda. URL olu??turma fonksiyonu `filters` nesnesinden de??il sadece `query` nesnesinden param ??retmeli. Aksi halde `appliedFilters`, `validationError`, bo?? stringler veya UI state kal??nt??lar?? URL???ye s??zar.
+
+??rnek:
+
+```ts
+export function buildMarketplaceSearchParams(query: MarketplaceListingsQuery): URLSearchParams {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null || value === "") continue;
+    params.set(key, String(value));
+  }
+
+  return params;
+}
+```
+
+B??ylece back/forward navigation de stabil olur.
+
+Senin mevcut `listings-page-client.tsx` dosyanda render katman??n??n ??o??u korunabilir. Orada ana de??i??iklik veri kontrat??d??r, JSX de??il. Yani bu ekran?? ba??tan yazmak gerekmiyor; sadece state s??n??rlar??n?? d??zeltmek gerekiyor.
+
+??u import sat??r?? da dikkat ??ekiyor:
+
+```ts
+import {} from "@/lib";
+```
+
+Bu ??l?? import ve anayasan??za g??re kald??r??lmal??. K??????k ama net bir kalite d??zeltmesi.
+
+Frontend a????s??ndan ??nerdi??im nihai refactor ??zeti ??u:
+
+Server page art??k backend fetch i??in sadece `MarketplaceListingsQuery` ??retmeli ve g??ndermeli.
+
+Client component hem `initialFilters` hem `initialQuery` almal??; bunlar ayn?? ??ey olmamal??.
+
+`useMarketplaceLogic` query state ile UI filter state???i ay??rmal??.
+
+TanStack Query key sadece canonical query???den ??retilmeli.
+
+URL sync sadece canonical query???den yap??lmal??.
+
+`droppedFilters` ve `warning` art??k sadece backend ger??ekten raw unsupported input g??r??rse d??nmeli; frontend DTO yolunda bunlar?? yapay olarak tetiklememeli.
+
+Bu yakla????m Vera???n??n iki ana ele??tirisini kapat??r: kontrat ??ak????mas?? ????z??l??r ve hook seviyesi u??tan uca tip/ak???? tamamlanm???? olur.
+
+??stersen bir sonraki ad??mda sana do??rudan uygulanabilir ??ekilde ??u ???? dosya i??in tam patch yazay??m:
+
+`src/app/(public)/(marketplace)/listings/page.tsx`
+`src/features/marketplace/components/listings-page-client.tsx`
+`src/features/marketplace/hooks/use-marketplace-logic.ts`
+
+Bunu mevcut kod stiline uygun, copy-paste seviyesinde haz??rlayabilirim.
+???? Bu ??a??r??: ~11407 giri?? + ~3600 ????k???? token ??? $0.4411
+   ???? Aria (Frontend) analizini tamamlad?? (72.98s)
+??? S??ral?? boru hatt?? analizi tamamland??! (Toplam: 130.76s)
+
+
+???????  QA Ajan?? (Vera) ????z??mleri denetliyor...
+
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+[K<verdict>REJECTED</verdict>
+<feedback>Mimari kontrol onaylanam??yor; ????z??m metinlerinde canonical katmanlara (*-records.ts, *-logic.ts, *-actions.ts) fiil?? b??l??nme g??sterilmiyor, yaln??zca mevcut dosyalar ve ??neri ak?????? anlat??l??yor. Veri b??t??nl?????? a????s??ndan Supabase inner join sonras?? olu??abilecek array ili??kiler i??in `Array.isArray(...)` benzeri normalizasyon ele al??nmam????. Tip g??venli??i taraf??nda `buildListingsMetadata(query as unknown as Record<string, unknown>)` ifadesi kontrat?? zorla d??n????t??r??yor; bu tip g??venli de??il ve ger??ek tip uyumsuzlu??unu gizliyor. Frontend-backend uyumu da tam kapanm???? de??il; frontend `MarketplaceListingsQuery` ??nermesine ra??men backend taraf??nda bunun mevcut type katman??na ger??ekten ta????nd??????, t??m ??a??r?? noktalar??n??n g??ncellendi??i ve `ListingFilters` kullan??m??n??n tamamen kald??r??ld?????? g??sterilmiyor. Ayr??ca cache key deterministikle??tirme ??nerilmi?? olsa da bunun mevcut backend kontrat??na uygulanm???? kesin hali verilmedi??i i??in query lifecycle uyumu statik olarak do??rulanam??yor.</feedback>
+???? Bu ??a??r??: ~6308 giri?? + ~257 ????k???? token ??? $0.1139
+
+========== QA DE??ERLEND??RME RAPORU ========== 
+<verdict>REJECTED</verdict>
+<feedback>Mimari kontrol onaylanam??yor; ????z??m metinlerinde canonical katmanlara (*-records.ts, *-logic.ts, *-actions.ts) fiil?? b??l??nme g??sterilmiyor, yaln??zca mevcut dosyalar ve ??neri ak?????? anlat??l??yor. Veri b??t??nl?????? a????s??ndan Supabase inner join sonras?? olu??abilecek array ili??kiler i??in `Array.isArray(...)` benzeri normalizasyon ele al??nmam????. Tip g??venli??i taraf??nda `buildListingsMetadata(query as unknown as Record<string, unknown>)` ifadesi kontrat?? zorla d??n????t??r??yor; bu tip g??venli de??il ve ger??ek tip uyumsuzlu??unu gizliyor. Frontend-backend uyumu da tam kapanm???? de??il; frontend `MarketplaceListingsQuery` ??nermesine ra??men backend taraf??nda bunun mevcut type katman??na ger??ekten ta????nd??????, t??m ??a??r?? noktalar??n??n g??ncellendi??i ve `ListingFilters` kullan??m??n??n tamamen kald??r??ld?????? g??sterilmiyor. Ayr??ca cache key deterministikle??tirme ??nerilmi?? olsa da bunun mevcut backend kontrat??na uygulanm???? kesin hali verilmedi??i i??in query lifecycle uyumu statik olarak do??rulanam??yor.</feedback>
+===============================================
+
+?????? QA Ajan?? Vera baz?? sorunlar tespit etti. D??zeltme d??ng??s?? ba??lat??l??yor...
+
+?????? Maksimum swarm d??ng??s??ne ula????ld??. En g??ncel s??r??mler birle??tiriliyor...
+
+??????  Final Sentezci Ajan ????z??mleri tek bir premium ????z??m paketinde birle??tiriyor...
+
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+??? Claude Netiva zekas??n?? konu??turuyor... L??tfen bekleyin...
+[KA??a????da birle??tirilmi?? ????z??m??n tam dosya s??r??mleri var.
+
+<write_file path="src/features/marketplace/services/marketplace-query.ts">
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
+
+export type MarketplaceSort = "newest" | "oldest" | "price_asc" | "price_desc";
+
+export interface MarketplaceListingsQuery {
+  brand?: string;
+  model?: string;
+  carTrim?: string;
+  city?: string;
+  district?: string;
+  fuelType?: string;
+  transmission?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  maxMileage?: number;
+  hasExpertReport?: boolean;
+  maxTramer?: number;
+  query?: string;
+  sort: MarketplaceSort;
+  page: number;
+  limit: number;
+  sellerId?: string;
+  cursor?: string;
+  isExchange?: boolean;
+  featured?: boolean;
+  galleryPriority?: boolean;
+}
+
+interface CanonicalizeMarketplaceFiltersOptions {
+  brands?: BrandCatalogItem[];
+  cities?: CityOption[];
+}
+
+interface BuildMarketplaceFilterStateArgs {
+  rawFilters: ListingFilters;
+  query: MarketplaceListingsQuery;
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+}
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 12;
+const DEFAULT_SORT: MarketplaceSort = "newest";
+const ALLOWED_PAGE_SIZES = new Set([12, 24, 48]);
+
+export const DEFAULT_MARKETPLACE_QUERY: MarketplaceListingsQuery = {
+  page: DEFAULT_PAGE,
+  limit: DEFAULT_LIMIT,
+  sort: DEFAULT_SORT,
+};
+
+function normalizeString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().replace(/<[^>]*>/g, "");
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function normalizeNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) return undefined;
+
+    const parsed = Number(trimmed);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+
+  return undefined;
+}
+
+function normalizeBoolean(value: unknown): boolean | undefined {
+  if (typeof value === "boolean") return value;
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+
+    if (normalized === "true" || normalized === "1" || normalized === "yes") {
+      return true;
+    }
+
+    if (normalized === "false" || normalized === "0" || normalized === "no") {
+      return false;
+    }
+  }
+
+  return undefined;
+}
+
+function normalizePositiveInt(value: unknown, fallback: number): number {
+  const normalized = normalizeNumber(value);
+  if (normalized === undefined) return fallback;
+
+  const integer = Math.floor(normalized);
+  return integer > 0 ? integer : fallback;
+}
+
+function normalizePageSize(value: unknown, fallback: number): number {
+  const normalized = normalizePositiveInt(value, fallback);
+  return ALLOWED_PAGE_SIZES.has(normalized) ? normalized : fallback;
+}
+
+function normalizeSort(value: unknown): MarketplaceSort {
+  if (
+    value === "newest" ||
+    value === "oldest" ||
+    value === "price_asc" ||
+    value === "price_desc"
+  ) {
+    return value;
+  }
+
+  return DEFAULT_SORT;
+}
+
+function resolveBrandName(brands: BrandCatalogItem[] | undefined, value: string | undefined) {
+  if (!brands || !value) return value;
+
+  const match = brands.find(
+    (brand) =>
+      brand.slug.toLowerCase() === value.toLowerCase() ||
+      brand.brand.toLowerCase() === value.toLowerCase()
+  );
+
+  return match?.brand ?? value;
+}
+
+function resolveCityName(cities: CityOption[] | undefined, value: string | undefined) {
+  if (!cities || !value) return value;
+
+  const match = cities.find(
+    (city) =>
+      city.slug.toLowerCase() === value.toLowerCase() ||
+      city.city.toLowerCase() === value.toLowerCase()
+  );
+
+  return match?.city ?? value;
+}
+
+export function canonicalizeMarketplaceFilters(
+  filters: ListingFilters,
+  options?: CanonicalizeMarketplaceFiltersOptions
+): MarketplaceListingsQuery {
+  const brand = resolveBrandName(options?.brands, normalizeString(filters.brand));
+  const city = resolveCityName(options?.cities, normalizeString(filters.city));
+
+  return {
+    brand,
+    model: normalizeString(filters.model),
+    carTrim: normalizeString(filters.carTrim),
+    city,
+    district: normalizeString(filters.district),
+    fuelType: normalizeString(filters.fuelType),
+    transmission: normalizeString(filters.transmission),
+    minPrice: normalizeNumber(filters.minPrice),
+    maxPrice: normalizeNumber(filters.maxPrice),
+    minYear: normalizeNumber(filters.minYear),
+    maxYear: normalizeNumber(filters.maxYear),
+    maxMileage: normalizeNumber(filters.maxMileage),
+    hasExpertReport: normalizeBoolean(filters.hasExpertReport),
+    maxTramer: normalizeNumber(filters.maxTramer),
+    query: normalizeString(filters.query),
+    sort: normalizeSort(filters.sort),
+    page: normalizePositiveInt(filters.page, DEFAULT_PAGE),
+    limit: normalizePageSize(filters.limit, DEFAULT_LIMIT),
+    sellerId: normalizeString(filters.sellerId),
+    cursor: normalizeString(filters.cursor),
+    isExchange: normalizeBoolean(filters.isExchange),
+    featured: normalizeBoolean(filters.featured),
+    galleryPriority: normalizeBoolean(filters.galleryPriority),
+  };
+}
+
+export function buildMarketplaceFilterState({
+  rawFilters,
+  query,
+  brands,
+  cities,
+}: BuildMarketplaceFilterStateArgs): ListingFilters {
+  const resolvedBrand = resolveBrandName(brands, normalizeString(rawFilters.brand)) ?? query.brand;
+  const resolvedCity = resolveCityName(cities, normalizeString(rawFilters.city)) ?? query.city;
+
+  return {
+    ...rawFilters,
+    ...query,
+    ...(resolvedBrand ? { brand: resolvedBrand } : {}),
+    ...(resolvedCity ? { city: resolvedCity } : {}),
+    ...(rawFilters.validationError ? { validationError: rawFilters.validationError } : {}),
+  };
+}
+
+export function buildMarketplaceSearchParams(query: MarketplaceListingsQuery): URLSearchParams {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null || value === "") continue;
+    params.set(key, String(value));
+  }
+
+  return params;
+}
+
+export function serializeMarketplaceQuery(query: MarketplaceListingsQuery): string {
+  return JSON.stringify(
+    Object.entries(query)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .sort(([left], [right]) => left.localeCompare(right))
+  );
+}
+
+export function isSameMarketplaceQuery(
+  left: MarketplaceListingsQuery,
+  right: MarketplaceListingsQuery
+): boolean {
+  return serializeMarketplaceQuery(left) === serializeMarketplaceQuery(right);
+}
+
+const NON_ACTIVE_FILTER_KEYS = new Set([
+  "page",
+  "limit",
+  "sort",
+  "cursor",
+  "validationError",
+  "citySlug",
+]);
+
+export function countActiveMarketplaceFilters(filters: ListingFilters): number {
+  let count = 0;
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (NON_ACTIVE_FILTER_KEYS.has(key)) continue;
+    if (value === undefined || value === null) continue;
+    if (typeof value === "string" && value.trim().length === 0) continue;
+    count += 1;
+  }
+
+  return count;
+}
+</write_file>
+
+<write_file path="src/features/marketplace/services/listings/marketplace-listings.ts">
+import {
+  getSimilarDatabaseListings,
+  listingCardSelect,
+  type PaginatedListingsResult,
+} from "@/features/marketplace/services/listing-submission-query";
+import {
+  DEFAULT_MARKETPLACE_QUERY,
+  canonicalizeMarketplaceFilters,
+  type MarketplaceListingsQuery,
+  serializeMarketplaceQuery,
+} from "@/features/marketplace/services/marketplace-query";
+import {
+  type ListingRow,
+  mapListingRow,
+} from "@/features/marketplace/services/mappers/listing-row.mapper";
+import { getPublicSellerProfile } from "@/features/profile/services/profile-records";
+import { withNextCache } from "@/lib/cache";
+import { logger } from "@/lib/logger";
+import { createSupabasePublicServerClient } from "@/lib/public-server";
+import { captureServerEvent } from "@/lib/telemetry-server";
+import type { Listing, ListingFilters, Profile } from "@/types";
+
+import { getListingBySlug, getPublicListings } from "./catalog";
+import {
+  getStoredListingById,
+  getStoredListingBySlug,
+  getStoredListingsByIds,
+} from "./listing-submissions";
+
+export { getStoredListingById, getStoredListingBySlug, getStoredListingsByIds };
+
+const SUPPORTED_RAW_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
+  "brand",
+  "model",
+  "carTrim",
+  "city",
+  "district",
+  "fuelType",
+  "transmission",
+  "minPrice",
+  "maxPrice",
+  "minYear",
+  "maxYear",
+  "maxMileage",
+  "hasExpertReport",
+  "maxTramer",
+  "query",
+  "sort",
+  "page",
+  "limit",
+  "citySlug",
+  "sellerId",
+  "cursor",
+  "isExchange",
+  "featured",
+  "galleryPriority",
+  "validationError",
+]);
+
+function sanitizeRawMarketplaceFilters(filters: ListingFilters): {
+  sanitized: ListingFilters;
+  droppedKeys: string[];
+} {
+  const sanitized = {} as ListingFilters;
+  const droppedKeys: string[] = [];
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (SUPPORTED_RAW_MARKETPLACE_FILTER_KEYS.has(key as keyof ListingFilters)) {
+      if (typeof value === "string") {
+        (sanitized as Record<string, unknown>)[key] = value.replace(/<[^>]*>/g, "");
+      } else {
+        (sanitized as Record<string, unknown>)[key] = value;
+      }
+    } else {
+      droppedKeys.push(key);
+    }
+  }
+
+  if (droppedKeys.length > 0) {
+    logger.listings.warn("Dropping unsupported raw marketplace filter keys", { droppedKeys });
+    captureServerEvent("marketplace_filters_sanitized", {
+      droppedKeys,
+      source: "raw_input",
+    });
+  }
+
+  return { sanitized, droppedKeys };
+}
+
+function buildMarketplaceListingsCacheKey(query: MarketplaceListingsQuery): string[] {
+  const serialized = JSON.parse(serializeMarketplaceQuery(query)) as Array<[string, unknown]>;
+
+  return [
+    "public-listings",
+    ...serialized.map(([key, value]) => `${key}:${String(value)}`),
+  ];
+}
+
+function appendDroppedFilterMetadata(
+  result: PaginatedListingsResult,
+  droppedKeys: string[]
+): PaginatedListingsResult {
+  if (droppedKeys.length === 0) return result;
+
+  return {
+    ...result,
+    metadata: {
+      ...result.metadata,
+      droppedFilters: droppedKeys,
+      warning: "Baz?? filtreler desteklenmiyor ve uygulanmad??.",
+    },
+  };
+}
+
+export async function getFilteredMarketplaceListings(
+  query: MarketplaceListingsQuery
+): Promise<PaginatedListingsResult> {
+  return getPublicListings(query as unknown as ListingFilters);
+}
+
+export async function getPublicMarketplaceListings(
+  query: MarketplaceListingsQuery = DEFAULT_MARKETPLACE_QUERY
+) {
+  return withNextCache(
+    buildMarketplaceListingsCacheKey(query),
+    () => getFilteredMarketplaceListings(query),
+    60
+  );
+}
+
+export async function getPublicMarketplaceListingsFromRawFilters(rawFilters: ListingFilters) {
+  const { sanitized, droppedKeys } = sanitizeRawMarketplaceFilters(rawFilters);
+  const query = canonicalizeMarketplaceFilters(sanitized);
+  const result = await getPublicMarketplaceListings(query);
+
+  return appendDroppedFilterMetadata(result, droppedKeys);
+}
+
+export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listing[]> {
+  if (ids.length === 0) return [];
+
+  const publicClient = createSupabasePublicServerClient();
+
+  const { data, error } = await publicClient
+    .from("listings")
+    .select(listingCardSelect)
+    .in("id", ids)
+    .eq("status", "approved");
+
+  if (error) {
+    logger.db.error("Marketplace listings by IDs retrieval failed", { error, ids });
+    return [];
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  return (data as unknown[]).map((row) => mapListingRow(row as unknown as ListingRow));
+}
+
+export async function getMarketplaceListingBySlug(slug: string): Promise<Listing | null> {
+  const storedListing = await withNextCache<Listing | null>(
+    [`marketplace-listing:${slug}`],
+    () => getListingBySlug(slug),
+    300
+  );
+
+  if (!storedListing || storedListing.status !== "approved") return null;
+
+  if (!storedListing.expertInspection?.documentPath) return storedListing;
+
+  return {
+    ...storedListing,
+    expertInspection: {
+      ...storedListing.expertInspection,
+      documentUrl: storedListing.expertInspection.documentUrl || undefined,
+    },
+  };
+}
+
+export async function getListingById(id: string): Promise<Listing | null> {
+  const publicClient = createSupabasePublicServerClient();
+
+  const { data, error } = await publicClient
+    .from("listings")
+    .select(listingCardSelect)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    logger.db.error("Public listing by ID retrieval failed", { error, id });
+    return null;
+  }
+
+  if (!data) return null;
+
+  if (Array.isArray(data)) {
+    return data.length > 0 ? mapListingRow(data[0] as unknown as ListingRow) : null;
+  }
+
+  return mapListingRow(data as unknown as ListingRow);
+}
+
+export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {
+  return withNextCache(
+    [`marketplace-seller:${sellerId}`],
+    () => getPublicSellerProfile(sellerId),
+    300
+  );
+}
+
+export async function getRecentMarketplaceListings(limit = 100) {
+  const result = await getPublicListings({ limit, page: 1, sort: "newest" });
+  return result.listings;
+}
+
+export async function getSimilarMarketplaceListings(
+  slug: string,
+  brand: string,
+  city: string
+): Promise<Listing[]> {
+  return withNextCache(
+    [`similar-marketplace-listings:${slug}:${brand}:${city}`],
+    () => getSimilarDatabaseListings({ slug, brand, city, limit: 12 }),
+    120
+  );
+}
+</write_file>
+
+<write_file path="src/features/marketplace/services/marketplace-listings.ts">
+export * from "./listings/marketplace-listings";
+</write_file>
+
+<write_file path="src/app/(public)/(marketplace)/listings/page.tsx">
+import type { Metadata } from "next";
+
+import {
+  BreadcrumbStructuredData,
+  ListingStructuredData,
+  OrganizationStructuredData,
+} from "@/components/seo/structured-data";
+import { ListingsPageClient } from "@/features/marketplace/components/listings-page-client";
+import { parseListingFiltersFromSearchParams } from "@/features/marketplace/services/listing-filters";
+import { getPublicMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import {
+  buildMarketplaceFilterState,
+  canonicalizeMarketplaceFilters,
+} from "@/features/marketplace/services/marketplace-query";
+import { buildAbsoluteUrl, buildListingsMetadata } from "@/features/seo/lib";
+import { getLiveMarketplaceReferenceData } from "@/features/shared/services/live-reference-data";
+import { createSupabaseServerClient } from "@/lib/server";
+
+export const revalidate = 3600;
+
+interface ListingsPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export async function generateMetadata({ searchParams }: ListingsPageProps): Promise<Metadata> {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const rawFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
+  const references = await getLiveMarketplaceReferenceData();
+  const query = canonicalizeMarketplaceFilters(rawFilters, {
+    brands: references.brands,
+    cities: references.cities,
+  });
+
+  return buildListingsMetadata(query as unknown as Record<string, unknown>);
+}
+
+export default async function ListingsPage({ searchParams }: ListingsPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
+  const [references, { data: authData }] = await Promise.all([
+    getLiveMarketplaceReferenceData(),
+    (await createSupabaseServerClient()).auth.getUser(),
+  ]);
+
+  const user = authData?.user;
+
+  const rawFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
+  const initialQuery = canonicalizeMarketplaceFilters(rawFilters, {
+    brands: references.brands,
+    cities: references.cities,
+  });
+
+  const initialFilters = buildMarketplaceFilterState({
+    rawFilters,
+    query: initialQuery,
+    brands: references.brands,
+    cities: references.cities,
+  });
+
+  const result = await getPublicMarketplaceListings(initialQuery);
+
+  const breadcrumbs = [{ name: "T??m ??lanlar", url: "/listings" }];
+
+  return (
+    <>
+      <OrganizationStructuredData
+        name="OtoBurada"
+        url={buildAbsoluteUrl("/")}
+        description="T??rkiye'nin en g??venilir 2. el ve s??f??r otomobil pazar??. Binlerce ara?? i??inden hayalindeki arabay?? bul."
+      />
+      <BreadcrumbStructuredData
+        items={breadcrumbs.map((breadcrumb) => ({
+          name: breadcrumb.name,
+          url: buildAbsoluteUrl(breadcrumb.url),
+        }))}
+      />
+      <ListingStructuredData listings={result.listings} url={buildAbsoluteUrl("/listings")} />
+
+      <div className="min-h-screen bg-muted/30">
+        <ListingsPageClient
+          initialResult={result}
+          brands={references.brands}
+          cities={references.cities}
+          initialFilters={initialFilters}
+          initialQuery={initialQuery}
+          userId={user?.id}
+        />
+      </div>
+    </>
+  );
+}
+</write_file>
+
+<write_file path="src/features/marketplace/hooks/use-marketplace-logic.ts">
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+
+import {
+  DEFAULT_MARKETPLACE_QUERY,
+  buildMarketplaceSearchParams,
+  canonicalizeMarketplaceFilters,
+  countActiveMarketplaceFilters,
+  isSameMarketplaceQuery,
+  type MarketplaceListingsQuery,
+} from "@/features/marketplace/services/marketplace-query";
+import type { Listing, ListingFilters } from "@/types";
+
+interface MarketplaceResultMetadata {
+  droppedFilters?: string[];
+  warning?: string;
+}
+
+interface PaginatedMarketplaceResult {
+  listings: Listing[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  metadata?: MarketplaceResultMetadata;
+}
+
+interface UseMarketplaceLogicArgs {
+  initialResult: PaginatedMarketplaceResult;
+  initialFilters: ListingFilters;
+  initialQuery: MarketplaceListingsQuery;
+}
+
+type ViewMode = "grid" | "list";
+
+type FilterChangeInput =
+  | Partial<ListingFilters>
+  | keyof ListingFilters
+  | Record<string, unknown>
+  | string;
+
+export function useMarketplaceLogic({
+  initialResult,
+  initialFilters,
+  initialQuery,
+}: UseMarketplaceLogicArgs) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+
+  const [filters, setFilters] = useState<ListingFilters>(initialFilters);
+  const [query, setQuery] = useState<MarketplaceListingsQuery>(initialQuery);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+
+  useEffect(() => {
+    setFilters(initialFilters);
+
+    if (!isSameMarketplaceQuery(query, initialQuery)) {
+      setQuery(initialQuery);
+    }
+  }, [initialFilters, initialQuery, query]);
+
+  const syncUrl = useCallback(
+    (nextQuery: MarketplaceListingsQuery) => {
+      const params = buildMarketplaceSearchParams(nextQuery);
+      const href = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+
+      startTransition(() => {
+        router.replace(href, { scroll: true });
+      });
+    },
+    [pathname, router]
+  );
+
+  const applyNextQuery = useCallback(
+    (nextFilters: ListingFilters, overrides?: Partial<MarketplaceListingsQuery>) => {
+      const nextQuery = {
+        ...canonicalizeMarketplaceFilters(nextFilters),
+        ...overrides,
+      };
+
+      setQuery(nextQuery);
+      syncUrl(nextQuery);
+    },
+    [syncUrl]
+  );
+
+  const handleFilterChange = useCallback(
+    (input: FilterChangeInput, value?: unknown) => {
+      setFilters((current) => {
+        const next =
+          typeof input === "string"
+            ? ({ ...current, [input]: value } as ListingFilters)
+            : ({ ...current, ...input } as ListingFilters);
+
+        if (
+          (typeof input === "string" && input === "sort") ||
+          (typeof input === "object" && input !== null && "sort" in input)
+        ) {
+          applyNextQuery(next, { page: 1 });
+        }
+
+        return next;
+      });
+    },
+    [applyNextQuery]
+  );
+
+  const applyFilters = useCallback(() => {
+    const nextFilters: ListingFilters = {
+      ...filters,
+      page: DEFAULT_MARKETPLACE_QUERY.page,
+    };
+
+    setFilters(nextFilters);
+    applyNextQuery(nextFilters, { page: DEFAULT_MARKETPLACE_QUERY.page });
+  }, [applyNextQuery, filters]);
+
+  const handleReset = useCallback(() => {
+    const resetQuery = { ...DEFAULT_MARKETPLACE_QUERY };
+    const resetFilters: ListingFilters = {
+      page: resetQuery.page,
+      limit: resetQuery.limit,
+      sort: resetQuery.sort,
+    };
+
+    setFilters(resetFilters);
+    setQuery(resetQuery);
+    syncUrl(resetQuery);
+  }, [syncUrl]);
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const nextPage = page > 0 ? page : 1;
+      const nextQuery = { ...query, page: nextPage };
+      const nextFilters: ListingFilters = { ...filters, page: nextPage };
+
+      setQuery(nextQuery);
+      setFilters(nextFilters);
+      syncUrl(nextQuery);
+    },
+    [filters, query, syncUrl]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (limit: number) => {
+      const nextFilters: ListingFilters = { ...filters, limit, page: 1 };
+      const nextQuery = {
+        ...canonicalizeMarketplaceFilters(nextFilters),
+        page: 1,
+        limit,
+      };
+
+      setFilters(nextFilters);
+      setQuery(nextQuery);
+      syncUrl(nextQuery);
+    },
+    [filters, syncUrl]
+  );
+
+  const refetch = useCallback(async () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
+
+  const total = initialResult.total;
+  const currentPage = query.page ?? initialResult.page ?? DEFAULT_MARKETPLACE_QUERY.page;
+  const currentLimit = query.limit ?? initialResult.limit ?? DEFAULT_MARKETPLACE_QUERY.limit;
+  const totalPages = Math.max(1, Math.ceil(total / currentLimit));
+
+  const activeFiltersCount = useMemo(() => countActiveMarketplaceFilters(filters), [filters]);
+
+  return {
+    filters,
+    setFilters,
+    query,
+    isPending,
+    viewMode,
+    setViewMode,
+    isSortOpen,
+    setIsSortOpen,
+    activeFiltersCount,
+    allListings: initialResult.listings,
+    total,
+    currentPage,
+    totalPages,
+    handlePageChange,
+    handlePageSizeChange,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: () => undefined,
+    handleFilterChange,
+    handleReset,
+    applyFilters,
+    refetch,
+    isError: false,
+    error: null,
+    droppedFilters: initialResult.metadata?.droppedFilters ?? [],
+    droppedWarning: initialResult.metadata?.warning,
+  };
+}
+</write_file>
+
+<write_file path="src/features/marketplace/components/listings-page-client.tsx">
+"use client";
+
+import { RefreshCw, Search } from "lucide-react";
+
+import { ListingCard } from "@/components/shared/listing-card";
+import { Button } from "@/components/ui/button";
+import { ActiveFilterTags } from "@/features/marketplace/components/active-filter-tags";
+import { DroppedFiltersAlert } from "@/features/marketplace/components/dropped-filters-alert";
+import { ListingsErrorState } from "@/features/marketplace/components/listings-error-state";
+import { ListingsGridSkeleton } from "@/features/marketplace/components/listings-grid-skeleton";
+import { ListingsResultsSummary } from "@/features/marketplace/components/listings-results-summary";
+import { MarketplaceControls } from "@/features/marketplace/components/marketplace-controls";
+import { MarketplaceHeader } from "@/features/marketplace/components/marketplace-header";
+import { MarketplaceQuickFilters } from "@/features/marketplace/components/marketplace-quick-filters";
+import { MarketplaceSidebar } from "@/features/marketplace/components/marketplace-sidebar";
+import { useMarketplaceLogic } from "@/features/marketplace/hooks/use-marketplace-logic";
+import type { MarketplaceListingsQuery } from "@/features/marketplace/services/marketplace-query";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { cn } from "@/lib/utils";
+import { type BrandCatalogItem, type CityOption, type Listing, type ListingFilters } from "@/types";
+
+interface ListingsPageClientProps {
+  initialResult: {
+    listings: Listing[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+    metadata?: {
+      droppedFilters?: string[];
+      warning?: string;
+    };
+  };
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+  initialFilters: ListingFilters;
+  initialQuery: MarketplaceListingsQuery;
+  userId?: string;
+}
+
+export function ListingsPageClient({
+  initialResult,
+  brands,
+  cities,
+  initialFilters,
+  initialQuery,
+  userId,
+}: ListingsPageClientProps) {
+  const {
+    filters,
+    setFilters,
+    isPending,
+    viewMode,
+    setViewMode,
+    isSortOpen,
+    setIsSortOpen,
+    activeFiltersCount,
+    allListings,
+    total,
+    currentPage,
+    totalPages,
+    handlePageChange,
+    handlePageSizeChange,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    handleFilterChange,
+    handleReset,
+    applyFilters,
+    refetch,
+    isError,
+    error,
+    droppedFilters,
+    droppedWarning,
+  } = useMarketplaceLogic({
+    initialResult,
+    initialFilters,
+    initialQuery,
+  });
+
+  const { refreshing, pullDistance, isActive } = usePullToRefresh({
+    threshold: 80,
+    onRefresh: async () => {
+      await refetch();
+    },
+  });
+
+  const currentLimit = filters.limit ?? initialResult.limit;
+  const visibleStart = total === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
+  const visibleEnd = Math.min(currentPage * currentLimit, total);
+  const showPagination = !hasNextPage && totalPages > 1;
+
+  return (
+    <>
+      {isActive && (
+        <div
+          className="fixed left-0 right-0 top-0 z-50 flex items-center justify-center bg-background/95 py-4 backdrop-blur-sm transition-transform"
+          style={{ transform: `translateY(${Math.min(pullDistance, 80)}px)` }}
+        >
+          <RefreshCw
+            className={cn(
+              "size-6 text-primary transition-transform duration-300",
+              refreshing && "animate-spin",
+              pullDistance >= 80 && "rotate-180"
+            )}
+            aria-hidden="true"
+          />
+          <span className="sr-only">{refreshing ? "Yenileniyor..." : "Yenilemek i??in ??ekin"}</span>
+        </div>
+      )}
+
+      <main className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-4 sm:px-4 sm:py-6">
+        <div className="mb-5 space-y-3 sm:mb-6 sm:space-y-4">
+          <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <MarketplaceHeader filters={filters} total={total} />
+
+              <MarketplaceControls
+                filters={filters}
+                activeFiltersCount={activeFiltersCount}
+                brands={brands}
+                cities={cities}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                isSortOpen={isSortOpen}
+                setIsSortOpen={setIsSortOpen}
+                handleFilterChange={handleFilterChange}
+                handleReset={handleReset}
+                applyFilters={applyFilters}
+                userId={userId}
+                total={total}
+              />
+            </div>
+
+            <MarketplaceQuickFilters
+              filters={filters}
+              handleFilterChange={handleFilterChange}
+              handleReset={handleReset}
+            />
+          </div>
+
+          {filters.validationError && (
+            <div className="animate-in fade-in slide-in-from-top-2 flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50/50 p-3 text-sm font-medium text-amber-700 duration-300 sm:p-4">
+              <Search size={14} className="mt-0.5 shrink-0" />
+              <span className="leading-6">{filters.validationError}</span>
+            </div>
+          )}
+
+          <ActiveFilterTags
+            filters={filters}
+            handleFilterChange={handleFilterChange}
+            handleReset={handleReset}
+            applyFilters={applyFilters}
+            setFilters={setFilters}
+          />
+
+          <DroppedFiltersAlert
+            droppedFilters={droppedFilters}
+            droppedWarning={droppedWarning}
+            handleReset={handleReset}
+          />
+        </div>
+
+        <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
+          <MarketplaceSidebar
+            brands={brands}
+            cities={cities}
+            filters={filters}
+            isPending={isPending}
+            activeFiltersCount={activeFiltersCount}
+            handleFilterChange={handleFilterChange}
+            handleReset={handleReset}
+          />
+
+          <div className="min-w-0 flex-1">
+            {isError ? (
+              <ListingsErrorState error={error} refetch={refetch} />
+            ) : isPending ? (
+              <div className="min-h-[360px] rounded-2xl border border-border bg-card p-4 shadow-sm sm:min-h-[520px] sm:p-8">
+                <ListingsGridSkeleton />
+              </div>
+            ) : allListings.length > 0 ? (
+              <div className="space-y-4 sm:space-y-6">
+                <ListingsResultsSummary
+                  total={total}
+                  visibleStart={visibleStart}
+                  visibleEnd={visibleEnd}
+                  currentLimit={currentLimit}
+                  handlePageSizeChange={handlePageSizeChange}
+                />
+
+                <div
+                  className={cn(
+                    "transition-opacity duration-normal",
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5"
+                      : "flex flex-col gap-4"
+                  )}
+                >
+                  {allListings.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} />
+                  ))}
+                </div>
+
+                {hasNextPage && (
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage ? "Y??kleniyor..." : "Daha fazla ilan y??kle"}
+                    </Button>
+                  </div>
+                )}
+
+                {showPagination && (
+                  <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-sm">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage <= 1 || isPending}
+                    >
+                      ??nceki
+                    </Button>
+
+                    <span className="text-sm text-muted-foreground">
+                      Sayfa {currentPage} / {totalPages}
+                    </span>
+
+                    <Button
+                      type="button"

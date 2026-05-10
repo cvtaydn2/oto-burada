@@ -1,12 +1,17 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
-import { createSearchParamsFromListingFilters } from "@/features/marketplace/services/listing-filters";
+import {
+  buildMarketplaceSearchParams,
+  canonicalizeMarketplaceFilters,
+  countActiveMarketplaceFilters,
+  isSameMarketplaceQuery,
+  type MarketplaceListingsQuery,
+} from "@/features/marketplace/services/marketplace-query";
 import { type Listing, type ListingFilters } from "@/types";
-
-import { useUnifiedFilters } from "./use-unified-filters";
 
 interface UseMarketplaceLogicProps {
   initialResult: {
@@ -17,25 +22,74 @@ interface UseMarketplaceLogicProps {
     hasMore: boolean;
   };
   initialFilters: ListingFilters;
+  initialQuery: MarketplaceListingsQuery;
 }
 
-export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarketplaceLogicProps) {
-  const {
-    filters,
-    setFilters,
-    updateFilter,
-    resetFilters,
-    applyFilters,
-    activeCount: activeFiltersCount,
-    isPending,
-  } = useUnifiedFilters(initialFilters);
+export function useMarketplaceLogic({
+  initialResult,
+  initialFilters,
+  initialQuery,
+}: UseMarketplaceLogicProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const queryKey = ["listings", filters];
+  // Separate visual state from authoritative fetch query
+  const [draftFilters, setDraftFilters] = useState<ListingFilters>(initialFilters);
+  const [activeQuery, setActiveQuery] = useState<MarketplaceListingsQuery>(initialQuery);
+
+  const activeFiltersCount = countActiveMarketplaceFilters(draftFilters);
+
+  const handleFilterChange = useCallback(
+    <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
+      setDraftFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
+
+  const applyFilters = useCallback(
+    (newFilters: ListingFilters, immediate = true) => {
+      const nextQuery = canonicalizeMarketplaceFilters(newFilters);
+
+      if (isSameMarketplaceQuery(activeQuery, nextQuery)) {
+        // Optimization: Don't trigger full re-render cycles if the network contract is unchanged
+        return;
+      }
+
+      const performNavigation = () => {
+        const params = buildMarketplaceSearchParams(nextQuery);
+        setActiveQuery(nextQuery);
+
+        // Force router updates inside transition to keep UI responsive during server action batching
+        startTransition(() => {
+          router.push(`/listings?${params.toString()}`, { scroll: immediate });
+        });
+      };
+
+      if (immediate) {
+        performNavigation();
+      } else {
+        // Short circuit or debounce implementation space holder
+        performNavigation();
+      }
+    },
+    [activeQuery, router]
+  );
+
+  const handleReset = useCallback(() => {
+    const cleanFilters: ListingFilters = { page: 1, limit: 12, sort: "newest" };
+    setDraftFilters(cleanFilters);
+    applyFilters(cleanFilters);
+  }, [applyFilters]);
+
+  const queryKey = ["listings", activeQuery];
 
   const fetchListings = async ({ pageParam }: { pageParam: number }) => {
-    const params = createSearchParamsFromListingFilters({ ...filters, page: pageParam });
+    const combinedQuery = { ...activeQuery, page: pageParam };
+    const params = buildMarketplaceSearchParams(combinedQuery);
+
     const res = await fetch(`/api/listings?${params.toString()}`);
     if (!res.ok) throw new Error("İlanlar yüklenirken hata oluştu.");
+
     const json = await res.json();
     return json.data as typeof initialResult;
   };
@@ -43,11 +97,11 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
   const query = useInfiniteQuery({
     queryKey,
     queryFn: fetchListings,
-    initialPageParam: filters.page ?? 1,
+    initialPageParam: activeQuery.page,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     placeholderData: {
       pages: [initialResult],
-      pageParams: [filters.page ?? 1],
+      pageParams: [initialQuery.page],
     },
     retry: 2,
     retryDelay: 1000,
@@ -62,15 +116,15 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
   useEffect(() => {
     fetchNextPageRef.current = fetchNextPage;
   }, [fetchNextPage]);
-  const stableFetchNextPage = () => {
+
+  const stableFetchNextPage = useCallback(() => {
     fetchNextPageRef.current();
-  };
+  }, []);
 
   const allListings = data?.pages.flatMap((p) => p.listings) ?? initialResult.listings;
   const total = data?.pages[0]?.total ?? initialResult.total;
-  const currentPage = filters.page ?? initialResult.page ?? 1;
-  const currentLimit = filters.limit ?? initialResult.limit ?? 12;
-  const totalPages = Math.max(1, Math.ceil(total / currentLimit));
+  const currentPage = activeQuery.page;
+  const totalPages = Math.max(1, Math.ceil(total / activeQuery.limit));
 
   type InitialResultType = UseMarketplaceLogicProps["initialResult"];
   type PageWithMetadata = InitialResultType & {
@@ -84,17 +138,27 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     (data?.pages[0] as PageWithMetadata | undefined)?.metadata?.warning ??
     (initialResult as PageWithMetadata).metadata?.warning;
 
-  const handlePageChange = (page: number) => {
-    applyFilters({ ...filters, page, limit: currentLimit }, true);
-  };
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const updatedFilters = { ...draftFilters, page };
+      setDraftFilters(updatedFilters);
+      applyFilters(updatedFilters, true);
+    },
+    [draftFilters, applyFilters]
+  );
 
-  const handlePageSizeChange = (limit: number) => {
-    applyFilters({ ...filters, page: 1, limit }, true);
-  };
+  const handlePageSizeChange = useCallback(
+    (limit: number) => {
+      const updatedFilters = { ...draftFilters, page: 1, limit };
+      setDraftFilters(updatedFilters);
+      applyFilters(updatedFilters, true);
+    },
+    [draftFilters, applyFilters]
+  );
 
   return {
-    filters,
-    setFilters,
+    filters: draftFilters,
+    setFilters: setDraftFilters,
     isPending,
     viewMode,
     setViewMode,
@@ -110,8 +174,8 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage: stableFetchNextPage,
-    handleFilterChange: updateFilter,
-    handleReset: resetFilters,
+    handleFilterChange,
+    handleReset,
     applyFilters,
     refetch,
     isError,

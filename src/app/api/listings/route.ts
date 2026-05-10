@@ -12,7 +12,7 @@ import {
   createDatabaseListing,
   getDatabaseListings,
 } from "@/features/marketplace/services/listing-submissions";
-import { getFilteredMarketplaceListings } from "@/features/marketplace/services/marketplace-listings";
+import { getPublicMarketplaceListingsFromRawFilters } from "@/features/marketplace/services/marketplace-listings";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
 import { AnalyticsEvent } from "@/lib/events";
 import { mapUseCaseError, validateRequestBody } from "@/lib/handler-utils";
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
   const filters = parseListingFiltersFromSearchParams(paramsObj);
 
   try {
-    const result = await getFilteredMarketplaceListings(filters);
+    const result = await getPublicMarketplaceListingsFromRawFilters(filters);
 
     // ── PERFORMANCE FIX: Issue #20 - Cache-Control Headers ─────
     // Add stale-while-revalidate for better performance and reduced DB load.

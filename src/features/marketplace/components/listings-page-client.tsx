@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCw, Search } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { ListingCard } from "@/components/shared/listing-card";
@@ -17,8 +17,8 @@ import { MarketplaceHeader } from "@/features/marketplace/components/marketplace
 import { MarketplaceQuickFilters } from "@/features/marketplace/components/marketplace-quick-filters";
 import { MarketplaceSidebar } from "@/features/marketplace/components/marketplace-sidebar";
 import { useMarketplaceLogic } from "@/features/marketplace/hooks/use-marketplace-logic";
+import { type MarketplaceListingsQuery } from "@/features/marketplace/services/marketplace-query";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 import { type BrandCatalogItem, type CityOption, type Listing, type ListingFilters } from "@/types";
 
@@ -37,6 +37,7 @@ interface ListingsPageClientProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
   initialFilters: ListingFilters;
+  initialQuery: MarketplaceListingsQuery;
   userId?: string;
 }
 
@@ -45,6 +46,7 @@ export function ListingsPageClient({
   brands,
   cities,
   initialFilters,
+  initialQuery,
   userId,
 }: ListingsPageClientProps) {
   const {
@@ -73,7 +75,7 @@ export function ListingsPageClient({
     error,
     droppedFilters,
     droppedWarning,
-  } = useMarketplaceLogic({ initialResult, initialFilters });
+  } = useMarketplaceLogic({ initialResult, initialFilters, initialQuery });
 
   const { refreshing, pullDistance, isActive } = usePullToRefresh({
     threshold: 80,
@@ -84,27 +86,30 @@ export function ListingsPageClient({
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const lastFetchRef = useRef<number>(0);
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          const now = Date.now();
-          if (now - lastFetchRef.current > 2000) {
-            lastFetchRef.current = now;
-            fetchNextPage();
-          }
+  const observerCallback = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        const now = Date.now();
+        if (now - lastFetchRef.current > 2000) {
+          lastFetchRef.current = now;
+          fetchNextPage();
         }
-      },
-      { rootMargin: "50px" }
-    );
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
 
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(observerCallback, { rootMargin: "100px" });
     observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const currentLimit = filters.limit ?? initialResult.limit;
+    return () => observer.disconnect();
+  }, [observerCallback]);
+
+  const currentLimit = initialQuery.limit;
   const visibleStart = total === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
   const visibleEnd = Math.min(currentPage * currentLimit, total);
   const showPagination = !hasNextPage && totalPages > 1;
@@ -196,10 +201,6 @@ export function ListingsPageClient({
           <div className="min-w-0 flex-1">
             {isError ? (
               <ListingsErrorState error={error} refetch={refetch} />
-            ) : isPending ? (
-              <div className="min-h-[360px] rounded-2xl border border-border bg-card p-4 shadow-sm sm:min-h-[520px] sm:p-8">
-                <ListingsGridSkeleton />
-              </div>
             ) : allListings.length > 0 ? (
               <div className="space-y-4 sm:space-y-6">
                 <ListingsResultsSummary
@@ -220,12 +221,9 @@ export function ListingsPageClient({
                   )}
                 >
                   {isPending && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
-                      <div className="h-full w-full animate-in fade-in duration-normal">
-                        <ListingsGridSkeleton />
-                      </div>
-                    </div>
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-2xl" />
                   )}
+
                   {allListings.map((listing, index) => (
                     <ListingCard
                       key={`${listing.id}-${index}`}
@@ -267,6 +265,10 @@ export function ListingsPageClient({
                     ) : null}
                   </div>
                 )}
+              </div>
+            ) : isPending ? (
+              <div className="min-h-[360px] rounded-2xl border border-border bg-card p-4 shadow-sm sm:min-h-[520px] sm:p-8">
+                <ListingsGridSkeleton />
               </div>
             ) : (
               <EmptyState
