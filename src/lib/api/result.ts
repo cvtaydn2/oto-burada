@@ -56,7 +56,11 @@ export async function executeServerAction<T>(
     const result = await fn();
     const duration = Date.now() - start;
     if (duration > 5000) {
-      console.warn(`[executeServerAction] ${name} took ${duration}ms`);
+      // Perf warning: action took longer than 5s (logged via Sentry in production)
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.warn(`[executeServerAction] ${name} took ${duration}ms`);
+      }
     }
     if (_options) {
       // options can be used for logging/revalidation
@@ -64,7 +68,11 @@ export async function executeServerAction<T>(
     return result;
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    console.error(`[executeServerAction] ${name} failed:`, message);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error(`[executeServerAction] ${name} failed:`, message);
+    }
     throw e;
   }
 }
+
