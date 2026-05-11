@@ -56,3 +56,30 @@ test-results/
 
 # Roo configurations and local secrets
 .roo/mcp.json
+# AI agent / coding assistant artifacts
+.claude/
+.claude-flow/
+.roo/
+.swarm/
+.kiro/
+.jules/
+.Jules/
+.agents/
+scratch/
+*.swarm-output
+swarm_*.txt
+orchestrator_*.txt
+google-jules-*.txt
+
+# Temporary root-level fix/build scripts (should not be committed)
+fix_*.js
+fix_*.ts
+cleanup_*.js
+refactor.js
+build_*.log
+build_*.txt
+*_output.txt
+*_dump.txt
+*_dump_ascii.txt
+temp.ps1
+env_ls.txt
