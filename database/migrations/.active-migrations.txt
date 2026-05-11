@@ -7,4 +7,8 @@
 0003_expand_listing_status_and_runtime_contracts.sql
 0004_secure_moderation_rpc.sql
 0005_bulk_mark_jobs_processing.sql
-
+0030_public_listing_contact_leads.sql
+0133_fix_outbox_race_conditions.sql
+0134_add_fk_listings_seller_to_profiles.sql
+0135_listing_reject_reason_contract.sql
+0136_analytics_events.sql

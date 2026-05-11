@@ -127,7 +127,7 @@ export async function checkListingLimit(
     const lockKey = await hashUserIdToLockKey(userId);
 
     const { error: lockError } = await admin
-      .rpc("pg_advisory_xact_lock", { key: lockKey })
+      .rpc("pg_advisory_xact_lock", { key: Number(lockKey) })
       .abortSignal(AbortSignal.timeout(3000)); // 3 second timeout
 
     if (lockError) {
