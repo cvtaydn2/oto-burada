@@ -54,7 +54,7 @@ export async function createChatAtomic(input: {
   listingId: string;
   buyerId: string;
   sellerId: string;
-}): Promise<string | unknown> {
+}): Promise<string> {
   const supabase = await createSupabaseServerClient();
 
   const { data: chatId, error } = await supabase.rpc("create_chat_atomic", {
@@ -65,7 +65,7 @@ export async function createChatAtomic(input: {
   });
 
   if (error) throw error;
-  return chatId;
+  return chatId as string;
 }
 
 /**
@@ -218,3 +218,4 @@ export async function markMessagesAsReadInDb(chatId: string, senderId: string) {
   if (error) throw error;
   return data?.length || 0;
 }
+
