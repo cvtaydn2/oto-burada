@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { applyDopingPackage } from "@/features/payments/services/doping-logic";
+import { applyDopingPackage, warnExpiringDopings } from "@/features/payments/services/doping-logic";
 import { expireReservations } from "@/features/reservations/services/reservation-service";
 import { processCompensatingActions } from "@/features/shared/services/compensating-processor";
 import { processComplianceVacuum } from "@/features/shared/services/compliance-vacuum";
@@ -69,6 +69,14 @@ export async function GET(request: Request) {
     // 1. Expire Dopings (Atomic RPC)
     const { data: dopingData } = await admin.rpc("expire_dopings_atomic");
     results.expireDopings = dopingData;
+
+    // 1b. Send Doping Expiration Warnings
+    try {
+      const warningResult = await warnExpiringDopings();
+      results.warnDopings = warningResult;
+    } catch (warnError) {
+      logger.system.error("Failed to run doping warnings", warnError);
+    }
 
     // 2. Expire Reservations
     results.expireReservations = await expireReservations();
@@ -215,4 +223,3 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Execution failed" }, { status: 500 });
   }
 }
-

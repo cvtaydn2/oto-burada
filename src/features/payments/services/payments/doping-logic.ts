@@ -86,3 +86,73 @@ export async function getActiveDopingsForListing(listingId: string) {
 
   return data || [];
 }
+
+/**
+ * Scans for active dopings that expire in the next 24 hours and generates
+ * in-app notifications for the users. Updates their record so they're not spammed again.
+ * Consumed by master cron process.
+ */
+export async function warnExpiringDopings() {
+  const { createDatabaseNotificationsBulk } =
+    await import("@/features/notifications/services/notification-records");
+  const { createSupabaseAdminClient } = await import("@/lib/admin");
+
+  const admin = createSupabaseAdminClient();
+
+  const now = new Date();
+  const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+  try {
+    const { data: expiringDopings, error } = await (admin.from("doping_purchases") as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .select(
+        `
+        id,
+        user_id,
+        expires_at,
+        doping_packages(name),
+        listings(title)
+      `
+      )
+      .eq("status", "active")
+      .eq("expiry_warning_sent", false)
+      .lte("expires_at", next24h)
+      .gt("expires_at", now.toISOString());
+
+    if (error) {
+      logger.payments.error("Failed to fetch expiring dopings for warnings", error);
+      return { success: false, count: 0, error: error.message };
+    }
+
+    if (!expiringDopings || expiringDopings.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const notifications = expiringDopings.map((item: any) => {
+      const packageName = item.doping_packages?.name || "Doping";
+      const listingTitle = item.listings?.title || "ilanın";
+
+      return {
+        userId: item.user_id,
+        type: "system" as const,
+        title: "Dopingin bitiyor",
+        message: `"${listingTitle}" için aktif olan "${packageName}" dopingin 24 saat içinde sona erecek.`,
+        href: `/dashboard/listings`,
+      };
+    });
+
+    await createDatabaseNotificationsBulk(notifications);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const purchaseIds = expiringDopings.map((item: any) => item.id);
+    await (admin.from("doping_purchases") as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .update({ expiry_warning_sent: true })
+      .in("id", purchaseIds);
+
+    logger.payments.info(`Successfully sent expiry warnings for ${purchaseIds.length} dopings`);
+    return { success: true, count: purchaseIds.length };
+  } catch (err) {
+    logger.payments.error("Warn expiring dopings logic threw exception", err);
+    return { success: false, count: 0, error: "Internal exception" };
+  }
+}

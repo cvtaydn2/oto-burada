@@ -1,5 +1,26 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 121. Task E3 — Bildirim ve Gerçek Zamanlı Güncellemeler (Altyapı ve Visual Entegrasyon)
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED (Phase 1: Core System & Reminders)
+**Scope**: Activated robust, realtime global notifications by modernizing the standalone notification center and integrating preemptive expiration tracking within the master service routines.
+
+### 121.1 Visual Activation & Global Mounting
+- Refactored [`notification-center.tsx`](src/features/notifications/components/notification-center.tsx) replacing static state placeholders with dynamic TanStack `useNotifications` react hooks bound to real API infrastructure.
+- Injected realtime subscription handlers tracking instant Postgres channel insert events to invalid cache and render red unread status badges.
+- Mounted system visually into [`site-header-auth.tsx`](src/components/layout/site-header-auth.tsx) supplying user feedback triggers consistently across both mobile overlays and desktop navigation frames.
+
+### 121.2 Strategic Expiration Warnings System
+- Deployed migration `0138_doping_expiry_warning_flag.sql` attaching persistence layer safeguards to `doping_purchases` avoiding redundant notification delivery loops.
+- Expanded `warnExpiringDopings()` domain service inside [`doping-logic.ts`](src/features/payments/services/payments/doping-logic.ts) that performs deterministic lookaheads targeting next-24-hour expiration events.
+- Consolidated logic insertion into central [`src/app/api/cron/main/route.ts`](src/app/api/cron/main/route.ts) conserving Vercel Free-Tier daily routine invocations while enforcing absolute operational coverage.
+
+### 121.3 Security & Resiliency Standardized
+- Audited preexisting `notification-preferences-panel.tsx` screens and API preferences endpoints ensuring users govern global communications payloads immediately upon launch.
+- Managed static typing integrity by resolving dynamic SQL column inclusion using targeted generic casts after executing critical `src/types/supabase.ts` recovery cleanup cycle.
+- Confirmed fully operative builds via localized pre-commit `npm run typecheck`.
+
 ## 120. Task E2 — Full-Stack Analytics System Re-Integration
 
 **Date**: 2026-05-11

@@ -240,7 +240,7 @@ MVP teslimi aşağıdaki koşullar sürdürülebilir biçimde sağlandığında 
 - Kritik akışlarda dönüşüm oranları ölçülür
 - Satıcılar kendi ilan performansını görebilir
 
-**Status**: 📋 PLANNED (Phase E Sprint 2)
+**Status**: ✅ COMPLETED (2026-05-11)
 
 ### Task E3 — Bildirim ve Gerçek Zamanlı Güncellemeler
 
@@ -254,4 +254,4 @@ MVP teslimi aşağıdaki koşullar sürdürülebilir biçimde sağlandığında 
 - In-app bildirim merkezi oluşturulur
 - Push notification free-tier'da çalışır
 
-**Status**: 📋 PLANNED (Phase E Sprint 2, E2 sonrası)
+**Status**: ✅ COMPLETED (2026-05-11)

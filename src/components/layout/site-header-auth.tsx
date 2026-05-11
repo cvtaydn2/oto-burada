@@ -3,6 +3,7 @@
 import { Heart, PlusCircle, User } from "lucide-react";
 import Link from "next/link";
 
+import { NotificationCenter } from "@/features/notifications/components/notification-center";
 import { useNavigation } from "@/hooks/use-navigation";
 
 interface SiteHeaderAuthProps {
@@ -23,6 +24,7 @@ export function SiteHeaderAuth({
   return (
     <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
       <div className="hidden items-center gap-2 border-r border-border pr-3 lg:flex lg:pr-4">
+        {isAuthenticated && <NotificationCenter />}
         <Link
           href={favoritesHref}
           prefetch={false}
@@ -35,6 +37,9 @@ export function SiteHeaderAuth({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+        {/* Mobile Notification Center (Not visible on LG which relies on desktop slot above) */}
+        <div className="lg:hidden">{isAuthenticated && <NotificationCenter />}</div>
+
         {!isReady ? (
           <div className="h-10 w-10 rounded-full bg-muted animate-pulse lg:h-11 lg:w-11" />
         ) : (
