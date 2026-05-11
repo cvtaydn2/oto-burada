@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { withCache } from "@/lib/cache";
 import { hasSupabaseAdminEnv } from "@/lib/env";
@@ -47,6 +48,7 @@ async function getStatusStats(admin: SupabaseClient) {
 }
 
 export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAnalyticsData | null> {
+  await requireAdminUser();
   if (!hasSupabaseAdminEnv()) return null;
   const cacheKey = `admin-analytics:${range}`;
 

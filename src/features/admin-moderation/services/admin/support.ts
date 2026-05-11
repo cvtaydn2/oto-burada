@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { captureServerError } from "@/lib/telemetry-server";
@@ -18,6 +19,7 @@ interface SupportTicketRow {
 }
 
 export async function getSupportTickets() {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("tickets")
@@ -42,6 +44,7 @@ export async function getSupportTickets() {
 }
 
 export async function getUserEmailById(userId: string): Promise<string | null> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.auth.admin.getUserById(userId);
   if (error || !data.user) return null;
@@ -49,6 +52,7 @@ export async function getUserEmailById(userId: string): Promise<string | null> {
 }
 
 export async function updateTicketStatus(id: string, status: string) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("tickets")

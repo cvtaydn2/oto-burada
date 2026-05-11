@@ -2,6 +2,7 @@
 
 import { Redis } from "@upstash/redis";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { getSupabaseStorageEnv, hasSupabaseAdminEnv, hasSupabaseStorageEnv } from "@/lib/env";
 
@@ -64,6 +65,7 @@ let healthCache: { data: PersistenceHealth; timestamp: number } | null = null;
 const CACHE_TTL_MS = 60 * 1000; // 60 seconds
 
 export async function getPersistenceHealth(): Promise<PersistenceHealth> {
+  await requireAdminUser();
   const now = Date.now();
   if (healthCache && now - healthCache.timestamp < CACHE_TTL_MS) {
     return healthCache.data;

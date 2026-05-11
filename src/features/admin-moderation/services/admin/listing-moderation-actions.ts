@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { getDatabaseListings } from "@/features/marketplace/services/listing-submission-query";
 import { getRequiredAppUrl, hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -30,6 +31,7 @@ export async function moderateListingWithSideEffects({
   listingId,
   rejectReason,
 }: ModerateListingInput): Promise<Listing | null> {
+  await requireAdminUser();
   const status = action === "approve" ? "approved" : "rejected";
   const appUrl = getRequiredAppUrl();
 
@@ -174,6 +176,7 @@ export async function moderateListingsWithSideEffects({
  * Fully purges listing and media physically.
  */
 export async function adminDeleteDatabaseListing(listingId: string) {
+  await requireAdminUser();
   if (!hasSupabaseAdminEnv()) return null;
 
   const listingResults = await getDatabaseListings({ listingId, includeBanned: true });

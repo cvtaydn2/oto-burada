@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { logger } from "@/lib/logger";
 import { captureServerError } from "@/lib/telemetry-server";
 import { Profile } from "@/types";
@@ -8,6 +9,7 @@ import { AuthUserResponse, constructAuthMap, sanitizeUserSearchQuery } from "./u
 import { fetchBatchAuthUsers, fetchUsersProfiles } from "./user-records";
 
 export async function getAllUsers(query?: string, page = 1, limit = 20) {
+  await requireAdminUser();
   const sanitizedQuery = sanitizeUserSearchQuery(query);
   const from = (page - 1) * limit;
 

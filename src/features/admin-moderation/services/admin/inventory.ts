@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
@@ -24,6 +25,7 @@ export async function getAdminInventory(filters?: {
   page?: number;
   limit?: number;
 }) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const page = filters?.page ?? 1;
   const limit = filters?.limit ?? 15;
@@ -147,6 +149,7 @@ export async function forceActionOnListing(
   action: "archive" | "delete" | "approve" | "reject",
   adminUserId?: string
 ) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   // approve / reject — delegate to the full moderation pipeline so that

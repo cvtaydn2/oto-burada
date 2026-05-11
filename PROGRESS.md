@@ -2440,3 +2440,58 @@ style-src 'self' <urls> 'unsafe-inline'
 - `npm run typecheck` ✅
 - `npm run lint` ✅ (0 errors, 0 warnings)
 - New test: `"uses unsafe-inline instead of nonce for style-src (production)"`
+
+---
+
+## 130. Auth Security — Missing Admin Auth on 10 Server Action Files (CRITICAL)
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Comprehensive auth pattern audit revealed 10 `"use server"` files in `src/features/admin-moderation/services/admin/` with **zero authentication**. Any client-side code could invoke these server actions directly.
+
+### 130.1 Files Fixed
+
+All files now call `await requireAdminUser()` at the top of every exported function:
+
+| File | Functions Fixed | Risk Before |
+|------|----------------|-------------|
+| `support.ts` | `getSupportTickets`, `getUserEmailById`, `updateTicketStatus` | Anyone could read all tickets, look up user emails, change ticket status |
+| `roles.ts` | `getAdminRoles`, `createRole`, `updateRole`, `deleteRole` | Anyone could create/delete system roles |
+| `plans.ts` | `updatePricingPlan`, `deletePricingPlan`, `createPricingPlan`, `getPlanPurchases`, `getPlanStats` | Anyone could mutate pricing plans, read purchase history |
+| `persistence-health.ts` | `getPersistenceHealth` | Anyone could read system health data |
+| `market-aggregator.ts` | `aggregateMarketStats` | Anyone could trigger/read market aggregation |
+| `inventory.ts` | `getAdminInventory`, `forceActionOnListing` | Anyone could read all listings, force archive/delete |
+| `analytics.ts` | `getAdminAnalytics` | Anyone could read sensitive analytics |
+| `reference.ts` | `getBrands`, `getModelsByBrand`, `toggleBrandStatus`, `addBrand`, `updateBrand`, `deleteBrand`, `createModel`, `deleteModel` | Anyone could mutate brand/model reference data |
+| `listing-moderation-actions.ts` | `moderateListingWithSideEffects`, `adminDeleteDatabaseListing` | Anyone could approve/reject listings, cascade-delete |
+| `user-list.ts` | `getAllUsers` | Anyone could list all users with auth metadata |
+
+### 130.2 Pattern Applied
+
+```typescript
+import { requireAdminUser } from "@/features/auth/lib/session";
+
+export async function someAdminAction() {
+  await requireAdminUser();  // Throws/redirects if not admin
+  // ... rest of function
+}
+```
+
+`requireAdminUser()` performs:
+1. Session check (redirects to `/login` if no user)
+2. JWT claim check (fast path)
+3. **DB-verified** role check against `profiles` table (guards against stale JWT after demotion)
+4. Ban status check (banned admins are blocked)
+5. Result caching with 30s TTL
+
+### 130.3 Remaining Auth Pattern Issues (Deferred)
+
+| Issue | Files | Effort |
+|-------|-------|--------|
+| 19 server actions use raw `createSupabaseServerClient()` + manual `auth.getUser()` | Various | HIGH |
+| 39 API routes use legacy wrappers (`withUserAndCsrf`, `withAdminRoute`, `withUserRoute`) | `src/app/api/` | HIGH |
+| Caller-provided `userId` with no server-side verification | `reports`, `dashboard-listings-actions` | MEDIUM |
+
+### 130.4 Validation
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)

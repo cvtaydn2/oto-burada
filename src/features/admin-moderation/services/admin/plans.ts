@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import type { TablesInsert, TablesUpdate } from "@/types/supabase";
@@ -120,6 +121,7 @@ export type PricingPlanInput = {
 };
 
 export async function updatePricingPlan(id: string, updates: Partial<PricingPlanInput>) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const dbUpdates = updates as unknown as TablesUpdate<"pricing_plans">;
   const { error } = await admin.from("pricing_plans").update(dbUpdates).eq("id", id);
@@ -137,6 +139,7 @@ export async function togglePlanStatus(id: string, currentStatus: boolean) {
 }
 
 export async function deletePricingPlan(id: string) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const { error } = await admin.from("pricing_plans").delete().eq("id", id);
 
@@ -149,6 +152,7 @@ export async function deletePricingPlan(id: string) {
 }
 
 export async function createPricingPlan(plan: Omit<PricingPlanInput, never>) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const dbPlan = plan as unknown as TablesInsert<"pricing_plans">;
   const { error } = await admin.from("pricing_plans").insert(dbPlan);
@@ -177,6 +181,7 @@ export interface PlanPurchaseRecord {
 }
 
 export async function getPlanPurchases(planId?: string): Promise<PlanPurchaseRecord[]> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   let query = admin
@@ -227,6 +232,7 @@ export async function getPlanStats(): Promise<{
   totalSales: number;
   byPlan: { planName: string; count: number; revenue: number }[];
 }> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   const { data, error } = await admin

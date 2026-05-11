@@ -1,9 +1,11 @@
 "use server";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 
 export async function aggregateMarketStats() {
+  await requireAdminUser();
   const supabaseAdmin = createSupabaseAdminClient();
   try {
     // 1. Fetch all approved listings with basic data

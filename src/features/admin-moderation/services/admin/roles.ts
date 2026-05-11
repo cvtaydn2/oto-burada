@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdminUser } from "@/features/auth/lib/session";
 import { createSupabaseAdminClient } from "@/lib/admin";
 
 export interface AdminRole {
@@ -17,6 +18,7 @@ export interface AdminRole {
  * (i.e. migration 0043 hasn't been applied).
  */
 export async function getAdminRoles(): Promise<AdminRole[]> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   // Get user counts per role from profiles
@@ -99,6 +101,7 @@ export async function createRole(
   description: string,
   permissions: string[]
 ): Promise<AdminRole> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   const { data, error } = await admin
@@ -134,6 +137,7 @@ export async function updateRole(
   id: string,
   updates: { name?: string; description?: string; permissions?: string[] }
 ): Promise<AdminRole> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   // Guard: cannot update system roles
@@ -172,6 +176,7 @@ export async function updateRole(
  * System roles cannot be deleted.
  */
 export async function deleteRole(id: string): Promise<void> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   // Guard: cannot delete system roles
