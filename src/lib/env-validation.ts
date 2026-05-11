@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 export function logEnvValidation() {
-  console.log("[Env] Environment validation passed");
+  logger.system.info("[Env] Environment validation passed");
 }
