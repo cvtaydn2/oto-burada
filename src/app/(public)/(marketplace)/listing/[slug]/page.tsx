@@ -141,6 +141,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         price={listing.price}
         year={listing.year}
         status={listing.status}
+        sellerId={listing.sellerId}
       />
       <ListingDetailStructuredData
         listing={listing}
@@ -166,7 +167,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             {/* ── Left: Gallery & Title block ── */}
             <div className="space-y-3 sm:space-y-4">
               <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                <ListingGallery images={listing.images} title={listing.title} />
+                <ListingGallery
+                  images={listing.images}
+                  title={listing.title}
+                  listingId={listing.id}
+                />
               </div>
 
               <ListingInfoCard

@@ -6,6 +6,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
@@ -40,10 +41,12 @@ export function SearchWithSuggestions({
   currentFilters,
   formId,
 }: SearchWithSuggestionsProps) {
+  const { trackSearch } = useAnalytics();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const [apiSuggestions, setApiSuggestions] = useState<SearchSuggestionItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -51,6 +54,33 @@ export function SearchWithSuggestions({
   const suggestionsId = useId();
   const defaultInputId = useId();
   const inputId = id || defaultInputId;
+
+  // Fetch suggestions from API when debounced query changes
+  useEffect(() => {
+    if (debouncedQuery.length === 0) {
+      return;
+    }
+
+    let mounted = true;
+
+    const fetchSuggestions = async () => {
+      try {
+        const response = await fetch(
+          `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}`
+        );
+        const data = await response.json();
+        if (mounted) setApiSuggestions(data.suggestions || []);
+      } catch {
+        if (mounted) setApiSuggestions([]);
+      }
+    };
+
+    fetchSuggestions();
+
+    return () => {
+      mounted = false;
+    };
+  }, [debouncedQuery]);
 
   const handleInputChange = (value: string) => {
     setQuery(value);
@@ -78,16 +108,17 @@ export function SearchWithSuggestions({
     }
     const normalizedQuery = debouncedQuery.toLocaleLowerCase("tr-TR");
 
-    const list = Array.isArray(suggestions) ? suggestions : [];
+    // Combine passed suggestions with API suggestions
+    const list = [...(Array.isArray(suggestions) ? suggestions : []), ...apiSuggestions];
     return list
-      .filter((suggestion) => suggestion.label.toLocaleLowerCase("tr-TR").includes(normalizedQuery))
-      .slice(0, 6)
-      .map<SearchSuggestion>((suggestion) => ({
-        label: suggestion.label,
-        type: suggestion.type as SearchSuggestion["type"],
-        value: suggestion.value,
+      .filter((s) => s.label.toLocaleLowerCase("tr-TR").includes(normalizedQuery))
+      .slice(0, 8)
+      .map<SearchSuggestion>((s) => ({
+        label: s.label,
+        type: s.type as SearchSuggestion["type"],
+        value: s.value,
       }));
-  }, [debouncedQuery, suggestions]);
+  }, [debouncedQuery, suggestions, apiSuggestions]);
 
   const visibleSuggestions = debouncedQuery.length === 0 ? POPULAR_SEARCHES : filteredSuggestions;
   const hasResults = debouncedQuery.length >= 1;
@@ -99,6 +130,10 @@ export function SearchWithSuggestions({
 
   const handleSearch = (searchQuery: string, type?: string) => {
     if (searchQuery.trim()) {
+      // Track search interaction
+      const usedSuggestion = !!type;
+      trackSearch(searchQuery.trim(), usedSuggestion);
+
       const params = new URLSearchParams(currentFilters ?? {});
 
       if (type === "trending" && searchQuery === "mileage_asc") {

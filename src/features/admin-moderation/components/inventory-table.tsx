@@ -36,14 +36,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
 import { forceActionOnListing } from "@/features/admin-moderation/services/inventory";
 import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
+import {
+  listingRejectReasonCodes,
+  listingRejectReasonDefaultExplanations,
+  listingRejectReasonLabels,
+} from "@/lib/constants/domain";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatNumber } from "@/lib/utils/format";
 import { supabaseImageUrl } from "@/lib/utils/image";
-import { Listing } from "@/types";
+import { Listing, ListingRejectReasonCode } from "@/types";
 
 interface InventoryTableProps {
   listings: Listing[];
@@ -133,6 +139,10 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
   const router = useRouter();
   const [activeActionKey, setActiveActionKey] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [selectedReasonCode, setSelectedReasonCode] = useState<ListingRejectReasonCode | null>(
+    null
+  );
+  const [moderatorNote, setModeratorNote] = useState<string>("");
 
   const listingCountLabel = useMemo(
     () => `${listings.length} ilan listeleniyor`,
@@ -143,10 +153,22 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
     setActiveActionKey(`${listingId}:${action}`);
     try {
       if (action === "approve" || action === "reject") {
+        const body: Record<string, unknown> = { action };
+
+        if (action === "reject") {
+          if (!selectedReasonCode) {
+            throw new Error("Ret gerekçesi seçmelisiniz.");
+          }
+          body.rejectReason = {
+            reasonCode: selectedReasonCode,
+            moderatorNote: moderatorNote.trim() || undefined,
+          };
+        }
+
         const res = await fetch(`/api/admin/listings/${listingId}/moderate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) {
           const payload = await res.json().catch(() => null);
@@ -158,6 +180,8 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
 
       toast.success("İşlem başarıyla gerçekleştirildi");
       setPendingAction(null);
+      setSelectedReasonCode(null);
+      setModeratorNote("");
       router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : "İşlem başarısız oldu";
@@ -219,9 +243,13 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
 
           <DropdownMenuSeparator />
 
-          {listing.status !== "approved" ? (
+          {listing.status === "pending" || listing.status === "rejected" ? (
             <DropdownMenuItem
-              onClick={() => setPendingAction({ listing, action: "approve" })}
+              onClick={() => {
+                setSelectedReasonCode(null);
+                setModeratorNote("");
+                setPendingAction({ listing, action: "approve" });
+              }}
               className="cursor-pointer gap-2 rounded-xl px-2 py-2 font-semibold text-emerald-700 focus:text-emerald-700"
             >
               <CheckCircle2 size={14} />
@@ -239,9 +267,13 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
             </DropdownMenuItem>
           ) : null}
 
-          {listing.status !== "rejected" ? (
+          {listing.status === "pending" || listing.status === "approved" ? (
             <DropdownMenuItem
-              onClick={() => setPendingAction({ listing, action: "reject" })}
+              onClick={() => {
+                setSelectedReasonCode(null);
+                setModeratorNote("");
+                setPendingAction({ listing, action: "reject" });
+              }}
               className="cursor-pointer gap-2 rounded-xl px-2 py-2 font-semibold text-amber-700 focus:text-amber-700"
             >
               <XSquare size={14} />
@@ -482,6 +514,8 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
         onOpenChange={(open) => {
           if (!open && !activeActionKey) {
             setPendingAction(null);
+            setSelectedReasonCode(null);
+            setModeratorNote("");
           }
         }}
       >
@@ -519,10 +553,76 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  Bu onay penceresi yanlış tıklamaları azaltmak için eklenmiştir. Özellikle kalıcı
-                  silme işleminden önce ilanı yeni sekmede açarak kontrol etmen önerilir.
-                </div>
+                {pendingAction.action === "reject" ? (
+                  <div className="space-y-4 border-t border-border/60 pt-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between">
+                        <span>RET GEREKÇESİ</span>
+                        {!selectedReasonCode && (
+                          <span className="text-[9px] text-rose-600 animate-pulse lowercase tracking-normal font-bold">
+                            * zorunlu alan
+                          </span>
+                        )}
+                      </Label>
+                      <div className="grid gap-2 grid-cols-1">
+                        {listingRejectReasonCodes.map((reasonCode) => (
+                          <Button
+                            key={reasonCode}
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSelectedReasonCode(reasonCode)}
+                            className={cn(
+                              "h-auto justify-start rounded-xl border px-3 py-2.5 text-left transition-all",
+                              selectedReasonCode === reasonCode
+                                ? "border-rose-300 bg-rose-50/50 text-rose-700 ring-1 ring-rose-200"
+                                : "hover:bg-muted border-border/70"
+                            )}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div
+                                className={cn(
+                                  "mt-0.5 size-3.5 shrink-0 rounded-full border flex items-center justify-center",
+                                  selectedReasonCode === reasonCode
+                                    ? "border-rose-500 bg-rose-500"
+                                    : "border-muted-foreground/40 bg-background"
+                                )}
+                              >
+                                {selectedReasonCode === reasonCode && (
+                                  <div className="size-1.5 rounded-full bg-white" />
+                                )}
+                              </div>
+                              <div className="space-y-0.5">
+                                <p className="text-xs font-bold uppercase tracking-tight">
+                                  {listingRejectReasonLabels[reasonCode]}
+                                </p>
+                                <p className="text-[10px] font-medium text-muted-foreground leading-tight">
+                                  {listingRejectReasonDefaultExplanations[reasonCode]}
+                                </p>
+                              </div>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        Moderatör Notu (Opsiyonel)
+                      </Label>
+                      <textarea
+                        value={moderatorNote}
+                        onChange={(e) => setModeratorNote(e.target.value)}
+                        placeholder="Satıcıya iletilecek ek not..."
+                        className="w-full min-h-[80px] rounded-xl border border-border/80 bg-muted/10 p-3 text-sm focus:ring-2 focus:ring-primary/10 outline-none transition-all placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Bu onay penceresi yanlış tıklamaları azaltmak için eklenmiştir. Özellikle kalıcı
+                    silme işleminden önce ilanı yeni sekmede açarak kontrol etmen önerilir.
+                  </div>
+                )}
               </div>
 
               <AlertDialogFooter className="border-t border-border/70 bg-background px-6 py-4">
@@ -534,7 +634,8 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                     void handleAction(pendingAction.listing.id, pendingAction.action);
                   }}
                   disabled={
-                    activeActionKey === `${pendingAction.listing.id}:${pendingAction.action}`
+                    activeActionKey === `${pendingAction.listing.id}:${pendingAction.action}` ||
+                    (pendingAction.action === "reject" && !selectedReasonCode)
                   }
                 >
                   {activeActionKey === `${pendingAction.listing.id}:${pendingAction.action}` ? (

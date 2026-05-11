@@ -118,9 +118,30 @@ export const ADDITIONAL_FEATURES = [
   },
 ];
 
-export const TRUST_BADGES = [
-  { icon: "256-bit SSL Güvenlik" },
-  { icon: "İlan Moderasyonu" },
-  { icon: "Plaka & Şasi Kontrolü" },
-  { icon: "WhatsApp ile Hızlı İletişim" },
+export interface PremiumService {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  optional: boolean;
+}
+
+export const PREMIUM_SERVICES: PremiumService[] = [
+  {
+    icon: <ShieldCheck size={28} />,
+    title: "Ekspertiz Randevusu",
+    desc: "Yetkili servislerde araç kontrolü ve raporu için kolay randevu alın.",
+    optional: true,
+  },
+  {
+    icon: <CarFront size={28} />,
+    title: "Araç Geçmişi Raporu",
+    desc: "Araç geçmişi, sigorta ve bakım kayıtları için opsiyonel rapor hizmeti.",
+    optional: true,
+  },
+  {
+    icon: <Star size={28} />,
+    title: "AI Destekli İlan Açıklaması",
+    desc: "AI yardımıyla etkili ilan başlığı ve açıklama üretin.",
+    optional: true,
+  },
 ];

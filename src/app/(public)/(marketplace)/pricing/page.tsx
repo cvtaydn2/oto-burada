@@ -6,6 +6,7 @@ import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
 import { CorporatePlansSection } from "@/features/marketplace/components/pricing/corporate-plans-section";
 import { DopingPackagesSection } from "@/features/marketplace/components/pricing/doping-packages-section";
 import { FreeFeaturesSection } from "@/features/marketplace/components/pricing/free-features-section";
+import { PREMIUM_SERVICES } from "@/features/marketplace/lib/pricing-data";
 import { ADDITIONAL_FEATURES } from "@/features/marketplace/lib/pricing-data";
 import { buildAbsoluteUrl } from "@/features/seo/lib";
 
@@ -122,6 +123,36 @@ export default function PricingPage() {
 
       {/* Corporate Plans Section */}
       <CorporatePlansSection />
+
+      {/* Premium Services Section */}
+      <section className="py-20 md:py-28 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 md:mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              Premium Servisler
+            </h2>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+              Ana ilan verme akışından bağımsız, ihtiyacınıza göre tercih edebileceğiniz opsiyonel
+              hizmetler.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+            {PREMIUM_SERVICES.map((service, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center text-center p-8 rounded-2xl bg-card border border-border"
+              >
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-5">
+                  {service.icon}
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">{service.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{service.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 md:py-28 relative overflow-hidden">

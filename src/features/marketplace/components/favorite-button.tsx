@@ -8,7 +8,7 @@ import { useFavorites } from "@/components/shared/favorites-provider";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {} from "@/lib";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {
@@ -20,9 +20,10 @@ interface FavoriteButtonProps {
 export function FavoriteButton({
   listingId,
   className,
-  showGuestHint = true, // We will keep it but use it in the condition
+  showGuestHint = true,
 }: FavoriteButtonProps) {
   const { hydrated, isAuthenticated, isFavorite, toggleFavorite } = useFavorites();
+  const { trackFavori } = useAnalytics();
   const active = hydrated && isFavorite(listingId);
   const [showHint, setShowHint] = useState(false);
   const [announcement, setAnnouncement] = useState<string>("");
@@ -31,6 +32,8 @@ export function FavoriteButton({
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
+
+    const action = active ? "remove" : "add";
 
     if (!isAuthenticated) {
       toggleFavorite(listingId);
@@ -43,6 +46,7 @@ export function FavoriteButton({
 
     toggleFavorite(listingId);
     setAnnouncement(active ? "Favorilerden çıkarıldı" : "Favorilere eklendi");
+    trackFavori(listingId, action);
   };
 
   useEffect(() => {

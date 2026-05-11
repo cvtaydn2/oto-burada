@@ -36,6 +36,12 @@ Kapsam:
 - Belgeler arasında kırık veya çelişkili yönlendirme yoktur
 - Aktif ve tarihsel içerik ayrımı katalogda görünürdür
 
+**Status**: ✅ COMPLETED (2026-05-11)
+- Belge omurgası doğrulandı
+- Aktif belgeler seti tanımlandı
+- Code kalitesi doğrulandı (TypeScript ✅, Lint ✅)
+- Analytics Phase E'ye taşındı
+
 ---
 
 ## Active Product and Delivery Backlog
@@ -148,6 +154,8 @@ Kapsam:
 - Runbook operasyon ekibi için yeterince nettir
 - Kritik entegrasyonların degrade davranışı belgelenmiştir
 
+**Status**: ✅ COMPLETED
+
 #### Task D3 — Dokümantasyon yönetişimini kalıcı hale getir
 
 - hangi bilginin hangi belgede yaşadığını tanımla
@@ -159,6 +167,8 @@ Kapsam:
 - Belge sahipliği ve güncelleme beklentisi açıktır
 - Tekrar ve çelişki riski azaltılmıştır
 - Yeni ekip üyesi doğru belgeyi hızlıca bulabilir
+
+**Status**: ✅ COMPLETED
 
 ---
 
@@ -197,3 +207,51 @@ MVP teslimi aşağıdaki koşullar sürdürülebilir biçimde sağlandığında 
 - uygulama mobil-first davranır
 - [`npm run lint`](package.json:10), [`npm run typecheck`](package.json:11) ve [`npm run build`](package.json:8) temizdir
 - dokümantasyon, ürün yönü ve operasyonel gerçeklik birbiriyle uyumludur
+
+---
+
+## Phase E — Product Enhancement and Scale
+
+**Not**: MVP sonrası ilerideki iyileştirmeler ve ölçekleme fazı.
+
+### Task E1 — Kullanıcı Deneyimi ve Discovery Geliştirmeleri
+
+- arama otomatik tamamlama ve önerileri
+- ilan detayında gelişmiş görsel galeri
+- mobil sticky action bar davranışını optimize et
+
+##### Acceptance Criteria
+
+- Arama önerileri 300ms altında yanıt verir
+- Görsel galeri swipe ve pinch-zoom desteği sunar
+- Mobil sticky bar kaydırma sırasında doğru şekilde davranır
+
+**Status**: ✅ COMPLETED
+
+### Task E2 — Analytics ve Kullanıcı Davranış İzleme
+
+- sayfa görüntüleme ve etkileşim takibi
+- dönüşüm hunisi ve abandonment noktaları
+- dashboard'da satıcı performans metrikleri
+
+##### Acceptance Criteria
+
+- Privacy-first, free-tier compatible analytics entegre edilir
+- Kritik akışlarda dönüşüm oranları ölçülür
+- Satıcılar kendi ilan performansını görebilir
+
+**Status**: 📋 PLANNED (Phase E Sprint 2)
+
+### Task E3 — Bildirim ve Gerçek Zamanlı Güncellemeler
+
+- yeni mesaj ve ilan görüntülendğiinde bildirim
+- doping süresi bitmeden hatırlatma bildirimleri
+- push notification entegrasyonu
+
+##### Acceptance Criteria
+
+- Bildirim tercihleri kullanıcı kontrolünde
+- In-app bildirim merkezi oluşturulur
+- Push notification free-tier'da çalışır
+
+**Status**: 📋 PLANNED (Phase E Sprint 2, E2 sonrası)

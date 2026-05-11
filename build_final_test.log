@@ -1,0 +1,100 @@
+
+> oto-burada@0.1.0 prebuild
+> npm run db:check-env
+
+
+> oto-burada@0.1.0 db:check-env
+> node scripts/check-supabase-env.mjs
+
+Checking Supabase environment...
+OK  NEXT_PUBLIC_SUPABASE_URL
+OK  NEXT_PUBLIC_SUPABASE_ANON_KEY
+OK  SUPABASE_SERVICE_ROLE_KEY
+OK  SUPABASE_STORAGE_BUCKET_LISTINGS
+
+Bootstrap helpers:
+OK  SUPABASE_DB_URL
+MISS SUPABASE_DEMO_USER_PASSWORD
+
+Required environment looks ready.
+
+> oto-burada@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.2.4 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬À clientTraceMetadata
+  ┬À optimizePackageImports
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 10.2s
+  Running next.config.js provided runAfterProductionCompile ...
+Ô£ô Completed runAfterProductionCompile in 1850ms
+  Running TypeScript ...
+  Finished TypeScript in 15.6s ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/75) ...
+  Generating static pages using 23 workers (18/75) 
+  Generating static pages using 23 workers (37/75) 
+  Generating static pages using 23 workers (56/75) 
+Ô£ô Generating static pages using 23 workers (75/75) in 2.5s
+  Finalizing page optimization ...
+
+Route (app)                              Revalidate  Expire
+Ôöî ãÆ /
+Ôö£ ãÆ /_not-found
+Ôö£ ãÆ /about
+Ôö£ ãÆ /admin
+Ôö£ ãÆ /admin/analytics
+Ôö£ ãÆ /admin/audit
+Ôö£ ãÆ /admin/listings
+Ôö£ ãÆ /admin/plans
+Ôö£ ãÆ /admin/questions
+Ôö£ ãÆ /admin/reference
+Ôö£ ãÆ /admin/reports
+Ôö£ ãÆ /admin/roles
+Ôö£ ãÆ /admin/security
+Ôö£ ãÆ /admin/settings
+Ôö£ ãÆ /admin/support
+Ôö£ ãÆ /admin/tickets
+Ôö£ ãÆ /admin/users
+Ôö£ ãÆ /admin/users/[userId]
+Ôö£ ãÆ /api/admin/broadcast
+Ôö£ ãÆ /api/admin/cache/clear
+Ôö£ ãÆ /api/admin/listings/[id]/edit
+Ôö£ ãÆ /api/admin/listings/[id]/moderate
+Ôö£ ãÆ /api/admin/listings/bulk-moderate
+Ôö£ ãÆ /api/admin/market/sync
+Ôö£ ãÆ /api/admin/reports/[reportId]
+Ôö£ ãÆ /api/admin/security/ban
+Ôö£ ãÆ /api/admin/tickets/[id]
+Ôö£ ãÆ /api/admin/users/export
+Ôö£ ãÆ /api/auth/csrf
+Ôö£ ãÆ /api/auth/sign-out
+Ôö£ ãÆ /api/chats
+Ôö£ ãÆ /api/chats/[id]/archive
+Ôö£ ãÆ /api/chats/[id]/messages
+Ôö£ ãÆ /api/chats/[id]/read
+Ôö£ ãÆ /api/contact
+Ôö£ ãÆ /api/cron/cleanup-stale-payments
+Ôö£ ãÆ /api/cron/cleanup-storage
+Ôö£ ãÆ /api/cron/expire-dopings
+Ôö£ ãÆ /api/cron/expire-listings
+Ôö£ ãÆ /api/cron/expire-reservations
+Ôö£ ãÆ /api/cron/main
+Ôö£ ãÆ /api/cron/outbox
+Ôö£ ãÆ /api/cron/process-fulfillment-jobs
+Ôö£ ãÆ /api/cron/sync-listing-views
+Ôö£ ãÆ /api/favorites
+Ôö£ ãÆ /api/favorites/[listingId]
+Ôö£ ãÆ /api/health
+Ôö£ ãÆ /api/health-check
+Ôö£ ãÆ /api/listings
+Ôö£ ãÆ /api/listings/[id]
+Ôö£ ãÆ /api/listings/[id]/archive
+Ôö£ ãÆ /api/listings/[id]/bump
+Ôö£ ãÆ /api/listings/[id]/doping
+Ôö£ ãÆ /api/listings/[id]/price-history
+Ôö£ ãÆ /api/listings/[id]/verify-eids

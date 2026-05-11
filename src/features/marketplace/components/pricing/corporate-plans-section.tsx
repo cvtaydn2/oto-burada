@@ -13,7 +13,8 @@ export function CorporatePlansSection() {
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
             Profesyonel galeri sahipleri ve büyük çaplı lot tedarikçiler için özel tasarlanmış
-            planlar.
+            planlar. Bireysel ilan verme hâlâ ücretsiz, profesyoneller daha yüksek kapasite için
+            abonelik tercih eder.
           </p>
         </div>
 

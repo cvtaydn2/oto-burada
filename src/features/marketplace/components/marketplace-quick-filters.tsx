@@ -3,6 +3,7 @@
 import { BadgeCheck, Star, TrendingDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { marketplace } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { type ListingFilters } from "@/types";
@@ -30,6 +31,27 @@ export function MarketplaceQuickFilters({
   handleReset,
   className,
 }: MarketplaceQuickFiltersProps) {
+  const { trackFilter } = useAnalytics();
+
+  const getFilterTypeAndValue = (type: string): { filterType: string; filterValue: string } => {
+    switch (type) {
+      case "expert":
+        return {
+          filterType: "hasExpertReport",
+          filterValue: filters.hasExpertReport ? "false" : "true",
+        };
+      case "price_low":
+        return {
+          filterType: "sort",
+          filterValue: filters.sort === "price_asc" ? "newest" : "price_asc",
+        };
+      case "newest":
+        return { filterType: "sort", filterValue: "newest" };
+      default:
+        return { filterType: "reset", filterValue: "all" };
+    }
+  };
+
   return (
     <div className={cn("mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3", className)}>
       {QUICK_FILTERS.map((qf) => {
@@ -43,18 +65,21 @@ export function MarketplaceQuickFilters({
             key={qf.label}
             aria-pressed={qf.type === "reset" ? undefined : isActive}
             onClick={() => {
+              const { filterType, filterValue } = getFilterTypeAndValue(qf.type);
               if (qf.type === "reset") {
                 handleReset();
-              } else if (qf.type === "expert") {
+                trackFilter("reset", "all");
+              } else {
                 applyImmediateFilterPatch({
-                  hasExpertReport: filters.hasExpertReport ? undefined : true,
+                  ...(qf.type === "expert"
+                    ? { hasExpertReport: filters.hasExpertReport ? undefined : true }
+                    : {}),
+                  ...(qf.type === "price_low"
+                    ? { sort: filters.sort === "price_asc" ? "newest" : "price_asc" }
+                    : {}),
+                  ...(qf.type === "newest" ? { sort: "newest" } : {}),
                 });
-              } else if (qf.type === "price_low") {
-                applyImmediateFilterPatch({
-                  sort: filters.sort === "price_asc" ? "newest" : "price_asc",
-                });
-              } else if (qf.type === "newest") {
-                applyImmediateFilterPatch({ sort: "newest" });
+                trackFilter(filterType, filterValue);
               }
             }}
             className={cn(

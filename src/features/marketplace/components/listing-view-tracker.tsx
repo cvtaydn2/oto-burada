@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 
 import { useCsrfToken } from "@/features/providers/components/csrf-provider";
-import { captureClientEvent } from "@/lib/telemetry-client";
 
 interface ListingViewTrackerProps {
   listingId: string;
@@ -14,6 +13,7 @@ interface ListingViewTrackerProps {
   price: number;
   year: number;
   status: string;
+  sellerId?: string;
 }
 
 export function ListingViewTracker({
@@ -25,30 +25,13 @@ export function ListingViewTracker({
   price,
   year,
   status,
+  sellerId,
 }: ListingViewTrackerProps) {
   const { token: csrfToken, isReady, refresh: refreshCsrfToken } = useCsrfToken();
   const hasTrackedViewRef = useRef(false);
-  const hasCapturedEventRef = useRef(false);
   const hasAttemptedViewRef = useRef(false);
 
   useEffect(() => {
-    if (!hasCapturedEventRef.current) {
-      captureClientEvent("listing_viewed", {
-        listingId,
-        listingSlug,
-        brand,
-        model,
-        city,
-        price,
-        year,
-        status,
-      });
-      hasCapturedEventRef.current = true;
-    }
-  }, [listingId, listingSlug, brand, model, city, price, year, status]);
-
-  useEffect(() => {
-    // CSRF token sistemi hazır değilse bekle
     if (!isReady) {
       return;
     }
@@ -57,23 +40,59 @@ export function ListingViewTracker({
       return;
     }
 
-    // Bu guard, token refresh sonrası state değişimlerinde effect'in tekrar
-    // tetiklenip sonsuz istek döngüsüne girmesini engeller.
     hasAttemptedViewRef.current = true;
 
     let cancelled = false;
 
     const recordView = async () => {
-      const sendView = async (token: string) => {
-        return fetch("/api/listings/view", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-csrf-token": token,
-          },
-          credentials: "same-origin",
-          body: JSON.stringify({ listingId }),
-        });
+      // Analytics endpoint (primary tracking)
+      const trackAnalytics = async () => {
+        try {
+          const sessionId =
+            sessionStorage.getItem("otoburada_session_id") || `session_${Date.now()}`;
+          await fetch("/api/analytics/track", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              session_id: sessionId,
+              event_name: "listing_view",
+              event_properties: {
+                listing_slug: listingSlug,
+                brand,
+                model,
+                city,
+                price,
+                year,
+                status,
+                seller_id: sellerId,
+              },
+              page_url: window.location.href,
+              listing_id: listingId,
+              seller_id: sellerId,
+            }),
+          });
+        } catch (error) {
+          // Fail gracefully
+          console.debug("Analytics track failed:", error);
+        }
+      };
+
+      // Backward compatibility: also hit legacy /api/listings/view if needed
+      const recordLegacyView = async (token: string) => {
+        try {
+          await fetch("/api/listings/view", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-csrf-token": token,
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({ listingId }),
+          });
+        } catch {
+          // Silent fail
+        }
       };
 
       let activeToken = csrfToken;
@@ -87,26 +106,15 @@ export function ListingViewTracker({
       }
 
       try {
-        let response = await sendView(activeToken);
+        // Fire analytics track (no auth required)
+        await trackAnalytics();
 
-        if (!response.ok && response.status === 403) {
-          const refreshedToken = await refreshCsrfToken();
+        // Fire legacy view record (requires CSRF)
+        await recordLegacyView(activeToken);
 
-          if (!cancelled && refreshedToken && refreshedToken !== activeToken) {
-            response = await sendView(refreshedToken);
-          }
-        }
-
-        if (response.ok) {
-          hasTrackedViewRef.current = true;
-          return;
-        }
-
-        if (response.status === 403) {
-          // CSRF token geçerliliğini yitirdiğinde önemsiz hata - sessizce başarısız
-        }
+        hasTrackedViewRef.current = true;
       } catch {
-        // Network hataları sessizce ele alınır
+        // Network errors ignored
       }
     };
 
@@ -115,7 +123,20 @@ export function ListingViewTracker({
     return () => {
       cancelled = true;
     };
-  }, [listingId, listingSlug, csrfToken, refreshCsrfToken, isReady]);
+  }, [
+    listingId,
+    listingSlug,
+    brand,
+    model,
+    city,
+    price,
+    year,
+    status,
+    sellerId,
+    csrfToken,
+    refreshCsrfToken,
+    isReady,
+  ]);
 
   return null;
 }

@@ -1,77 +1,66 @@
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limit-middleware";
-import { getCachedData, setCachedData } from "@/lib/redis/client";
-import { apiSuccess } from "@/lib/response";
-import { createSupabaseServerClient } from "@/lib/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-// Rate limit: 60 per minute per IP
-const SUGGESTIONS_RATE_LIMIT = { limit: 60, windowMs: 60 * 1000 };
-
-// Sanitize search query — only allow alphanumeric + Turkish chars + spaces
-function sanitizeSearchQuery(q: string): string {
-  return q
-    .replace(/[^a-zA-Z0-9\s\u00C0-\u024F\u0130\u0131]/g, "")
-    .trim()
-    .substring(0, 50); // max 50 chars
-}
-
 export async function GET(request: Request) {
-  const rateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:search:suggestions"),
-    SUGGESTIONS_RATE_LIMIT
-  );
-  if (rateLimit.response) return rateLimit.response;
-
   const { searchParams } = new URL(request.url);
-  const rawQ = searchParams.get("q") ?? "";
-  const q = sanitizeSearchQuery(rawQ);
+  const query = searchParams.get("q")?.trim() || "";
 
-  if (q.length < 2) {
-    return apiSuccess({ brands: [], models: [] });
+  // Return popular brands, models, cities for autocomplete
+  const supabase = await createSupabaseServerClient();
+
+  if (query.length < 1) {
+    // Return popular searches when no query
+    const popular = [
+      { label: "BMW 3 Serisi", value: "BMW 3 Serisi", type: "model" },
+      { label: "Fiat Egea", value: "Fiat Egea", type: "model" },
+      { label: "Renault Clio", value: "Renault Clio", type: "model" },
+      { label: "Mercedes C Serisi", value: "Mercedes C Serisi", type: "model" },
+      { label: "İstanbul", value: "İstanbul", type: "city" },
+      { label: "Ankara", value: "Ankara", type: "city" },
+    ];
+    return Response.json({ suggestions: popular });
   }
 
-  // Cache suggestions for 2 minutes via the canonical Redis helper surface
-  const cacheKey = `search:suggestions:${q.toLowerCase()}`;
-  const cached = await getCachedData<{ brands: unknown[]; models: unknown[] }>(cacheKey);
-  if (cached) return apiSuccess(cached);
+  // Search in listings for matching brands, models, cities
+  const [brands, models, cities] = await Promise.all([
+    supabase
+      .from("listings")
+      .select("brand")
+      .ilike("brand", `%${query}%`)
+      .eq("status", "approved")
+      .limit(5),
+    supabase
+      .from("listings")
+      .select("model")
+      .ilike("model", `%${query}%`)
+      .eq("status", "approved")
+      .limit(5),
+    supabase
+      .from("listings")
+      .select("city")
+      .ilike("city", `%${query}%`)
+      .eq("status", "approved")
+      .limit(5),
+  ]);
 
-  try {
-    const supabase = await createSupabaseServerClient();
+  const suggestions = [
+    ...(brands.data || []).map((item: { brand: string }) => ({
+      label: item.brand,
+      value: item.brand,
+      type: "brand" as const,
+    })),
+    ...(models.data || []).map((item: { model: string }) => ({
+      label: item.model,
+      value: item.model,
+      type: "model" as const,
+    })),
+    ...(cities.data || []).map((item: { city: string }) => ({
+      label: item.city,
+      value: item.city,
+      type: "city" as const,
+    })),
+  ].slice(0, 8);
 
-    const [brandsResult, modelsResult] = await Promise.all([
-      supabase
-        .from("brands")
-        .select("name, slug")
-        .ilike("name", `${q}%`)
-        .eq("is_active", true)
-        .limit(5),
-      supabase
-        .from("models")
-        .select("name, slug, brands(name)")
-        .ilike("name", `${q}%`)
-        .eq("is_active", true)
-        .limit(5),
-    ]);
-
-    const result = {
-      brands: brandsResult.data ?? [],
-      models: (modelsResult.data ?? []).map(
-        (m: { name: string; slug: string; brands?: { name: string }[] | null }) => ({
-          name: m.name,
-          slug: m.slug,
-          brandName: m.brands?.[0]?.name,
-        })
-      ),
-    };
-
-    await setCachedData(cacheKey, result, 120);
-
-    return apiSuccess(result);
-  } catch (error) {
-    // Non-critical — but capture for observability
-    const { captureServerError } = await import("@/lib/telemetry-server");
-    captureServerError("Search suggestions query failed", "search", error, { query: q });
-    return apiSuccess({ brands: [], models: [] });
-  }
+  return Response.json({ suggestions });
 }

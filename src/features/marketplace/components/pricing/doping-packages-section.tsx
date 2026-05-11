@@ -16,7 +16,8 @@ export function DopingPackagesSection() {
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
             Her doping tek bir ilan için çalışır. Satın aldığınız etki; hangi yüzeyde görünür, ne
-            kadar sürer ve nasıl fark yaratır kısmıyla birlikte birebir gösterilir.
+            kadar sürer ve nasıl fark yaratır kısmıyla birlikte birebir gösterilir.{" "}
+            <span className="font-semibold text-primary">Piyasanın %10&apos;u kadar fiyat!</span>
           </p>
         </div>
 

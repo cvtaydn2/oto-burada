@@ -21,11 +21,10 @@ Pazarın yerleşik oyuncularında yüksek ilan verme veya görünürlük maliyet
 
 En erişilebilir gelir katmanıdır. Amaç, satıcının daha fazla görünürlük için küçük ve anlaşılır bir ödeme yapabilmesidir.
 
-Tipik araçlar:
-
-- anasayfa vitrin görünürlüğü
-- üst sıra veya top rank
-- urgent veya dikkat çekici etiketler
+**Fiyatlandırma Stratejisi**: Piyasa liderlerine göre yaklaşık **%10'luk fiyat.** Örneğin:
+- Anasayfa vitrin bir ilan için nakit 760 TL yerine **76 TL**
+- Üst sıra 660 TL yerine **66 TL**
+- Acil rozet 182 TL yerine **18 TL**
 
 Bu yüzeylerde temel kural, ücretli görünürlüğün kullanıcı güvenini bozacak kadar agresif olmamasıdır.
 

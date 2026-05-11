@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Listing360View } from "@/features/marketplace/components/listing-360-view";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { supabaseImageUrl } from "@/lib/utils/image";
 import type { ListingImage } from "@/types";
 
@@ -21,11 +22,18 @@ import { SafeImage } from "@/components/shared/safe-image";
 interface ListingGalleryProps {
   images: ListingImage[];
   title: string;
+  listingId?: string;
   /** Legacy override — auto-detected from images with type="360" */
   has360View?: boolean;
 }
 
-export function ListingGallery({ images, title, has360View = false }: ListingGalleryProps) {
+export function ListingGallery({
+  images,
+  title,
+  listingId,
+  has360View = false,
+}: ListingGalleryProps) {
+  const { track } = useAnalytics();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [is360Open, setIs360Open] = useState(false);
@@ -50,8 +58,18 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
     if (!emblaApi) return;
 
     const onSelect = () => {
-      setCurrentIndex(emblaApi.selectedScrollSnap());
-      if (thumbApi) thumbApi.scrollTo(emblaApi.selectedScrollSnap());
+      const selectedIndex = emblaApi.selectedScrollSnap();
+      setCurrentIndex(selectedIndex);
+      if (thumbApi) thumbApi.scrollTo(selectedIndex);
+
+      // Track gallery interaction
+      if (listingId) {
+        track("image_gallery_interaction", {
+          listing_id: listingId,
+          image_index: selectedIndex,
+          total_images: images.length,
+        });
+      }
     };
 
     emblaApi.on("select", onSelect);
@@ -61,7 +79,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
       emblaApi.off("select", onSelect);
       emblaApi.off("reInit", onSelect);
     };
-  }, [emblaApi, thumbApi]);
+  }, [emblaApi, thumbApi, listingId, images.length, track]);
 
   const onThumbClick = (index: number) => {
     if (!emblaApi || !thumbApi) return;

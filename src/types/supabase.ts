@@ -1205,6 +1205,7 @@ export type Database = {
           vehicle_history: Json | null;
           version: number;
           view_count: number;
+          contact_count: number;
           vin: string | null;
           whatsapp_phone: string;
           year: number;
@@ -1264,6 +1265,7 @@ export type Database = {
           vehicle_history?: Json | null;
           version?: number;
           view_count?: number;
+          contact_count?: number;
           vin?: string | null;
           whatsapp_phone: string;
           year: number;
@@ -1323,6 +1325,7 @@ export type Database = {
           vehicle_history?: Json | null;
           version?: number;
           view_count?: number;
+          contact_count?: number;
           vin?: string | null;
           whatsapp_phone?: string;
           year?: number;
@@ -1942,6 +1945,10 @@ export type Database = {
           tax_office: string | null;
           total_listings_count: number;
           total_sold_count: number;
+          total_listing_views: number | null;
+          total_contact_clicks: number | null;
+          avg_conversion_rate: number | null;
+          last_analytics_update: string | null;
           trust_score: number | null;
           updated_at: string;
           user_type: Database["public"]["Enums"]["user_type"];
@@ -1984,6 +1991,10 @@ export type Database = {
           tax_office?: string | null;
           total_listings_count?: number;
           total_sold_count?: number;
+          total_listing_views?: number | null;
+          total_contact_clicks?: number | null;
+          avg_conversion_rate?: number | null;
+          last_analytics_update?: string | null;
           trust_score?: number | null;
           updated_at?: string;
           user_type?: Database["public"]["Enums"]["user_type"];
@@ -2026,6 +2037,10 @@ export type Database = {
           tax_office?: string | null;
           total_listings_count?: number;
           total_sold_count?: number;
+          total_listing_views?: number | null;
+          total_contact_clicks?: number | null;
+          avg_conversion_rate?: number | null;
+          last_analytics_update?: string | null;
           trust_score?: number | null;
           updated_at?: string;
           user_type?: Database["public"]["Enums"]["user_type"];

@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,7 @@ import {
 import { ListingsFilterPanel } from "@/features/marketplace/components/listings-filter-panel";
 import { MarketplaceQuickFilters } from "@/features/marketplace/components/marketplace-quick-filters";
 import { useFilterResultCount } from "@/features/marketplace/hooks/use-filter-result-count";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
@@ -41,6 +42,7 @@ export function MobileFilterDrawer({
   onReset,
   onInstantApplyPatch,
 }: MobileFilterDrawerProps) {
+  const { trackFilter } = useAnalytics();
   const [isOpen, setIsOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<ListingFilters>(filters);
 
@@ -64,6 +66,26 @@ export function MobileFilterDrawer({
       enabled: isOpen,
     }
   );
+
+  // Wrap onApply with analytics tracking
+  const wrappedOnApply = useCallback(
+    (appliedFilters: ListingFilters) => {
+      // Build a concise filter summary for analytics
+      const activeFilters = Object.entries(appliedFilters)
+        .filter(([k, v]) => v !== undefined && v !== "" && !["limit", "offset", "page"].includes(k))
+        .map(([k, v]) => `${k}=${v}`)
+        .join(",");
+      trackFilter("filters_applied", activeFilters || "none");
+      onApply?.(appliedFilters);
+    },
+    [onApply, trackFilter]
+  );
+
+  // Wrap onReset with analytics tracking
+  const wrappedOnReset = useCallback(() => {
+    trackFilter("reset", "all");
+    onReset?.();
+  }, [onReset, trackFilter]);
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -108,12 +130,12 @@ export function MobileFilterDrawer({
   };
 
   const handleApply = () => {
-    onApply?.(draftFilters);
+    wrappedOnApply(draftFilters);
     setIsOpen(false);
   };
 
   const handleReset = () => {
-    onReset?.();
+    wrappedOnReset();
     setIsOpen(false);
   };
 

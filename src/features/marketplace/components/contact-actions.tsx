@@ -27,7 +27,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { getSellerTrustUI } from "@/features/marketplace/lib/trust-ui";
 import { OfferPanel } from "@/features/offers/components/offer-panel";
-import { captureClientEvent } from "@/lib/telemetry-client";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
@@ -138,7 +137,7 @@ export function ContactActions({
   listingTitle,
   listingPrice,
   currentUserId,
-  reportHref = "#ilan-bildir",
+  reportHref,
   surface = "default",
 }: ContactActionsProps) {
   const router = useRouter();
@@ -200,7 +199,6 @@ export function ContactActions({
       const result = await revealListingPhone(listingId);
       setRevealedPhone(result.phone);
       setIsRevealed(true);
-      captureClientEvent("contact_phone_revealed", { listingId, sellerId });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Numara gösterilirken bir hata oluştu.";
       toast.error(message);
@@ -359,9 +357,6 @@ export function ContactActions({
                 href={finalWhatsAppLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() =>
-                  captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })
-                }
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-6 text-[15px] font-bold text-white shadow-sm sm:flex-1"
               >
                 WhatsApp&apos;tan Yaz
@@ -449,7 +444,6 @@ export function ContactActions({
           <Button
             onClick={() => {
               router.push(`/dashboard/messages?new=${listingId}&seller=${sellerId}`);
-              captureClientEvent("contact_chat_clicked", { listingId, sellerId });
             }}
             className={cn(
               "flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white transition-all active:scale-95",

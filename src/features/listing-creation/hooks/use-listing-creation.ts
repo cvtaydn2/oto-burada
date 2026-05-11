@@ -7,11 +7,9 @@ import { type FieldPath, useFieldArray, useForm, useWatch } from "react-hook-for
 
 import { validateListingImageFile } from "@/features/marketplace/services/listing-images";
 import { lookupVehicleByPlate } from "@/features/marketplace/services/plate-lookup";
-import { useAnalytics } from "@/hooks/use-analytics";
 import { listingCreateFormSchema } from "@/lib";
 import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
-import { AnalyticsEvent } from "@/lib/events";
 import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import {
   type BrandCatalogItem,
@@ -55,7 +53,6 @@ export function useListingCreation({
   successRedirectPath,
 }: UseListingCreationProps) {
   const router = useRouter();
-  const { trackEvent } = useAnalytics();
   const isEditing = Boolean(initialListing);
   const isApprovedEditing = initialListing?.status === "approved";
 
@@ -73,7 +70,6 @@ export function useListingCreation({
   const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
 
-  const stepStartTimeRef = useRef<number>(Date.now());
   const submitIntentRef = useRef(false);
   const pendingImageCleanupRef = useRef<Set<string>>(new Set());
 
@@ -295,16 +291,10 @@ export function useListingCreation({
         shouldFocus: true,
       }));
     if (isValid) {
-      const timeSpentSeconds = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
-      trackEvent(AnalyticsEvent.LISTING_WIZARD_STEP_COMPLETED, {
-        stepName: STEP_LABELS[currentStep],
-        stepIndex: currentStep,
-        timeSpentSeconds,
-      });
       setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [currentStep, trigger, trackEvent]);
+  }, [currentStep, trigger]);
 
   const handlePrevStep = useCallback(() => {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
@@ -523,10 +513,6 @@ export function useListingCreation({
     }
 
     const nextListingId = response.data!.listing.id;
-
-    trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, {
-      listingId: nextListingId,
-    });
 
     if (isEditing) {
       router.push(successRedirectPath ?? "/dashboard/listings?updated=true");

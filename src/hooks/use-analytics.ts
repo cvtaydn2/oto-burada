@@ -1,27 +1,153 @@
-import { useCallback } from "react";
-
-import {
-  AnalyticsEvent,
-  type ClientAnalyticsEvent,
-  type EventPayload,
-} from "@/lib/analytics/events";
+"use client";
 
 /**
- * Type-safe analytics hook.
- * Product analytics are intentionally development-only logs while the project
- * stays on free tiers. Runtime error monitoring is handled by Sentry.
+ * useAnalytics — Client-side analytics tracking hook
+ *
+ * Provides simple tracking functions for key user interactions
+ * Queues events to be sent via server actions or fetch
  */
-export function useAnalytics() {
-  const trackEvent = useCallback(
-    <T extends ClientAnalyticsEvent>(eventName: T, properties?: EventPayload<T>) => {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`[Analytics] ${eventName}`, properties ?? {});
+
+import { useCallback, useRef } from "react";
+
+import { generateId } from "@/lib/utils";
+
+type AnalyticsEventType =
+  | "page_view"
+  | "search_suggestion_used"
+  | "filter_applied"
+  | "listing_view"
+  | "contact_cta_clicked"
+  | "contact_success"
+  | "favori_added"
+  | "favori_removed"
+  | "image_gallery_interaction"
+  | "mobile_sticky_action_expanded";
+
+interface UseAnalyticsReturn {
+  track: (event: AnalyticsEventType, properties?: Record<string, unknown>) => void;
+  trackPageView: (url: string) => void;
+  trackListingView: (listingId: string) => void;
+  trackContactClick: (listingId: string, ctaType: "whatsapp" | "phone" | "message") => void;
+  trackFavori: (listingId: string, action: "add" | "remove") => void;
+  trackSearch: (query: string, usedSuggestion: boolean) => void;
+  trackFilter: (filterType: string, value: string) => void;
+}
+
+/**
+ * Generate or retrieve a persistent session ID
+ */
+function getSessionId(): string {
+  let sessionId = sessionStorage.getItem("otoburada_session_id");
+  if (!sessionId) {
+    sessionId = `session_${generateId()}`;
+    sessionStorage.setItem("otoburada_session_id", sessionId);
+  }
+  return sessionId;
+}
+
+/**
+ * UseAnalytics hook
+ */
+export function useAnalytics(): UseAnalyticsReturn {
+  const sessionIdRef = useRef<string>(getSessionId());
+
+  /**
+   * Core track function — sends event to server
+   */
+  const track = useCallback(
+    async (event: AnalyticsEventType, properties: Record<string, unknown> = {}) => {
+      const eventData = {
+        session_id: sessionIdRef.current,
+        event_name: event,
+        event_properties: properties,
+        page_url: window.location.href,
+        referrer_url: document.referrer || undefined,
+        user_agent: navigator.userAgent || undefined,
+        ...properties,
+      };
+
+      // Use server action or fetch to /api/analytics/track
+      try {
+        await fetch("/api/analytics/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(eventData),
+        });
+      } catch (error) {
+        // Fail gracefully: do not break user experience
+        console.debug("Analytics tracking failed:", error);
       }
     },
     []
   );
 
-  return { trackEvent };
-}
+  /**
+   * Track page view (automatic or manual)
+   */
+  const trackPageView = useCallback(
+    (url: string) => {
+      track("page_view", { url });
+    },
+    [track]
+  );
 
-export { AnalyticsEvent };
+  /**
+   * Track listing detail view
+   */
+  const trackListingView = useCallback(
+    (listingId: string) => {
+      track("listing_view", { listing_id: listingId });
+    },
+    [track]
+  );
+
+  /**
+   * Track contact CTA click
+   */
+  const trackContactClick = useCallback(
+    (listingId: string, ctaType: "whatsapp" | "phone" | "message") => {
+      track("contact_cta_clicked", { listing_id: listingId, cta_type: ctaType });
+    },
+    [track]
+  );
+
+  /**
+   * Track favori add/remove
+   */
+  const trackFavori = useCallback(
+    (listingId: string, action: "add" | "remove") => {
+      track(action === "add" ? "favori_added" : "favori_removed", { listing_id: listingId });
+    },
+    [track]
+  );
+
+  /**
+   * Track search interaction
+   */
+  const trackSearch = useCallback(
+    (query: string, usedSuggestion: boolean) => {
+      track("search_suggestion_used", { query, used_suggestion: usedSuggestion });
+    },
+    [track]
+  );
+
+  /**
+   * Track filter application
+   */
+  const trackFilter = useCallback(
+    (filterType: string, value: string) => {
+      track("filter_applied", { filter_type: filterType, filter_value: value });
+    },
+    [track]
+  );
+
+  return {
+    track,
+    trackPageView,
+    trackListingView,
+    trackContactClick,
+    trackFavori,
+    trackSearch,
+    trackFilter,
+  };
+}
