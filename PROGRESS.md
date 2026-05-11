@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 111. Task A3 — Similar Listings Decision Context
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A3 micro-improvement by turning the passive similar listings area on the listing detail page into a lightweight decision-support context that explains why these alternatives are grouped together and when a buyer might continue with the current listing versus briefly compare alternatives, without changing the existing grid structure, backend contracts, or WhatsApp-first action hierarchy.
+
+### 111.1 Similar Listings Section Now Explains the Comparison Context
+- Added [`ListingSimilarContext`](src/features/marketplace/components/listing-detail/listing-similar-context.tsx:1) as a compact detail-specific helper component above the existing similar listing card grid.
+- The new block explains in calm language why the shown alternatives are considered similar by using only the existing listing payload and nearby heuristic context such as shared brand/model, year proximity, city overlap, price clustering, and mileage averages.
+- The existing [`ListingCard`](src/components/shared/listing-card.tsx:52) grid remains intact below the new summary, so this iteration adds decision support rather than introducing a heavy compare workflow.
+
+### 111.2 Guidance Now Supports “Continue or Compare” Without Overclaiming
+- Updated [`ListingDetailPage`](src/app/(public)/(marketplace)/listing/[slug]/page.tsx:21) to render the new context block inside the existing “Benzer İlanlar” section while preserving section placement lower on the page.
+- The summary now provides three calm decision modes based on current-vs-median similar pricing: continue with this listing when it looks comparatively reachable, review alternatives when it sits above the peer band, or treat the group as balanced when no strong separation appears.
+- When the similar data is thin, the component explicitly avoids hard conclusions and frames the comparison as limited context rather than a definitive verdict.
+
+### 111.3 WhatsApp-First Decision Hierarchy Remains Unchanged
+- The new comparison context lives inside the lower similar listings section only and does not alter the existing right-rail decision stack or mobile sticky action hierarchy.
+- [`ListingPriceBox`](src/features/marketplace/components/listing-detail/listing-price-box.tsx:94) and the primary WhatsApp-led contact flow remain untouched in structure, so the added guidance complements rather than competes with the main conversion path.
+- No new CTA system, backend contract, migration, or data-model change was introduced in this pass.
+
+### 111.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/app/(public)/(marketplace)/listing/[slug]/page.tsx src/features/marketplace/components/listing-detail/listing-similar-context.tsx`](package.json:12) ✅
+
+### 111.5 Remaining Risk
+- The new decision summary currently uses lightweight heuristics over the already loaded similar listing set, so it does not yet account for richer context such as trim rarity, optional equipment depth, or seller-specific maintenance quality.
+- Because the guidance is intentionally compact and non-blocking, some users may still skip the comparison context entirely and jump directly to contact, which is acceptable for the current WhatsApp-first detail flow.
+
+---
+
 ## 110. Task A3 — Listing Detail Compact Price Comparison Summary
 
 **Date**: 2026-05-11

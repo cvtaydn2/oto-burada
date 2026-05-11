@@ -27,6 +27,7 @@ import { ListingMarketAnalysis } from "@/features/marketplace/components/listing
 import { ListingPriceBox } from "@/features/marketplace/components/listing-detail/listing-price-box";
 import { ListingSafetyNotice } from "@/features/marketplace/components/listing-detail/listing-safety-notice";
 import { ListingSellerInfo } from "@/features/marketplace/components/listing-detail/listing-seller-info";
+import { ListingSimilarContext } from "@/features/marketplace/components/listing-detail/listing-similar-context";
 import { ListingSpecs } from "@/features/marketplace/components/listing-detail/listing-specs";
 // Components
 import { ListingGallery } from "@/features/marketplace/components/listing-gallery";
@@ -348,6 +349,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     Tümünü Gör
                   </Link>
                 </div>
+
+                <ListingSimilarContext currentListing={listing} similarListings={similarListings} />
+
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                   {similarListings.map((l) => (
                     <ListingCard key={l.id} listing={l} />
