@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { hasSupabaseAdminEnv } from "@/lib/env";
+import type { ListingRejectReasonCode } from "@/types";
 import type { Json } from "@/types/supabase";
 
 import type { AtomicModerateListingResult } from "./listing-moderation-pure-logic";
@@ -43,6 +44,7 @@ interface ExecuteAtomicModerationParams {
   status: string;
   adminUserId: string;
   note: string;
+  reasonCode?: ListingRejectReasonCode | null;
   outboxPayload: Json;
   notificationPayload: Json;
 }
@@ -55,6 +57,7 @@ export async function executeAtomicModerationRpc({
   status,
   adminUserId,
   note,
+  reasonCode,
   outboxPayload,
   notificationPayload,
 }: ExecuteAtomicModerationParams): Promise<AtomicModerateListingResult | null> {
@@ -66,6 +69,7 @@ export async function executeAtomicModerationRpc({
     p_status: status,
     p_admin_id: adminUserId,
     p_note: note,
+    p_reason_code: reasonCode ?? null,
     p_outbox_payload: outboxPayload,
     p_notification_payload: notificationPayload,
   });

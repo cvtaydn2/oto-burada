@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useOptimistic, useState } from "react";
 
 import { useErrorCapture } from "@/hooks/use-error-capture";
-import { type Listing } from "@/types";
+import type { Listing, ListingRejectReasonCode } from "@/types";
 
 export function useModerationLogic(pendingListings: Listing[]) {
   const { captureError, captureFailure, captureSuccess } = useErrorCapture(
@@ -18,8 +18,14 @@ export function useModerationLogic(pendingListings: Listing[]) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [notesByListingId, setNotesByListingId] = useState<Record<string, string>>({});
+  const [rejectReasonByListingId, setRejectReasonByListingId] = useState<
+    Partial<Record<string, ListingRejectReasonCode>>
+  >({});
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [bulkNote, setBulkNote] = useState("");
+  const [bulkRejectReasonCode, setBulkRejectReasonCode] = useState<
+    ListingRejectReasonCode | undefined
+  >(undefined);
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{
@@ -61,7 +67,13 @@ export function useModerationLogic(pendingListings: Listing[]) {
       const response = await fetch(`/api/admin/listings/${listingId}/moderate`, {
         body: JSON.stringify({
           action,
-          note: notesByListingId[listingId]?.trim() || undefined,
+          rejectReason:
+            action === "reject"
+              ? {
+                  reasonCode: rejectReasonByListingId[listingId],
+                  moderatorNote: notesByListingId[listingId]?.trim() || undefined,
+                }
+              : undefined,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -82,6 +94,11 @@ export function useModerationLogic(pendingListings: Listing[]) {
       }
 
       setNotesByListingId((current) => ({ ...current, [listingId]: "" }));
+      setRejectReasonByListingId((current) => {
+        const next = { ...current };
+        delete next[listingId];
+        return next;
+      });
       setSelectedListingIds((current) => current.filter((id) => id !== listingId));
       setSuccessMessage(action === "approve" ? "İlan onaylandı." : "İlan reddedildi.");
       captureSuccess("admin_listing_moderated", { action, listingId });
@@ -114,7 +131,13 @@ export function useModerationLogic(pendingListings: Listing[]) {
         body: JSON.stringify({
           action,
           listingIds: uniqueListingIds,
-          note: bulkNote.trim() || undefined,
+          rejectReason:
+            action === "reject"
+              ? {
+                  reasonCode: bulkRejectReasonCode,
+                  moderatorNote: bulkNote.trim() || undefined,
+                }
+              : undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -134,6 +157,7 @@ export function useModerationLogic(pendingListings: Listing[]) {
       const skippedIds = payload.data?.skippedListingIds ?? [];
       setSelectedListingIds((current) => current.filter((id) => !moderatedIds.includes(id)));
       setBulkNote("");
+      setBulkRejectReasonCode(undefined);
       captureSuccess("admin_bulk_moderation_completed", {
         action,
         moderatedCount: moderatedIds.length,
@@ -208,8 +232,10 @@ export function useModerationLogic(pendingListings: Listing[]) {
       errorMessage,
       successMessage,
       notesByListingId,
+      rejectReasonByListingId,
       selectedListingIds,
       bulkNote,
+      bulkRejectReasonCode,
       editingListingId,
       editValues,
       isSavingEdit,
@@ -222,7 +248,9 @@ export function useModerationLogic(pendingListings: Listing[]) {
       setActiveTab,
       setSelectedListingIds,
       setBulkNote,
+      setBulkRejectReasonCode,
       setNotesByListingId,
+      setRejectReasonByListingId,
       setEditValues,
       setEditingListingId,
       handleModeration,

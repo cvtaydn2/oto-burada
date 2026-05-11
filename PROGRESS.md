@@ -1,5 +1,42 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 113. Task B1 — Canonical Listing Reject Reason Contract
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the first high-impact Task B1 moderation slice by replacing free-text-heavy listing rejection decisions with a canonical `reasonCode + optional moderatorNote` contract across shared constants, validation, admin UI, single and bulk moderation APIs, pure moderation copy/orchestration logic, RPC persistence, schema snapshot, generated Supabase types, and seller-facing notification payloads while keeping the `approve` path lightweight.
+
+### 113.1 Canonical Reject Dictionary Is Now Shared Across the Stack
+- Added the first canonical reject reason set plus labels and default seller explanations in [`domain.ts`](src/lib/constants/domain.ts:204) so UI, server logic, and persistence all read from the same moderation dictionary.
+- Extended [`domain.ts`](src/types/domain.ts:25) with [`ListingRejectReasonCode`](src/types/domain.ts:26), [`ListingModerationRejectReason`](src/types/domain.ts:97), and `AdminModerationAction.reasonCode` support so the new contract is typed explicitly instead of being inferred from free text.
+- Preserved backward compatibility by keeping `reasonCode` nullable/optional in types, since historical moderation records may exist without canonical reasons.
+
+### 113.2 Reject Validation and Admin Decision UI Now Use the Same Structured Contract
+- Added [`listingModerationRejectReasonSchema`](src/lib/validators/admin.ts:44), [`listingModerationDecisionSchema`](src/lib/validators/admin.ts:49), and [`bulkListingModerationSchema`](src/lib/validators/admin.ts:64) so `reject` now requires a valid `reasonCode`, while `approve` remains intentionally minimal and does not require reject payload fields.
+- Reworked [`ModerationDecision`](src/features/admin-moderation/components/moderation-card/ModerationDecision.tsx:41) to replace ad hoc quick-tag note entry with canonical reason selection cards plus optional moderator note input whose placeholder derives from the selected reason’s default explanation.
+- Extended [`ModerationCard`](src/features/admin-moderation/components/moderation-card.tsx:12), [`BulkActions`](src/features/admin-moderation/components/bulk-actions.tsx:14), [`ListingsModeration`](src/features/admin-moderation/components/listings-moderation.tsx:154), and [`useModerationLogic()`](src/features/admin-moderation/hooks/use-moderation-logic.ts:9) so both single and bulk admin flows hold structured reject selection state and submit the same reject payload shape.
+
+### 113.3 API, Orchestration, and Seller Messaging Are Now Reason-Code Aware
+- Updated [`[id]/moderate/route.ts`](src/app/api/admin/listings/%5Bid%5D/moderate/route.ts:1) and [`bulk-moderate/route.ts`](src/app/api/admin/listings/bulk-moderate/route.ts:1) to validate and accept the shared `rejectReason` object instead of raw `note`-only reject payloads.
+- Replaced the old fallback note helper with [`buildModerationCopy()`](src/features/admin-moderation/services/admin/listing-moderation-pure-logic.ts:25), which derives canonical seller explanation, optional moderator note, user-facing notification copy, and audit note behavior from the shared reason code dictionary.
+- Updated [`listing-moderation-actions.ts`](src/features/admin-moderation/services/admin/listing-moderation-actions.ts:27) so reject outbox payloads and in-app notification payloads now carry reason-aligned copy and pass the canonical reason code through the persistence boundary.
+
+### 113.4 Persistence, Migration, Snapshot, and Generated Types Now Match the Contract
+- Updated [`listing-moderation-records.ts`](src/features/admin-moderation/services/admin/listing-moderation-records.ts:41) so the moderation RPC call now sends `p_reason_code` alongside the canonical moderation note.
+- Added migration [`0135_listing_reject_reason_contract.sql`](database/migrations/0135_listing_reject_reason_contract.sql) to introduce nullable `admin_actions.reason_code` storage and extend [`atomic_moderate_listing()`](database/migrations/0135_listing_reject_reason_contract.sql:7) with `p_reason_code` support while keeping legacy rows valid.
+- Synced [`schema.snapshot.sql`](database/schema.snapshot.sql:625) and [`supabase.ts`](src/types/supabase.ts:38) so generated table and RPC contracts now reflect `reason_code` persistence and the updated function signature.
+- Updated [`moderation-actions.ts`](src/features/admin-moderation/services/admin/moderation-actions.ts:9) to read and write `reason_code` in recent admin action retrieval/logging paths.
+
+### 113.5 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/lib/constants/domain.ts src/types/domain.ts src/lib/validators/admin.ts src/features/admin-moderation/components/moderation-card/ModerationDecision.tsx src/features/admin-moderation/components/moderation-card.tsx src/features/admin-moderation/components/bulk-actions.tsx src/features/admin-moderation/hooks/use-moderation-logic.ts src/features/admin-moderation/components/listings-moderation.tsx src/app/api/admin/listings/[id]/moderate/route.ts src/features/admin-moderation/services/admin/listing-moderation-pure-logic.ts src/features/admin-moderation/services/admin/listing-moderation-actions.ts src/features/admin-moderation/services/admin/listing-moderation-records.ts src/app/api/admin/listings/bulk-moderate/route.ts src/features/admin-moderation/services/admin/moderation-actions.ts`](package.json:12) ✅
+
+### 113.6 Remaining Risk
+- The new persistence contract stores `reason_code` only in `admin_actions`; seller notifications and outbox entries remain reason-aware through payload JSON rather than dedicated relational columns, which is acceptable for this slice but may limit future analytics unless a later iteration denormalizes those fields.
+- The canonical reason set is intentionally small for the first B1 slice, so moderators may still rely on optional `moderatorNote` for edge cases until future controlled reason taxonomy expansion is planned.
+
+---
+
 ## 112. Task A3 — Listing Detail First Message Guide
 
 **Date**: 2026-05-11

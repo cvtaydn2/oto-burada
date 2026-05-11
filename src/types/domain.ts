@@ -2,6 +2,7 @@ import type {
   expertInspectionGrades,
   expertInspectionStatuses,
   fuelTypes,
+  listingRejectReasonCodes,
   listingSortOptions,
   listingStatuses,
   moderationActions,
@@ -23,6 +24,7 @@ export type ReportStatus = (typeof reportStatuses)[number];
 export type NotificationType = (typeof notificationTypes)[number];
 export type ModerationTargetType = (typeof moderationTargetTypes)[number];
 export type ModerationAction = (typeof moderationActions)[number];
+export type ListingRejectReasonCode = (typeof listingRejectReasonCodes)[number];
 export type VerificationStatus = "none" | "pending" | "approved" | "rejected";
 export type ListingSortOption = (typeof listingSortOptions)[number];
 export type { VehicleCategory };
@@ -88,8 +90,14 @@ export interface AdminModerationAction {
   targetType: ModerationTargetType;
   targetId: string;
   action: ModerationAction;
+  reasonCode?: ListingRejectReasonCode | null;
   note?: string | null;
   createdAt: string;
+}
+
+export interface ListingModerationRejectReason {
+  reasonCode: ListingRejectReasonCode;
+  moderatorNote?: string | null;
 }
 
 export interface ListingFilters {

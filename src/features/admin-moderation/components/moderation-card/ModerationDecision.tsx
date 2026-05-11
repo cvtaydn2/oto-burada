@@ -16,9 +16,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {} from "@/lib";
+import {
+  listingRejectReasonCodes,
+  listingRejectReasonDefaultExplanations,
+  listingRejectReasonLabels,
+} from "@/lib/constants/domain";
 import { cn } from "@/lib/utils";
-import type { Listing } from "@/types";
+import type { Listing, ListingRejectReasonCode } from "@/types";
 
 interface ModerationDecisionProps {
   listing: Listing;
@@ -26,6 +30,12 @@ interface ModerationDecisionProps {
   handleModeration: (id: string, action: "approve" | "reject") => void;
   notesByListingId: Record<string, string>;
   setNotesByListingId: (fn: (current: Record<string, string>) => Record<string, string>) => void;
+  rejectReasonByListingId: Partial<Record<string, ListingRejectReasonCode>>;
+  setRejectReasonByListingId: (
+    fn: (
+      current: Partial<Record<string, ListingRejectReasonCode>>
+    ) => Partial<Record<string, ListingRejectReasonCode>>
+  ) => void;
 }
 
 export function ModerationDecision({
@@ -34,60 +44,75 @@ export function ModerationDecision({
   handleModeration,
   notesByListingId,
   setNotesByListingId,
+  rejectReasonByListingId,
+  setRejectReasonByListingId,
 }: ModerationDecisionProps) {
   const approving = activeAction === `${listing.id}:approve`;
   const rejecting = activeAction === `${listing.id}:reject`;
   const actionBusy = approving || rejecting;
-
-  const quickTags = [
-    { label: "Kurallara uygun", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-    { label: "Düşük kalite görsel", color: "bg-amber-50 text-amber-700 border-amber-100" },
-    { label: "Mükerrer ilan", color: "bg-rose-50 text-rose-700 border-rose-100" },
-    { label: "Yanıltıcı fiyat", color: "bg-rose-50 text-rose-700 border-rose-100" },
-  ];
+  const selectedReasonCode = rejectReasonByListingId[listing.id];
 
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-              MODERASYON NOTU VE KARAR
-            </Label>
-            {!notesByListingId[listing.id] && (
-              <span className="text-[9px] font-bold text-rose-500 animate-pulse">
-                ! KARAR İÇİN NOT GEREKLİ OLABİLİR
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2 justify-end">
-            {quickTags.map((tag) => (
-              <Button
-                key={tag.label}
-                onClick={() => setNotesByListingId((c) => ({ ...c, [listing.id]: tag.label }))}
-                className={cn(
-                  "text-[9px] font-bold uppercase px-2.5 py-1.5 rounded-lg border transition-all active:scale-95",
-                  notesByListingId[listing.id] === tag.label
-                    ? tag.color + " shadow-sm ring-2 ring-current ring-offset-1"
-                    : "bg-muted hover:bg-muted-foreground/10"
-                )}
-              >
-                {tag.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <textarea
-          value={notesByListingId[listing.id] ?? ""}
-          onChange={(e) => setNotesByListingId((c) => ({ ...c, [listing.id]: e.target.value }))}
-          placeholder="Buraya karar notlarınızı ekleyebilirsiniz..."
-          className={cn(
-            "w-full min-h-[100px] rounded-2xl border bg-muted/10 p-4 text-sm focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:italic",
-            !notesByListingId[listing.id]
-              ? "border-dashed border-muted-foreground/20"
-              : "border-border"
+        <div className="flex flex-col gap-1">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            MODERASYON KARARI
+          </Label>
+          {!selectedReasonCode && (
+            <span className="text-[9px] font-bold text-rose-500 animate-pulse">
+              ! RED KARARI İÇİN NEDEN KODU ZORUNLU
+            </span>
           )}
-        />
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {listingRejectReasonCodes.map((reasonCode) => (
+            <Button
+              key={reasonCode}
+              type="button"
+              onClick={() =>
+                setRejectReasonByListingId((current) => ({ ...current, [listing.id]: reasonCode }))
+              }
+              className={cn(
+                "h-auto min-h-16 rounded-2xl border px-3 py-3 text-left text-[11px] font-semibold normal-case transition-all",
+                selectedReasonCode === reasonCode
+                  ? "border-rose-300 bg-rose-50 text-rose-700 shadow-sm ring-2 ring-rose-200"
+                  : "border-border bg-background text-foreground hover:bg-muted"
+              )}
+            >
+              <span className="block space-y-1">
+                <span className="block text-xs font-bold uppercase tracking-wide">
+                  {listingRejectReasonLabels[reasonCode]}
+                </span>
+                <span className="block text-[11px] font-medium leading-5 text-muted-foreground">
+                  {listingRejectReasonDefaultExplanations[reasonCode]}
+                </span>
+              </span>
+            </Button>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Moderatör notu (opsiyonel)
+          </Label>
+          <textarea
+            value={notesByListingId[listing.id] ?? ""}
+            onChange={(e) => setNotesByListingId((c) => ({ ...c, [listing.id]: e.target.value }))}
+            placeholder={
+              selectedReasonCode
+                ? listingRejectReasonDefaultExplanations[selectedReasonCode]
+                : "Gerekirse satıcıya ek açıklama ekleyin..."
+            }
+            className={cn(
+              "w-full min-h-[100px] rounded-2xl border bg-muted/10 p-4 text-sm focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:italic",
+              !notesByListingId[listing.id]
+                ? "border-dashed border-muted-foreground/20"
+                : "border-border"
+            )}
+          />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-border/40">

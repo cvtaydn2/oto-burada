@@ -9,7 +9,7 @@ import type { Listing } from "@/types";
 import type { Json } from "@/types/supabase";
 
 import {
-  buildDefaultModerationNote,
+  buildModerationCopy,
   type ModerateListingInput,
   type ModerateListingsInput,
 } from "./listing-moderation-pure-logic";
@@ -28,7 +28,7 @@ export async function moderateListingWithSideEffects({
   action,
   adminUserId,
   listingId,
-  note,
+  rejectReason,
 }: ModerateListingInput): Promise<Listing | null> {
   const status = action === "approve" ? "approved" : "rejected";
   const appUrl = getRequiredAppUrl();
@@ -48,6 +48,8 @@ export async function moderateListingWithSideEffects({
     );
   }
 
+  const moderationCopy = buildModerationCopy(listing as unknown as Listing, action, rejectReason);
+
   // 2. Payload Orchestration
   const outboxPayload = {
     template: action === "approve" ? "listing_approved" : "listing_rejected",
@@ -63,18 +65,17 @@ export async function moderateListingWithSideEffects({
             toEmail: sellerInfo?.email,
             toName: sellerInfo?.fullName ?? "Satıcı",
             listingTitle: listing.title,
-            reason: note ?? undefined,
+            reason: moderationCopy.sellerEmailReason,
+            reasonCode: moderationCopy.reasonCode,
           },
   };
 
   const notificationPayload = {
     title: action === "approve" ? "İlanınız Yayında" : "İlan Reddedildi",
-    message:
-      action === "approve"
-        ? `Tebrikler! "${listing.title}" ilanınız onaylandı ve yayına alındı.`
-        : `"${listing.title}" ilanınız moderasyon ekibimiz tarafından reddedildi. Notları inceleyip düzenleyebilirsiniz.`,
+    message: moderationCopy.sellerMessage,
     href:
       action === "approve" ? `/listing/${listing.slug}` : `/dashboard/listings?edit=${listing.id}`,
+    reasonCode: moderationCopy.reasonCode,
   };
 
   // 3. Persistent Execution
@@ -83,7 +84,8 @@ export async function moderateListingWithSideEffects({
       listingId,
       status,
       adminUserId,
-      note: note || buildDefaultModerationNote(listing as unknown as Listing, action),
+      note: moderationCopy.moderatorNote ?? moderationCopy.explanation,
+      reasonCode: moderationCopy.reasonCode,
       outboxPayload: outboxPayload as Json,
       notificationPayload: notificationPayload as Json,
     });
@@ -139,7 +141,7 @@ export async function moderateListingsWithSideEffects({
   action,
   adminUserId,
   listingIds,
-  note,
+  rejectReason,
 }: ModerateListingsInput) {
   const uniqueIds = [...new Set(listingIds)];
   const CONCURRENCY = 5;
@@ -150,7 +152,7 @@ export async function moderateListingsWithSideEffects({
     const batch = uniqueIds.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(
       batch.map((listingId) =>
-        moderateListingWithSideEffects({ action, adminUserId, listingId, note })
+        moderateListingWithSideEffects({ action, adminUserId, listingId, rejectReason })
       )
     );
 

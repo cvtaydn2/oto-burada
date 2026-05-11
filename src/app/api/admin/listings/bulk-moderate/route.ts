@@ -1,6 +1,5 @@
 import { waitUntil } from "@vercel/functions";
 import { headers } from "next/headers";
-import { z } from "zod";
 
 import { moderateListingsWithSideEffects } from "@/features/admin-moderation/services/listing-moderation";
 import { rateLimitProfiles } from "@/lib/rate-limit";
@@ -9,12 +8,7 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { sanitizeText } from "@/lib/sanitize";
 import { withAdminRoute } from "@/lib/security";
 import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
-
-const bulkModerationSchema = z.object({
-  action: z.enum(["approve", "reject"]),
-  listingIds: z.array(z.string().uuid()).min(1).max(50),
-  note: z.string().trim().max(1000).optional(),
-});
+import { bulkListingModerationSchema } from "@/lib/validators/admin";
 
 async function getClientIp() {
   const headersList = await headers();
@@ -68,7 +62,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Moderasyon isteği okunamadı.", 400);
   }
 
-  const parsed = bulkModerationSchema.safeParse(body);
+  const parsed = bulkListingModerationSchema.safeParse(body);
 
   if (!parsed.success) {
     captureServerEvent(
@@ -83,24 +77,15 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz toplu moderasyon isteği.", 400);
   }
 
-  const note = parsed.data.note ? sanitizeText(parsed.data.note) : "";
-
-  if (note.length > 0 && note.length < 3) {
-    captureServerEvent(
-      "admin_bulk_moderation_failed",
-      {
-        reason: "invalid_note",
-        adminUserId: adminUser.id,
-        responseStatus: 400,
-      },
-      adminUser.id
-    );
-    return apiError(
-      API_ERROR_CODES.BAD_REQUEST,
-      "Moderasyon notu girersen en az 3 karakter olmalı.",
-      400
-    );
-  }
+  const rejectReason =
+    parsed.data.action === "reject" && parsed.data.rejectReason
+      ? {
+          reasonCode: parsed.data.rejectReason.reasonCode,
+          moderatorNote: parsed.data.rejectReason.moderatorNote
+            ? sanitizeText(parsed.data.rejectReason.moderatorNote)
+            : undefined,
+        }
+      : undefined;
 
   waitUntil(
     (async () => {
@@ -109,7 +94,7 @@ export async function POST(request: Request) {
           action: parsed.data.action,
           adminUserId: adminUser.id,
           listingIds: parsed.data.listingIds,
-          note,
+          rejectReason,
         });
 
         captureServerEvent(

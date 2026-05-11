@@ -163,6 +163,8 @@ export function ListingsModeration({ pendingListings }: ListingsModerationProps)
           allPendingListingIds={state.allPendingListingIds}
           bulkNote={state.bulkNote}
           onBulkNoteChange={actions.setBulkNote}
+          bulkRejectReasonCode={state.bulkRejectReasonCode}
+          onBulkRejectReasonCodeChange={actions.setBulkRejectReasonCode}
           pendingListingsCount={pendingListings.length}
         />
 
@@ -191,6 +193,8 @@ export function ListingsModeration({ pendingListings }: ListingsModerationProps)
               isSavingEdit={state.isSavingEdit}
               notesByListingId={state.notesByListingId}
               setNotesByListingId={actions.setNotesByListingId}
+              rejectReasonByListingId={state.rejectReasonByListingId}
+              setRejectReasonByListingId={actions.setRejectReasonByListingId}
             />
           </AppErrorBoundary>
         ))}

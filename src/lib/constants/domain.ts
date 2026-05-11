@@ -218,6 +218,15 @@ export const moderationActions = [
   "doping_grant",
 ] as const;
 
+export const listingRejectReasonCodes = [
+  "vehicle_info_mismatch",
+  "suspicious_or_low_quality_images",
+  "misleading_price_or_description",
+  "risky_external_redirection",
+  "duplicate_listing",
+  "non_car_or_irrelevant_content",
+] as const;
+
 export const moderationActionLabels = {
   approve: "Onay",
   reject: "Red",
@@ -234,6 +243,34 @@ export const moderationActionLabels = {
   credit_grant: "Kredi Yükle",
   doping_grant: "Doping Ver",
 } as const;
+
+export const listingRejectReasonLabels: Record<(typeof listingRejectReasonCodes)[number], string> =
+  {
+    vehicle_info_mismatch: "Araç bilgisi uyuşmazlığı",
+    suspicious_or_low_quality_images: "Şüpheli veya düşük kaliteli görseller",
+    misleading_price_or_description: "Yanıltıcı fiyat veya açıklama",
+    risky_external_redirection: "Riskli dış yönlendirme",
+    duplicate_listing: "Mükerrer ilan",
+    non_car_or_irrelevant_content: "Araba dışı veya alakasız içerik",
+  };
+
+export const listingRejectReasonDefaultExplanations: Record<
+  (typeof listingRejectReasonCodes)[number],
+  string
+> = {
+  vehicle_info_mismatch:
+    "İlandaki araç bilgileri birbiriyle veya görsellerle tutarlı görünmüyor. Lütfen marka, model, yıl ve teknik detayları kontrol edip yeniden gönderin.",
+  suspicious_or_low_quality_images:
+    "İlandaki görseller güven vermeyecek kadar düşük kaliteli, yetersiz veya şüpheli görünüyor. Aracı net gösteren güncel fotoğraflarla tekrar gönderin.",
+  misleading_price_or_description:
+    "İlandaki fiyat veya açıklama kullanıcıyı yanıltabilecek ifadeler içeriyor. Lütfen fiyat ve açıklama alanlarını açık, doğru ve tutarlı olacak şekilde güncelleyin.",
+  risky_external_redirection:
+    "İlanda kullanıcıyı platform dışına riskli biçimde yönlendiren içerikler tespit edildi. Lütfen açıklamayı güvenli ve doğrudan ilan bilgisine odaklı şekilde düzenleyin.",
+  duplicate_listing:
+    "Aynı araca ait mükerrer veya çok benzer bir ilan tespit edildi. Lütfen mevcut ilanı güncelleyin veya tekrar eden ilanları kaldırın.",
+  non_car_or_irrelevant_content:
+    "İçerik araba ilanı kapsamına uygun görünmüyor veya ilanla alakasız unsurlar içeriyor. Lütfen yalnızca satılık araca odaklanan bilgilerle yeniden gönderin.",
+};
 
 export const listingSortOptions = [
   "newest",

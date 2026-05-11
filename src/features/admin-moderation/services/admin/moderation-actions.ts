@@ -12,6 +12,7 @@ interface AdminModerationActionRow {
   created_at: string;
   id: string;
   note: string | null;
+  reason_code: AdminModerationAction["reasonCode"];
   target_id: string;
   target_type: ModerationTargetType;
 }
@@ -23,6 +24,7 @@ function mapAdminActionRow(row: AdminModerationActionRow) {
     createdAt: row.created_at,
     id: row.id,
     note: row.note,
+    reasonCode: row.reason_code,
     targetId: row.target_id,
     targetType: row.target_type,
   });
@@ -32,6 +34,7 @@ export async function logAdminAction(input: {
   action: ModerationAction;
   adminUserId: string;
   note?: string | null;
+  reasonCode?: AdminModerationAction["reasonCode"];
   targetId: string;
   targetType: ModerationTargetType;
 }) {
@@ -48,10 +51,11 @@ export async function logAdminAction(input: {
       action: input.action,
       admin_user_id: input.adminUserId,
       note: input.note ?? null,
+      reason_code: input.reasonCode ?? null,
       target_id: input.targetId,
       target_type: input.targetType,
     })
-    .select("id, admin_user_id, target_type, target_id, action, note, created_at")
+    .select("id, admin_user_id, target_type, target_id, action, note, reason_code, created_at")
     .single<AdminModerationActionRow>();
 
   if (error || !data) {
@@ -75,7 +79,7 @@ export async function getRecentAdminModerationActions(limit = 8): Promise<AdminM
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("admin_actions")
-    .select("id, admin_user_id, target_type, target_id, action, note, created_at")
+    .select("id, admin_user_id, target_type, target_id, action, note, reason_code, created_at")
     .order("created_at", { ascending: false })
     .limit(limit)
     .returns<AdminModerationActionRow[]>();

@@ -622,7 +622,7 @@ Separate from payment processing to maintain clear boundaries.';
 
 
 
-CREATE OR REPLACE FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_reason_code" "text" DEFAULT NULL::text, "p_outbox_payload" "jsonb" DEFAULT '{}'::jsonb, "p_notification_payload" "jsonb" DEFAULT '{}'::jsonb) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -632,12 +632,10 @@ DECLARE
   v_outbox_id UUID;
   v_notif_id UUID;
 BEGIN
-  -- SECURITY: Enforce admin role check
   IF NOT public.is_admin() THEN
     RAISE EXCEPTION 'Security violation: Admin access required.';
   END IF;
 
-  -- 1. Atomic Update: Transitions status and sets published_at if approved
   UPDATE public.listings
   SET status = p_status,
       published_at = CASE WHEN p_status = 'approved' THEN now() ELSE published_at END,
@@ -650,22 +648,22 @@ BEGIN
     RAISE EXCEPTION 'Listing not found or status not transitionable';
   END IF;
 
-  -- 2. Create Admin Action Log
   INSERT INTO public.admin_actions (
     action,
     admin_user_id,
     note,
+    reason_code,
     target_id,
     target_type
   ) VALUES (
     CASE WHEN p_status = 'approved' THEN 'approve' ELSE 'reject' END,
     p_admin_id,
     p_note,
+    CASE WHEN p_status = 'rejected' THEN p_reason_code ELSE NULL END,
     p_listing_id,
     'listing'
   ) RETURNING id INTO v_action_id;
 
-  -- 3. Create In-App Notification
   INSERT INTO public.notifications (
     user_id,
     type,
@@ -680,7 +678,6 @@ BEGIN
     p_notification_payload->>'href'
   ) RETURNING id INTO v_notif_id;
 
-  -- 4. Enqueue Outbox Event (Email)
   INSERT INTO public.transaction_outbox (
     event_type,
     payload
@@ -700,7 +697,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") OWNER TO "postgres";
+ALTER FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_reason_code" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."ban_user_atomic"("p_user_id" "uuid", "p_reason" "text", "p_preserve_metadata" boolean DEFAULT true) RETURNS "jsonb"
@@ -2967,6 +2964,7 @@ CREATE TABLE IF NOT EXISTS "public"."admin_actions" (
     "target_id" "uuid" NOT NULL,
     "action" "public"."moderation_action" NOT NULL,
     "note" "text",
+    "reason_code" "text",
     "created_at" timestamp with time zone DEFAULT "timezone"('utc'::"text", "now"()) NOT NULL
 );
 
@@ -5989,10 +5987,10 @@ GRANT ALL ON FUNCTION "public"."apply_listing_doping"("p_listing_id" "uuid", "p_
 
 
 
-REVOKE ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_reason_code" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_reason_code" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_reason_code" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."atomic_moderate_listing"("p_listing_id" "uuid", "p_status" "text", "p_admin_id" "uuid", "p_note" "text", "p_reason_code" "text", "p_outbox_payload" "jsonb", "p_notification_payload" "jsonb") TO "service_role";
 
 
 

@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/datetime/date-utils";
 import { formatNumber } from "@/lib/utils/format";
-import type { Listing } from "@/types";
+import type { Listing, ListingRejectReasonCode } from "@/types";
 
 import { ModerationDecision } from "./moderation-card/ModerationDecision";
 import { ModerationEditor } from "./moderation-card/ModerationEditor";
@@ -21,6 +21,12 @@ interface ModerationCardProps {
   isSavingEdit: boolean;
   notesByListingId: Record<string, string>;
   setNotesByListingId: (fn: (current: Record<string, string>) => Record<string, string>) => void;
+  rejectReasonByListingId: Partial<Record<string, ListingRejectReasonCode>>;
+  setRejectReasonByListingId: (
+    fn: (
+      current: Partial<Record<string, ListingRejectReasonCode>>
+    ) => Partial<Record<string, ListingRejectReasonCode>>
+  ) => void;
 }
 
 export function ModerationCard({
@@ -37,6 +43,8 @@ export function ModerationCard({
   isSavingEdit,
   notesByListingId,
   setNotesByListingId,
+  rejectReasonByListingId,
+  setRejectReasonByListingId,
 }: ModerationCardProps) {
   return (
     <article className="bg-card border border-border/50 shadow-sm rounded-2xl transition-[border-color,box-shadow,transform] duration-300 ease-in-out hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 p-6 md:p-8">
@@ -108,6 +116,8 @@ export function ModerationCard({
             handleModeration={handleModeration}
             notesByListingId={notesByListingId}
             setNotesByListingId={setNotesByListingId}
+            rejectReasonByListingId={rejectReasonByListingId}
+            setRejectReasonByListingId={setRejectReasonByListingId}
           />
         </div>
       </div>

@@ -42,6 +42,7 @@ export type Database = {
           created_at: string;
           id: string;
           note: string | null;
+          reason_code: string | null;
           target_id: string;
           target_type: Database["public"]["Enums"]["moderation_target_type"];
         };
@@ -51,6 +52,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           note?: string | null;
+          reason_code?: string | null;
           target_id: string;
           target_type: Database["public"]["Enums"]["moderation_target_type"];
         };
@@ -60,6 +62,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           note?: string | null;
+          reason_code?: string | null;
           target_id?: string;
           target_type?: Database["public"]["Enums"]["moderation_target_type"];
         };
@@ -2757,6 +2760,7 @@ export type Database = {
           p_note: string;
           p_notification_payload: Json;
           p_outbox_payload: Json;
+          p_reason_code?: string | null;
           p_status: string;
         };
         Returns: Json;
