@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { triggerPushNotificationForUser } from "@/features/notifications/services/notifications/push-logic";
 import { applyDopingPackage } from "@/features/payments/services/doping-logic";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
@@ -134,6 +135,27 @@ export async function GET(request: Request) {
             packageId,
             paymentId: job.payment_id,
           });
+        } else if (job.job_type === "notification_send") {
+          const meta = job.metadata as {
+            userId?: string;
+            title?: string;
+            body?: string;
+            url?: string;
+          };
+
+          if (!meta.userId || !meta.title || !meta.body) {
+            throw new Error("Incomplete payload for push notification job");
+          }
+
+          const result = await triggerPushNotificationForUser(meta.userId, {
+            title: meta.title,
+            body: meta.body,
+            url: meta.url,
+          });
+
+          if (!result.success) {
+            throw new Error(`Push triggering failed: ${result.error || "Unknown"}`);
+          }
         }
 
         // 4. Mark success

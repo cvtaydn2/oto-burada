@@ -109,3 +109,51 @@ self.addEventListener("message", (event) => {
     self.skipWaiting();
   }
 });
+
+// Web Push Notification Events Handle
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  try {
+    const payload = event.data.json();
+    const title = payload.title || "OtoBurada";
+    
+    const options = {
+      body: payload.body || "",
+      icon: payload.icon || "/icons/icon-192x192.png",
+      badge: payload.badge || "/icons/badge-72x72.png",
+      vibrate: [100, 50, 100],
+      data: {
+        url: payload.data?.url || "/dashboard",
+      },
+      tag: "oto-burada-push",
+      renotify: true
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  } catch (e) {
+    console.error("[SW] Push parsing failed", e);
+  }
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "/dashboard";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
+});

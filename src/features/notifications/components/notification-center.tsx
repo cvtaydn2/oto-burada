@@ -25,10 +25,14 @@ import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/types";
 
+import { usePushSubscription } from "../hooks/use-push-subscription";
+
 export function NotificationCenter() {
   const { userId, isAuthenticated } = useAuthUser();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+
+  const { isSupported, isSubscribed, isPending, subscribe } = usePushSubscription();
 
   // Only fetch if authenticated
   const { notifications, unreadCount, isLoading, refetch } = useNotifications(userId || undefined);
@@ -136,70 +140,97 @@ export function NotificationCenter() {
                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
                 <span className="text-xs text-muted-foreground">Yükleniyor...</span>
               </div>
-            ) : latestNotifications.length === 0 ? (
-              <div className="p-8 text-center flex flex-col items-center justify-center">
-                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                  <Bell size={20} className="text-muted-foreground/40" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Bildirim yok</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Henüz yeni bir bildirim almadınız.
-                </p>
-              </div>
             ) : (
               <div className="flex flex-col divide-y divide-border/40">
-                {latestNotifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={cn(
-                      "p-3.5 transition-colors hover:bg-muted/50 relative group flex gap-3",
-                      !notification.read && "bg-primary/[0.02]"
-                    )}
-                  >
-                    <div className="mt-0.5 size-8 shrink-0 rounded-full bg-muted/60 flex items-center justify-center">
-                      {getIconForType(notification.type)}
+                {isSupported && !isSubscribed && (
+                  <div className="p-3.5 bg-amber-50/50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/20 flex items-center gap-3">
+                    <div className="size-8 shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                      <Bell className="size-4 text-amber-600 dark:text-amber-400" />
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                      <div className="flex justify-between items-start gap-2">
-                        <h4
-                          className={cn(
-                            "text-sm leading-tight line-clamp-2",
-                            !notification.read
-                              ? "font-bold text-foreground"
-                              : "font-medium text-muted-foreground"
-                          )}
-                        >
-                          {notification.title}
-                        </h4>
-                        {!notification.read && (
-                          <button
-                            onClick={(e) => handleMarkAsRead(e, notification.id)}
-                            className="shrink-0 size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-                            title="Okundu"
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-amber-900 dark:text-amber-300">
+                        Tarayıcı Bildirimleri
+                      </p>
+                      <p className="text-[10px] text-amber-700 dark:text-amber-400/80">
+                        Anlık bildirimleri kaçırmamak için aktifleştirin.
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-[10px] border-amber-200 hover:bg-amber-100 text-amber-700 dark:text-amber-300 dark:border-amber-800"
+                      onClick={subscribe}
+                      disabled={isPending}
+                    >
+                      {isPending ? "..." : "Aktifleştir"}
+                    </Button>
+                  </div>
+                )}
+
+                {latestNotifications.length === 0 ? (
+                  <div className="p-8 text-center flex flex-col items-center justify-center">
+                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                      <Bell size={20} className="text-muted-foreground/40" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">Bildirim yok</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Henüz yeni bir bildirim almadınız.
+                    </p>
+                  </div>
+                ) : (
+                  latestNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={cn(
+                        "p-3.5 transition-colors hover:bg-muted/50 relative group flex gap-3",
+                        !notification.read && "bg-primary/[0.02]"
+                      )}
+                    >
+                      <div className="mt-0.5 size-8 shrink-0 rounded-full bg-muted/60 flex items-center justify-center">
+                        {getIconForType(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4
+                            className={cn(
+                              "text-sm leading-tight line-clamp-2",
+                              !notification.read
+                                ? "font-bold text-foreground"
+                                : "font-medium text-muted-foreground"
+                            )}
                           >
-                            <Check size={12} strokeWidth={3} />
-                          </button>
+                            {notification.title}
+                          </h4>
+                          {!notification.read && (
+                            <button
+                              onClick={(e) => handleMarkAsRead(e, notification.id)}
+                              className="shrink-0 size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                              title="Okundu"
+                            >
+                              <Check size={12} strokeWidth={3} />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {notification.message}
+                        </p>
+                        <div className="mt-1 flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                          <Clock size={10} />
+                          {formatDate(notification.createdAt)}
+                        </div>
+
+                        {notification.href && (
+                          <Link
+                            href={notification.href}
+                            onClick={() => setIsOpen(false)}
+                            className="absolute inset-0 z-0"
+                            aria-label="Bildirim detayına git"
+                          />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {notification.message}
-                      </p>
-                      <div className="mt-1 flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
-                        <Clock size={10} />
-                        {formatDate(notification.createdAt)}
-                      </div>
-
-                      {notification.href && (
-                        <Link
-                          href={notification.href}
-                          onClick={() => setIsOpen(false)}
-                          className="absolute inset-0 z-0"
-                          aria-label="Bildirim detayına git"
-                        />
-                      )}
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>

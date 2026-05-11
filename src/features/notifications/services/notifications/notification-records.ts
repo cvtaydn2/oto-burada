@@ -21,6 +21,8 @@ import { notificationSchema } from "@/lib/validators/notification";
 import type { NotificationType } from "@/types";
 import type { TablesInsert } from "@/types/supabase";
 
+import { enqueuePushNotification, enqueuePushNotificationsBulk } from "./push-logic";
+
 interface NotificationRow {
   created_at: string;
   href: string | null;
@@ -155,6 +157,11 @@ export async function createDatabaseNotification(input: {
     throw new Error("Notification created but no data returned");
   }
 
+  // Fire and forget background push registration without holding up UI delivery response
+  enqueuePushNotification(input.userId, input.title, input.message, input.href).catch((e) =>
+    console.error("Failed to trigger non-blocking push side-effect", e)
+  );
+
   return mapNotificationRow(data);
 }
 
@@ -206,6 +213,16 @@ export async function createDatabaseNotificationsBulk(
   if (!data) {
     throw new Error("Notifications created but no data returned");
   }
+
+  // Schedule batch push dispatches to external browsers via zero-cost job queue
+  enqueuePushNotificationsBulk(
+    inputs.map((i) => ({
+      userId: i.userId,
+      title: i.title,
+      message: i.message,
+      href: i.href,
+    }))
+  ).catch((e) => console.error("Failed bulk push enqueue side-effect", e));
 
   return data.map(mapNotificationRow);
 }
