@@ -60,8 +60,8 @@ export function MobileStickyActions({
             </div>
 
             <p className="max-w-[16rem] text-pretty text-[10px] font-medium leading-4 text-muted-foreground/75 sm:text-right">
-              Sağ kolondaki karar sırası burada da korunur: önce WhatsApp, sonra diğer iletişim
-              seçenekleri.
+              Aynı karar akışı burada da korunur: önce kısa mesaj rehberi, sonra WhatsApp, ardından
+              diğer iletişim seçenekleri.
             </p>
           </div>
 

@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 112. Task A3 — Listing Detail First Message Guide
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A3 micro-improvement by adding a compact `İlk Mesaj Rehberi` directly into the listing detail contact decision surface so buyers can see the 3 most useful first-contact questions before tapping WhatsApp, while preserving WhatsApp as the primary CTA, keeping mobile and desktop decision order aligned, and avoiding any backend or contract changes.
+
+### 112.1 Contact Decision Surface Now Includes a Compact First-Message Prompt Layer
+- Updated [`ContactActions`](src/features/marketplace/components/contact-actions.tsx:35) to render a compact `İlk Mesaj Rehberi` card directly between the existing safe-contact framing and the primary WhatsApp action.
+- Kept the guide intentionally lightweight with only 3 short prompts, so it supports the decision moment without turning into a new message-template flow or competing with the primary contact CTA.
+- The guide stays advisory and trust-oriented, helping the user prepare a better first outreach while the existing WhatsApp-first action hierarchy remains unchanged.
+
+### 112.2 Prompt Copy Adapts Lightly from Existing Listing/Seller Context Only
+- Added lightweight front-end-only heuristics inside [`getFirstMessageGuide()`](src/features/marketplace/components/contact-actions.tsx:54) to slightly tailor the prompt headings based on already available seller trust context and current reveal state.
+- Professional sellers now nudge users toward inventory freshness, bakım/ekspertiz continuity, and price rationale, while other sellers emphasize hızlı durum özeti, görüşme zemini, and fiyat/pazarlık clarity.
+- No new backend contract, migration, route, fetch path, or persistent state was introduced in this pass.
+
+### 112.3 Mobile Sticky and Desktop Right-Rail Messaging Stay in Sync
+- Reused the same [`ContactActions`](src/features/marketplace/components/contact-actions.tsx:133) decision surface for both desktop and sticky mobile contexts, so the guide logic remains identical across breakpoints.
+- Updated [`MobileStickyActions`](src/features/marketplace/components/mobile-sticky-actions.tsx:62) helper copy so the sticky bar explicitly reflects the same order: compact first-message guidance first, WhatsApp second, and other contact options after that.
+- This keeps the mobile sticky framing consistent with the established right-column decision hierarchy from the earlier Task A3 passes.
+
+### 112.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/components/contact-actions.tsx src/features/marketplace/components/mobile-sticky-actions.tsx`](package.json:12) ✅
+
+### 112.5 Remaining Risk
+- The guide currently relies on lightweight front-end heuristics over seller trust type and contact state only, so it does not yet adapt to richer vehicle specifics such as missing field-level trust gaps, trim rarity, or unusually thin listing descriptions.
+- Because the guide is intentionally compact and non-blocking, some users may still skip it and go straight to WhatsApp, which is acceptable for the current MVP’s WhatsApp-first decision model.
+
+---
+
 ## 111. Task A3 — Similar Listings Decision Context
 
 **Date**: 2026-05-11

@@ -44,7 +44,56 @@ interface ContactActionsProps {
   surface?: "default" | "sticky";
 }
 
+interface FirstMessageGuideItem {
+  emphasis?: string;
+  text: string;
+}
+
 const WHATSAPP_MESSAGE = "Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.";
+
+function getFirstMessageGuide(options: {
+  isProfessional: boolean;
+  isTrusted: boolean;
+  isRevealed: boolean;
+}) {
+  const lead = options.isProfessional
+    ? "Kurumsal satıcıyla ilk temasta"
+    : options.isTrusted
+      ? "İlk mesajda"
+      : "WhatsApp'a geçmeden önce";
+
+  const items: FirstMessageGuideItem[] = [
+    options.isProfessional
+      ? {
+          emphasis: "Araç hazır mı?",
+          text: "Ekspertiz, bakım geçmişi ve güncel durumun hâlâ ilandaki gibi olup olmadığını net sor.",
+        }
+      : {
+          emphasis: "Durum özeti iste:",
+          text: "Son ekspertiz, hasar beyanı ve Tramer bilgisini tek mesajda teyit et.",
+        },
+    options.isRevealed
+      ? {
+          emphasis: "Ziyaret planını netleştir:",
+          text: "Aracı ne zaman görebileceğini ve görüşmede ruhsat sahibiyle ilerlenip ilerlenmeyeceğini sor.",
+        }
+      : {
+          emphasis: "Görüşme zemini kur:",
+          text: "Aracı görme zamanı ve bulunduğu konumu kısa biçimde sorarak ilk teması netleştir.",
+        },
+    {
+      emphasis: "Fiyatı bağlama oturt:",
+      text: options.isProfessional
+        ? "İlandaki fiyatın bakım, donanım veya garanti tarafında hangi noktaya dayandığını öğren."
+        : "Fiyatta pazarlık payı ya da son dönemde yapılan masraf olup olmadığını kısaca sor.",
+    },
+  ];
+
+  return {
+    lead,
+    items,
+  };
+}
 
 function formatPhoneNumber(phone: string) {
   const clean = phone.replace(/\D/g, "");
@@ -100,6 +149,11 @@ export function ContactActions({
   const trustUI = getSellerTrustUI(seller);
   const { isContactable, isTrusted, label, subMessage, tone } = trustUI;
   const isSticky = surface === "sticky";
+  const firstMessageGuide = getFirstMessageGuide({
+    isProfessional: trustUI.isProfessional,
+    isTrusted,
+    isRevealed,
+  });
 
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
   if (isOwnListing) {
@@ -194,6 +248,64 @@ export function ContactActions({
             >
               Önce WhatsApp ile yaz, ardından gerekirse numarayı görerek aramaya geç.
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          "rounded-2xl border p-3",
+          isSticky ? "border-white/70 bg-white/90" : "border-border/70 bg-background/90"
+        )}
+      >
+        <div className="flex items-start gap-2.5">
+          <div
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-xl border shadow-sm",
+              isSticky
+                ? "border-emerald-100 bg-emerald-50 text-emerald-600"
+                : "border-indigo-100 bg-indigo-50 text-indigo-600"
+            )}
+          >
+            <MessageSquare className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-foreground">İlk Mesaj Rehberi</p>
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em]",
+                  isSticky ? "bg-emerald-100 text-emerald-800" : "bg-indigo-100 text-indigo-800"
+                )}
+              >
+                WhatsApp öncesi
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              {firstMessageGuide.lead} şu 3 kısa başlık yeterli olur.
+            </p>
+            <div className="mt-2.5 space-y-2">
+              {firstMessageGuide.items.map((item) => (
+                <div
+                  key={`${item.emphasis ?? item.text}-${item.text}`}
+                  className="flex items-start gap-2"
+                >
+                  <span
+                    className={cn(
+                      "mt-1 inline-block size-1.5 shrink-0 rounded-full",
+                      isSticky ? "bg-emerald-500" : "bg-indigo-500"
+                    )}
+                    aria-hidden="true"
+                  />
+                  <p className="text-[11px] leading-5 text-foreground/90">
+                    {item.emphasis ? (
+                      <span className="font-semibold text-foreground">{item.emphasis} </span>
+                    ) : null}
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
