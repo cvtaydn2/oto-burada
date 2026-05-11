@@ -83,3 +83,7 @@ build_*.txt
 *_dump_ascii.txt
 temp.ps1
 env_ls.txt
+
+# AI agent scratch files (frequently auto-generated)
+all_api_calls.txt
+scratch_request_usages.txt
