@@ -16,7 +16,7 @@ const isEnabled = !!SENTRY_DSN && process.env.NODE_ENV === "production";
 
 export function initSentry() {
   if (!isEnabled) {
-    console.log("[Sentry] Disabled - DSN not configured");
+    // Development/local: Sentry not configured, fail silently
     return;
   }
 
@@ -68,7 +68,7 @@ export function initSentry() {
     ],
   });
 
-  console.log("[Sentry] Initialized for production");
+  // Sentry initialized successfully
 }
 
 export function captureError(
@@ -115,3 +115,4 @@ export const SentryIntegration = {
 };
 
 export default Sentry;
+
