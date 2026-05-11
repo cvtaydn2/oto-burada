@@ -1,5 +1,36 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 110. Task A3 — Listing Detail Compact Price Comparison Summary
+
+**Date**: 2026-05-11
+**Status**: ✅ COMPLETED
+**Scope**: Applied the next Task A3 micro-improvement by adding a compact market-price comparison summary directly inside the listing detail price box so buyers can get a quick “bu fiyat makul mü?” read near the decision moment, while keeping the deeper price analysis section lower on the page and preserving WhatsApp as the primary contact path.
+
+### 110.1 Compact Price Context Now Sits Next to the Decision Moment
+- Updated [`ListingPriceBox`](src/features/marketplace/components/listing-detail/listing-price-box.tsx:23) to derive and render a new compact price comparison summary directly under the price and valuation badge.
+- Added calm, non-absolute summary states for advantageous, balanced, high, and uncertain pricing using only the existing `marketValuation` payload; no backend contract, migration, or data-model expansion was introduced.
+- Kept the summary intentionally supportive rather than dominant so the user gets context before acting, without turning the price card into a second heavy analysis module.
+
+### 110.2 Copy Now Reflects Confidence and Uncertainty More Carefully
+- When comparable data is thin, the new summary explicitly avoids overclaiming and frames the market signal as limited rather than authoritative.
+- When valuation data is present, the summary uses softer wording such as “ilk bakışta avantajlı”, “piyasa seviyesine yakın”, and “piyasa ortalamasının üstünde konumlanıyor” instead of harder, overly certain judgments.
+- Added a lightweight inline reference from the compact summary to the deeper [`#fiyat`](src/app/(public)/(marketplace)/listing/[slug]/page.tsx:277) analysis section and to the similar listings area below, preserving the layered decision flow.
+
+### 110.3 CTA Hierarchy Remains Intact
+- Kept the existing [`ContactActions`](src/features/marketplace/components/contact-actions.tsx:84) placement and desktop right-rail hierarchy unchanged, so WhatsApp remains the primary action layer.
+- Left the existing trust-focused “Karar Özeti” block in [`ListingPriceBox`](src/features/marketplace/components/listing-detail/listing-price-box.tsx:177) intact beneath the new price context layer, preserving the previously completed trust-to-contact flow.
+- The new summary is visually compact and informational, with no new primary CTA competing against contact actions.
+
+### 110.4 Validation
+- TypeScript validation completed with [`npm run typecheck`](package.json:13) ✅
+- Targeted lint validation completed with [`npm run lint -- src/features/marketplace/components/listing-detail/listing-price-box.tsx`](package.json:12) ✅
+
+### 110.5 Remaining Risk
+- The quick price summary still depends on the current `marketValuation` heuristic and comparable listing count only, so it does not yet account for richer vehicle-specific context such as trim rarity, maintenance quality, or optional equipment depth.
+- The compact summary is intentionally tuned for calm decision support; future iteration may still be needed if real-user behavior shows that “yüksek” pricing needs even more explanatory nuance before contact.
+
+---
+
 ## 109. Task A3 — Listing Detail Trust + Seller + Contact Decision Block
 
 **Date**: 2026-05-11

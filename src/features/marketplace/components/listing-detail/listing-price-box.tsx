@@ -1,8 +1,10 @@
 import { BadgeCheck, MessageCircle, ShieldCheck } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import type { ListingTrustDecisionSummary } from "@/features/marketplace/lib/trust-ui";
+import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils/format";
 import type { Profile } from "@/types";
 
@@ -27,8 +29,66 @@ interface ListingPriceBoxProps {
   listingPrice: number;
   currentUserId?: string;
   isOwner: boolean;
-  marketValuation: { status: "good" | "fair" | "high" | "unknown"; diff: number };
+  marketValuation: {
+    status: "good" | "fair" | "high" | "unknown";
+    diff: number;
+    avgPrice?: number;
+    listingCount?: number | null;
+  };
   trustDecision: ListingTrustDecisionSummary;
+}
+
+function getPriceComparisonSummary(marketValuation: ListingPriceBoxProps["marketValuation"]) {
+  const comparableListingCount = marketValuation.listingCount ?? 0;
+  const hasEnoughContext =
+    marketValuation.status !== "unknown" &&
+    comparableListingCount >= 3 &&
+    typeof marketValuation.avgPrice === "number";
+
+  if (!hasEnoughContext) {
+    return {
+      tone: "belirsiz",
+      eyebrow: "Fiyat kıyas özeti",
+      title: "Piyasa bağlamı şimdilik sınırlı",
+      description:
+        "Bu ilan için hızlı fiyat yorumu yapacak kadar güçlü benzer veri görünmüyor. Kararı verirken aşağıdaki detaylı analiz ve ilanın diğer sinyalleriyle birlikte düşünmek daha sağlıklı olur.",
+      meta:
+        comparableListingCount > 0
+          ? `${comparableListingCount} benzer ilanla sınırlı`
+          : "Benzer veri henüz sınırlı",
+    } as const;
+  }
+
+  if (marketValuation.status === "good") {
+    return {
+      tone: "avantajli",
+      eyebrow: "Fiyat kıyas özeti",
+      title: "İlk bakışta avantajlı görünüyor",
+      description:
+        "İlan fiyatı benzer araç ortalamasının altında konumlanıyor. Araç durumu ve detaylar da beklentinle örtüşüyorsa, iletişime geçmek için makul bir başlangıç olabilir.",
+      meta: `${comparableListingCount} benzer ilana göre yaklaşık %${marketValuation.diff} aşağıda`,
+    } as const;
+  }
+
+  if (marketValuation.status === "high") {
+    return {
+      tone: "yuksek",
+      eyebrow: "Fiyat kıyas özeti",
+      title: "Piyasa ortalamasının üstünde konumlanıyor",
+      description:
+        "Bu tek başına olumsuz bir işaret değildir; donanım, kondisyon veya bakım geçmişi fiyatı etkiliyor olabilir. İstersen aşağıdaki analizle bağlamı netleştirip sonra satıcıyla konuşabilirsin.",
+      meta: `${comparableListingCount} benzer ilana göre yaklaşık %${marketValuation.diff} yukarıda`,
+    } as const;
+  }
+
+  return {
+    tone: "dengeli",
+    eyebrow: "Fiyat kıyas özeti",
+    title: "Piyasa seviyesine yakın görünüyor",
+    description:
+      "İlan fiyatı benzer araçların genel bandına yakın duruyor. Son kararda ekspertiz, hasar geçmişi ve satıcı güven sinyallerine birlikte bakmak faydalı olur.",
+    meta: `${comparableListingCount} benzer ilanla dengeli görünüm`,
+  } as const;
 }
 
 export function ListingPriceBox({
@@ -43,6 +103,8 @@ export function ListingPriceBox({
   marketValuation,
   trustDecision,
 }: ListingPriceBoxProps) {
+  const priceComparisonSummary = getPriceComparisonSummary(marketValuation);
+
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5 lg:p-6">
       <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -58,11 +120,60 @@ export function ListingPriceBox({
       <MarketValuationBadge
         status={marketValuation.status}
         diff={marketValuation.diff}
-        className="mb-4 sm:mb-5"
+        className="mb-3"
       />
 
       {!isOwner ? (
         <>
+          <div
+            className={cn(
+              "mb-4 rounded-2xl border p-4",
+              priceComparisonSummary.tone === "avantajli"
+                ? "border-emerald-200 bg-emerald-50/70"
+                : priceComparisonSummary.tone === "yuksek"
+                  ? "border-amber-200 bg-amber-50/80"
+                  : priceComparisonSummary.tone === "dengeli"
+                    ? "border-sky-200 bg-sky-50/70"
+                    : "border-border bg-muted/30"
+            )}
+          >
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em]",
+                  priceComparisonSummary.tone === "avantajli"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : priceComparisonSummary.tone === "yuksek"
+                      ? "bg-amber-100 text-amber-800"
+                      : priceComparisonSummary.tone === "dengeli"
+                        ? "bg-sky-100 text-sky-800"
+                        : "bg-background text-muted-foreground"
+                )}
+              >
+                {priceComparisonSummary.eyebrow}
+              </span>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {priceComparisonSummary.meta}
+              </span>
+            </div>
+
+            <p className="text-sm font-semibold text-foreground">{priceComparisonSummary.title}</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              {priceComparisonSummary.description}
+            </p>
+
+            <div className="mt-3 text-xs leading-5 text-muted-foreground">
+              Daha fazla bağlam için{" "}
+              <Link
+                href="#fiyat"
+                className="font-semibold text-foreground underline underline-offset-4"
+              >
+                aşağıdaki fiyat analizine
+              </Link>{" "}
+              ve sayfanın altındaki benzer ilanlara göz atabilirsin.
+            </div>
+          </div>
+
           <div className="mb-4 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-background to-background p-4">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
