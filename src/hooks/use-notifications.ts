@@ -1,36 +1,44 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/constants/api-routes";
+import {
+  deleteNotificationAction,
+  getNotificationsAction,
+  markAllNotificationsReadAction,
+  markNotificationReadAction,
+} from "@/app/api/notifications/actions";
 import { queryKeys } from "@/lib/query-keys";
-import { apiResponseSchemas } from "@/lib/validators/api-responses";
-import type { Notification } from "@/types";
-
-function getErrorMessage(error: { message?: string } | undefined, fallback: string) {
-  return error?.message?.trim() ? error.message : fallback;
-}
 
 export function useNotifications(userId?: string) {
+  const queryClient = useQueryClient();
+
   const query = useQuery({
     queryKey: [...queryKeys.notifications, userId ?? "guest"] as const,
-    queryFn: async (): Promise<Notification[]> => {
-      const response = await ApiClient.request<{ notifications: Notification[] }>(
-        API_ROUTES.NOTIFICATIONS.BASE,
-        {
-          schema: apiResponseSchemas.notifications,
-        }
-      );
-
-      if (!response.success) {
-        throw new Error(getErrorMessage(response.error, "Bildirimler alınamadı."));
-      }
-
-      return response.data?.notifications ?? [];
-    },
+    queryFn: () => getNotificationsAction(),
     enabled: Boolean(userId),
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: (notificationId: string) => markNotificationReadAction(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+    },
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: () => markAllNotificationsReadAction(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (notificationId: string) => deleteNotificationAction(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+    },
   });
 
   const unreadCount = useMemo(
@@ -45,5 +53,8 @@ export function useNotifications(userId?: string) {
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
+    markRead: markReadMutation.mutate,
+    markAllRead: markAllReadMutation.mutate,
+    deleteNotification: deleteMutation.mutate,
   };
 }

@@ -50,7 +50,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   const { data: messages, isLoading, error, refetch } = useChatMessages(chatId, userId);
 
   const sendMessageMutation = useSendMessage();
-  const markAsReadMutation = useMarkAsRead(chatId);
+  const markAsReadMutation = useMarkAsRead();
   const archiveMutation = useArchiveChat();
   const deleteMessageMutation = useDeleteMessage();
 
@@ -73,13 +73,13 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   useEffect(() => {
     const hasUnread = messages?.some((m) => !m.isRead && m.senderId !== userId);
     if (chatId && userId && hasUnread && !markAsReadMutation.isPending) {
-      markAsReadMutation.mutate();
+      markAsReadMutation.mutate({ chatId, userId });
     }
   }, [chatId, userId, messages, markAsReadMutation]);
 
   const handleArchive = async () => {
     try {
-      await archiveMutation.mutateAsync({ chatId, archive: true });
+      await archiveMutation.mutateAsync({ chatId, userId, archive: true });
       setConfirmState(null);
       if (onBack) onBack();
     } catch (error) {
@@ -90,7 +90,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
 
   const handleDeleteMessage = async (messageId: string) => {
     try {
-      await deleteMessageMutation.mutateAsync({ chatId, messageId });
+      await deleteMessageMutation.mutateAsync({ chatId, messageId, userId });
       setConfirmState(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Mesaj silinemedi.";

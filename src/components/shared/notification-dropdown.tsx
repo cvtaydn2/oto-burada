@@ -1,72 +1,35 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Bell, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/hooks/use-notifications";
-import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/constants/api-routes";
 import { formatDate } from "@/lib/datetime/date-utils";
-import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
-import type { Notification } from "@/types";
-
-function getErrorMessage(error: { message?: string } | undefined, fallback: string) {
-  return error?.message?.trim() ? error.message : fallback;
-}
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, isLoading, isError } = useNotifications(userId);
+  const { notifications, unreadCount, isLoading, isError, markRead, markAllRead } =
+    useNotifications(userId);
 
-  const queryKey = useMemo(
-    () => [...queryKeys.notifications, userId ?? "guest"] as const,
-    [userId]
-  );
-
-  const markReadMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const payload = await ApiClient.request<{ notification: Notification }>(
-        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
-        { method: "PATCH" }
-      );
-
-      if (!payload.success) {
-        throw new Error(getErrorMessage(payload.error, "Bildirim okundu olarak işaretlenemedi"));
-      }
-
-      return payload.data?.notification ?? null;
-    },
-    onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey });
-    },
-  });
-
-  const markAllReadMutation = useMutation({
-    mutationFn: async () => {
-      const payload = await ApiClient.request<{ updated: true }>(API_ROUTES.NOTIFICATIONS.BASE, {
-        method: "PATCH",
-      });
-
-      if (!payload.success) {
-        throw new Error(
-          getErrorMessage(payload.error, "Tüm bildirimler okundu olarak işaretlenemedi")
-        );
-      }
-
-      return payload.data?.updated ?? false;
-    },
-    onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey });
-    },
-  });
+  const handleNotificationClick = (notification: {
+    read: boolean;
+    id: string;
+    href?: string | null;
+  }) => {
+    if (!notification.read && notification.id) {
+      markRead(notification.id);
+    }
+    if (notification.href) {
+      setIsOpen(false);
+      router.push(notification.href);
+    }
+  };
 
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -103,9 +66,8 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
             </div>
             {unreadCount > 0 && (
               <Button
-                onClick={() => markAllReadMutation.mutate()}
-                className="h-8 rounded-lg px-2.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
-                disabled={markAllReadMutation.isPending}
+                onClick={() => markAllRead()}
+                className="h-8 rounded-lg px-2.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700"
               >
                 Hepsini oku
               </Button>
@@ -159,15 +121,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                         ? "bg-background hover:bg-muted/30"
                         : "bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-900/10 dark:hover:bg-indigo-900/20"
                     )}
-                    onClick={() => {
-                      if (!notification.read && notification.id) {
-                        markReadMutation.mutate(notification.id);
-                      }
-                      if (notification.href) {
-                        setIsOpen(false);
-                        router.push(notification.href);
-                      }
-                    }}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">

@@ -1,4 +1,5 @@
 // Marketplace utilities
+
 export function formatListingTitle(make: string, model: string, year?: number): string {
   return `${make} ${model}${year ? ` ${year}` : ""}`.trim();
 }
@@ -21,31 +22,42 @@ export interface DopingDisplayItem {
   expiresAt?: string;
 }
 
+const DOPING_TYPE_TO_SHORT: Record<string, string> = {
+  homepage_showcase: "homepage",
+  urgent: "urgent",
+  top_rank: "top",
+  small_photo: "small_photo",
+  category_showcase: "category",
+  detailed_search_showcase: "detailed_search",
+  bold_frame: "bold",
+  bump: "bump",
+};
+
+const SHORT_TO_DOPING_LABEL: Record<string, string> = {
+  homepage: "Öne Çıkan",
+  urgent: "Acil",
+  top: "Üst Sıra",
+  small_photo: "Küçük Fotoğraf",
+  category: "Kategori Vitrini",
+  detailed_search: "Detaylı Arama",
+  bold: "Kalın Yazı",
+  bump: "Güncelim",
+};
+
 export function getListingDopingDisplayItems(listing: {
   doping?: { type: string; startDate?: string; endDate?: string }[];
 }): DopingDisplayItem[] {
   if (!listing.doping || !Array.isArray(listing.doping)) return [];
-  return listing.doping.map((d) => ({
-    id: d.type || "unknown",
-    name:
-      d.type === "homepage"
-        ? "Öne Çıkan"
-        : d.type === "urgent"
-          ? "Acil"
-          : d.type === "top"
-            ? "Üst Sıra"
-            : "Doping",
-    type: d.type || "standard",
-    label:
-      d.type === "homepage"
-        ? "Öne Çıkan"
-        : d.type === "urgent"
-          ? "Acil"
-          : d.type === "top"
-            ? "Üst Sıra"
-            : "Doping",
-    expiresAt: d.endDate,
-  }));
+  return listing.doping.map((d) => {
+    const shortType = DOPING_TYPE_TO_SHORT[d.type as string] || d.type || "standard";
+    return {
+      id: d.type || "unknown",
+      name: SHORT_TO_DOPING_LABEL[shortType] || "Doping",
+      type: d.type || "standard",
+      label: SHORT_TO_DOPING_LABEL[shortType] || "Doping",
+      expiresAt: d.endDate,
+    };
+  });
 }
 
 export function getSellerTrustUI(seller: {
@@ -150,12 +162,14 @@ export function maskPhoneNumber(phone: string | null | undefined): string {
   return `${str.slice(0, 4)} *** ** **`;
 }
 
-export function getListingDopingStatusTone(listing: { doping?: { type: string }[] }): string {
-  if (!listing.doping?.length) return "neutral";
-  const types = listing.doping.map((d) => d.type);
-  if (types.includes("urgent")) return "rose";
-  if (types.includes("top")) return "amber";
-  if (types.includes("homepage")) return "emerald";
+export function getListingDopingStatusTone(
+  expiresAt?: string | null
+): "neutral" | "expiring" | "single_use" {
+  if (!expiresAt) return "single_use";
+  const expiryDate = new Date(expiresAt);
+  const now = new Date();
+  const hoursUntilExpiry = (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+  if (hoursUntilExpiry < 24) return "expiring";
   return "neutral";
 }
 
@@ -163,17 +177,29 @@ export interface ListingBadgeStates {
   isUrgent: boolean;
   isTop: boolean;
   isFeatured: boolean;
+  isHighlighted: boolean;
 }
+
+const DOPING_TYPE_SHORT_MAP: Record<string, string> = {
+  homepage_showcase: "homepage",
+  urgent: "urgent",
+  top_rank: "top",
+  bold_frame: "bold",
+};
 
 export function getListingBadgeStates(listing: {
   doping?: { type: string }[];
 }): ListingBadgeStates {
-  if (!listing.doping?.length) return { isUrgent: false, isTop: false, isFeatured: false };
-  const types = listing.doping.map((d) => d.type);
+  if (!listing.doping?.length)
+    return { isUrgent: false, isTop: false, isFeatured: false, isHighlighted: false };
+  const types = listing.doping.map((d) => {
+    return DOPING_TYPE_SHORT_MAP[d.type as string] || d.type;
+  });
   return {
     isUrgent: types.includes("urgent"),
     isTop: types.includes("top"),
     isFeatured: types.includes("homepage"),
+    isHighlighted: types.includes("bold"),
   };
 }
 

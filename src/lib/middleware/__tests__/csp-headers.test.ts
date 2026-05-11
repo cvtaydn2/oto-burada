@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { getSecurityHeaders } from "../headers";
 
-describe("CSP Headers — unsafe-eval policy", () => {
+describe("CSP Headers", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -49,5 +49,18 @@ describe("CSP Headers — unsafe-eval policy", () => {
     const headers = getSecurityHeaders("nonce");
     const csp = headers["Content-Security-Policy"];
     expect(csp).toContain("frame-ancestors 'none'");
+  });
+
+  it("uses unsafe-inline instead of nonce for style-src (production)", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const headers = getSecurityHeaders("test-nonce");
+    const csp = headers["Content-Security-Policy"];
+
+    const styleSrcMatch = csp!.match(/style-src ([^;]+)/);
+    expect(styleSrcMatch).not.toBeNull();
+    const styleSrc = styleSrcMatch![1];
+
+    expect(styleSrc).toContain("'unsafe-inline'");
+    expect(styleSrc).not.toContain("'nonce-");
   });
 });

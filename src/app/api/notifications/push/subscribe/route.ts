@@ -56,9 +56,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    logger.notifications.error("Push subscribe endpoint runtime error", err);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    logger.notifications.error("Push subscribe endpoint runtime error", { error: errorMessage });
     return NextResponse.json({ error: "System failure" }, { status: 500 });
   }
 }

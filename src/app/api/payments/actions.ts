@@ -75,7 +75,7 @@ export async function getPaymentDetailsAction(token: string) {
     throw new Error("Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın.");
   }
 
-  const { createSupabaseServerClient } = await import("@/lib/server");
+  const { createSupabaseServerClient } = await import("@/lib/supabase/server");
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase

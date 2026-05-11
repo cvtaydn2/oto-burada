@@ -1,6 +1,5 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Bell,
@@ -8,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   Heart,
+  LoaderCircle,
   MessageCircle,
   ShieldCheck,
 } from "lucide-react";
@@ -18,35 +18,28 @@ import { useAuthUser } from "@/components/shared/auth-provider";
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
-import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/constants/api-routes";
 import { formatDate } from "@/lib/datetime/date-utils";
-import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
-import type { Notification } from "@/types";
 
 import { usePushSubscription } from "../hooks/use-push-subscription";
 
 export function NotificationCenter() {
   const { userId, isAuthenticated } = useAuthUser();
-  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 
   const { isSupported, isSubscribed, isPending, subscribe } = usePushSubscription();
 
-  // Only fetch if authenticated
-  const { notifications, unreadCount, isLoading, refetch } = useNotifications(userId || undefined);
+  const { notifications, unreadCount, isLoading, refetch, markRead } = useNotifications(
+    userId || undefined
+  );
 
-  // Setup realtime listeners
   useRealtimeNotifications({
     userId: userId || "",
     onNotification: () => {
-      // Trigger immediate refetch on new notification
       void refetch();
     },
   });
 
-  // Setup click-outside to close
   useEffect(() => {
     if (!isOpen) return;
 
@@ -59,20 +52,9 @@ export function NotificationCenter() {
     return null;
   }
 
-  const handleMarkAsRead = async (e: React.MouseEvent, id: string) => {
+  const handleMarkAsRead = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    try {
-      const response = await ApiClient.request<{ notification: Notification }>(
-        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
-        { method: "PATCH" }
-      );
-      if (response.success) {
-        // Invalidate notifications queries to refresh state across views
-        void queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
-      }
-    } catch (err) {
-      console.error("Failed to mark notification as read:", err);
-    }
+    markRead(id);
   };
 
   const getIconForType = (type: string) => {
@@ -90,7 +72,6 @@ export function NotificationCenter() {
     }
   };
 
-  // Limit to latest 5 for dropdown
   const latestNotifications = notifications.slice(0, 5);
 
   return (
@@ -137,7 +118,7 @@ export function NotificationCenter() {
           <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
             {isLoading ? (
               <div className="p-6 text-center flex flex-col items-center justify-center gap-2">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+                <LoaderCircle className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
                 <span className="text-xs text-muted-foreground">Yükleniyor...</span>
               </div>
             ) : (

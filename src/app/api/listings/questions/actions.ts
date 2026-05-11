@@ -52,7 +52,7 @@ export async function askQuestionAction(listingId: string, question: string) {
         message: `"${listing.title}" ilanın için yeni bir soru soruldu: "${question.substring(0, 50)}${question.length > 50 ? "..." : ""}"`,
         href: `/listing/${listing.slug}#sorular`,
       });
-    } catch (notifyError) {
+    } catch (notifyError: unknown) {
       console.error("Failed to send seller notification:", notifyError);
     }
   }
@@ -72,7 +72,23 @@ export async function answerQuestionAction(questionId: string, answer: string) {
   } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Unauthorized" };
 
-  // 1. Update the question with answer
+  // 1. Fetch question to verify ownership
+  const { data: existingQuestion, error: fetchError } = await supabase
+    .from("listing_questions")
+    .select("*, listings(seller_id)")
+    .eq("id", questionId)
+    .single();
+
+  if (fetchError || !existingQuestion) {
+    return { success: false, error: "Soru bulunamadı." };
+  }
+
+  const existingListing = (existingQuestion as unknown as QuestionWithListings).listings;
+  if (existingListing?.seller_id !== user.id) {
+    return { success: false, error: "Bu soruyu yanıtlamaya yetkiniz yok." };
+  }
+
+  // 2. Update the question with answer
   const { data: questionData, error: questionError } = await supabase
     .from("listing_questions")
     .update({
@@ -88,7 +104,7 @@ export async function answerQuestionAction(questionId: string, answer: string) {
     return { success: false, error: questionError.message };
   }
 
-  // 2. Notify the asker
+  // 3. Notify the asker
   if (questionData && questionData.user_id) {
     try {
       const listing = (questionData as unknown as QuestionWithListings).listings;
@@ -99,7 +115,7 @@ export async function answerQuestionAction(questionId: string, answer: string) {
         message: `"${listing?.title}" ilanı için sorduğunuz soru cevaplandı.`,
         href: `/listing/${listing?.slug}#sorular`,
       });
-    } catch (notifyError) {
+    } catch (notifyError: unknown) {
       console.error("Failed to send asker notification:", notifyError);
     }
   }

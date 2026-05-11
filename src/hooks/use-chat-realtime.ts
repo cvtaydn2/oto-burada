@@ -33,7 +33,7 @@ export function useChatRealtime(options?: UseChatRealtimeOptions) {
     }
 
     const messageChannel = supabase
-      .channel(`chat-messages:${chatId}`)
+      .channel(`chat-messages:${chatId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
@@ -49,7 +49,7 @@ export function useChatRealtime(options?: UseChatRealtimeOptions) {
       .subscribe();
 
     const typingChannel = supabase
-      .channel(`chat-typing:${chatId}`)
+      .channel(`chat-typing:${chatId}-${crypto.randomUUID()}`)
       .on("broadcast", { event: "typing" }, ({ payload }: { payload: TypingPayload }) => {
         if (!payload?.userId || payload.userId === currentUserId) {
           return;

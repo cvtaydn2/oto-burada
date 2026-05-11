@@ -52,5 +52,6 @@ export const API_ROUTES = {
     DETAIL: (id: string) => `/api/chats/${id}`,
     MESSAGES: (id: string) => `/api/chats/${id}/messages`,
     MARK_READ: (id: string) => `/api/chats/${id}/read`,
+    ARCHIVE: (id: string) => `/api/chats/${id}/archive`,
   },
 } as const;

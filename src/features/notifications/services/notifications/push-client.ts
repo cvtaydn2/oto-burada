@@ -45,26 +45,24 @@ export async function sendPushNotification(
     });
 
     return { success: true };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    // HTTP 410 (Gone) or 404 means the client revoked consent or subscription expired.
-    // System should delete this stale subscription record.
-    const isExpired = err.statusCode === 410 || err.statusCode === 404;
+  } catch (err: unknown) {
+    const error = err as { statusCode?: number; message?: string };
+    const isExpired = error.statusCode === 410 || error.statusCode === 404;
 
     if (isExpired) {
       logger.notifications.info(
-        `Push subscription has expired (HTTP ${err.statusCode}). Marking as stale.`
+        `Push subscription has expired (HTTP ${error.statusCode}). Marking as stale.`
       );
     } else {
       logger.notifications.error(
-        `Critical failure dispatching web push to endpoint: ${err.message}`,
+        `Critical failure dispatching web push to endpoint: ${error.message}`,
         err
       );
     }
 
     return {
       success: false,
-      error: err.message || "Delivery failed",
+      error: error.message || "Delivery failed",
       gone: isExpired,
     };
   }

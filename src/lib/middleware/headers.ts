@@ -34,11 +34,12 @@ export function getSecurityHeaders(nonce: string) {
   // Nonce-first CSP in both production and development
   scriptSrc.push(`'nonce-${nonce}'`);
 
-  // Style support for third party libraries requires unsafe-inline
+  // Style-src intentionally does NOT include a nonce.
+  // CSP spec: when nonce is present, 'unsafe-inline' is ignored.
+  // Since framer-motion, embla-carousel and other libs inject inline styles
+  // without nonce support, we use 'unsafe-inline' instead of nonce for style-src.
+  // Script-src retains the nonce for security.
   styleSrc.push("'unsafe-inline'");
-  if (isProduction) {
-    styleSrc.push(`'nonce-${nonce}'`);
-  }
 
   if (!isProduction) {
     // Keep only what Next.js HMR needs in development

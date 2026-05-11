@@ -1,8 +1,8 @@
 /**
- * Chat Service Entry Facade
+ * Chat Service Entry Point
  *
- * Aggregates and exports modular layers for modern service pattern compliance.
- * Retains backward compatibility with existing consumers of @/features/chat/services/chat-logic.
+ * Re-exports from chat-actions for backward compatibility.
+ * New code should import directly from @/features/chat/services/chat-actions.
  */
 
 export {

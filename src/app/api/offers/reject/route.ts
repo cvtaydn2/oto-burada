@@ -7,7 +7,11 @@ import { logger } from "@/lib/logger";
 import { withUserAndCsrf } from "@/lib/security";
 
 export async function POST(request: Request) {
-  const security = await withUserAndCsrf(request);
+  const security = await withUserAndCsrf(request, {
+    userRateLimit: { limit: 10, windowMs: 60000 },
+    ipRateLimit: { limit: 20, windowMs: 60000 },
+    rateLimitKey: "offers:reject",
+  });
   if (!security.ok) return security.response;
   const user = security.user!;
 

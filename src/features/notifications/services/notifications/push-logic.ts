@@ -98,10 +98,10 @@ export async function triggerPushNotificationForUser(
       deliveredCount: successCount,
       prunedCount: staleSubscriptionIds.length,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     logger.notifications.error(
-      `Fatal error during push processing cascade for user ${userId}: ${err.message}`
+      `Fatal error during push processing cascade for user ${userId}: ${errorMessage}`
     );
     return { success: false, error: "Processing exception" };
   }

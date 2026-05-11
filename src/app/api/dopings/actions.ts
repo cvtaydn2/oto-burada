@@ -17,16 +17,32 @@ import {
 /**
  * Apply a doping package to a listing
  *
- * @param params - Doping application parameters
+ * @param listingId - Listing ID
+ * @param packageId - Doping package ID
+ * @param paymentId - Payment ID from Iyzico
  * @returns Purchase ID and expiration date
  */
 export async function applyDopingAction(params: {
-  userId: string;
   listingId: string;
   packageId: string;
   paymentId: string;
 }) {
-  return applyDopingPackage(params);
+  const supabase = await import("@/lib/supabase/server").then((m) =>
+    m.createSupabaseServerClient()
+  );
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Doping işlemi için giriş yapmalısınız.");
+  }
+
+  return applyDopingPackage({
+    userId: user.id,
+    listingId: params.listingId,
+    packageId: params.packageId,
+    paymentId: params.paymentId,
+  });
 }
 
 /**

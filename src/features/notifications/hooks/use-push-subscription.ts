@@ -84,10 +84,10 @@ export function usePushSubscription() {
 
       setIsSubscribed(true);
       toast.success("Web bildirimleri başarıyla aktif edildi!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error("[Push] Subscription error:", err);
-      toast.error(err.message || "Bildirim kaydı sırasında hata.");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("[Push] Subscription error:", errorMessage);
+      toast.error(errorMessage || "Bildirim kaydı sırasında hata.");
     } finally {
       setIsPending(false);
     }

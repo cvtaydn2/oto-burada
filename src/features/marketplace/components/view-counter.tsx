@@ -16,7 +16,7 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
     const supabase = createSupabaseBrowserClient();
     // channelRef ile cleanup garantisi — setup() async olsa bile
     // unmount öncesi oluşturulan channel temizlenir
-    const channelName = `lv_${listingId.slice(0, 8)}`;
+    const channelName = `lv_${listingId.slice(0, 8)}_${crypto.randomUUID().slice(0, 8)}`;
     let mounted = true;
 
     const channel = supabase

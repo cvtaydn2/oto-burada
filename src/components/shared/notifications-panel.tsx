@@ -6,7 +6,6 @@ import {
   Check,
   CheckCircle2,
   Heart,
-  LoaderCircle,
   MessageCircle,
   ShieldCheck,
   Trash2,
@@ -16,12 +15,10 @@ import { useMemo, useState } from "react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { Button } from "@/components/ui/button";
+import { useNotifications } from "@/hooks/use-notifications";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
-import { ApiClient } from "@/lib/api/client";
-import { API_ROUTES } from "@/lib/constants/api-routes";
 import { formatDate } from "@/lib/datetime/date-utils";
 import { cn } from "@/lib/utils";
-import type { Notification } from "@/types";
 
 interface NotificationItem {
   createdAt: string;
@@ -37,16 +34,17 @@ interface NotificationsPanelProps {
   initialNotifications: NotificationItem[];
 }
 
-function getErrorMessage(error: { message?: string } | undefined, fallback: string) {
-  return error?.message?.trim() ? error.message : fallback;
-}
-
 export function NotificationsPanel({ initialNotifications }: NotificationsPanelProps) {
   const { userId } = useAuthUser();
   const [items, setItems] = useState(initialNotifications);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const [activeAction, setActiveAction] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const {
+    unreadCount,
+    markAllRead,
+    markRead,
+    deleteNotification: removeNotification,
+  } = useNotifications(userId || undefined);
 
   useRealtimeNotifications({
     userId: userId || "",
@@ -78,7 +76,21 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
     () => (showUnreadOnly ? items.filter((item) => !item.read) : items),
     [items, showUnreadOnly]
   );
-  const unreadCount = items.filter((item) => !item.read).length;
+
+  const handleMarkAllAsRead = () => {
+    markAllRead();
+    setItems((current) => current.map((item) => ({ ...item, read: true })));
+  };
+
+  const handleMarkSingleAsRead = (id: string) => {
+    markRead(id);
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, read: true } : item)));
+  };
+
+  const handleDeleteNotification = (id: string) => {
+    removeNotification(id);
+    setItems((current) => current.filter((item) => item.id !== id));
+  };
 
   const getIconForType = (type: NotificationItem["type"]) => {
     switch (type) {
@@ -112,80 +124,6 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
     }
   };
 
-  const markAllAsRead = async () => {
-    setActiveAction("mark-all");
-    setErrorMessage(null);
-
-    try {
-      const response = await ApiClient.request<{ updated: true }>(API_ROUTES.NOTIFICATIONS.BASE, {
-        method: "PATCH",
-      });
-
-      if (!response.success) {
-        setErrorMessage(getErrorMessage(response.error, "Bildirimler güncellenemedi."));
-        return;
-      }
-
-      setItems((current) => current.map((item) => ({ ...item, read: true })));
-    } catch {
-      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
-    } finally {
-      setActiveAction(null);
-    }
-  };
-
-  const markSingleAsRead = async (id: string) => {
-    setActiveAction(`read:${id}`);
-    setErrorMessage(null);
-
-    try {
-      const response = await ApiClient.request<{ notification: Notification }>(
-        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
-        {
-          method: "PATCH",
-        }
-      );
-
-      if (!response.success) {
-        setErrorMessage(getErrorMessage(response.error, "Bildirim güncellenemedi."));
-        return;
-      }
-
-      setItems((current) =>
-        current.map((item) => (item.id === id ? { ...item, read: true } : item))
-      );
-    } catch {
-      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
-    } finally {
-      setActiveAction(null);
-    }
-  };
-
-  const deleteNotification = async (id: string) => {
-    setActiveAction(`delete:${id}`);
-    setErrorMessage(null);
-
-    try {
-      const response = await ApiClient.request<{ deleted: true }>(
-        `${API_ROUTES.NOTIFICATIONS.BASE}/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.success) {
-        setErrorMessage(getErrorMessage(response.error, "Bildirim silinemedi."));
-        return;
-      }
-
-      setItems((current) => current.filter((item) => item.id !== id));
-    } catch {
-      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
-    } finally {
-      setActiveAction(null);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <section className="flex flex-col gap-4 rounded-3xl border border-border/60 bg-card p-5 shadow-sm sm:p-7 lg:flex-row lg:items-center lg:justify-between">
@@ -210,32 +148,20 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
             {showUnreadOnly ? "Tüm bildirimler" : "Sadece okunmamışlar"}
           </Button>
           <Button
-            onClick={() => void markAllAsRead()}
-            disabled={activeAction === "mark-all" || unreadCount === 0}
+            onClick={() => void handleMarkAllAsRead()}
+            disabled={unreadCount === 0}
             className="flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 text-sm font-medium text-white transition-all hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {activeAction === "mark-all" ? (
-              <LoaderCircle size={16} className="animate-spin" />
-            ) : (
-              <Check size={16} />
-            )}
+            <Check size={16} />
             Tümünü okundu yap
           </Button>
         </div>
       </section>
 
-      {errorMessage ? (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-          {errorMessage}
-        </p>
-      ) : null}
-
       <div className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
         {filteredItems.length > 0 ? (
           filteredItems.map((notif, idx) => {
             const isLast = idx === filteredItems.length - 1;
-            const isReading = activeAction === `read:${notif.id}`;
-            const isDeleting = activeAction === `delete:${notif.id}`;
 
             return (
               <div
@@ -290,35 +216,21 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                   {!notif.read ? (
                     <Button
                       type="button"
-                      onClick={() => void markSingleAsRead(notif.id)}
-                      disabled={isReading || isDeleting}
+                      onClick={() => void handleMarkSingleAsRead(notif.id)}
                       className="h-10 rounded-xl px-3 text-muted-foreground/70 transition-all hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
                       title="Okundu olarak işaretle"
                     >
-                      {isReading ? (
-                        <LoaderCircle size={16} className="animate-spin" />
-                      ) : (
-                        <>
-                          <Check size={16} />
-                          <span className="ml-2 text-xs font-medium">Okundu</span>
-                        </>
-                      )}
+                      <Check size={16} />
+                      <span className="ml-2 text-xs font-medium">Okundu</span>
                     </Button>
                   ) : null}
                   <Button
-                    onClick={() => void deleteNotification(notif.id)}
-                    disabled={isReading || isDeleting}
+                    onClick={() => void handleDeleteNotification(notif.id)}
                     className="h-10 rounded-xl px-3 text-muted-foreground/70 transition-all hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
                     title="Sil"
                   >
-                    {isDeleting ? (
-                      <LoaderCircle size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        <Trash2 size={16} />
-                        <span className="ml-2 text-xs font-medium">Sil</span>
-                      </>
-                    )}
+                    <Trash2 size={16} />
+                    <span className="ml-2 text-xs font-medium">Sil</span>
                   </Button>
                 </div>
               </div>
