@@ -3675,11 +3675,35 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "verification_requested_at" timestamp with time zone,
     "is_deleted" boolean DEFAULT false NOT NULL,
     "anonymized_at" timestamp with time zone,
+    "is_phone_verified" boolean DEFAULT false NOT NULL,
+    "phone_verified_at" timestamp with time zone,
     CONSTRAINT "balance_no_negative" CHECK (("balance_credits" >= 0))
 );
 
 
 ALTER TABLE "public"."profiles" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."phone_verifications" (
+    "id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+    "user_id" uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    "phone" text NOT NULL,
+    "code" character varying(6) NOT NULL,
+    "expires_at" timestamp with time zone NOT NULL,
+    "verified_at" timestamp with time zone,
+    "attempts" integer DEFAULT 0 NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+
+ALTER TABLE "public"."phone_verifications" OWNER TO "postgres";
+
+CREATE INDEX IF NOT EXISTS "phone_verifications_user_id_idx" ON "public"."phone_verifications" USING btree ("user_id");
+CREATE INDEX IF NOT EXISTS "phone_verifications_expires_at_idx" ON "public"."phone_verifications" USING btree ("expires_at");
+
+CREATE OR REPLACE TRIGGER "set_phone_verifications_timestamp" BEFORE UPDATE ON "public"."phone_verifications" FOR EACH ROW EXECUTE FUNCTION "public"."set_updated_at"();
+
+ALTER TABLE "public"."phone_verifications" ENABLE ROW LEVEL SECURITY;
 
 
 COMMENT ON COLUMN "public"."profiles"."business_slug" IS 'Galeri URL slug (ör: /galeri/oto-burada)';

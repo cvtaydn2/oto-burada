@@ -751,6 +751,7 @@ export type Database = {
         Row: {
           created_at: string;
           expires_at: string | null;
+          expiry_warning_sent: boolean | null;
           id: string;
           listing_id: string;
           package_id: string;
@@ -762,6 +763,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           expires_at?: string | null;
+          expiry_warning_sent?: boolean | null;
           id?: string;
           listing_id: string;
           package_id: string;
@@ -773,6 +775,7 @@ export type Database = {
         Update: {
           created_at?: string;
           expires_at?: string | null;
+          expiry_warning_sent?: boolean | null;
           id?: string;
           listing_id?: string;
           package_id?: string;
@@ -2000,6 +2003,42 @@ export type Database = {
           },
         ];
       };
+      phone_verifications: {
+        Row: {
+          attempts: number;
+          code: string;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          phone: string;
+          updated_at: string;
+          user_id: string;
+          verified_at: string | null;
+        };
+        Insert: {
+          attempts?: number;
+          code: string;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          phone: string;
+          updated_at?: string;
+          user_id: string;
+          verified_at?: string | null;
+        };
+        Update: {
+          attempts?: number;
+          code?: string;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          phone?: string;
+          updated_at?: string;
+          user_id?: string;
+          verified_at?: string | null;
+        };
+        Relationships: [];
+      };
       platform_settings: {
         Row: {
           key: string;
@@ -2072,10 +2111,12 @@ export type Database = {
           identity_number: string | null;
           is_banned: boolean;
           is_deleted: boolean;
+          is_phone_verified: boolean;
           is_verified: boolean;
           is_wallet_verified: boolean | null;
           last_analytics_update: string | null;
           phone: string;
+          phone_verified_at: string | null;
           role: Database["public"]["Enums"]["user_role"];
           storage_usage_bytes: number | null;
           subscription_synced_at: string | null;
@@ -2118,10 +2159,12 @@ export type Database = {
           identity_number?: string | null;
           is_banned?: boolean;
           is_deleted?: boolean;
+          is_phone_verified?: boolean;
           is_verified?: boolean;
           is_wallet_verified?: boolean | null;
           last_analytics_update?: string | null;
           phone?: string;
+          phone_verified_at?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
           storage_usage_bytes?: number | null;
           subscription_synced_at?: string | null;
@@ -2164,10 +2207,12 @@ export type Database = {
           identity_number?: string | null;
           is_banned?: boolean;
           is_deleted?: boolean;
+          is_phone_verified?: boolean;
           is_verified?: boolean;
           is_wallet_verified?: boolean | null;
           last_analytics_update?: string | null;
           phone?: string;
+          phone_verified_at?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
           storage_usage_bytes?: number | null;
           subscription_synced_at?: string | null;
@@ -2203,6 +2248,36 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      push_subscriptions: {
+        Row: {
+          auth_token: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          p256dh: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          auth_token: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          p256dh: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          auth_token?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       realized_sales: {
         Row: {
@@ -3084,6 +3159,14 @@ export type Database = {
         Args: { p_end_date: string; p_start_date: string };
         Returns: {
           total_amount: number;
+        }[];
+      };
+      get_seller_daily_activity: {
+        Args: { p_days?: number; p_seller_id: string };
+        Returns: {
+          activity_date: string;
+          contacts: number;
+          views: number;
         }[];
       };
       get_user_listing_stats: {

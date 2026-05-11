@@ -1,25 +1,26 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
-## 121. Task E3 — Bildirim ve Gerçek Zamanlı Güncellemeler (Altyapı ve Visual Entegrasyon)
+## 121. Task E3 — Bildirim ve Gerçek Zamanlı Güncellemeler (Full Production Stack)
 
 **Date**: 2026-05-11
-**Status**: ✅ COMPLETED (Phase 1: Core System & Reminders)
-**Scope**: Activated robust, realtime global notifications by modernizing the standalone notification center and integrating preemptive expiration tracking within the master service routines.
+**Status**: ✅ COMPLETED
+**Scope**: Architected and fully deployed the highly available browser Push Notification system enabling background background dispatching while satisfying offline execution constraints via direct Service Worker interop.
 
-### 121.1 Visual Activation & Global Mounting
-- Refactored [`notification-center.tsx`](src/features/notifications/components/notification-center.tsx) replacing static state placeholders with dynamic TanStack `useNotifications` react hooks bound to real API infrastructure.
-- Injected realtime subscription handlers tracking instant Postgres channel insert events to invalid cache and render red unread status badges.
-- Mounted system visually into [`site-header-auth.tsx`](src/components/layout/site-header-auth.tsx) supplying user feedback triggers consistently across both mobile overlays and desktop navigation frames.
+### 121.1 Real-Time Web Push Architecture Finalized
+- Engineered zero-trust backend queuing utilizing established `fulfillment_jobs` channels via [`push-logic.ts`](src/features/notifications/services/notifications/push-logic.ts), separating cryptographic network I/O from UI request lifecycles.
+- Integrated `web-push` core wrapper encapsulating VAPID cryptography and secure HTTP delivery negotiations directly to active user subscription pools.
+- Hardened central `/api/cron/process-fulfillment-jobs` handling `"notification_send"` tokens ensuring asynchronous parallel fulfillment of enqueued browser payloads.
+- Leveraged RLS controls on persistent `push_subscriptions` repository securing multi-device endpoints with atomic update locks during client registration handshakes.
 
-### 121.2 Strategic Expiration Warnings System
-- Deployed migration `0138_doping_expiry_warning_flag.sql` attaching persistence layer safeguards to `doping_purchases` avoiding redundant notification delivery loops.
-- Expanded `warnExpiringDopings()` domain service inside [`doping-logic.ts`](src/features/payments/services/payments/doping-logic.ts) that performs deterministic lookaheads targeting next-24-hour expiration events.
-- Consolidated logic insertion into central [`src/app/api/cron/main/route.ts`](src/app/api/cron/main/route.ts) conserving Vercel Free-Tier daily routine invocations while enforcing absolute operational coverage.
+### 121.2 Front-End Client Activation & Lifecycle Hooking
+- Patched application root `sw.js` Service Worker injecting low-level event listeners for raw OS interop (`push`, `notificationclick`) enabling deep-linking from closed browsers.
+- Authored robust `usePushSubscription` logic handling progressive web permission negotation and automated registry synchronization safely upon explicit user intent.
+- Mounted reactive opt-in prompt within [`notification-center.tsx`](src/features/notifications/components/notification-center.tsx) dynamically guiding authenticated consumers toward actionable browser permission granting.
 
-### 121.3 Security & Resiliency Standardized
-- Audited preexisting `notification-preferences-panel.tsx` screens and API preferences endpoints ensuring users govern global communications payloads immediately upon launch.
-- Managed static typing integrity by resolving dynamic SQL column inclusion using targeted generic casts after executing critical `src/types/supabase.ts` recovery cleanup cycle.
-- Confirmed fully operative builds via localized pre-commit `npm run typecheck`.
+### 121.3 Strategic Expiration Warnings & System Unification
+- Expanded preemptive expiration tracking within [`doping-logic.ts`](src/features/payments/services/payments/doping-logic.ts) executing deterministic lookaheads against imminent expiration events.
+- Injected seamless routing interception inside global `notification-records.ts` ensuring standard database write cycles instantly cascade automatic push hooks without requiring manual callsite rewrites.
+- Successfully secured Git remote parity after executing full TypeScript static tree analysis satisfying restrictive pre-commit ESLint rules across full pipeline.
 
 ## 120. Task E2 — Full-Stack Analytics System Re-Integration
 
@@ -141,6 +142,19 @@
 - TypeScript validation
 - Lint validation
 - Privacy compliance audit
+
+## [Phase F: Telefon Doğrulama ve İletişim](#phase-f-telefon-doğrulama-ve-iletişim)
+
+### Task F1: Telefon Doğrulama Altyapısı ve Veritabanı Katmanı
+- [x] `0140_phone_verification_infrastructure.sql` migration yazıldı ve remote database'e uygulandı (MCP tools).
+- [x] `database/schema.snapshot.sql` güncellendi (profiles ve phone_verifications eklendi).
+- [x] `phone_verifications` tablosunda veri güvenliği sağlandı (sadece admin yetkisiyle kod okuma).
+- [x] `sms-client.ts` ile zero-cost fallback abstraction oluşturuldu.
+- [x] `phone-verification-records.ts` ve `phone-verification-logic.ts` modülleri feature bazlı dizine yazıldı.
+- [x] `src/types/supabase.ts` generate edildi, `npm run typecheck` başarıyla tamamlandı.
+
+**Durum:** Tamamlandı (11 Mayıs 2026)
+**Gelecek Adım:** Task F2: Telefon Doğrulama Server Action'ları ve Form Entegrasyonu.
 
 ---
 

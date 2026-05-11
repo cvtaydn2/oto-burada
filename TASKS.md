@@ -255,3 +255,21 @@ MVP teslimi aşağıdaki koşullar sürdürülebilir biçimde sağlandığında 
 - Push notification free-tier'da çalışır
 
 **Status**: ✅ COMPLETED (2026-05-11)
+
+---
+
+## Phase F — Phone Verification and Communications
+
+**Not**: Post-MVP telefon doğrulama, SMS bildirimleri ve push kanalları zenginleştirmesi.
+
+### Task F1 — Telefon Doğrulama Altyapısı ve Veritabanı Katmanı
+
+- `profiles` tablosuna `is_phone_verified` ve `phone_verified_at` eklenmesi
+- OTP doğrulama kodları için veritabanı tablosu veya Redis entegrasyonu (TTL desteği ile)
+- SMS gönderim abstraction katmanı (Zero-cost uyumlu fallback/mock dahil)
+
+##### Acceptance Criteria
+
+- Yeni veri modeli hatasız uygulanmıştır (Migration ✅)
+- RLS kuralları doğrulanmıştır (Security ✅)
+- SMS provider interfacedir ve mocking destekler
