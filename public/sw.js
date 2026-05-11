@@ -1,5 +1,5 @@
 const CACHE_NAME = "otoburada-v1";
-const STATIC_ASSETS = ["/", "/manifest.webmanifest", "/manifest.json"];
+const STATIC_ASSETS = ["/", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

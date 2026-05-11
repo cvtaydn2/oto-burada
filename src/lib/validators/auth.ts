@@ -18,6 +18,7 @@ export const profileSchema = z.object({
   city: trimmedRequiredString,
   avatarUrl: z.string().trim().url(invalidMessage).nullable().optional(),
   emailVerified: z.boolean(),
+  isPhoneVerified: z.boolean().optional(),
   isVerified: z.boolean(),
   isBanned: z.boolean().optional(),
   banReason: z.string().nullable().optional(),

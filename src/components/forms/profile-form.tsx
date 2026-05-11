@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmailVerificationDialog } from "@/features/auth/components/email-verification-dialog";
+import { PhoneVerificationDialog } from "@/features/phone-verification/components/phone-verification-dialog";
 import {
   type ProfileUpdateInput,
   profileUpdateInputSchema,
@@ -35,17 +36,22 @@ interface ProfileFormProps {
   initialValues: ProfileUpdateInput;
   cityOptions: string[];
   isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
 }
 
 export function ProfileForm({
   initialValues,
   cityOptions,
   isEmailVerified = false,
+  isPhoneVerified = false,
 }: ProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
   const [isVerifiedLocally, setIsVerifiedLocally] = useState(isEmailVerified);
+
+  const [isPhoneVerifyDialogOpen, setIsPhoneVerifyDialogOpen] = useState(false);
+  const [isPhoneVerifiedLocally, setIsPhoneVerifiedLocally] = useState(isPhoneVerified);
 
   const form = useForm<ProfileUpdateInput>({
     resolver: zodResolver(profileUpdateInputSchema),
@@ -108,9 +114,21 @@ export function ProfileForm({
               <AlertCircle className="size-4 text-amber-500" />
             )}
           </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {isVerifiedLocally ? "Doğrulandı" : "Doğrulanmadı"}
-          </p>
+          <div className="mt-2 flex items-center justify-between">
+            <p className="text-sm font-semibold text-foreground">
+              {isVerifiedLocally ? "Doğrulandı" : "Doğrulanmadı"}
+            </p>
+            {!isVerifiedLocally && (
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setIsVerifyDialogOpen(true)}
+                className="h-auto p-0 text-[11px] font-bold text-primary hover:no-underline"
+              >
+                Doğrula
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
@@ -176,15 +194,22 @@ export function ProfileForm({
                 render={({ field }) => (
                   <FormItem>
                     <div className="mb-1 flex items-center justify-between">
-                      <FormLabel className="text-sm font-medium text-foreground">Telefon</FormLabel>
-                      {!isVerifiedLocally && (
+                      <div className="flex items-center gap-1.5">
+                        <FormLabel className="text-sm font-medium text-foreground">
+                          Telefon
+                        </FormLabel>
+                        {isPhoneVerifiedLocally && (
+                          <CheckCircle2 className="size-3 text-emerald-500" />
+                        )}
+                      </div>
+                      {!isPhoneVerifiedLocally && (
                         <Button
                           type="button"
                           variant="link"
-                          onClick={() => setIsVerifyDialogOpen(true)}
+                          onClick={() => setIsPhoneVerifyDialogOpen(true)}
                           className="h-auto p-0 text-xs font-bold text-primary hover:no-underline"
                         >
-                          E-posta Doğrula
+                          Telefon Doğrula
                         </Button>
                       )}
                     </div>
@@ -306,6 +331,18 @@ export function ProfileForm({
         onSuccess={() => {
           setIsVerifiedLocally(true);
           setIsVerifyDialogOpen(false);
+          router.refresh();
+        }}
+      />
+
+      <PhoneVerificationDialog
+        isOpen={isPhoneVerifyDialogOpen}
+        onOpenChange={setIsPhoneVerifyDialogOpen}
+        phoneNumber={watchedValues.phone || ""}
+        onSuccess={() => {
+          setIsPhoneVerifiedLocally(true);
+          setIsPhoneVerifyDialogOpen(false);
+          router.refresh();
         }}
       />
     </>

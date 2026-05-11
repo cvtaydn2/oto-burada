@@ -27,6 +27,7 @@ interface ProfileRow {
   user_type: "individual" | "professional" | "staff" | "corporate";
   balance_credits: number;
   is_verified: boolean;
+  is_phone_verified: boolean;
   updated_at: string;
   verified_business: boolean | null;
   website_url: string | null;
@@ -52,6 +53,7 @@ function getVerificationState(user: User | null | undefined) {
     emailVerified: Boolean(
       appMetadata.email_verified ?? user?.email_confirmed_at ?? user?.confirmed_at
     ),
+    phoneVerified: Boolean(appMetadata.phone_verified ?? user?.phone_confirmed_at),
   };
 }
 
@@ -62,6 +64,7 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
     city: row.city || "",
     createdAt: row.created_at,
     emailVerified: verificationState.emailVerified,
+    isPhoneVerified: row.is_phone_verified || verificationState.phoneVerified,
     fullName: row.full_name,
     id: row.id,
     isVerified: row.is_verified,
@@ -94,6 +97,7 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
     city: row.city || "",
     avatarUrl: row.avatar_url,
     emailVerified: verificationState.emailVerified,
+    isPhoneVerified: row.is_phone_verified || verificationState.phoneVerified,
     role: row.role || "user",
     isVerified: row.is_verified ?? false,
     isBanned: row.is_banned ?? false,
@@ -159,6 +163,7 @@ export function buildProfileFromAuthUser(user: User): Profile {
     phone: userMetadata.phone ?? "",
     city: userMetadata.city ?? "",
     emailVerified: verificationState.emailVerified,
+    isPhoneVerified: verificationState.phoneVerified,
     isVerified: false,
     role: resolvedRole as Profile["role"],
     userType: "individual" as const,
@@ -263,7 +268,7 @@ export async function getStoredProfileById(profileId: string) {
   const { data, error } = await admin
     .from("profiles")
     .select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at"
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_phone_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at"
     )
     .eq("id", profileId)
     .maybeSingle<ProfileRow>();
@@ -294,7 +299,7 @@ export async function getUserProfile(userId: string, authUser?: User | null) {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at"
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_phone_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at"
     )
     .eq("id", userId)
     .maybeSingle<ProfileRow>();
@@ -545,7 +550,7 @@ export async function getPublicSellerProfile(sellerId: string): Promise<Profile 
     .from("profiles")
     .select(
       `id, full_name, phone, city, avatar_url, role, user_type,
-       balance_credits, is_verified, is_banned, ban_reason,
+       balance_credits, is_verified, is_phone_verified, is_banned, ban_reason,
        business_name, business_logo_url, business_slug, business_description,
        website_url, verified_business, verification_status,
        trust_score, created_at, updated_at`
@@ -566,6 +571,7 @@ export async function getPublicSellerProfile(sellerId: string): Promise<Profile 
     city: data.city,
     avatarUrl: data.avatar_url,
     emailVerified: false,
+    isPhoneVerified: data.is_phone_verified ?? false,
     isVerified: data.is_verified,
     role: data.role as Profile["role"],
     userType: data.user_type as Profile["userType"],

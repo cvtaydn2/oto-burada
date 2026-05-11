@@ -93,8 +93,7 @@ export async function DELETE(req: Request) {
     }
 
     return NextResponse.json({ success: true });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (_err: any) {
+  } catch {
     return NextResponse.json({ error: "Failed to remove" }, { status: 500 });
   }
 }

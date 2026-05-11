@@ -34,10 +34,10 @@ export function getSecurityHeaders(nonce: string) {
   // Nonce-first CSP in both production and development
   scriptSrc.push(`'nonce-${nonce}'`);
 
+  // Style support for third party libraries requires unsafe-inline
+  styleSrc.push("'unsafe-inline'");
   if (isProduction) {
     styleSrc.push(`'nonce-${nonce}'`);
-  } else {
-    styleSrc.push("'unsafe-inline'");
   }
 
   if (!isProduction) {

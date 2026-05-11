@@ -72,6 +72,7 @@ export default async function DashboardProfilePage() {
             </div>
             <div className="grid gap-2">
               <VerificationItem label="E-posta" isVerified={profile.emailVerified} />
+              <VerificationItem label="Telefon" isVerified={profile.isPhoneVerified} />
               <VerificationItem label="İşletme Profili" profile={profile} />
               <VerificationItem label="Kimlik (Yakında)" isVerified={false} isPending={true} />
             </div>
@@ -140,6 +141,7 @@ export default async function DashboardProfilePage() {
               }}
               cityOptions={cityOptions}
               isEmailVerified={profile.emailVerified}
+              isPhoneVerified={profile.isPhoneVerified}
             />
           </div>
 

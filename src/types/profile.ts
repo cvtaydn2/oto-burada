@@ -15,6 +15,7 @@ export interface ProfileBase {
 export interface ProfileTrustInfo {
   isVerified: boolean;
   emailVerified: boolean;
+  isPhoneVerified?: boolean;
   isBanned?: boolean;
   banReason?: string | null;
   restrictionState?: "active" | "restricted_review" | "banned";
