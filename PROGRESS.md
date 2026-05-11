@@ -2495,3 +2495,65 @@ export async function someAdminAction() {
 ### 130.4 Validation
 - `npm run typecheck` ✅
 - `npm run lint` ✅ (0 errors, 0 warnings)
+
+---
+
+## 131. Frontend Performance Optimization — FCP/LCP Improvements
+
+**Date**: 2026-05-12
+**Status**: ✅ COMPLETED
+**Scope**: Browser console warnings, FCP/LCP improvements, client bundle size reduction.
+
+### 131.1 Client → Server Component Conversions
+
+| File | Change | Impact |
+|------|--------|--------|
+| `src/components/shared/empty-state.tsx` | Removed `"use client"` (no hooks used) | Reduces client JS bundle, enables RSC streaming |
+| `src/components/admin/abuse-logs-card.tsx` | Removed `"use client"` (dead code, no hooks) | Reduces client JS bundle |
+
+### 131.2 Dead Code — Empty Imports Removed
+
+| File | Removed |
+|------|---------|
+| `src/components/shared/error-state.tsx:7` | `import {} from "@/lib"` |
+| `src/components/shared/safe-image.tsx:6` | `import {} from "@/lib"` |
+| `src/features/marketplace/components/seller-card.tsx:11` | `import {} from "@/lib"` |
+| `src/features/marketplace/components/seller-header-section.tsx:17` | `import {} from "@/lib"` |
+| `src/features/marketplace/components/favorites-page-client.tsx:12` | `import {} from "@/lib"` |
+
+### 131.3 Image Optimization
+
+| File | Change |
+|------|--------|
+| `src/app/(public)/about/page.tsx:107` | Added `priority` to hero image (LCP element) |
+
+### 131.4 Console Warnings — Investigated
+
+| Warning | Verdict |
+|---------|---------|
+| Zustand default export deprecation | Not from our codebase; likely a dependency (no zustand usage found) |
+| CSP violation for Vercel avatar | Vercel avatar origins are already whitelisted in both CSP headers and `next.config.ts` `remotePatterns` |
+| Preload link not used | No preload links exist; warning from a dependency |
+| `aria-hidden` on focus ancestor | Admin layout `aria-hidden` usage reviewed — all instances wrap decorative-only content with no focusable children. Safe. |
+| Lazy image intervention | Browser-level warning from lazy-loaded images; expected behavior |
+
+### 131.5 Already Optimized (Confirmed)
+
+- ✅ All production images use `next/image` (via `SafeImage` wrapper)
+- ✅ Image formats: AVIF + WebP configured
+- ✅ Font loading: `display: "swap"` with `preload: true`
+- ✅ `optimizePackageImports`: 30+ packages including `date-fns`, `lucide-react`, `framer-motion`
+- ✅ Dynamic imports: Gallery lightbox, map, analytics, cookie consent, PWA prompt
+- ✅ Loading states: All route segments have `loading.tsx` with skeleton UIs
+- ✅ Suspense boundaries: Analytics pages, admin dashboard, listing detail
+- ✅ Both `listings/` and `admin/listings/` have existing `loading.tsx`
+
+### 131.6 Remaining FCP/LCP Concerns (Deferred)
+
+- **ErrorState**: Kept `"use client"` due to `window.history.back()` in `backLink` prop — acceptable for error pages
+- **Root client boundary**: `RootProviders` wrapper is unavoidable for auth/query/theme
+- **Third-party bundle**: Zustand deprecation warning from dependencies — will resolve when deps update
+
+### 131.7 Validation
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)

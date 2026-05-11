@@ -9,7 +9,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { useFavorites } from "@/components/shared/favorites-provider";
 import { ListingsGridSkeleton } from "@/features/marketplace/components/listings-grid-skeleton";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 

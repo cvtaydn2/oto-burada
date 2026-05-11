@@ -3,7 +3,6 @@
 import Image, { ImageProps } from "next/image";
 import { useRef, useState } from "react";
 
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 
 /**

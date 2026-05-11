@@ -105,6 +105,7 @@ export default function AboutPage() {
                   src="/images/hero_bg.webp"
                   alt="OtoBurada araç ilan deneyimi"
                   fill
+                  priority
                   className="object-cover"
                   sizes="(min-width: 1024px) 40vw, 100vw"
                 />

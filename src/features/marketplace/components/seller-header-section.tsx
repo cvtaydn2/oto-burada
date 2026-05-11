@@ -14,7 +14,6 @@ import Image from "next/image";
 
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 import { type Profile } from "@/types";
 

@@ -8,7 +8,6 @@ import { TrustBadge } from "@/components/shared/trust-badge";
 import { ContactActions } from "@/features/marketplace/components/contact-actions";
 import { getSellerTrustUI } from "@/features/marketplace/lib/listings/trust-ui";
 import { SellerRatingInfo } from "@/features/profile/components/seller-rating-info";
-import {} from "@/lib";
 import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";

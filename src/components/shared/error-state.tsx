@@ -4,7 +4,6 @@ import { AlertCircle, ArrowLeft, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import {} from "@/lib";
 import { cn } from "@/lib/utils";
 
 export interface ErrorStateProps {
