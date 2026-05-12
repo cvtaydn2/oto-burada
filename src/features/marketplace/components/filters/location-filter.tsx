@@ -1,5 +1,6 @@
 "use client";
 
+import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import type { CityOption } from "@/types";
 
@@ -33,26 +34,35 @@ export function LocationFilter({
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-1.5">
-        {!hideLabel && (
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
-            Şehir
-          </Label>
-        )}
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Field className="space-y-1.5">
+        <Label
+          className={
+            hideLabel
+              ? "sr-only"
+              : "px-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+          }
+        >
+          Şehir
+        </Label>
         <FilterSelect
           value={city || "all"}
           onValueChange={(v) => onCityChange(v === "all" ? undefined : v)}
           placeholder="Şehir seç"
           options={cityOptions}
         />
-      </div>
-      <div className="space-y-1.5">
-        {!hideLabel && (
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
-            İlçe
-          </Label>
-        )}
+      </Field>
+
+      <Field className="space-y-1.5">
+        <Label
+          className={
+            hideLabel
+              ? "sr-only"
+              : "px-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+          }
+        >
+          İlçe
+        </Label>
         <FilterSelect
           value={district || "all"}
           onValueChange={(v) => onDistrictChange(v === "all" ? undefined : v)}
@@ -60,7 +70,7 @@ export function LocationFilter({
           options={districtOptions}
           disabled={!city}
         />
-      </div>
+      </Field>
     </div>
   );
 }

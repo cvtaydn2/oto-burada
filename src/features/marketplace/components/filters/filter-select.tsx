@@ -3,7 +3,7 @@
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
 
-import {} from "@/lib";
+import { useFieldContext } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 interface FilterSelectProps {
@@ -15,6 +15,11 @@ interface FilterSelectProps {
   className?: string;
 }
 
+function mergeIds(...values: Array<string | undefined>) {
+  const ids = values.filter(Boolean).join(" ").trim();
+  return ids.length > 0 ? ids : undefined;
+}
+
 export function FilterSelect({
   value,
   onValueChange,
@@ -23,9 +28,16 @@ export function FilterSelect({
   disabled,
   className,
 }: FilterSelectProps) {
+  const field = useFieldContext();
+
+  const triggerId = field?.inputId;
+  const labelledBy = mergeIds(field?.labelId);
+
   return (
     <SelectPrimitive.Root value={value || ""} onValueChange={onValueChange} disabled={disabled}>
       <SelectPrimitive.Trigger
+        id={triggerId}
+        aria-labelledby={labelledBy}
         className={cn(
           "flex h-12 w-full items-center justify-between rounded-xl border border-border/40 bg-muted/20 px-4 py-2 text-sm font-medium text-foreground outline-none transition-all hover:bg-muted/30 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
           className
@@ -39,11 +51,11 @@ export function FilterSelect({
 
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
-          className="overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-lg z-[100] animate-in fade-in zoom-in-95 duration-150"
+          className="z-[100] overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in zoom-in-95 duration-150"
           position="popper"
           sideOffset={5}
         >
-          <SelectPrimitive.Viewport className="p-2 min-w-[200px]">
+          <SelectPrimitive.Viewport className="min-w-[200px] p-2">
             {options.map((option) => (
               <SelectPrimitive.Item
                 key={option.value}

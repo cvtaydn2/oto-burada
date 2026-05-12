@@ -33,7 +33,11 @@ Kapsam:
 
 - erişilebilir form alanları için `Field` context tabanlı ortak primitive altyapısı eklendi
 - `Label` ve `Input` bileşenleri context içinde otomatik `htmlFor` / `id` / `aria-labelledby` / `aria-describedby` bağlayabilecek hale getirildi
-- kalan iş: bu yeni primitive’in gerçek form yüzeylerine rollout edilmesi, landmark ve keyboard remediation paketinin tamamlanması
+- marketplace filtre yüzeylerinde ilk gerçek rollout tamamlandı:
+  - `RangeFilter` içindeki min/max numeric alanları ayrı `Field` kapsayıcılarına alındı
+  - `LocationFilter` içindeki şehir/ilçe select alanları `Field` ile bağlandı
+  - `FilterSelect`, `useFieldContext` üzerinden gelen `inputId` ve `labelId` bilgisini trigger katmanına aktarmaya başladı
+- kalan iş: yeni primitive’in diğer gerçek form yüzeylerine rollout edilmesi ve landmark/keyboard remediation paketinin kalanlarının tamamlanması
 
 #### Acceptance Criteria
 

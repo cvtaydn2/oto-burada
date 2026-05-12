@@ -62,7 +62,6 @@ export function AuthForm({
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const config = AUTH_MODE_CONFIG[mode];
   const isLogin = mode === "login";
-  const passwordHintId = `${mode}-password-hint`;
   const REDIRECT_FLAG_KEY = "__auth_redirect_pending";
 
   useEffect(() => {
@@ -122,7 +121,6 @@ export function AuthForm({
               <PasswordField
                 state={state}
                 isLogin={isLogin}
-                passwordHintId={passwordHintId}
                 passwordPlaceholder={config.passwordPlaceholder}
                 passwordAutoComplete={config.passwordAutoComplete}
                 passwordHint={config.passwordHint}

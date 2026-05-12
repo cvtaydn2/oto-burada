@@ -43,5 +43,35 @@
       "frontend",
       "açısından"
     ]
+  },
+  {
+    "id": 1778606315358,
+    "date": "2026-05-12",
+    "category": "decision",
+    "task": "Sıradaki görevi tespit etmek için önce projedeki TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile",
+    "decision": "Bir sonraki görev: Task G1",
+    "files_affected": [],
+    "tags": [
+      "sıradaki",
+      "görevi",
+      "tespit",
+      "etmek",
+      "için"
+    ]
+  },
+  {
+    "id": 1778606595386,
+    "date": "2026-05-12",
+    "category": "decision",
+    "task": "Aşağıdaki görevi sadece BACKEND, VERİTABANI ve GÜVENLİK açısından analiz et ve çözümünü üret:\n\nMemor",
+    "decision": "Bu çözüm özellikle doğru çünkü `Field` primitive’i “tek label–tek control” sözleşmesini doğal olarak taşıyor. `RangeFilter` gibi birden fazla kontrol içeren yapılarda tek üst label’ı iki input’a paylaştırmak yerine, her input’a kendi görünmez etiketini vermek erişilebilirlik açısından daha sağlam ve",
+    "files_affected": [],
+    "tags": [
+      "aşağıdaki",
+      "görevi",
+      "sadece",
+      "backend,",
+      "veri̇tabani"
+    ]
   }
 ]

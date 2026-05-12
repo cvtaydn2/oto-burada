@@ -6,6 +6,7 @@ import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updatePasswordAction } from "@/features/auth/lib/actions";
@@ -88,17 +89,14 @@ export function ResetPasswordForm() {
               </div>
 
               <form action={formAction} className="mt-5 space-y-5 sm:mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                    Yeni şifre
-                  </Label>
+                <Field className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">Yeni şifre</Label>
                   <div className="relative">
                     <Lock
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                       size={18}
                     />
                     <Input
-                      id="password"
                       name="password"
                       type="password"
                       placeholder="••••••••"
@@ -114,19 +112,16 @@ export function ResetPasswordForm() {
                       {state.fieldErrors.password[0]}
                     </p>
                   )}
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <Label htmlFor="confirm" className="text-sm font-medium text-foreground">
-                    Şifre tekrarı
-                  </Label>
+                <Field className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">Şifre tekrarı</Label>
                   <div className="relative">
                     <Lock
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                       size={18}
                     />
                     <Input
-                      id="confirm"
                       name="confirm"
                       type="password"
                       placeholder="••••••••"
@@ -142,7 +137,7 @@ export function ResetPasswordForm() {
                       {state.fieldErrors.confirm[0]}
                     </p>
                   )}
-                </div>
+                </Field>
 
                 {state?.error && (
                   <div

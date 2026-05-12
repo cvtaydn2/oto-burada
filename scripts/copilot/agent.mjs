@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { Agent } from "undici";
 import { apiKey, baseUrl, model, activeContextFiles, conversationHistory } from "./config.mjs";
 import { reset, bold, blue, purple, green, cyan, yellow, red, gray } from "./colors.mjs";
 import { getFilesRecursively, parseAndApplyXmlFiles, parseXmlFiles, applyChanges, executeCommand, safeReadFile, grepInFiles, buildExecutorPlan, saveExecutorPlan, printExecutorPreview } from "./tools.mjs";
@@ -93,6 +94,14 @@ function sanitizeErrorOutput(text) {
     .replace(/"api_key":\s*"[^"]+"/g, '"api_key": "[REDACTED]"');
 }
 
+// API Bağlantı ve Havuz Yönetimi (Hız Optimizasyonu & Timeout Çözümü)
+const apiDispatcher = new Agent({
+  bodyTimeout: 0,        // Stream verisi beklerken zaman aşımını kaldır
+  headersTimeout: 0,     // Sunucu yanıtı beklerken zaman aşımını kaldır (Opus için şart)
+  keepAliveTimeout: 300000, // 5 Dakika bağlantıyı açık tut (Tekrar el sıkışmayı engeller)
+  connections: 5,        // Paralel bağlantı havuzu
+});
+
 // Claude API İstek Gönderici (Konsistens ve Sıfır Sıcaklık Odaklı)
 export async function callClaudeRaw(prompt, extraContext = "", overrideHistory = null, options = {}) {
   if (!apiKey) {
@@ -176,24 +185,38 @@ ${constitutionRules}`;
   while (attempt < maxRetries) {
     attempt++;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // Her deneme için 300 saniye sınır (Mega çıktılar için yükseltildi)
+    const timeoutId = setTimeout(() => controller.abort(), 900000); // Her deneme için 900 saniye sınır (Maksimum çıktı sürekliliği için yükseltildi)
 
 try {
        // Dinamik max_tokens: Büyük dosyalar için 8000, normal için 4000
        const maxTokens = options?.largeOutput ? 8000 : 4000;
+       
+       const requestBodyStr = JSON.stringify({
+         model,
+         messages,
+         temperature: options?.temperature ?? 0.0,
+         max_tokens: maxTokens,
+         stream: true,
+       });
+
+       await spinner.stop(); // Log basmak için geçici durdur
+       console.log(`${gray}📡 API İsteği Hazırlanıyor...${reset}`);
+       console.log(`   ${cyan}Tarihce/Mesaj Sayısı:${reset} ${messages.length}`);
+       console.log(`   ${cyan}Tahmini Girdi Karakter:${reset} ${requestBodyStr.length}`);
+       console.log(`   ${cyan}Net Payload Boyutu:${reset} ${(requestBodyStr.length / 1024).toFixed(2)} KB`);
+       
+       // Spinner'ı tekrar başlat (daha detaylı mesajla)
+       const fetchStart = Date.now();
+       const updatedSpinner = startSpinner(`${cyan}Claude Netiva (${(requestBodyStr.length / 1024).toFixed(1)}KB) yanit bekliyor...${reset}`);
+
        const response = await fetch(`${baseUrl}/v1/chat/completions`, {
          method: "POST",
+         dispatcher: apiDispatcher, // Performans ve Timeout Fix Enjeksiyonu
          headers: {
            "Authorization": `Bearer ${apiKey}`,
            "Content-Type": "application/json",
          },
-         body: JSON.stringify({
-           model,
-           messages,
-           temperature: options?.temperature ?? 0.0, // QA için 0.0, Creative için 0.1
-           max_tokens: maxTokens,
-           stream: true,
-         }),
+         body: requestBodyStr,
          signal: controller.signal,
        });
 
@@ -212,41 +235,52 @@ try {
       }
 
       // İlk veri akışı geldiği an spinner'ı durdurup terminale anlık akışı basıyoruz (Premium DX)
-      await spinner.stop();
+      await updatedSpinner.stop();
+       console.log(`   Header alindi! Gecikme: ${Date.now() - fetchStart}ms\n`);
+
 
       let fullResponseText = "";
       const decoder = new TextDecoder("utf-8");
       let buffer = "";
       let receivedDone = false;
 
-      for await (const chunk of response.body) {
-        buffer += decoder.decode(chunk, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+      const reader = response.body.getReader();
+      
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          if (trimmed === "data: [DONE]") {
-            receivedDone = true;
-            break;
-          }
-          if (trimmed.startsWith("data: ")) {
-            try {
-              const json = JSON.parse(trimmed.slice(5).trim());
-              const content = json.choices?.[0]?.delta?.content || "";
-              if (content) {
-                process.stdout.write(content);
-                fullResponseText += content;
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            if (trimmed === "data: [DONE]") {
+              receivedDone = true;
+              break;
+            }
+            if (trimmed.startsWith("data: ")) {
+              try {
+                const json = JSON.parse(trimmed.slice(5).trim());
+                const content = json.choices?.[0]?.delta?.content || "";
+                if (content) {
+                  process.stdout.write(content);
+                  fullResponseText += content;
+                }
+              } catch (err) {
+                // Bozuk parçaları geç
               }
-            } catch (err) {
-              // Kısmi veya bozuk JSON parçacıklarını sessizce geçiyoruz
             }
           }
+          if (receivedDone) break;
         }
-        if (receivedDone) {
-          break;
-        }
+      } catch (streamErr) {
+        console.log(`\n${yellow}⚠️ Yayın kesintisi: Kısmi veri ile devam ediliyor... (${fullResponseText.length} bayt alındı)${reset}`);
+        // Kısmi veri varsa hata atmadan devam et, yoksa üst hata yakalayıcıya ilet
+        if (fullResponseText.length < 100) throw streamErr;
       }
 
 // Akış bittiğinde satırbaşı yapalım
@@ -278,7 +312,7 @@ try {
         const delay = Math.min(10000, Math.pow(2, attempt) * 1000 + Math.random() * 1000);
         await spinner.stop();
         process.stdout.write(`\r${yellow}⚠️ Bağlantı sorunu/yoğunluk tespit edildi. ${attempt}/${maxRetries} deneme başarısız. ${(delay / 1000).toFixed(1)}sn sonra tekrar deneniyor... (Hata: ${error.message})${reset}`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, 10)); // Anında retry (dx için sıfırlandı)
         process.stdout.write(`\r\x1b[K`);
         continue;
       }

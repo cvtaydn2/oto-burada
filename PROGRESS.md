@@ -2757,3 +2757,19 @@ export async function someAdminAction() {
 ### 131.7 Validation
 - `npm run typecheck` ✅
 - `npm run lint` ✅ (0 errors, 0 warnings)
+
+---
+
+## 135. Task G1.3 � Marketplace Filter Field Rollout Remediation
+
+**Date**: 2026-05-12
+**Status**: COMPLETED
+**Scope**: Accessibilty Rollout for Marketplace Filters via Swarm Agent.
+
+### 135.1 Completed Items
+- Wrapped Range inputs in distinct <Field> blocks.
+- Updated Location select fields to hook into field context.
+- Modified FilterSelect to link labelId/inputId to Radix Trigger.
+
+### 135.2 Validation
+- npm run typecheck passed.

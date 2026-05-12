@@ -3,7 +3,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Rotate3d, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
-import { type KeyboardEvent, useEffect, useId, useState } from "react";
+import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 
 import { SafeImage } from "@/components/shared/safe-image";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,6 @@ interface ListingGalleryProps {
   images: ListingImage[];
   title: string;
   listingId?: string;
-  /** Legacy override — auto-detected from images with type="360" */
   has360View?: boolean;
 }
 
@@ -33,17 +32,20 @@ export function ListingGallery({
   has360View = false,
 }: ListingGalleryProps) {
   const { track } = useAnalytics();
+  const galleryHeadingId = useId();
+  const slideIdPrefix = useId();
+  const thumbRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [is360Open, setIs360Open] = useState(false);
-  const galleryHeadingId = useId();
 
-  const panoramaImage = images.find((img) => img.type === "360");
+  const panoramaImage = images.find((image) => image.type === "360");
+  const panoramaUrl = panoramaImage ? supabaseImageUrl(panoramaImage.url, 2400, 90) : "";
   const show360Button = has360View || Boolean(panoramaImage);
-  const panoramaUrl = panoramaImage?.url ?? "";
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
+    loop: images.length > 1,
     align: "start",
     containScroll: "trimSnaps",
   });
@@ -78,36 +80,102 @@ export function ListingGallery({
       emblaApi.off("select", onSelect);
       emblaApi.off("reInit", onSelect);
     };
-  }, [emblaApi, thumbApi, listingId, images.length, track]);
+  }, [emblaApi, images.length, listingId, thumbApi, track]);
 
-  const onThumbClick = (index: number) => {
-    if (!emblaApi) return;
-    emblaApi.scrollTo(index);
+  const openLightbox = () => {
+    if (listingId) {
+      track("listing_lightbox_opened", {
+        listing_id: listingId,
+        image_index: currentIndex,
+      });
+    }
+
+    setIsLightboxOpen(true);
   };
-
-  const scrollPrev = () => emblaApi?.scrollPrev();
-  const scrollNext = () => emblaApi?.scrollNext();
-
-  const openLightbox = () => setIsLightboxOpen(true);
-  const closeLightbox = () => setIsLightboxOpen(false);
 
   const open360View = () => {
-    if (!show360Button || !panoramaUrl) return;
+    if (listingId) {
+      track("listing_360_opened", {
+        listing_id: listingId,
+      });
+    }
+
     setIs360Open(true);
   };
-  const close360View = () => setIs360Open(false);
+
+  const goToSlide = (index: number, shouldFocusThumb = false) => {
+    if (!emblaApi) return;
+
+    emblaApi.scrollTo(index);
+    thumbApi?.scrollTo(index);
+
+    if (shouldFocusThumb) {
+      thumbRefs.current[index]?.focus();
+    }
+  };
+
+  const onThumbClick = (index: number) => {
+    goToSlide(index);
+  };
+
+  const scrollPrev = () => {
+    emblaApi?.scrollPrev();
+  };
+
+  const scrollNext = () => {
+    emblaApi?.scrollNext();
+  };
 
   const onViewportKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!emblaApi || images.length <= 1) return;
 
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      scrollPrev();
+      emblaApi.scrollPrev();
     }
 
     if (event.key === "ArrowRight") {
       event.preventDefault();
-      scrollNext();
+      emblaApi.scrollNext();
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      emblaApi.scrollTo(0);
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      emblaApi.scrollTo(images.length - 1);
+    }
+  };
+
+  const onThumbKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (images.length <= 1) return;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      goToSlide((index + 1) % images.length, true);
+    }
+
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      goToSlide((index - 1 + images.length) % images.length, true);
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      goToSlide(0, true);
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      goToSlide(images.length - 1, true);
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      goToSlide(index, true);
     }
   };
 
@@ -150,6 +218,7 @@ export function ListingGallery({
                 {images.map((image, index) => (
                   <div
                     key={image.id || image.url}
+                    id={`${slideIdPrefix}-${index}`}
                     role="group"
                     aria-roledescription="slide"
                     aria-label={`${index + 1} / ${images.length}`}
@@ -164,7 +233,7 @@ export function ListingGallery({
                           openLightbox();
                         }
                       }}
-                      className="relative aspect-[4/3] min-w-0 flex-[0_0_100%] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:aspect-[16/9] lg:aspect-[16/10]"
+                      className="relative h-full w-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                       aria-label={`${title} - ${index + 1} görselini tam ekran aç`}
                     >
                       <SafeImage
@@ -200,6 +269,7 @@ export function ListingGallery({
                 >
                   <ChevronLeft size={24} />
                 </Button>
+
                 <Button
                   type="button"
                   onClick={scrollNext}
@@ -221,48 +291,50 @@ export function ListingGallery({
               </div>
 
               <div className="pointer-events-auto flex flex-wrap justify-end gap-2">
-                <Button
-                  type="button"
-                  onClick={openLightbox}
-                  aria-label="Galeriyi tam ekran aç"
-                  className="h-9 rounded-full bg-card/90 px-3 text-[10px] font-bold uppercase italic tracking-widest text-foreground shadow-sm transition-all hover:bg-card sm:h-auto sm:px-4 sm:py-2.5"
-                >
-                  Tam Ekran
-                  <Sparkles size={12} className="text-primary" />
-                </Button>
-
-                {show360Button && panoramaUrl && (
+                {show360Button && panoramaUrl ? (
                   <Button
                     type="button"
                     onClick={open360View}
-                    aria-label="360 derece görünümü aç"
-                    className="h-9 rounded-full bg-blue-500 px-3 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm transition-all hover:bg-blue-600 sm:h-auto sm:px-4 sm:py-2.5"
+                    className="rounded-full bg-blue-600/90 px-3 py-2 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-blue-600"
                   >
-                    <Rotate3d size={12} />
+                    <Rotate3d className="mr-1.5 size-4" />
                     360° Görünüm
                   </Button>
-                )}
+                ) : null}
+
+                <Button
+                  type="button"
+                  onClick={openLightbox}
+                  className="rounded-full bg-black/50 px-3 py-2 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-black/65"
+                >
+                  <Sparkles className="mr-1.5 size-4" />
+                  Tüm fotoğraflar
+                </Button>
               </div>
             </div>
           </div>
 
           {images.length > 1 && (
-            <div className="hidden overflow-hidden py-2 sm:block" ref={thumbRef}>
-              <div className="flex gap-2 sm:gap-3">
+            <div ref={thumbRef} className="overflow-hidden" aria-label="Galeri küçük önizlemeleri">
+              <div className="flex gap-2">
                 {images.map((image, index) => {
-                  const isActive = currentIndex === index;
+                  const isActive = index === currentIndex;
 
                   return (
-                    <Button
-                      key={`${image.id || image.url}-thumb`}
+                    <button
+                      key={`thumb-${image.id || image.url}`}
+                      ref={(node) => {
+                        thumbRefs.current[index] = node;
+                      }}
                       type="button"
-                      variant="ghost"
                       onClick={() => onThumbClick(index)}
-                      aria-label={`${index + 1}. görsele git`}
-                      aria-current={isActive ? true : undefined}
+                      onKeyDown={(event) => onThumbKeyDown(event, index)}
+                      tabIndex={isActive ? 0 : -1}
+                      aria-label={`${index + 1}. görsele git${image.type === "360" ? " - 360 derece" : ""}`}
+                      aria-controls={`${slideIdPrefix}-${index}`}
+                      aria-current={isActive ? "true" : undefined}
                       className={[
-                        "relative h-20 min-w-[96px] overflow-hidden rounded-2xl border p-0 transition-all",
-                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        "relative aspect-[4/3] min-w-[84px] overflow-hidden rounded-xl border transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-w-[96px]",
                         isActive
                           ? "border-primary ring-2 ring-primary/30"
                           : "border-border/60 opacity-80 hover:opacity-100",
@@ -272,21 +344,17 @@ export function ListingGallery({
                         src={supabaseImageUrl(image.url, 240, 75)}
                         alt=""
                         fill
-                        sizes="160px"
+                        sizes="96px"
                         placeholder={image.placeholderBlur ? "blur" : "empty"}
                         blurDataURL={image.placeholderBlur ?? undefined}
                         className="object-cover"
                       />
                       {image.type === "360" && (
-                        <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1 rounded-full bg-blue-600/90 px-2 py-1 text-[9px] font-bold text-white backdrop-blur">
-                          <Rotate3d size={10} />
+                        <div className="absolute left-1.5 top-1.5 rounded-full bg-blue-600/90 px-1.5 py-0.5 text-[9px] font-bold text-white">
                           360°
                         </div>
                       )}
-                      <span className="sr-only">
-                        {title} {index + 1}. görsel
-                      </span>
-                    </Button>
+                    </button>
                   );
                 })}
               </div>
@@ -299,15 +367,18 @@ export function ListingGallery({
         currentIndex={currentIndex}
         images={images}
         isOpen={isLightboxOpen}
-        onClose={closeLightbox}
+        onClose={() => setIsLightboxOpen(false)}
+        onNavigate={(index) => goToSlide(index)}
         onNext={scrollNext}
         onPrev={scrollPrev}
         title={title}
       />
 
-      {show360Button && panoramaUrl ? (
-        <Listing360View isOpen={is360Open} imageUrl={panoramaUrl} onClose={close360View} />
-      ) : null}
+      <Listing360View
+        isOpen={is360Open}
+        imageUrl={panoramaUrl}
+        onClose={() => setIs360Open(false)}
+      />
     </>
   );
 }
