@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { updateAdminTicketStatusAction } from "@/features/admin-moderation/services/admin/ticket-admin-actions";
 
 interface Ticket {
   id: string;
@@ -46,15 +47,10 @@ export function TicketList({ initialTickets }: TicketListProps) {
   const handleStatusChange = async (ticketId: string, status: string) => {
     setLoadingId(ticketId);
     try {
-      const res = await fetch(`/api/admin/tickets/${ticketId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+      await updateAdminTicketStatusAction({
+        ticketId,
+        status: status as "open" | "in_progress" | "resolved" | "closed",
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Destek talebi güncellenemedi.");
-      }
       toast.success("Durum güncellendi");
       router.refresh();
     } catch {

@@ -37,27 +37,42 @@ interface UseAnalyticsReturn {
 
 /**
  * Generate or retrieve a persistent session ID
+ *
+ * Must be safe in SSR/pre-render environments where `window` and
+ * `sessionStorage` are unavailable.
  */
 function getSessionId(): string {
-  let sessionId = sessionStorage.getItem("otoburada_session_id");
-  if (!sessionId) {
-    sessionId = `session_${generateId()}`;
-    sessionStorage.setItem("otoburada_session_id", sessionId);
+  if (typeof window === "undefined") {
+    return `session_${generateId()}`;
   }
-  return sessionId;
+
+  try {
+    let sessionId = window.sessionStorage.getItem("otoburada_session_id");
+    if (!sessionId) {
+      sessionId = `session_${generateId()}`;
+      window.sessionStorage.setItem("otoburada_session_id", sessionId);
+    }
+    return sessionId;
+  } catch {
+    return `session_${generateId()}`;
+  }
 }
 
 /**
  * UseAnalytics hook
  */
 export function useAnalytics(): UseAnalyticsReturn {
-  const sessionIdRef = useRef<string>(getSessionId());
+  const sessionIdRef = useRef<string>("");
 
   /**
    * Core track function — sends event to server
    */
   const track = useCallback(
     async (event: AnalyticsEventType, properties: Record<string, unknown> = {}) => {
+      if (!sessionIdRef.current) {
+        sessionIdRef.current = getSessionId();
+      }
+
       const eventData = {
         session_id: sessionIdRef.current,
         event_name: event,

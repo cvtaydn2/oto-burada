@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { updateAdminReportStatusAction } from "@/features/admin-moderation/services/admin/report-admin-actions";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 import { formatDate } from "@/lib/datetime/date-utils";
 import { reportReasonLabels, reportStatusLabels } from "@/lib/domain";
@@ -104,27 +105,11 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
     setErrorMessage(null);
 
     try {
-      const response = await fetch(`/api/admin/reports/${reportId}`, {
-        body: JSON.stringify({
-          note: notesByReportId[reportId]?.trim() || undefined,
-          status,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "PATCH",
+      await updateAdminReportStatusAction({
+        reportId,
+        status,
+        note: notesByReportId[reportId]?.trim() || undefined,
       });
-      const payload = (await response.json().catch(() => null)) as {
-        success?: boolean;
-        error?: { message: string };
-      } | null;
-
-      if (!response.ok || !payload?.success) {
-        const message = payload?.error?.message ?? "Rapor durumu güncellenemedi.";
-        setErrorMessage(message);
-        toast.error(message);
-        return;
-      }
 
       toast.success("Rapor durumu güncellendi.");
       setNotesByReportId((current) => ({

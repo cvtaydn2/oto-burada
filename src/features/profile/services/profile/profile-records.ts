@@ -1,4 +1,4 @@
-import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 import { maskPhoneNumber } from "@/features/marketplace/lib/utils";
 import { createSupabaseAdminClient } from "@/lib/admin";
@@ -363,19 +363,23 @@ export async function updateUserProfile(
     phone: string;
     city: string;
     avatarUrl?: string | null;
-  }
+  },
+  existingClient?: SupabaseClient
 ) {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("profiles")
-    .update({
+  const supabase = existingClient ?? (await createSupabaseServerClient());
+  const now = new Date().toISOString();
+
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: userId,
       avatar_url: data.avatarUrl ?? null,
       city: data.city,
       full_name: data.fullName,
       phone: data.phone,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", userId);
+      updated_at: now,
+    },
+    { onConflict: "id" }
+  );
 
   if (error) {
     return null;

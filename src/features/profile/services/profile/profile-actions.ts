@@ -1,10 +1,12 @@
 "use server";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { requireUser } from "@/features/auth/lib/session";
 import {
   buildProfileFromAuthUser,
   getStoredProfileById,
-  updateProfileTable,
+  updateUserProfile,
 } from "@/features/profile/services/profile-records";
 import {
   getLiveMarketplaceReferenceData,
@@ -70,19 +72,23 @@ export async function updateProfileInformationAction(
   }
 
   try {
-    // 3. Apply Primary DB Mutation via Records layer
-    const updatedProfile = await updateProfileTable(user.id, {
-      fullName: parsed.data.fullName,
-      phone: parsed.data.phone,
-      city: parsed.data.city,
-      avatarUrl: parsed.data.avatarUrl === "" ? null : parsed.data.avatarUrl,
-    });
+    // 3. Apply primary DB mutation with user-scoped RLS path
+    const updatedProfile = await updateUserProfile(
+      user.id,
+      {
+        fullName: parsed.data.fullName,
+        phone: parsed.data.phone,
+        city: parsed.data.city,
+        avatarUrl: parsed.data.avatarUrl === "" ? null : parsed.data.avatarUrl,
+      },
+      supabase as unknown as SupabaseClient
+    );
 
     if (!updatedProfile) {
       logger.auth.error("[Profile] DB table update failed", null, { userId: user.id });
       return {
         status: "error",
-        message: "Veritabanı güncellenemedi. Lütfen tekrar deneyin.",
+        message: "Profil kaydı güncellenemedi. Lütfen tekrar deneyin.",
       };
     }
 

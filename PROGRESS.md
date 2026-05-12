@@ -2,6 +2,120 @@
 
 ---
 
+## 140. Profile Update Reliability Final Fix — Shared Auth Client in User-Scoped Upsert Path
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: 139 sonrasında loglarda `[Profile] DB table update failed` hatasının sürdüğü doğrulandı. Kök nedenin action katmanında alınan auth session client’i ile records katmanında açılan yeni server client arasında cookie/session context sapması olması ihtimaliydi. Profil update akışı tek auth client üzerinden deterministic çalışacak şekilde finalize edildi.
+
+### 140.1 Tespit
+- `updateProfileInformationAction()` içinde auth doğrulaması bir `supabase` instance’ı ile yapılıyordu.
+- `updateUserProfile()` içinde ayrı bir `createSupabaseServerClient()` çağrısı ile ikinci bir client yaratılıyordu.
+- RLS policy’leri `(SELECT auth.uid()) = id` koşullu olduğundan session context sapması halinde mutation sessizce başarısız kalıp `updatedProfile = null` üretebiliyordu.
+
+### 140.2 Uygulanan Düzeltme
+- [`src/features/profile/services/profile/profile-records.ts`](src/features/profile/services/profile/profile-records.ts):
+  - `updateUserProfile()` fonksiyonuna opsiyonel `existingClient?: SupabaseClient` parametresi eklendi.
+  - Bu client verildiyse yeniden client üretmek yerine aynı instance kullanılıyor.
+- [`src/features/profile/services/profile/profile-actions.ts`](src/features/profile/services/profile/profile-actions.ts):
+  - `updateProfileInformationAction()` çağrısı, kendi doğruladığı `supabase` instance’ını `updateUserProfile(..., supabase)` ile records katmanına geçiriyor.
+- Önceki 139 iyileştirmesi korunarak `upsert(onConflict: "id")` davranışı devam ettirildi.
+
+### 140.3 Validation
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+### 140.4 Mimari Sonuç
+- Profil güncelleme akışında auth kontrolü ve RLS mutation artık aynı request-context client ile çalışıyor.
+- Yeni kullanıcıda ilk kayıt (upsert) ve mevcut kullanıcıda update tek güvenli user-scoped yol üzerinde deterministik hale getirildi.
+
+---
+
+## 139. Profile Update Reliability Follow-up — Upsert Path for First-Time Profile Save
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: 138 numaralı düzeltme sonrası canlı terminal çıktısında `[Profile] DB table update failed` hatasının sürdüğü doğrulandı. Kök nedenin yeni kullanıcıda `profiles` satırı henüz oluşmadan `update` denenmesi olduğu tespit edildi. Profil mutation akışı, ilk kayıt senaryosunu da kapsayacak şekilde user-scoped `upsert` yoluna taşındı.
+
+### 139.1 Tespit
+- [`updateProfileInformationAction()`](src/features/profile/services/profile/profile-actions.ts) artık doğru şekilde `updateUserProfile()` çağırmasına rağmen hata devam ediyordu.
+- [`updateUserProfile()`](src/features/profile/services/profile/profile-records.ts) içinde yalnız `update` kullanıldığı için, `profiles` tablosunda satırı henüz olmayan yeni kullanıcıda güncelleme no-op kalıyor ve sonrasında `getUserProfile()` `null` dönüyordu.
+- Bu da action seviyesinde yeniden `[Profile] DB table update failed` log’una düşüyordu.
+
+### 139.2 Uygulanan Düzeltme
+- [`src/features/profile/services/profile/profile-records.ts`](src/features/profile/services/profile/profile-records.ts) içinde `updateUserProfile()` akışı güncellendi:
+  - `update(...).eq("id", userId)` yerine `upsert(..., { onConflict: "id" })` kullanıldı.
+- Böylece hem ilk profil kaydı olmayan kullanıcıda insert/upsert, hem mevcut kullanıcıda update aynı user-scoped RLS yolunda çözüldü.
+
+### 139.3 Validation
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+### 139.4 Mimari Sonuç
+- Dashboard profil güncelleme akışı artık yeni kullanıcı bootstrap eksikliğinden etkilenmiyor; ilk kayıt ve sonraki güncellemeler aynı güvenli mutation yüzeyinde çalışıyor.
+- Çözüm, AGENTS.md’deki “RLS First”, “Server Actions First” ve MVP’de hızlı onboarding hedefiyle uyumludur.
+
+---
+
+## 138. Profile Update Reliability — User-Scoped RLS Path for Dashboard Profile Mutation
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: Yeni kullanıcı onboarding senaryosunda (`mail doğrulandı`, `sms otp opsiyonel`) dashboard profil güncellemesinin `[Profile] DB table update failed` hatasıyla düşmesi analiz edildi. Kök nedenin profile mutation akışında admin-env bağımlı kayıt güncelleme yolu kullanılması olduğu doğrulandı. Akış, AGENTS.md’deki RLS-first prensibiyle uyumlu user-scoped update yoluna taşındı.
+
+### 138.1 Tespit
+- [`updateProfileInformationAction()`](src/features/profile/services/profile/profile-actions.ts), kullanıcı kaynaklı profil mutation için [`updateProfileTable()`](src/features/profile/services/profile/profile-records.ts) çağırıyordu.
+- `updateProfileTable()` yalnızca `hasSupabaseAdminEnv()` mevcutsa çalışıyor; yoksa `null` dönüyor. Bu da runtime’da `[Profile] DB table update failed` ve kullanıcı tarafında başarısız profil kaydı üretiyordu.
+- Bu davranış, kullanıcı kendi profilini güncellerken admin client bağımlılığı yaratarak MVP akışını kırıyordu.
+
+### 138.2 Uygulanan Düzeltme
+- [`src/features/profile/services/profile/profile-actions.ts`](src/features/profile/services/profile/profile-actions.ts) içinde import ve çağrı yolu güncellendi:
+  - `updateProfileTable` ➜ `updateUserProfile`
+- `updateProfileInformationAction()` artık primary DB mutation’ı user-scoped RLS path üzerinden çalıştırıyor.
+- Hata mesajı, kullanıcıya daha doğru geri bildirim verecek şekilde güncellendi:
+  - "Veritabanı güncellenemedi" ➜ "Profil kaydı güncellenemedi"
+
+### 138.3 Validation
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+### 138.4 Mimari Sonuç
+- Profil güncelleme akışı artık admin env varlığına bağlı değil; authenticated kullanıcı kendi profilini RLS kapsamında güvenli şekilde güncelleyebiliyor.
+- AGENTS.md’deki “RLS First” ve “Service Role yasak (client tarafında bypass yok)” prensipleriyle daha uyumlu, fail-safe bir mutation yolu elde edildi.
+
+---
+
+## 137. Backend Service/Action Standardization — Admin Ticket & Report Mutations
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: Backend service/action/records katmanı odaklı denetimde, admin ticket ve report moderasyon yüzeylerinde component içi doğrudan `fetch()` kullanımının service-action standardına aykırı kaldığı doğrulandı. İlgili frontend ekranları server action katmanına taşındı ve kalite kapıları yeniden doğrulandı.
+
+### 137.1 Tespit
+- [`TicketList`](src/features/admin-moderation/components/ticket-list.tsx) hâlâ `/api/admin/tickets/[id]` endpoint’ine doğrudan `fetch()` ile status mutation gönderiyordu.
+- [`ReportsModeration`](src/features/admin-moderation/components/reports-moderation.tsx) benzer şekilde `/api/admin/reports/[reportId]` endpoint’ine doğrudan `fetch()` çağrısı yapıyordu.
+- Mevcut backend’de ilgili iş kuralları zaten service/action katmanında bulunduğu halde UI katmanında transport kararının kalması AGENTS.md’deki “Server Actions First” ve SoC hedefiyle çelişiyordu.
+
+### 137.2 Uygulanan Düzeltmeler
+- Yeni admin ticket action katmanı eklendi: [`ticket-admin-actions.ts`](src/features/admin-moderation/services/admin/ticket-admin-actions.ts)
+  - `updateAdminTicketStatusAction()` ile admin auth guard + support action delegasyonu tek noktaya alındı.
+- Yeni admin report action katmanı eklendi: [`report-admin-actions.ts`](src/features/admin-moderation/services/admin/report-admin-actions.ts)
+  - `updateAdminReportStatusAction()` ile status validation, note sanitize, moderation log ve kullanıcı notification side-effect’leri service-action katmanında toplandı.
+- Frontend mutation yüzeyleri server action kullanımına geçirildi:
+  - [`ticket-list.tsx`](src/features/admin-moderation/components/ticket-list.tsx): doğrudan `fetch()` kaldırıldı, `updateAdminTicketStatusAction()` kullanılmaya başlandı.
+  - [`reports-moderation.tsx`](src/features/admin-moderation/components/reports-moderation.tsx): doğrudan `fetch()` kaldırıldı, `updateAdminReportStatusAction()` kullanılmaya başlandı.
+
+### 137.3 Validation
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+- `npm run build` ✅
+
+### 137.4 Mimari Sonuç
+- Admin moderasyon mutation akışlarında UI katmanı artık yalnız etkileşim/state sorumluluğu taşıyor; request orchestration service-action katmanına taşındı.
+- Backend logic ile ilişkili frontend ekranlar arasında sorumluluk sınırı netleşti ve mimari standarda uyum artırıldı.
+
+---
+
 ## 136. Test Altyapısı Stabilizasyonu + Legacy Uyumluluk Katmanı Sertleştirmesi
 
 **Date**: 2026-05-12
