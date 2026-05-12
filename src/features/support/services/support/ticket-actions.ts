@@ -1,5 +1,6 @@
 "use server";
 
+import { getAuthContext } from "@/features/auth/lib/session";
 import { enqueueOutboxEvent } from "@/features/shared/services/outbox-processor";
 import { getRequiredAppUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -23,6 +24,16 @@ import {
 
 export async function getUserTickets(userId: string): Promise<Ticket[]> {
   return getUserTicketsRecord(userId);
+}
+
+export async function submitSupportTicketAction(input: CreateTicketInput): Promise<Ticket> {
+  const { user } = await getAuthContext();
+
+  if (!user) {
+    throw new Error("Destek talebi göndermek için giriş yapmalısınız.");
+  }
+
+  return createTicket(user.id, input);
 }
 
 export async function createTicket(userId: string, input: CreateTicketInput): Promise<Ticket> {
@@ -102,6 +113,14 @@ export async function getAllTickets(options?: {
   limit?: number;
 }): Promise<Ticket[]> {
   return getAllTicketsRecord(options);
+}
+
+export async function updateSupportTicketStatusAction(
+  ticketId: string,
+  status: TicketStatus,
+  adminResponse?: string
+): Promise<Ticket> {
+  return updateTicketStatus(ticketId, status, adminResponse);
 }
 
 export async function updateTicketStatus(

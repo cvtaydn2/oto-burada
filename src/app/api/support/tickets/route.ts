@@ -1,7 +1,10 @@
 import { z } from "zod";
 
-import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
-import { createTicket } from "@/features/support/services/ticket-service";
+import { createTicket, getUserTickets } from "@/features/support/services/support/ticket-actions";
+import type {
+  TicketCategory,
+  TicketPriority,
+} from "@/features/support/services/support/ticket-logic";
 import { logger } from "@/lib/logger";
 import { rateLimitProfiles } from "@/lib/rate-limit";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
@@ -100,7 +103,6 @@ export async function GET(request: Request) {
   const user = security.user!;
 
   try {
-    const { getUserTickets } = await import("@/features/support/services/ticket-service");
     const tickets = await getUserTickets(user.id);
     return apiSuccess(tickets);
   } catch (error) {

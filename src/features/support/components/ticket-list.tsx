@@ -1,6 +1,6 @@
 "use client";
 
-import type { Ticket } from "@/features/support/services/ticket-service";
+import type { Ticket } from "@/features/support/services/support/ticket-logic";
 
 const STATUS_LABELS: Record<string, string> = {
   open: "Açık",

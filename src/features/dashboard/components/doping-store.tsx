@@ -1,9 +1,10 @@
 "use client";
 
 import { Check, Loader2, MapPin, Sparkles, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { initiateDopingCheckoutAction } from "@/app/api/payments/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,6 +30,7 @@ interface DopingStoreProps {
 
 export function DopingStore({ listing }: DopingStoreProps) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const activeDopings = useMemo(
     () =>
@@ -48,31 +50,30 @@ export function DopingStore({ listing }: DopingStoreProps) {
     [listing]
   );
 
-  const handlePurchase = async (pkg: DopingPackage) => {
-    try {
-      setLoading(pkg.id);
+  const handlePurchase = (pkg: DopingPackage) => {
+    setLoading(pkg.id);
 
-      // Direct API call instead of client service
-      const response = await fetch("/api/payments/initialize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: listing.id, packageId: pkg.id }),
-      });
+    startTransition(async () => {
+      try {
+        const result = await initiateDopingCheckoutAction({
+          listingId: listing.id,
+          packageId: pkg.id,
+        });
 
-      const res = await response.json();
+        if (result.paymentPageUrl) {
+          window.location.href = result.paymentPageUrl;
+          return;
+        }
 
-      if (res.success && res.data?.paymentPageUrl) {
-        // Redirect to Iyzico checkout page
-        // eslint-disable-next-line react-hooks/immutability
-        window.location.href = res.data.paymentPageUrl;
-      } else {
-        toast.error(res.error?.message || "Ödeme başlatılamadı.");
+        toast.error("Ödeme başlatılamadı.");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Bir hata oluştu. Lütfen tekrar deneyin."
+        );
+      } finally {
+        setLoading(null);
       }
-    } catch {
-      toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
-    } finally {
-      setLoading(null);
-    }
+    });
   };
 
   return (
@@ -209,7 +210,7 @@ export function DopingStore({ listing }: DopingStoreProps) {
                 <Button
                   className="h-12 w-full rounded-xl text-xs font-bold uppercase tracking-widest"
                   onClick={() => handlePurchase(pkg)}
-                  disabled={loading === pkg.id}
+                  disabled={isPending || loading === pkg.id}
                 >
                   {loading === pkg.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Satın Al"}
                 </Button>

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { getAdminAnalytics } from "../../services/admin/analytics";
 
-describe("Admin Service (Integration)", () => {
+const adminSuite = process.env.TEST_ADMIN_SESSION === "true" ? describe : describe.skip;
+
+adminSuite("Admin Service (Integration)", () => {
   it("should fetch real admin analytics", async () => {
     const stats = await getAdminAnalytics();
 

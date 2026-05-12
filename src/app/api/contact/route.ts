@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createPublicTicket } from "@/features/support/services/ticket-service";
+import { createPublicTicket } from "@/features/support/services/support/ticket-actions";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { isValidRequestOrigin } from "@/lib/csrf";
 import { contactFormSchema } from "@/lib/domain";

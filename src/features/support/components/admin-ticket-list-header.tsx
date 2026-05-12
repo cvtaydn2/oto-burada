@@ -5,7 +5,7 @@ import React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { TicketStatus } from "@/features/support/services/ticket-service";
+import type { TicketStatus } from "@/features/support/services/support/ticket-logic";
 import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import type { TicketStatus } from "@/features/support/services/ticket-service";
-import { updateTicketStatus } from "@/features/support/services/ticket-service";
+import { updateTicketStatus } from "@/features/support/services/support/ticket-actions";
+import type { TicketStatus } from "@/features/support/services/support/ticket-logic";
 import { logger } from "@/lib/logger";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/response";
 import { sanitizeText } from "@/lib/sanitize";

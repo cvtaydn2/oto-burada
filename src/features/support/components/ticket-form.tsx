@@ -1,19 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { Input } from "@/components/ui/input";
-
-interface SupportResponse {
-  message?: string;
-  error?: {
-    message?: string;
-  };
-}
-
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -22,7 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TicketCategory, TicketPriority } from "@/features/support/services/ticket-service";
+import { submitSupportTicketAction } from "@/features/support/services/support/ticket-actions";
+import type {
+  TicketCategory,
+  TicketPriority,
+} from "@/features/support/services/support/ticket-logic";
 
 const CATEGORIES: { value: TicketCategory; label: string }[] = [
   { value: "listing", label: "İlan ile ilgili" },
@@ -42,7 +38,7 @@ const PRIORITIES: { value: TicketPriority; label: string }[] = [
 
 export function TicketForm() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<TicketCategory>("other");
@@ -52,49 +48,27 @@ export function TicketForm() {
     e.preventDefault();
     if (!subject.trim() || !description.trim()) return;
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/support/tickets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    startTransition(async () => {
+      try {
+        await submitSupportTicketAction({
           subject: subject.trim(),
           description: description.trim(),
           category,
           priority,
-        }),
-      });
+        });
 
-      let data: SupportResponse | null = null;
-      try {
-        data = (await res.json()) as SupportResponse;
-      } catch {
-        // Safe fallback for non-JSON
+        toast.success("Destek talebiniz oluşturuldu. En kısa sürede size dönüş yapacağız.");
+        setSubject("");
+        setDescription("");
+        setCategory("other");
+        setPriority("medium");
+        router.refresh();
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Bir hata oluştu. Lütfen tekrar deneyin.";
+        toast.error(message);
       }
-
-      if (!res.ok) {
-        const errorMsg =
-          data?.error?.message ||
-          data?.message ||
-          "Destek talebi oluşturulamadı. Lütfen tekrar deneyin.";
-        throw new Error(errorMsg);
-      }
-
-      toast.success(
-        data?.message || "Destek talebiniz oluşturuldu. En kısa sürede size dönüş yapacağız."
-      );
-      setSubject("");
-      setDescription("");
-      setCategory("other");
-      setPriority("medium");
-      router.refresh();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Bir hata oluştu. Lütfen tekrar deneyin.";
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -159,8 +133,8 @@ export function TicketForm() {
         />
       </div>
 
-      <Button type="submit" disabled={loading || !subject.trim() || !description.trim()}>
-        {loading ? "Gönderiliyor..." : "Talebi Gönder"}
+      <Button type="submit" disabled={isPending || !subject.trim() || !description.trim()}>
+        {isPending ? "Gönderiliyor..." : "Talebi Gönder"}
       </Button>
     </form>
   );

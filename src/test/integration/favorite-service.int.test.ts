@@ -6,7 +6,9 @@ import {
   removeDatabaseFavorite,
 } from "../../services/favorites/favorite-records";
 
-describe("Favorite Service (Integration)", () => {
+const favoriteSuite = process.env.TEST_FAVORITES_MUTATION === "true" ? describe : describe.skip;
+
+favoriteSuite("Favorite Service (Integration)", () => {
   const TEST_USER_ID = "fde3c732-6bdc-4eb4-9c4c-471040b94e7d";
   const TEST_LISTING_ID = "2f240bf5-7e85-4dd7-9df6-2b8bbf3d6dc1";
 

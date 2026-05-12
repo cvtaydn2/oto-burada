@@ -4,7 +4,7 @@ import React from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Ticket, TicketStatus } from "@/features/support/services/ticket-service";
+import type { Ticket, TicketStatus } from "@/features/support/services/support/ticket-logic";
 import { cn } from "@/lib/utils";
 
 import { AdminTicketReplyForm } from "./admin-ticket-reply-form";

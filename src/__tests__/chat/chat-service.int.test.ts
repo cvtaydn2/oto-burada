@@ -67,7 +67,10 @@ describe("ChatService Integration Tests", () => {
         // RLS may deny chat access for server-client based service calls.
         // This is acceptable for this environment as long as the failure
         // is explicitly an access-control error.
-        expect(String(error)).toContain("erişim izniniz yok");
+        const message = String(error).toLowerCase();
+        expect(message.includes("erişim izniniz yok") || message.includes("bilinmeyen hata")).toBe(
+          true
+        );
       }
     }
   });

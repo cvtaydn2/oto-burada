@@ -31,13 +31,18 @@ ${gitDiffOutput}`;
 export async function handleNextTaskSolver(options = {}) {
   console.log(`\n${cyan}🎯 Otonom Görev Çözücü Başlatılıyor...${reset}`);
 
-  const plan = await runPlanner("TASKS.md'den sonraki en kritik görevi bul ve çöz");
+  // Güvenli Başlatma: Temel planlama dosyalarını doğrudan hafızaya ekle
+  const { activeContextFiles } = await import("./config.mjs");
+  activeContextFiles.add("TASKS.md");
+  activeContextFiles.add("PROGRESS.md");
+  activeContextFiles.add("README.md");
 
   const basePrompt = `Sıradaki görevi tespit etmek için önce projedeki TASKS.md ve PROGRESS.md dosyalarını [READ_FILE] ile oku.
 Yapılması gereken bir sonraki en kritik görevi tespit et. Görevin kapsamını anla, ilgili dosyaları projede arat [SEARCH_FILES] ve içeriklerini oku [READ_FILE].
 Görevin otonom kodlamasını ve mimari çözümünü kusursuzca yapıp, oluşturulacak veya güncellenecek dosyaları <write_file> etiketleri içinde tam sürüm olarak sun.
 Ayrıca "TASKS.md" ve "PROGRESS.md" dosyalarını da güncelleyerek çözümünün bir parçası olarak sun.`;
 
+  const plan = await runPlanner('TASKS.md\'den sonraki en kritik görevi bul ve çöz');
   const enrichedPrompt = enrichPromptWithPlan(basePrompt, plan);
   await runAgentLoop(enrichedPrompt, options);
 }
@@ -80,6 +85,12 @@ Geliştirici yönergelerini, ne zaman kullanılacağını ve tamamlanma kriterle
 export async function handleOrchestra(userPrompt, options = {}) {
   console.log(`\n${cyan}🎻 Tam Döngü Proje Orkestrasyonu (Orchestra Mode) Başlatılıyor...${reset}`);
   console.log(`${gray}Orkestratör sırasıyla: Planlayacak -> Çözümü kodlayacak -> Linter/Typecheck ile doğrulayacak -> Dökümanları güncelleyecek!${reset}`);
+
+  // Güvenli Başlatma: Temel planlama dosyalarını doğrudan hafızaya ekle
+  const { activeContextFiles } = await import("./config.mjs");
+  activeContextFiles.add("TASKS.md");
+  activeContextFiles.add("PROGRESS.md");
+  activeContextFiles.add("README.md");
 
   const taskForPlanner = userPrompt?.trim() || "TASKS.md'den sonraki görevi çöz";
   const plan = await runPlanner(taskForPlanner);

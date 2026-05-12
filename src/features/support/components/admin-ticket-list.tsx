@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import type { Ticket, TicketStatus } from "@/features/support/services/ticket-service";
+import { updateSupportTicketStatusAction } from "@/features/support/services/support/ticket-actions";
+import type { Ticket, TicketStatus } from "@/features/support/services/support/ticket-logic";
 
 import { AdminTicketCard } from "./admin-ticket-card";
 import { AdminTicketListHeader } from "./admin-ticket-list-header";
@@ -60,17 +61,7 @@ export function AdminTicketList({
   const handleStatusChange = async (ticketId: string, status: TicketStatus) => {
     setActiveAction(`${ticketId}:${status}`);
     try {
-      const res = await fetch(`/api/admin/tickets/${ticketId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Durum güncellenemedi.");
-      }
-
+      await updateSupportTicketStatusAction(ticketId, status);
       toast.success("Durum güncellendi");
       router.refresh();
     } catch (error) {
@@ -83,17 +74,7 @@ export function AdminTicketList({
   const handleReply = async (ticketId: string, text: string) => {
     setActiveAction(`${ticketId}:reply`);
     try {
-      const res = await fetch(`/api/admin/tickets/${ticketId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "in_progress", adminResponse: text }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Yanıt gönderilemedi.");
-      }
-
+      await updateSupportTicketStatusAction(ticketId, "in_progress", text);
       toast.success("Yanıt gönderildi ve talep incelemeye alındı");
       setReplyingTo(null);
       router.refresh();

@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
-import { forceActionOnListing } from "@/features/admin-moderation/services/inventory";
+import { runInventoryActionAction } from "@/features/admin-moderation/services/admin/inventory";
 import { ListingPromoBadges } from "@/features/marketplace/components/listing-promo-badges";
 import { getListingDopingDisplayItems } from "@/features/marketplace/lib/utils";
 import {
@@ -49,7 +49,8 @@ import { trust } from "@/lib/ui-strings";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatNumber } from "@/lib/utils/format";
 import { supabaseImageUrl } from "@/lib/utils/image";
-import { Listing, ListingRejectReasonCode } from "@/types";
+import { Listing } from "@/types";
+import type { ListingRejectReasonCode } from "@/types/domain";
 
 interface InventoryTableProps {
   listings: Listing[];
@@ -152,31 +153,22 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
   const handleAction = async (listingId: string, action: InventoryAction) => {
     setActiveActionKey(`${listingId}:${action}`);
     try {
-      if (action === "approve" || action === "reject") {
-        const body: Record<string, unknown> = { action };
-
-        if (action === "reject") {
-          if (!selectedReasonCode) {
-            throw new Error("Ret gerekçesi seçmelisiniz.");
-          }
-          body.rejectReason = {
-            reasonCode: selectedReasonCode,
-            moderatorNote: moderatorNote.trim() || undefined,
-          };
-        }
-
-        const res = await fetch(`/api/admin/listings/${listingId}/moderate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          const payload = await res.json().catch(() => null);
-          throw new Error(payload?.error?.message ?? "İşlem başarısız");
-        }
-      } else {
-        await forceActionOnListing(listingId, action, adminUserId);
-      }
+      await runInventoryActionAction({
+        listingId,
+        action,
+        adminUserId,
+        rejectReason:
+          action === "reject"
+            ? {
+                reasonCode:
+                  selectedReasonCode ??
+                  (() => {
+                    throw new Error("Ret gerekçesi seçmelisiniz.");
+                  })(),
+                moderatorNote: moderatorNote.trim() || undefined,
+              }
+            : undefined,
+      });
 
       toast.success("İşlem başarıyla gerçekleştirildi");
       setPendingAction(null);

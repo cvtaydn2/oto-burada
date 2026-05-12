@@ -21,3 +21,20 @@ vi.mock("next/headers", () => ({
     })
   ),
 }));
+
+vi.mock("@/lib/env", async () => {
+  const actual = await vi.importActual<typeof import("../lib/supabase/env")>("../lib/supabase/env");
+  return {
+    ...actual,
+    hasSupabaseEnv: vi.fn(() => true),
+    hasSupabaseAdminEnv: vi.fn(() => true),
+    getSupabaseEnv: vi.fn(() => ({
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://example.supabase.co",
+      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "mock-anon-key",
+    })),
+    getSupabaseAdminEnv: vi.fn(() => ({
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://example.supabase.co",
+      serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "mock-service-role",
+    })),
+  };
+});

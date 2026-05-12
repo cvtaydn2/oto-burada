@@ -5,7 +5,7 @@ import { FaqAccordion } from "@/components/shared/faq-accordion";
 import { getCurrentUser } from "@/features/auth/lib/session";
 import { TicketForm } from "@/features/support/components/ticket-form";
 import { TicketList } from "@/features/support/components/ticket-list";
-import { getUserTickets } from "@/features/support/services/ticket-service";
+import { getUserTickets } from "@/features/support/services/support/ticket-actions";
 import { logger } from "@/lib/logger";
 
 const FAQ_CATEGORIES = [

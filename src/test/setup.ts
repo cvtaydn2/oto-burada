@@ -97,8 +97,13 @@ vi.mock("@/lib/server", () => ({
 // Mock Supabase Env
 vi.mock("@/lib/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
+  hasSupabaseEnv: vi.fn(() => true),
   getSupabaseAdminEnv: vi.fn(() => ({
     url: "https://example.supabase.co",
     serviceRoleKey: "mock-key",
+  })),
+  getSupabaseEnv: vi.fn(() => ({
+    url: "https://example.supabase.co",
+    anonKey: "mock-anon-key",
   })),
 }));

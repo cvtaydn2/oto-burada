@@ -4,6 +4,7 @@ import { createDatabaseNotification } from "@/features/notifications/services/no
 import { logger } from "@/lib/logger";
 import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 import { Listing } from "@/types";
+import type { ListingModerationRejectReason } from "@/types/domain";
 
 import { requireAdminServiceContext } from "./admin-service-context";
 import { moderateListingWithSideEffects } from "./listing-moderation";
@@ -141,10 +142,29 @@ export async function getAdminInventory(filters?: {
   return { listings: listings as unknown as Listing[], total: count ?? 0, page, limit };
 }
 
+export async function runInventoryActionAction(params: {
+  listingId: string;
+  action: "archive" | "delete" | "approve" | "reject";
+  adminUserId?: string;
+  rejectReason?: ListingModerationRejectReason;
+}) {
+  if (params.action === "reject" && !params.rejectReason?.reasonCode) {
+    throw new Error("Ret gerekçesi seçmelisiniz.");
+  }
+
+  return forceActionOnListing(
+    params.listingId,
+    params.action,
+    params.adminUserId,
+    params.rejectReason
+  );
+}
+
 export async function forceActionOnListing(
   listingId: string,
   action: "archive" | "delete" | "approve" | "reject",
-  adminUserId?: string
+  adminUserId?: string,
+  rejectReason?: ListingModerationRejectReason
 ) {
   const { admin } = await requireAdminServiceContext();
 
@@ -165,6 +185,7 @@ export async function forceActionOnListing(
       action,
       adminUserId: adminUserId ?? "system",
       listingId,
+      rejectReason,
     });
 
     if (!result) {

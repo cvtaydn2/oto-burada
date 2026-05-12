@@ -10,9 +10,5 @@ export const model = "claude-opus-4-6";
 
 // Aktif Oturum Durumu (Memory & Context)
 // Aktif Oturum Durumu (Memory & Context)
-export const activeContextFiles = new Set([
-  "src/features/marketplace/components/listing-gallery.tsx",
-  "src/features/marketplace/components/listing-gallery-lightbox.tsx",
-  "src/features/marketplace/components/listing-360-view.tsx"
-]);
+export const activeContextFiles = new Set([]);
 export const conversationHistory = [];

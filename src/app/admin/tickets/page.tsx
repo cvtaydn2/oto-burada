@@ -4,8 +4,8 @@ import type { Metadata } from "next";
 import { requireAdminUser } from "@/features/auth/lib/session";
 import { buildAbsoluteUrl } from "@/features/seo/lib";
 import { AdminTicketList } from "@/features/support/components/admin-ticket-list";
-import type { TicketStatus } from "@/features/support/services/ticket-service";
-import { getAllTickets, getTicketCount } from "@/features/support/services/ticket-service";
+import { getAllTickets, getTicketCount } from "@/features/support/services/support/ticket-actions";
+import type { TicketStatus } from "@/features/support/services/support/ticket-logic";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";

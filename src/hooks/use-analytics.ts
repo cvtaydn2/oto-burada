@@ -21,6 +21,8 @@ type AnalyticsEventType =
   | "favori_added"
   | "favori_removed"
   | "image_gallery_interaction"
+  | "listing_lightbox_opened"
+  | "listing_360_opened"
   | "mobile_sticky_action_expanded";
 
 interface UseAnalyticsReturn {

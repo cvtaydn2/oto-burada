@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     // 1. Fetch pending cleanup tasks
     const { data: tasks, error: fetchError } = await admin
       .from("storage_cleanup_queue")
-      .select("*")
+      .select("id, bucket_name, file_path, status, attempts")
       .eq("status", "pending")
       .limit(50);
 
