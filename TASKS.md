@@ -29,6 +29,12 @@ Kapsam:
 - gallery ve benzeri özel UI etkileşimlerinde keyboard/focus davranışını doğrula
 - remediation sonrası kalite kapılarını tekrar temiz tut
 
+İlerleme notu:
+
+- erişilebilir form alanları için `Field` context tabanlı ortak primitive altyapısı eklendi
+- `Label` ve `Input` bileşenleri context içinde otomatik `htmlFor` / `id` / `aria-labelledby` / `aria-describedby` bağlayabilecek hale getirildi
+- kalan iş: bu yeni primitive’in gerçek form yüzeylerine rollout edilmesi, landmark ve keyboard remediation paketinin tamamlanması
+
 #### Acceptance Criteria
 
 - Kritik form alanlarında programlı etiket bağlantısı eksiksizdir

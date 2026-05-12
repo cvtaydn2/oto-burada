@@ -2,6 +2,52 @@
 
 ---
 
+## 133. Task G1 — Accessible Field Primitive Foundation
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: Active accessibility remediation backlog’undaki en kritik ilk dilim olarak form primitive katmanında `label` → `htmlFor` → `id` eşleşmesini sistematikleştiren ortak bir field context altyapısı eklendi.
+
+### 133.1 Tespit
+- Code review kaydındaki en kritik açık backlog kalemi hâlâ `Task G1 — Code review kaynaklı kritik erişilebilirlik açıklarını kapat` idi.
+- Paylaşılan UI primitive’lerde [`Label`](src/components/ui/label.tsx) ve [`Input`](src/components/ui/input.tsx) ayrı çalışıyordu; bu nedenle form yüzeylerinde programlı etiket bağını her kullanımın manuel olarak kurması gerekiyordu.
+- Bu durum geniş form yüzeylerinde unutulmaya açık, tekrarlı ve WCAG 1.3.1 açısından kırılgan bir pattern üretiyordu.
+
+### 133.2 Uygulanan Çözüm
+- Yeni ortak field primitive dosyası eklendi: [`src/components/ui/field.tsx`](src/components/ui/field.tsx).
+- `Field` bileşeni `useId()` tabanlı stabil bir alan kimliği üretip şu bağları context üzerinden sağlar:
+  - `inputId`
+  - `labelId`
+  - `descriptionId`
+  - `messageId`
+- [`src/components/ui/label.tsx`](src/components/ui/label.tsx) güncellendi:
+  - `htmlFor` manuel verilmediyse context içindeki `inputId` otomatik kullanılır
+  - `id` manuel verilmediyse context içindeki `labelId` otomatik kullanılır
+- [`src/components/ui/input.tsx`](src/components/ui/input.tsx) güncellendi:
+  - `forwardRef` desteği eklendi
+  - `id` manuel verilmediyse context içindeki `inputId` otomatik kullanılır
+  - `aria-labelledby` varsayılan olarak ilgili `labelId` ile bağlanır
+  - `aria-describedby`, mevcut prop korunarak field description/message id’leriyle birleşecek şekilde normalize edildi
+
+### 133.3 Mimari Sonuç
+- Form alanları artık `Field` içinde kullanıldığında erişilebilir bağlar varsayılan olarak güvenli hale gelir.
+- Mevcut manuel `id` / `htmlFor` kullanan yüzeyler bozulmaz; yeni yapı backward-compatible bırakıldı.
+- Bu adım, bütün form sayfalarının tek tek remediation rollout’una zemin hazırlayan bir primitive-level foundation olarak konumlandı.
+
+### 133.4 Kalan İş
+- Gerçek form yüzeylerinin `Field` primitive’ine geçirilmesi gerekiyor.
+- G1 kapsamındaki diğer kritik açıklar henüz bu kayıt içinde tamamlanmadı:
+  - eksik `<h1>` ve landmark hiyerarşisi
+  - klavye ile erişilemeyen özel etkileşimli yüzeyler
+  - gallery/focus/keyboard davranışı
+- Sonraki erişilebilirlik adımı, gerçek form kullanım noktalarını tarayıp `Field` wrapper rollout’unu tamamlamak olmalıdır.
+
+### 133.5 Validation
+- Bu kayıt, paylaşılan dosya bağlamı üzerinden primitive-level remediation tasarımını ve kod güncellemesini içerir.
+- Komut bazlı doğrulama (`npm run lint`, `npm run typecheck`, `npm run build`) bu oturum bağlamında çalıştırılamadığı için ayrıca repository içinde doğrulanmalıdır.
+
+---
+
 ## 132. Backlog Reconciliation — TASKS / PROGRESS Hizalama ve Sonraki Kritik İşin Netleştirilmesi
 
 **Date**: 2026-05-12  
