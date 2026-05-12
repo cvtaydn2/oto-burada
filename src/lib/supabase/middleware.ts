@@ -3,7 +3,7 @@ import { type User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { handleAuthRedirects } from "@/lib/auth";
-import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/env";
+import { getSupabaseEnv, getSupabaseProjectRef, hasSupabaseEnv } from "@/lib/env";
 import { applyRequestMetadata, applySecurityHeaders, generateNonce } from "@/lib/headers";
 import { classifyRoute } from "@/lib/routes";
 
@@ -70,16 +70,19 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set(name, value);
         });
 
-        // Sync request headers so subsequent calls in this request see the new cookies
-        const newRequestHeaders = new Headers(request.headers);
-        const cookieString = cookiesToSet.map(({ name, value }) => `${name}=${value}`).join("; ");
+        // Rebuild forwarded request headers from the already-enriched header set
+        // so x-nonce / x-csrf-token are not lost when NextResponse.next() is recreated.
+        const newRequestHeaders = new Headers(requestHeaders);
+        const mergedCookieHeader = request.cookies
+          .getAll()
+          .map(({ name, value }) => `${name}=${value}`)
+          .join("; ");
 
-        // Append or replace cookie header
-        const existingCookie = newRequestHeaders.get("Cookie") || "";
-        newRequestHeaders.set(
-          "Cookie",
-          existingCookie ? `${existingCookie}; ${cookieString}` : cookieString
-        );
+        if (mergedCookieHeader) {
+          newRequestHeaders.set("cookie", mergedCookieHeader);
+        } else {
+          newRequestHeaders.delete("cookie");
+        }
 
         // Update the response with the new request headers to pass them forward
         response = NextResponse.next({
@@ -98,9 +101,37 @@ export async function updateSession(request: NextRequest) {
 
   // 3. AUTH / SESSION REFRESH (Secure & Performance-Optimized)
   let user: User | null = null;
+  let profileRole: "admin" | "user" | null | undefined;
+
+  const getProfileRole = async (): Promise<"admin" | "user" | null> => {
+    if (!user) return null;
+    if (profileRole !== undefined) return profileRole;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("[updateSession] Profile role fetch error:", error.message);
+        profileRole = null;
+        return profileRole;
+      }
+
+      profileRole = profile?.role === "admin" ? "admin" : "user";
+      return profileRole;
+    } catch (error) {
+      console.error("[updateSession] Profile role fetch failure:", error);
+      profileRole = null;
+      return profileRole;
+    }
+  };
+
+  const isAdminUser = async () => (await getProfileRole()) === "admin";
 
   // Optimization: Only verify user if we have a session cookie OR the route specifically requires auth.
-  const { getSupabaseProjectRef } = await import("@/lib/env");
   const projectRef = getSupabaseProjectRef();
 
   // Robust check for session cookies (including chunked ones)
@@ -189,21 +220,7 @@ export async function updateSession(request: NextRequest) {
       }
 
       if (shouldShowMaintenanceScreen(isMaintenanceMode)) {
-        let isAdmin = false;
-        if (user) {
-          // Fetch role from profile
-          const { data: profile, error: profileError } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("id", user.id)
-            .single();
-
-          if (profileError) {
-            console.error("[maintenanceCheck] Profile fetch error:", profileError);
-          }
-
-          isAdmin = profile?.role === "admin";
-        }
+        const isAdmin = user ? await isAdminUser() : false;
 
         if (!isAdmin && pathname !== "/login") {
           // For API routes, return a JSON error instead of a redirect

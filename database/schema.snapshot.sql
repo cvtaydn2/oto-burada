@@ -38,8 +38,10 @@ ALTER TYPE "public"."fuel_type" OWNER TO "postgres";
 CREATE TYPE "public"."listing_status" AS ENUM (
     'draft',
     'pending',
+    'pending_ai_review',
     'approved',
     'rejected',
+    'flagged',
     'archived'
 );
 
@@ -993,7 +995,6 @@ CREATE OR REPLACE FUNCTION "public"."confirm_payment_success"("p_iyzico_token" "
     AS $$
 DECLARE
   v_payment record;
-  v_job_id uuid;
 BEGIN
   -- SECURITY: Enforce user ownership if not called by service_role (implicitly checked via auth.uid())
   -- If auth.uid() is null, it means it's service_role or anonymous (e.g. from a background job if we ever do that)
@@ -1033,28 +1034,13 @@ BEGIN
     );
   END IF;
 
-  -- 3. Queue fulfillment job immediately
-  -- This ensures that even if the webhook is slow, the user's action starts the fulfillment
-  IF v_payment.listing_id IS NOT NULL AND v_payment.package_id IS NOT NULL THEN
-    -- create_fulfillment_job handles idempotency via unique_payment_job constraint
-    SELECT public.create_fulfillment_job(
-      v_payment.id,
-      'doping_apply',
-      jsonb_build_object(
-        'listing_id', v_payment.listing_id,
-        'package_id', v_payment.package_id,
-        'user_id', p_user_id
-      )
-    ) INTO v_job_id;
-  END IF;
-
   RETURN jsonb_build_object(
     'updated',    true,
     'status',     'confirmed',
     'id',         v_payment.id,
     'listing_id', v_payment.listing_id,
     'package_id', v_payment.package_id,
-    'job_id',     v_job_id
+    'job_id',     NULL
   );
 END;
 $$;
@@ -1081,14 +1067,22 @@ BEGIN
     RETURN v_chat_id;
   END IF;
 
-  -- Create chat
-  INSERT INTO public.chats (listing_id, buyer_id, seller_id, status)
-  VALUES (p_listing_id, p_buyer_id, p_seller_id, 'active')
-  RETURNING id INTO v_chat_id;
+  BEGIN
+    -- Create chat
+    INSERT INTO public.chats (listing_id, buyer_id, seller_id, status)
+    VALUES (p_listing_id, p_buyer_id, p_seller_id, 'active')
+    RETURNING id INTO v_chat_id;
 
-  -- Create initial message
-  INSERT INTO public.messages (chat_id, sender_id, content, message_type, is_read)
-  VALUES (v_chat_id, p_buyer_id, p_system_message, 'system', true);
+    -- Create initial message
+    INSERT INTO public.messages (chat_id, sender_id, content, message_type, is_read)
+    VALUES (v_chat_id, p_buyer_id, p_system_message, 'system', true);
+  EXCEPTION WHEN unique_violation THEN
+    SELECT id INTO v_chat_id
+    FROM public.chats
+    WHERE listing_id = p_listing_id
+      AND buyer_id = p_buyer_id
+      AND seller_id = p_seller_id;
+  END;
 
   RETURN v_chat_id;
 END;
@@ -2188,7 +2182,6 @@ CREATE OR REPLACE FUNCTION "public"."process_payment_webhook"("p_token" "text", 
     AS $$
 DECLARE
   v_payment RECORD;
-  v_job_id UUID;
 BEGIN
   -- 1. Atomic lock: Only one worker can set webhook_processed_at to non-null
   UPDATE public.payments
@@ -2213,32 +2206,12 @@ BEGIN
     END IF;
   END IF;
 
-  -- 3. Queue fulfillment job if success and meta exists
-  IF p_status = 'success' AND v_payment.listing_id IS NOT NULL AND v_payment.package_id IS NOT NULL THEN
-    -- Using the existing create_fulfillment_job logic
-    INSERT INTO public.fulfillment_jobs (
-      payment_id,
-      job_type,
-      metadata
-    ) VALUES (
-      v_payment.id,
-      'doping_apply',
-      jsonb_build_object(
-        'listing_id', v_payment.listing_id,
-        'package_id', v_payment.package_id,
-        'user_id', v_payment.user_id
-      )
-    )
-    ON CONFLICT DO NOTHING
-    RETURNING id INTO v_job_id;
-  END IF;
-
-  -- 4. Increment webhook attempts
+  -- 3. Increment webhook attempts
   UPDATE public.payments
   SET webhook_attempts = COALESCE(webhook_attempts, 0) + 1
   WHERE iyzico_token = p_token;
 
-  -- 5. Mark log as processed (the audit trail)
+  -- 4. Mark log as processed (the audit trail)
   UPDATE public.payment_webhook_logs
   SET status = 'processed'
   WHERE payload->>'token' = p_token;
@@ -2247,7 +2220,7 @@ BEGIN
     'success', true, 
     'status', 'processed',
     'payment_id', v_payment.id, 
-    'job_id', v_job_id
+    'job_id', NULL
   );
 END;
 $$;
@@ -2611,7 +2584,6 @@ CREATE OR REPLACE FUNCTION "public"."trigger_create_fulfillment_jobs"() RETURNS 
     AS $$
 DECLARE
   v_meta JSONB;
-  v_job_id UUID;
 BEGIN
   -- Only act on transition to 'success'
   IF NEW.status = 'success' AND (OLD.status IS NULL OR OLD.status != 'success') THEN
@@ -2619,14 +2591,14 @@ BEGIN
     
     -- a. Credit Purchase Job
     IF v_meta->>'type' = 'plan_purchase' THEN
-      PERFORM create_fulfillment_job(
+      PERFORM public.create_fulfillment_job(
         NEW.id,
         'credit_add',
         jsonb_build_object('credits', v_meta->'credits')
       );
       
       -- Add notification job
-      PERFORM create_fulfillment_job(
+      PERFORM public.create_fulfillment_job(
         NEW.id,
         'notification_send',
         jsonb_build_object('notification', jsonb_build_object(
@@ -2638,9 +2610,9 @@ BEGIN
       );
     END IF;
 
-    -- b. Doping Application Job
+    -- b. Doping Application Job via Metadata
     IF v_meta->>'type' = 'doping' THEN
-      PERFORM create_fulfillment_job(
+      PERFORM public.create_fulfillment_job(
         NEW.id,
         'doping_apply',
         jsonb_build_object(
@@ -2650,7 +2622,32 @@ BEGIN
       );
       
       -- Add notification job
-      PERFORM create_fulfillment_job(
+      PERFORM public.create_fulfillment_job(
+        NEW.id,
+        'notification_send',
+        jsonb_build_object('notification', jsonb_build_object(
+          'type', 'system',
+          'title', 'Doping aktifleştirildi',
+          'message', 'İlanınız öne çıkarıldı.',
+          'href', '/dashboard/listings'
+        ))
+      );
+    END IF;
+
+    -- c. Doping Application Job via direct Columns
+    IF NEW.listing_id IS NOT NULL AND NEW.package_id IS NOT NULL THEN
+      PERFORM public.create_fulfillment_job(
+        NEW.id,
+        'doping_apply',
+        jsonb_build_object(
+          'listing_id', NEW.listing_id,
+          'package_id', NEW.package_id,
+          'user_id', NEW.user_id
+        )
+      );
+      
+      -- Add notification job
+      PERFORM public.create_fulfillment_job(
         NEW.id,
         'notification_send',
         jsonb_build_object('notification', jsonb_build_object(
@@ -2669,6 +2666,22 @@ $$;
 
 
 ALTER FUNCTION "public"."trigger_create_fulfillment_jobs"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trigger_validate_listing_quota"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  IF NOT public.check_and_reserve_listing_quota(NEW.seller_id) THEN
+    RAISE EXCEPTION 'Quota exceeded: User reached maximum allowed active listings.' 
+      USING ERRCODE = 'P0001';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION "public"."trigger_validate_listing_quota"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_chat_last_message_at"() RETURNS "trigger"
@@ -2739,24 +2752,6 @@ $$;
 ALTER FUNCTION "public"."update_listing_price_indices"("p_brand" "text", "p_model" "text", "p_year" integer, "p_avg_price" numeric) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."update_listing_search_vector"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-BEGIN
-  NEW.search_vector :=
-    setweight(to_tsvector('simple', coalesce(NEW.title, '')), 'A') ||
-    setweight(to_tsvector('simple', coalesce(NEW.brand, '')), 'A') ||
-    setweight(to_tsvector('simple', coalesce(NEW.model, '')), 'A') ||
-    setweight(to_tsvector('simple', coalesce(NEW.city, '')), 'B') ||
-    setweight(to_tsvector('simple', coalesce(NEW.district, '')), 'B') ||
-    setweight(to_tsvector('simple', coalesce(NEW.description, '')), 'C');
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."update_listing_search_vector"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."upsert_listing_with_images"("p_listing_data" "jsonb", "p_images_to_delete" "text"[], "p_images_to_upsert" "jsonb"[]) RETURNS "jsonb"
@@ -3592,7 +3587,7 @@ CREATE TABLE IF NOT EXISTS "public"."payments" (
     "notified_at" timestamp with time zone,
     "idempotency_key" "text",
     "webhook_attempts" integer DEFAULT 0,
-    "package_id" "text",
+    "package_id" "uuid",
     "webhook_processed_at" timestamp with time zone,
     CONSTRAINT "payments_status_check" CHECK (("status" = ANY (ARRAY['pending'::"text", 'processing'::"text", 'success'::"text", 'failure'::"text", 'refunded'::"text", 'cancelled'::"text"])))
 );
@@ -4195,6 +4190,9 @@ ALTER TABLE ONLY "public"."offers"
 
 ALTER TABLE ONLY "public"."payment_webhook_logs"
     ADD CONSTRAINT "payment_webhook_logs_pkey" PRIMARY KEY ("id");
+
+ALTER TABLE ONLY "public"."payment_webhook_logs"
+    ADD CONSTRAINT "payment_webhook_logs_token_key" UNIQUE ("token");
 
 
 
@@ -4994,9 +4992,6 @@ CREATE OR REPLACE TRIGGER "listings_track_price_change" AFTER UPDATE OF "price" 
 
 
 
-CREATE OR REPLACE TRIGGER "messages_touch_chat_last_message_at" AFTER INSERT ON "public"."messages" FOR EACH ROW EXECUTE FUNCTION "public"."update_chat_last_message_at"();
-
-
 
 CREATE OR REPLACE TRIGGER "offers_updated_at" BEFORE UPDATE ON "public"."offers" FOR EACH ROW EXECUTE FUNCTION "public"."set_updated_at"();
 
@@ -5046,7 +5041,7 @@ CREATE OR REPLACE TRIGGER "tr_update_chat_last_message_at" AFTER INSERT ON "publ
 
 
 
-CREATE OR REPLACE TRIGGER "trg_listings_search_vector" BEFORE INSERT OR UPDATE OF "title", "brand", "model", "city", "district", "description" ON "public"."listings" FOR EACH ROW EXECUTE FUNCTION "public"."update_listing_search_vector"();
+CREATE OR REPLACE TRIGGER "trigger_enforce_listing_quota" BEFORE INSERT ON "public"."listings" FOR EACH ROW EXECUTE FUNCTION "public"."trigger_validate_listing_quota"();
 
 
 

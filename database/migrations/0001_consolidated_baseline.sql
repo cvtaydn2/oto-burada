@@ -38,8 +38,10 @@ ALTER TYPE "public"."fuel_type" OWNER TO "postgres";
 CREATE TYPE "public"."listing_status" AS ENUM (
     'draft',
     'pending',
+    'pending_ai_review',
     'approved',
     'rejected',
+    'flagged',
     'archived'
 );
 

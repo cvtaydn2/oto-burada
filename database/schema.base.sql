@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- Enums
 CREATE TYPE public.user_type AS ENUM ('individual', 'professional');
 CREATE TYPE public.user_role AS ENUM ('user', 'admin');
-CREATE TYPE public.listing_status AS ENUM ('draft', 'pending', 'approved', 'rejected', 'archived');
+CREATE TYPE public.listing_status AS ENUM ('draft', 'pending', 'pending_ai_review', 'approved', 'rejected', 'flagged', 'archived');
 CREATE TYPE public.fuel_type AS ENUM ('benzin', 'dizel', 'lpg', 'hibrit', 'elektrik');
 CREATE TYPE public.transmission_type AS ENUM ('manuel', 'otomatik', 'yari_otomatik');
 

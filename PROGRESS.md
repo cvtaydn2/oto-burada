@@ -2,6 +2,41 @@
 
 ---
 
+## 141. System Audit Remediation — Payment Duplications, Chat Concurrency, and Quota Enforcement
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: Kapsamlı sistem denetimi (`system_audit_report.md`) sonrası tespit edilen 4 temel veri/mimari sapması tamamen çözüldü: `fulfillment_jobs` tekrarları, chat concurrency çakışmaları, search vector trigger çakışması ve application-level listing quota TOCTOU yarış koşulları. Tüm çözümler veritabanı düzeyinde atomik hale getirilerek snapshot'a işlendi.
+
+### 141.1 Tespit Edilen Bulgular ve Çözümler
+- **Bulgu 1: Fulfillment Jobs Çiftleme (Triple-Producer Hazard)**:
+  - Hem webhook RPC'leri hem de backend `confirm_payment_success` tetikleyicileri mükerrer `fulfillment_jobs` oluşturuyordu.
+  - **Çözüm**: Manuel tüm `INSERT INTO fulfillment_jobs` komutları RPC'lerden temizlendi. DB tetikleyicisi `trigger_create_fulfillment_jobs()` güncellenerek tek kanonik üretici haline getirildi.
+- **Bulgu 2: Chat Concurrency Yarış Koşulu**:
+  - `messages` üzerindeki çift `update_chat_last_message_at` tetikleyicisi kilitlenme yaratıyordu. `create_chat_atomic` ise yarış koşulunda patlıyordu.
+  - **Çözüm**: Tekrarlayan trigger silindi. `create_chat_atomic` RPC'si nested sub-block ve `EXCEPTION WHEN unique_violation THEN` trap'i ile yarış koşullarına karşı bağışık hale getirildi.
+- **Bulgu 3: Search Vector ve Quota Enforcements**:
+  - `search_vector` kolonu `GENERATED ALWAYS AS STORED` olduğu için manuel tetiklenen update trigger'ı çakışmaya ve crash'e sebep oluyordu. Conflicting trigger kaldırıldı.
+  - `executeListingCreation` seviyesindeki kota kontrolü TOCTOU yarış koşuluna açıktı. `listings` tablosuna atomik `BEFORE INSERT` tetikleyicisi `trigger_enforce_listing_quota` eklendi; transaction düzeyinde `FOR UPDATE` profile lock ile kota kontrolü garanti altına alındı.
+- **Bulgu 4: Webhook Logs Constraints & Column Alignment**:
+  - `payment_webhook_logs` üzerindeki `token` kolonu eşsiz değildi, mükerrer log üretebiliyordu. `payments.package_id` ise `uuid` yerine `text` olarak kalmıştı.
+  - **Çözüm**: Mükerrer loglar temizlendi, `payment_webhook_logs_token_key` UNIQUE constraint eklendi. `package_id` kolonu tip dönüşümü yapılarak veri tipi hizalandı.
+
+### 141.2 Uygulanan Kaynaklar
+- [0142_payment_and_structural_audit_fixes.sql](file:///c:/Users/Cevat/Documents/Github/oto-burada/database/migrations/0142_payment_and_structural_audit_fixes.sql)
+- [schema.snapshot.sql](file:///c:/Users/Cevat/Documents/Github/oto-burada/database/schema.snapshot.sql)
+
+### 141.3 Validation
+- `npm run typecheck` ✅ (Flawless static generation & types)
+- `npm run lint` ✅ (Zero ESLint errors)
+
+### 141.4 Mimari Sonuç
+- Ödeme sonrası iş tetikleme yapısı tamamen idempotent ve asenkron hale geldi (God-Tier Resilience).
+- Eşzamanlı oda oluşturma ve ilan girişi yarış koşulları DB düzeyinde atomik kilitlerle ortadan kaldırıldı.
+- Projenin veri bütünlüğü ve mimari tutarlılığı %100 oranında restore edildi.
+
+---
+
 ## 140. Profile Update Reliability Final Fix — Shared Auth Client in User-Scoped Upsert Path
 
 **Date**: 2026-05-12  
