@@ -1,11 +1,10 @@
 "use server";
 
-import { requireAdminUser } from "@/features/auth/lib/session";
-import { createSupabaseAdminClient } from "@/lib/admin";
 import { withCache } from "@/lib/cache";
-import { hasSupabaseAdminEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { captureServerError } from "@/lib/telemetry-server";
+
+import { requireAdminServiceContext } from "./admin-service-context";
 
 export interface AdminAnalyticsData {
   kpis: {
@@ -48,14 +47,12 @@ async function getStatusStats(admin: SupabaseClient) {
 }
 
 export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAnalyticsData | null> {
-  await requireAdminUser();
-  if (!hasSupabaseAdminEnv()) return null;
+  const { admin } = await requireAdminServiceContext();
   const cacheKey = `admin-analytics:${range}`;
 
   return withCache(
     cacheKey,
     async () => {
-      const admin = createSupabaseAdminClient();
       const days = range === "7d" ? 7 : range === "90d" ? 90 : range === "1y" ? 365 : 30;
       const now = new Date();
       const rangeStart = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -82,8 +79,8 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
           getBrandStats(admin),
           getCityStats(admin),
           getStatusStats(admin),
-          admin.from("profiles").select("*", { count: "exact", head: true }),
-          admin.from("listings").select("*", { count: "exact", head: true }),
+          admin.from("profiles").select("id", { count: "exact", head: true }),
+          admin.from("listings").select("id", { count: "exact", head: true }),
           admin.rpc("get_revenue_stats", {
             p_start_date: rangeStart,
             p_end_date: now.toISOString(),
@@ -92,30 +89,30 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
           admin.rpc("get_daily_listing_trend", { p_days: days }),
           admin
             .from("profiles")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .gte("created_at", rangeStart),
           admin
             .from("listings")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .gte("created_at", rangeStart),
           admin.from("market_stats").select("brand, avg_price").limit(20),
           admin
             .from("profiles")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .lt("created_at", rangeStart)
             .gte("created_at", prevRangeStart),
           admin
             .from("listings")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .lt("created_at", rangeStart)
             .gte("created_at", prevRangeStart),
           admin
             .from("listings")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .eq("status", "pending"),
           admin
             .from("profiles")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .eq("user_type", "professional"),
         ]);
 

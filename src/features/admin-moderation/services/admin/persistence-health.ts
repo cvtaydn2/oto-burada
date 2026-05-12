@@ -165,7 +165,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
     tableDefinitions.map(async (table) => {
       const { count, error } = await admin
         .from(table.key)
-        .select("*", { count: "exact", head: true });
+        .select("id", { count: "exact", head: true });
 
       return {
         count: count ?? 0,

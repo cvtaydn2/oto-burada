@@ -63,13 +63,15 @@ export async function fetchUserDetailsComposite(userId: string) {
       .order("created_at", { ascending: false }),
     admin
       .from("credit_transactions")
-      .select("*")
+      .select("id, amount, transaction_type, description, reference_id, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(20),
     admin
       .from("doping_applications")
-      .select("*, listings(title)")
+      .select(
+        "id, listing_id, doping_type, duration_days, started_at, expires_at, created_at, listings(title)"
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(20),

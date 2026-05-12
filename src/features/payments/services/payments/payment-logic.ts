@@ -126,7 +126,7 @@ export async function initializePaymentCheckout(params: {
         basketItems: params.basketItems,
       },
     })
-    .select()
+    .select("id, metadata")
     .single();
 
   if (dbError) {

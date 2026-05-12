@@ -60,7 +60,7 @@ export async function getDatabaseFavoriteCount(userId: string): Promise<number> 
   const supabase = await getFavoritesClient();
   const { count, error } = await supabase
     .from("favorites")
-    .select("*", { count: "exact", head: true })
+    .select("listing_id", { count: "exact", head: true })
     .eq("user_id", userId);
 
   if (error) {

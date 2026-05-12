@@ -34,7 +34,7 @@ export async function askQuestionAction(listingId: string, question: string) {
       question,
       status: "pending",
     })
-    .select("*, listings(seller_id, title, slug)")
+    .select("id, listing_id, user_id, question, status, listings(seller_id, title, slug)")
     .single();
 
   if (questionError) {
@@ -75,7 +75,7 @@ export async function answerQuestionAction(questionId: string, answer: string) {
   // 1. Fetch question to verify ownership
   const { data: existingQuestion, error: fetchError } = await supabase
     .from("listing_questions")
-    .select("*, listings(seller_id)")
+    .select("id, user_id, status, listings(seller_id)")
     .eq("id", questionId)
     .single();
 
@@ -97,7 +97,7 @@ export async function answerQuestionAction(questionId: string, answer: string) {
       status: "approved", // Auto-approve when owner answers
     })
     .eq("id", questionId)
-    .select("*, listings(title, id, slug), profiles(full_name)")
+    .select("id, user_id, question, answer, status, listings(title, id, slug), profiles(full_name)")
     .single();
 
   if (questionError) {

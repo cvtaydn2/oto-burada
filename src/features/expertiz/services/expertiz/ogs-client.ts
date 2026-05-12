@@ -127,7 +127,7 @@ export async function getVehicleHistoryByListing(listingId: string) {
 
   const { data, error } = await admin
     .from("vehicle_history")
-    .select("*")
+    .select("query_result")
     .eq("listing_id", listingId)
     .order("queried_at", { ascending: false })
     .limit(1)

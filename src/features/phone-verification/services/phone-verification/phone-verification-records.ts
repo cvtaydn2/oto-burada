@@ -32,7 +32,7 @@ export async function createVerificationRecord(
       expires_at: expiresAt.toISOString(),
       attempts: 0,
     })
-    .select("*")
+    .select("id, user_id, phone, code, expires_at, attempts, created_at, verified_at")
     .single();
 
   if (error) throw error;
@@ -48,7 +48,7 @@ export async function getActiveVerificationRecord(userId: string) {
 
   const { data, error } = await supabase
     .from("phone_verifications")
-    .select("*")
+    .select("id, user_id, phone, code, expires_at, attempts, created_at, verified_at")
     .eq("user_id", userId)
     .is("verified_at", null)
     .gt("expires_at", now)

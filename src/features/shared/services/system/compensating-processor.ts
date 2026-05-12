@@ -17,7 +17,7 @@ export async function processCompensatingActions() {
 
   const { data: actions, error } = await supabase
     .from("compensating_actions")
-    .select("*")
+    .select("id, action_type, transaction_id, payload, retry_count, max_retries")
     .eq("status", "pending")
     .lte("next_attempt_at", new Date().toISOString())
     .limit(20);

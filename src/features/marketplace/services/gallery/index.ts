@@ -73,7 +73,7 @@ export async function getGalleryBySlug(
   // Gallery total listing count
   const { count: totalListings } = await supabase
     .from("listings")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("seller_id", profile.id)
     .eq("status", "approved");
 

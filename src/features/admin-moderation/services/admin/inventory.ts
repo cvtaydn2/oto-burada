@@ -1,12 +1,11 @@
 "use server";
 
-import { requireAdminUser } from "@/features/auth/lib/session";
 import { createDatabaseNotification } from "@/features/notifications/services/notification-records";
-import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { captureServerError, captureServerEvent } from "@/lib/telemetry-server";
 import { Listing } from "@/types";
 
+import { requireAdminServiceContext } from "./admin-service-context";
 import { moderateListingWithSideEffects } from "./listing-moderation";
 import { createAdminModerationAction } from "./moderation-actions";
 
@@ -25,8 +24,7 @@ export async function getAdminInventory(filters?: {
   page?: number;
   limit?: number;
 }) {
-  await requireAdminUser();
-  const admin = createSupabaseAdminClient();
+  const { admin } = await requireAdminServiceContext();
   const page = filters?.page ?? 1;
   const limit = filters?.limit ?? 15;
   const from = (page - 1) * limit;
@@ -35,7 +33,7 @@ export async function getAdminInventory(filters?: {
   let query = admin
     .from("listings")
     .select(
-      `*, 
+      `id, slug, seller_id, title, brand, model, car_trim, year, mileage, fuel_type, transmission, price, city, district, description, whatsapp_phone, vin, tramer_amount, damage_status_json, fraud_score, fraud_reason, status, featured, featured_until, urgent_until, highlighted_until, market_price_index, expert_inspection, bumped_at, view_count, created_at, updated_at,
        images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur),
        seller:profiles!seller_id(business_name, business_slug)`,
       { count: "exact" }
@@ -117,7 +115,6 @@ export async function getAdminInventory(filters?: {
       featuredUntil: listing.featured_until ?? null,
       urgentUntil: listing.urgent_until ?? null,
       highlightedUntil: listing.highlighted_until ?? null,
-      eidsVerificationJson: listing.eids_verification_json ?? null,
       marketPriceIndex: listing.market_price_index ?? null,
       expertInspection: listing.expert_inspection ?? undefined,
       bumpedAt: listing.bumped_at ?? null,
@@ -149,8 +146,7 @@ export async function forceActionOnListing(
   action: "archive" | "delete" | "approve" | "reject",
   adminUserId?: string
 ) {
-  await requireAdminUser();
-  const admin = createSupabaseAdminClient();
+  const { admin } = await requireAdminServiceContext();
 
   // approve / reject — delegate to the full moderation pipeline so that
   // email notifications, seller DB notifications, cache invalidation and

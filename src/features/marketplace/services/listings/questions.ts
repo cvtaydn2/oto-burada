@@ -41,7 +41,7 @@ export async function getListingQuestions(listingId: string) {
       .from("listing_questions")
       .select(
         `
-      *,
+      id, listing_id, user_id, question, answer, status, created_at, updated_at, is_public,
       profiles:user_id (
         full_name,
         avatar_url
@@ -96,7 +96,7 @@ export async function getOwnerListingQuestions(listingId: string) {
       .from("listing_questions")
       .select(
         `
-      *,
+      id, listing_id, user_id, question, answer, status, created_at, updated_at, is_public,
       profiles:user_id (
         full_name,
         avatar_url
@@ -153,7 +153,7 @@ export async function askQuestion(listingId: string, question: string) {
       question,
       status: "pending",
     })
-    .select()
+    .select("id, status")
     .single();
 
   if (!isSupabaseSingleResponse(result)) {
@@ -188,7 +188,7 @@ export async function answerQuestion(questionId: string, answer: string) {
       status: "approved",
     })
     .eq("id", questionId)
-    .select()
+    .select("id, status")
     .single();
 
   if (!isSupabaseSingleResponse(result)) {

@@ -34,7 +34,9 @@ export async function getNotificationPreferences(userId: string): Promise<Notifi
   const admin = createSupabaseAdminClient();
   const { data } = await admin
     .from("notification_preferences")
-    .select("*")
+    .select(
+      "user_id, notify_favorite, notify_moderation, notify_message, notify_price_drop, notify_saved_search, email_moderation, email_expiry_warning, email_saved_search"
+    )
     .eq("user_id", userId)
     .maybeSingle<{
       user_id: string;

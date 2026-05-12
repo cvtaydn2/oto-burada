@@ -134,7 +134,7 @@ export async function getRecentUserMessageCount(chatId: string, userId: string):
 
   const { count, error } = await supabase
     .from("messages")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("chat_id", chatId)
     .eq("sender_id", userId)
     .gt("created_at", oneHourAgo);
@@ -163,7 +163,7 @@ export async function insertChatMessageRecord(params: {
       message_type: params.messageType || "text",
       is_read: false,
     })
-    .select()
+    .select("id, chat_id, sender_id, content, is_read, message_type, created_at, deleted_at")
     .single();
 
   if (error) throw error;
