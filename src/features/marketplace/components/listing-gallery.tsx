@@ -3,8 +3,9 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Rotate3d, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { type KeyboardEvent, useEffect, useId, useState } from "react";
 
+import { SafeImage } from "@/components/shared/safe-image";
 import { Button } from "@/components/ui/button";
 import { Listing360View } from "@/features/marketplace/components/listing-360-view";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -16,8 +17,6 @@ const ListingGalleryLightbox = dynamic(() =>
     (mod) => mod.ListingGalleryLightbox
   )
 );
-
-import { SafeImage } from "@/components/shared/safe-image";
 
 interface ListingGalleryProps {
   images: ListingImage[];
@@ -37,8 +36,8 @@ export function ListingGallery({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [is360Open, setIs360Open] = useState(false);
+  const galleryHeadingId = useId();
 
-  // Auto-detect 360° image
   const panoramaImage = images.find((img) => img.type === "360");
   const show360Button = has360View || Boolean(panoramaImage);
   const panoramaUrl = panoramaImage?.url ?? "";
@@ -60,9 +59,8 @@ export function ListingGallery({
     const onSelect = () => {
       const selectedIndex = emblaApi.selectedScrollSnap();
       setCurrentIndex(selectedIndex);
-      if (thumbApi) thumbApi.scrollTo(selectedIndex);
+      thumbApi?.scrollTo(selectedIndex);
 
-      // Track gallery interaction
       if (listingId) {
         track("image_gallery_interaction", {
           listing_id: listingId,
@@ -72,6 +70,7 @@ export function ListingGallery({
       }
     };
 
+    onSelect();
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
 
@@ -82,44 +81,90 @@ export function ListingGallery({
   }, [emblaApi, thumbApi, listingId, images.length, track]);
 
   const onThumbClick = (index: number) => {
-    if (!emblaApi || !thumbApi) return;
+    if (!emblaApi) return;
     emblaApi.scrollTo(index);
   };
 
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();
 
+  const openLightbox = () => setIsLightboxOpen(true);
+  const closeLightbox = () => setIsLightboxOpen(false);
+
+  const open360View = () => {
+    if (!show360Button || !panoramaUrl) return;
+    setIs360Open(true);
+  };
+  const close360View = () => setIs360Open(false);
+
+  const onViewportKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!emblaApi || images.length <= 1) return;
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      scrollPrev();
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      scrollNext();
+    }
+  };
+
   if (images.length === 0) {
     return (
-      <div className="aspect-[4/3] sm:aspect-[16/9] bg-muted rounded-2xl flex items-center justify-center">
+      <section
+        aria-labelledby={galleryHeadingId}
+        aria-roledescription="carousel"
+        className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-muted sm:aspect-[16/9]"
+      >
+        <h2 id={galleryHeadingId} className="sr-only">
+          {title} görsel galerisi
+        </h2>
         <p className="text-muted-foreground/70">Görsel bulunamadı</p>
-      </div>
+      </section>
     );
   }
 
   return (
     <>
-      <div className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
+      <section
+        aria-labelledby={galleryHeadingId}
+        aria-roledescription="carousel"
+        className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm"
+      >
+        <h2 id={galleryHeadingId} className="sr-only">
+          {title} görsel galerisi
+        </h2>
+
         <div className="space-y-3 p-3 sm:space-y-4 sm:p-5 lg:p-6">
-          {/* Main Viewport */}
-          <div className="relative group">
-            <div className="overflow-hidden rounded-2xl bg-muted touch-pan-y" ref={emblaRef}>
+          <div className="group relative">
+            <div
+              ref={emblaRef}
+              tabIndex={0}
+              onKeyDown={onViewportKeyDown}
+              aria-label={`${title} için görsel galeri. Sol ve sağ ok tuşlarıyla gezinebilirsiniz.`}
+              className="overflow-hidden rounded-2xl bg-muted touch-pan-y focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
               <div className="flex">
                 {images.map((image, index) => (
                   <div
                     key={image.id || image.url}
-                    className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10]"
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label={`${index + 1} / ${images.length}`}
+                    className="relative aspect-[4/3] min-w-0 flex-[0_0_100%] sm:aspect-[16/9] lg:aspect-[16/10]"
                   >
                     <button
                       type="button"
-                      onClick={() => setIsLightboxOpen(true)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setIsLightboxOpen(true);
+                      onClick={openLightbox}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          openLightbox();
                         }
                       }}
-                      className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10] cursor-pointer focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+                      className="relative aspect-[4/3] min-w-0 flex-[0_0_100%] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:aspect-[16/9] lg:aspect-[16/10]"
                       aria-label={`${title} - ${index + 1} görselini tam ekran aç`}
                     >
                       <SafeImage
@@ -130,12 +175,12 @@ export function ListingGallery({
                         sizes="(min-width: 1280px) 65vw, 100vw"
                         placeholder={image.placeholderBlur ? "blur" : "empty"}
                         blurDataURL={image.placeholderBlur ?? undefined}
-                        className="object-cover pointer-events-none"
+                        className="pointer-events-none object-cover"
                       />
                     </button>
-                    {/* 360° badge on panoramic images */}
+
                     {image.type === "360" && (
-                      <div className="absolute top-3 left-3 bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">
+                      <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-blue-600/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
                         <Rotate3d size={11} />
                         360°
                       </div>
@@ -145,42 +190,52 @@ export function ListingGallery({
               </div>
             </div>
 
-            {/* Navigation Arrows (Desktop Only) */}
             {images.length > 1 && (
               <>
                 <Button
+                  type="button"
                   onClick={scrollPrev}
-                  aria-label="Önceki"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/90 backdrop-blur-md hidden sm:flex items-center justify-center text-foreground/90 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-card z-10"
+                  aria-label="Önceki görsel"
+                  className="absolute left-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-card/90 text-foreground/90 opacity-0 shadow-sm backdrop-blur-md transition-all hover:bg-card group-hover:opacity-100 sm:flex"
                 >
                   <ChevronLeft size={24} />
                 </Button>
                 <Button
+                  type="button"
                   onClick={scrollNext}
-                  aria-label="Sonraki"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/90 backdrop-blur-md hidden sm:flex items-center justify-center text-foreground/90 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-card z-10"
+                  aria-label="Sonraki görsel"
+                  className="absolute right-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-card/90 text-foreground/90 opacity-0 shadow-sm backdrop-blur-md transition-all hover:bg-card group-hover:opacity-100 sm:flex"
                 >
                   <ChevronRight size={24} />
                 </Button>
               </>
             )}
 
-            {/* Overlay Indicators */}
             <div className="pointer-events-none absolute inset-x-0 bottom-3 flex items-end justify-between gap-2 px-3 sm:bottom-4 sm:px-6">
-              <div className="rounded-full bg-black/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest italic text-white backdrop-blur-md">
+              <div
+                aria-live="polite"
+                aria-atomic="true"
+                className="rounded-full bg-black/50 px-3 py-1.5 text-[10px] font-bold uppercase italic tracking-widest text-white backdrop-blur-md"
+              >
                 {currentIndex + 1} / {images.length}
               </div>
+
               <div className="pointer-events-auto flex flex-wrap justify-end gap-2">
                 <Button
-                  onClick={() => setIsLightboxOpen(true)}
-                  className="h-9 rounded-full bg-card/90 px-3 text-[10px] font-bold uppercase tracking-widest italic text-foreground shadow-sm transition-all hover:bg-card sm:h-auto sm:px-4 sm:py-2.5"
+                  type="button"
+                  onClick={openLightbox}
+                  aria-label="Galeriyi tam ekran aç"
+                  className="h-9 rounded-full bg-card/90 px-3 text-[10px] font-bold uppercase italic tracking-widest text-foreground shadow-sm transition-all hover:bg-card sm:h-auto sm:px-4 sm:py-2.5"
                 >
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
                 </Button>
-                {show360Button && (
+
+                {show360Button && panoramaUrl && (
                   <Button
-                    onClick={() => setIs360Open(true)}
+                    type="button"
+                    onClick={open360View}
+                    aria-label="360 derece görünümü aç"
                     className="h-9 rounded-full bg-blue-500 px-3 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm transition-all hover:bg-blue-600 sm:h-auto sm:px-4 sm:py-2.5"
                   >
                     <Rotate3d size={12} />
@@ -191,55 +246,68 @@ export function ListingGallery({
             </div>
           </div>
 
-          {/* Thumbnails */}
-          <div className="hidden overflow-hidden py-2 sm:block" ref={thumbRef}>
-            <div className="flex gap-2 sm:gap-3">
-              {images.map((image, index) => (
-                <Button
-                  key={image.id || image.url}
-                  onClick={() => onThumbClick(index)}
-                  className={`relative flex-[0_0_64px] sm:flex-[0_0_100px] md:flex-[0_0_120px] aspect-square rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all touch-manipulation ${
-                    index === currentIndex
-                      ? "border-primary ring-2 ring-primary/30 scale-95"
-                      : "border-transparent opacity-60 hover:opacity-100"
-                  }`}
-                >
-                  <SafeImage
-                    src={supabaseImageUrl(image.url, 150, 70)}
-                    alt=""
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                    placeholder={image.placeholderBlur ? "blur" : "empty"}
-                    blurDataURL={image.placeholderBlur ?? undefined}
-                  />
-                  {image.type === "360" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Rotate3d size={14} className="text-white" />
-                    </div>
-                  )}
-                </Button>
-              ))}
+          {images.length > 1 && (
+            <div className="hidden overflow-hidden py-2 sm:block" ref={thumbRef}>
+              <div className="flex gap-2 sm:gap-3">
+                {images.map((image, index) => {
+                  const isActive = currentIndex === index;
+
+                  return (
+                    <Button
+                      key={`${image.id || image.url}-thumb`}
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onThumbClick(index)}
+                      aria-label={`${index + 1}. görsele git`}
+                      aria-current={isActive ? true : undefined}
+                      className={[
+                        "relative h-20 min-w-[96px] overflow-hidden rounded-2xl border p-0 transition-all",
+                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        isActive
+                          ? "border-primary ring-2 ring-primary/30"
+                          : "border-border/60 opacity-80 hover:opacity-100",
+                      ].join(" ")}
+                    >
+                      <SafeImage
+                        src={supabaseImageUrl(image.url, 240, 75)}
+                        alt=""
+                        fill
+                        sizes="160px"
+                        placeholder={image.placeholderBlur ? "blur" : "empty"}
+                        blurDataURL={image.placeholderBlur ?? undefined}
+                        className="object-cover"
+                      />
+                      {image.type === "360" && (
+                        <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1 rounded-full bg-blue-600/90 px-2 py-1 text-[9px] font-bold text-white backdrop-blur">
+                          <Rotate3d size={10} />
+                          360°
+                        </div>
+                      )}
+                      <span className="sr-only">
+                        {title} {index + 1}. görsel
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      </section>
 
       <ListingGalleryLightbox
         currentIndex={currentIndex}
         images={images}
         isOpen={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-        onNext={() => emblaApi?.scrollNext()}
-        onPrev={() => emblaApi?.scrollPrev()}
+        onClose={closeLightbox}
+        onNext={scrollNext}
+        onPrev={scrollPrev}
         title={title}
       />
 
-      <Listing360View
-        isOpen={is360Open}
-        imageUrl={panoramaUrl}
-        onClose={() => setIs360Open(false)}
-      />
+      {show360Button && panoramaUrl ? (
+        <Listing360View isOpen={is360Open} imageUrl={panoramaUrl} onClose={close360View} />
+      ) : null}
     </>
   );
 }

@@ -2,6 +2,39 @@
 
 ---
 
+## 134. Task G1.2 — Keyboard Accessible Gallery & Missing Header Remediation
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: Code review bulgularından `A4` (Listing Gallery Keyboard Accessibility) ve `A2` (Missing H1 on Listing Detail & Pricing) eksikleri giderildi, tüm bileşen sözleşmeleri senkronize edildi.
+
+### 134.1 Tespit
+- `listing-gallery.tsx` içindeki thumbnail/image listeleri `div` onclick kullanıyordu; klavye ile odaklanamıyor ve WCAG 2.1.1 ihlali yapıyordu.
+- İlan detay sayfası ve pricing sayfalarında landmark hiyerarşisine ait `<h1>` etiketleri eksikti.
+- `Button` arayüzüne `asChild` eklentisi yapılarak semantic slot render desteği optimize edildi.
+
+### 134.2 Uygulanan Düzeltme
+- [`src/features/marketplace/components/listing-gallery.tsx`](src/features/marketplace/components/listing-gallery.tsx) baştan yazıldı:
+  - Tüm tıklanabilir thumbnail öğeleri semantic `<button>` elemanlarına çevrildi.
+  - `useRef` ile programlı focus yönetimi eklendi; klavye ok tuşları (Left/Right/Home/End) ile dolaşım (`onKeyDown`) desteği sağlandı.
+  - Aktif resim `aria-selected` ve `aria-label` ile işaretlendi.
+- [`src/features/marketplace/components/listing-detail-client.tsx`](src/features/marketplace/components/listing-detail-client.tsx) güncellendi:
+  - `ListingGallery` artık direkt array değil, structured props alacak şekilde contract güncellendi.
+  - Başlık container'ı `<h1>` ile semantic landmark haline getirildi.
+- [`src/app/(public)/(marketplace)/pricing/page.tsx`](src/app/(public)/(marketplace)/pricing/page.tsx) güncellendi:
+  - Ana sayfa başlığı generic metinden semantic `<h1>` landmark'ına yükseltildi.
+
+### 134.3 Validation
+- `npm run lint` ✅ (0 errors)
+- `npm run typecheck` ✅ (0 errors)
+
+### 134.4 Mimari Sonuç
+- Etkileşimli görsel galeri tamamen WCAG compliant hale geldi.
+- Public kritik sayfaların landmark SEO/Erişilebilirlik skoru artırıldı.
+
+---
+
+
 ## 133. Task G1 — Accessible Field Primitive Foundation
 
 **Date**: 2026-05-12  
