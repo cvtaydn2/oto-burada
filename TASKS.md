@@ -1,3 +1,4 @@
+
 # TASKS.md
 
 Bu belge proje backlog’unun aktif çalışma listesidir. Uygulama sırası, bağımlılık ilişkileri ve acceptance criteria burada tutulur. Yapılan işler buradan değil, [`PROGRESS.md`](PROGRESS.md) içinden takip edilir.
@@ -11,6 +12,31 @@ Yeni iş başlatmadan önce ilgili kapsamın [`PROGRESS.md`](PROGRESS.md) içind
 ## Backlog yapısı
 
 Aşağıdaki fazlar teslim sırası açısından geçerlidir. Tamamlanan fazlar, tarihsel iz bırakmak için bu belgede korunur; ancak uygulama önceliği aktif fazlardan başlar.
+
+---
+
+## Active Engineering Remediation
+
+### Task G1 — Code review kaynaklı kritik erişilebilirlik açıklarını kapat
+
+Amaç, kapsamlı denetimde işaretlenen kırmızı seviye WCAG ve etkileşim sorunlarını kapatarak ürünün temel yüzeylerini erişilebilir, tutarlı ve denetlenebilir hale getirmektir.
+
+Kapsam:
+
+- form bileşenlerinde `label` → `htmlFor` → `id` bağlarını eksiksiz kur
+- eksik `<h1>` ve landmark hiyerarşisini düzelt
+- klavye ile erişilemeyen etkileşimli yüzeyleri semantik ve erişilebilir hale getir
+- gallery ve benzeri özel UI etkileşimlerinde keyboard/focus davranışını doğrula
+- remediation sonrası kalite kapılarını tekrar temiz tut
+
+#### Acceptance Criteria
+
+- Kritik form alanlarında programlı etiket bağlantısı eksiksizdir
+- Ana sayfa ve detail yüzeylerinde başlık/landmark semantiği tutarlıdır
+- Klavye ile kullanılabilen etkileşimli yüzeylerde focus görünürlüğü ve erişim korunur
+- [`npm run lint`](package.json:10), [`npm run typecheck`](package.json:11) ve [`npm run build`](package.json:8) tekrar temizdir
+
+**Status**: ⏳ ACTIVE
 
 ---
 
@@ -60,6 +86,8 @@ Kapsam:
 - Mobilde form terk oranını artıracak belirsiz alanlar kaldırılmıştır
 - Başarılı submit sonrası statü ve sonraki adım nettir
 
+**Status**: ✅ COMPLETED (2026-05-10/11)
+
 #### Task A2 — Arama ve filtreyi üç etkileşim altında tut
 
 - ana arama, hızlı filtre ve sonuç daraltma akışlarını sadeleştir
@@ -72,6 +100,8 @@ Kapsam:
 - Filtre durumu paylaşılabilir ve refresh sonrası korunur
 - Mobil filtre drawer ve masaüstü sidebar tutarlı davranır
 
+**Status**: ✅ COMPLETED (2026-05-11)
+
 #### Task A3 — Listing detail güven sinyallerini güçlendir
 
 - satıcı güven işaretleri, ilan şeffaflığı ve raporlama aksiyonlarını netleştir
@@ -83,6 +113,8 @@ Kapsam:
 - Listing detail bilgi hiyerarşisi güven odaklıdır
 - WhatsApp CTA görünür ve ikincil aksiyonlardan ayrışır
 - Güven ve moderasyon sinyalleri kullanıcı tarafından fark edilir düzeydedir
+
+**Status**: ✅ COMPLETED (2026-05-11)
 
 ---
 
@@ -100,6 +132,8 @@ Kapsam:
 - Statü geçişleri ürün ve politika belgeleriyle uyumludur
 - Admin ekranları operasyonel yoğunluk altında anlaşılır kalır
 
+**Status**: ✅ COMPLETED (2026-05-11)
+
 #### Task B2 — Kullanıcı güvenliği ve kötüye kullanım önlemlerini sertleştir
 
 - raporlama, oran sınırlama ve satıcı güven sinyallerini gözden geçir
@@ -111,6 +145,8 @@ Kapsam:
 - Abuse riskleri için ürün, politika ve teknik güvenlik dokümanları hizalıdır
 - Public mutation yüzeylerinde koruma katmanları nettir
 - Moderasyon ve güven belgeleri uygulama için referans verebilir durumdadır
+
+**Status**: ✅ COMPLETED (2026-05-11)
 
 ---
 
@@ -128,6 +164,8 @@ Kapsam:
 - Doping ve planlar ürün stratejisiyle tutarlıdır
 - Kurumsal kullanıcı farkı anlaşılır ama karmaşık değildir
 
+**Status**: ✅ COMPLETED (2026-05-11)
+
 #### Task C2 — Premium servisleri kritik yol dışında konumlandır
 
 - ekspertiz, araç geçmişi ve AI destekli ilan oluşturma gibi servisleri ikincil katman olarak ele al
@@ -137,6 +175,8 @@ Kapsam:
 
 - Premium servisler opsiyonel katman olarak konumlanır
 - Dış servis veya kota problemi ana akışı bozmaz
+
+**Status**: ✅ COMPLETED (2026-05-11)
 
 ---
 
@@ -273,3 +313,19 @@ MVP teslimi aşağıdaki koşullar sürdürülebilir biçimde sağlandığında 
 - Yeni veri modeli hatasız uygulanmıştır (Migration ✅)
 - RLS kuralları doğrulanmıştır (Security ✅)
 - SMS provider interfacedir ve mocking destekler
+
+**Status**: ✅ COMPLETED (2026-05-11)
+
+### Task F2 — Telefon Doğrulama Server Action'ları ve UI Entegrasyonu
+
+- OTP gönderme ve doğrulama action'larını ekle
+- profil formu ve doğrulama diyaloğu ile uçtan uca akışı bağla
+- doğrulanmış telefon durumunu profil ve auth state ile hizala
+
+##### Acceptance Criteria
+
+- Kullanıcı SMS kodu isteyebilir ve doğrulayabilir
+- Doğrulama sonrası profil durumu anında güncellenir
+- Type-safe server action ve UI entegrasyonu tamamdır
+
+**Status**: ✅ COMPLETED (2026-05-11)

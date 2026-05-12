@@ -2,6 +2,38 @@
 
 ---
 
+## 132. Backlog Reconciliation — TASKS / PROGRESS Hizalama ve Sonraki Kritik İşin Netleştirilmesi
+
+**Date**: 2026-05-12  
+**Status**: ✅ COMPLETED  
+**Scope**: `TASKS.md` ile `PROGRESS.md` arasındaki backlog sapması incelendi; tarihsel olarak tamamlanmış fazlar backlog üzerinde işaretlendi ve bir sonraki aktif kritik mühendislik işi netleştirildi.
+
+### 132.1 Tespit
+- `TASKS.md` üzerinde A1–A3, B1–B2, C1–C2 ve F1/F2 aktif görünüyor veya eksik işaretlenmişti.
+- `PROGRESS.md` kayıtları ise bu işlerin fiilen tamamlandığını gösteriyordu.
+- Bu durum aktif backlog görünümünü bozuyor ve sıradaki gerçek işi belirsizleştiriyordu.
+
+### 132.2 Uygulanan Düzeltme
+- `TASKS.md` içinde aşağıdaki işlerin durumu tamamlandı olarak hizalandı:
+  - Phase A: A1, A2, A3
+  - Phase B: B1, B2
+  - Phase C: C1, C2
+  - Phase F: F1, F2
+- Yeni aktif mühendislik önceliği olarak `Task G1 — Code review kaynaklı kritik erişilebilirlik açıklarını kapat` backlog’a eklendi.
+
+### 132.3 Sonraki Kritik İş Kararı
+- En kritik açık iş, kapsamlı code review içinde kırmızı seviye kalan erişilebilirlik remediation paketidir.
+- İlk alt odak:
+  - formlarda `label` / `htmlFor` / `id` eşleşmeleri
+  - eksik `<h1>` ve landmark semantiği
+  - klavye erişimi eksik etkileşimli UI yüzeyleri
+
+### 132.4 Not
+- Bu adım backlog ve ilerleme belgelerini hizalamak için yapıldı.
+- Kaynak kod dosyaları bu oturumda sağlanmadığı için uygulama kodu değişikliği bu kayıt kapsamında yapılmadı; gerçek remediation uygulaması bir sonraki kod adımıdır.
+
+---
+
 ## 130. Backend Service Consistency Refactor — Admin Context + Safer Listing Query Path
 
 **Date**: 2026-05-12
