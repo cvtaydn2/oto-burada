@@ -7,6 +7,7 @@ trigger: always_on
 - **Mission Lock**: Sadece arabalar için, mobil öncelikli, güvenli ve ücretsiz ilan pazaryeri. Başka sektöre/genel ilan sitesine dönüştürülemez.
 - **MVP Hedefleri**: <2 dk ilan oluşturma, <3 etkileşimde filtreleme, temiz lint/typecheck/build.
 - **Source of Truth**: Her işlem öncesi `AGENTS.md`, `TASKS.md` ve `PROGRESS.md` okunacaktır.
+- **Copilot First**: Proje ile alakalı sorularını `scripts/copilot`'a sor, ondan cevap al, sen sadece uygulama yap.
 - **Scope Control**: Sadece atanan göreve odaklan; ilgisiz refactor, toplu dosya taşıma veya geniş formatlama yapma.
 - **Protected Directories**: `.claude-flow/`, `.roo/`, `.swarm/`, `.agents/`, `memory.db`, `state.json` değiştirilemez.
 - **Canonical Stack**: Next.js App Router, TS strict, Tailwind CSS, shadcn/ui, React Hook Form, Zod, TanStack Query, Supabase. Ayrı Express/NestJS backend veya Prisma eklenemez.

@@ -35,6 +35,7 @@ Bu liste normatif öncelik sırasını tanımlar; onboarding veya önerilen okum
 - Before starting any new development, read `PROGRESS.md` to avoid repeating completed work.
 - Update `PROGRESS.md` after each completed task with status, decisions, validations, and next step.
 - Keep documentation aligned with the current implementation state.
+- Proje ile alakalı sorularını `scripts/copilot`'a sor, ondan cevap al, sen sadece uygulama yap.
 - In case of contradiction, **AGENTS.md** always takes precedence.
 
 ---
