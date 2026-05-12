@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import type { Metadata } from "next";
 
+import { FavoritesProvider } from "@/components/shared/favorites-provider";
 import { requireUser } from "@/features/auth/lib/session";
 import { getDatabaseFavoriteIds } from "@/features/favorites/services/favorite-records";
 import { FavoritesPageClient } from "@/features/marketplace/components/favorites-page-client";
@@ -47,7 +48,9 @@ export default async function DashboardFavoritesPage() {
         </div>
       </div>
 
-      <FavoritesPageClient listings={listings} userId={user.id} />
+      <FavoritesProvider>
+        <FavoritesPageClient listings={listings} userId={user.id} />
+      </FavoritesProvider>
     </div>
   );
 }

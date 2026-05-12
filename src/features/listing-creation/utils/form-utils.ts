@@ -60,9 +60,8 @@ export function buildDefaultValues(
   initialValues: { city: string; whatsappPhone: string },
   initialListing?: Listing | null
 ): ListingCreateFormValues {
-  const sortedImages = initialListing
-    ? [...initialListing.images].sort((a, b) => a.order - b.order)
-    : [];
+  const initialImages = Array.isArray(initialListing?.images) ? initialListing.images : [];
+  const sortedImages = [...initialImages].sort((a, b) => a.order - b.order);
   const rawInspection = initialListing?.expertInspection;
 
   const normalizedInspection =

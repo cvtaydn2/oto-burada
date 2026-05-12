@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ApiClient } from "@/lib/api/client";
 
 export function AdminBroadcastPanel() {
   const [title, setTitle] = useState("");
@@ -23,17 +24,23 @@ export function AdminBroadcastPanel() {
     setErrorMsg("");
 
     try {
-      const response = await fetch("/api/admin/broadcast", {
+      const response = await ApiClient.request<{
+        successCount: number;
+        failCount: number;
+        totalProcessed: number;
+      }>("/api/admin/broadcast", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, message }),
       });
 
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok || !payload || !payload.success) {
+      if (!response.success) {
         setStatus("error");
-        setErrorMsg(payload?.error?.message || "Duyuru gönderilemedi.");
+        setErrorMsg(
+          response.error?.message ===
+            "Güvenlik doğrulaması gerekiyor. Lütfen kimliğinizi doğrulayın."
+            ? "Bu işlem için ek güvenlik doğrulaması gerekiyor. Lütfen güvenlik doğrulamasını tamamlayıp tekrar deneyin."
+            : (response.error?.message ?? "Duyuru gönderilemedi.")
+        );
         return;
       }
 
