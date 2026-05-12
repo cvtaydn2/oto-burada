@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAdminUser } from "@/features/auth/lib/session";
-import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
 import { captureServerError } from "@/lib/telemetry-server";
 import { Database } from "@/types/supabase";
+
+import { requireAdminServiceContext } from "./admin-service-context";
 
 interface SupportTicketRow {
   created_at: string;
@@ -19,8 +19,7 @@ interface SupportTicketRow {
 }
 
 export async function getSupportTickets() {
-  await requireAdminUser();
-  const admin = createSupabaseAdminClient();
+  const { admin } = await requireAdminServiceContext();
   const { data, error } = await admin
     .from("tickets")
     .select("id, subject, description, status, priority, created_at, profiles(full_name)")
@@ -44,16 +43,14 @@ export async function getSupportTickets() {
 }
 
 export async function getUserEmailById(userId: string): Promise<string | null> {
-  await requireAdminUser();
-  const admin = createSupabaseAdminClient();
+  const { admin } = await requireAdminServiceContext();
   const { data, error } = await admin.auth.admin.getUserById(userId);
   if (error || !data.user) return null;
   return data.user.email ?? null;
 }
 
 export async function updateTicketStatus(id: string, status: string) {
-  await requireAdminUser();
-  const admin = createSupabaseAdminClient();
+  const { admin } = await requireAdminServiceContext();
   const { error } = await admin
     .from("tickets")
     .update({

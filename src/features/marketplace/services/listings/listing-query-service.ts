@@ -267,13 +267,16 @@ export async function getPublicDatabaseListings(options?: {
 
 /**
  * @deprecated Use getPublicFilteredDatabaseListings for marketplace queries.
- * This function uses the admin client and bypasses RLS.
+ * Legacy callers are intentionally routed through the public/RLS-safe path
+ * to avoid accidental admin-client exposure on marketplace reads.
  */
 export async function getFilteredDatabaseListings(
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  const admin = createSupabaseAdminClient();
-  return getFilteredListingsInternal(admin, filters);
+  logger.db.warn("Deprecated getFilteredDatabaseListings() routed to public query path", {
+    filters,
+  });
+  return getPublicFilteredDatabaseListings(filters);
 }
 
 export async function getPublicFilteredDatabaseListings(

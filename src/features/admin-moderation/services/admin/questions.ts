@@ -1,11 +1,12 @@
-import { createSupabaseAdminClient } from "@/lib/admin";
 import { logger } from "@/lib/logger";
+
+import { requireAdminServiceContext } from "./admin-service-context";
 
 /**
  * Get pending questions for moderation
  */
 export async function getPendingQuestions(limit = 50) {
-  const supabase = createSupabaseAdminClient();
+  const { admin: supabase } = await requireAdminServiceContext();
 
   const { data, error } = await supabase
     .from("listing_questions")
@@ -37,7 +38,7 @@ export async function getPendingQuestions(limit = 50) {
  * Get recent questions (all statuses)
  */
 export async function getAllQuestions(limit = 50, offset = 0) {
-  const supabase = createSupabaseAdminClient();
+  const { admin: supabase } = await requireAdminServiceContext();
 
   const { data, error } = await supabase
     .from("listing_questions")
@@ -72,7 +73,7 @@ export async function moderateQuestion(
   status: "approved" | "rejected",
   isPublic?: boolean
 ) {
-  const supabase = createSupabaseAdminClient();
+  const { admin: supabase } = await requireAdminServiceContext();
 
   const updateData: {
     status: "approved" | "rejected";
@@ -106,7 +107,7 @@ export async function moderateQuestion(
  * Delete a question (Admin only)
  */
 export async function deleteQuestion(questionId: string) {
-  const supabase = createSupabaseAdminClient();
+  const { admin: supabase } = await requireAdminServiceContext();
 
   const { error } = await supabase.from("listing_questions").delete().eq("id", questionId);
 

@@ -2,6 +2,37 @@
 
 ---
 
+## 130. Backend Service Consistency Refactor — Admin Context + Safer Listing Query Path
+
+**Date**: 2026-05-12
+**Status**: ✅ COMPLETED
+**Scope**: Backend servis/action katmanında tekrarlayan admin orkestrasyonu azaltıldı, admin service context standardize edildi, legacy listing filtre sorgusu RLS-safe public path'e yönlendirildi.
+
+### 130.1 Tespit Edilen Kök Problemler
+- Admin servislerinde `requireAdminUser()` + `createSupabaseAdminClient()` kalıbı birçok dosyada tekrar ediyordu.
+- Admin reference katmanı gereksiz proxy/wrapper mantığı taşıyordu; SRP ve bakım maliyeti zayıflıyordu.
+- Deprecated [`getFilteredDatabaseListings()`](src/features/marketplace/services/listings/listing-query-service.ts:272) hâlâ admin client ile marketplace filtre sorgusu çalıştırabiliyordu; bu istemeden RLS bypass riskini büyütüyordu.
+
+### 130.2 Uygulanan Düzeltmeler
+- Yeni ortak admin context helper eklendi: [`src/features/admin-moderation/services/admin/admin-service-context.ts`](src/features/admin-moderation/services/admin/admin-service-context.ts).
+- [`src/features/admin-moderation/services/admin/support.ts`](src/features/admin-moderation/services/admin/support.ts) içinde tekrar eden admin auth/client orkestrasyonu ortak helper'a taşındı.
+- [`src/features/admin-moderation/services/admin/roles.ts`](src/features/admin-moderation/services/admin/roles.ts) içinde aynı duplicate orkestrasyon ortak helper'a taşındı.
+- [`src/features/admin-moderation/services/admin/questions.ts`](src/features/admin-moderation/services/admin/questions.ts) fail-closed admin context ile hizalandı.
+- [`src/features/admin-moderation/services/admin/reference.ts`](src/features/admin-moderation/services/admin/reference.ts) sadeleştirildi; gereksiz proxy pattern korunmuş API yüzeyi bozulmadan minimum wrapper mantığına indirildi.
+- [`src/features/marketplace/services/listings/listing-query-service.ts`](src/features/marketplace/services/listings/listing-query-service.ts) içinde deprecated [`getFilteredDatabaseListings()`](src/features/marketplace/services/listings/listing-query-service.ts:272) artık warning log atıp [`getPublicFilteredDatabaseListings()`](src/features/marketplace/services/listings/listing-query-service.ts:279) üzerinden RLS-safe path'e yönleniyor.
+
+### 130.3 Validation
+- [`npm run lint`](package.json:12) ✅
+- [`npm run typecheck`](package.json:13) ✅
+- [`npm run build`](package.json:10) ✅
+
+### 130.4 Sonraki Aksiyonlar
+1. Aynı admin context standardını [`src/features/admin-moderation/services/admin/inventory.ts`](src/features/admin-moderation/services/admin/inventory.ts), [`src/features/admin-moderation/services/admin/plans.ts`](src/features/admin-moderation/services/admin/plans.ts), [`src/features/admin-moderation/services/admin/analytics.ts`](src/features/admin-moderation/services/admin/analytics.ts) ve benzeri servislerde yaygınlaştır.
+2. Admin reference CRUD ile public marketplace reference fetch mantığını daha net dosya sınırlarına ayır.
+3. `SELECT *` kullanan backend record katmanlarını projection-first standardına çek.
+
+---
+
 ## 129. Comprehensive Code Review — Full Stack Audit (9 Aşama)
 
 **Date**: 2026-05-12
