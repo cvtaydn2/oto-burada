@@ -4,7 +4,7 @@
  * Verifies that each error code from executeListingCreation maps to the
  * correct HTTP status code.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { withUserAndCsrfToken } from "@/lib/security";

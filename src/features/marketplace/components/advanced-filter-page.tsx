@@ -46,7 +46,7 @@ export function AdvancedFilterPage({
   return (
     <div className="min-h-screen bg-muted/30 pb-24 sm:pb-28">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-5 px-3 py-4 sm:gap-6 sm:px-6 sm:py-8 lg:py-10">
-        <main className="flex min-h-[560px] flex-1 flex-col rounded-[1.75rem] border border-border/40 bg-card p-4 shadow-sm sm:rounded-3xl sm:p-8 lg:p-10">
+        <div className="flex min-h-[560px] flex-1 flex-col rounded-[1.75rem] border border-border/40 bg-card p-4 shadow-sm sm:rounded-3xl sm:p-8 lg:p-10">
           <div className="mb-6 flex flex-col gap-4 border-b border-border/40 pb-5 sm:mb-8 sm:gap-5 sm:pb-6 lg:mb-10 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:pb-8">
             <div className="flex items-start gap-3 sm:items-center sm:gap-4">
               <Link
@@ -259,7 +259,7 @@ export function AdvancedFilterPage({
               </Button>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

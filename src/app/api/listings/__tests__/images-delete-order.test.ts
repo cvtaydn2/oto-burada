@@ -4,7 +4,7 @@
  * Verifies the correct order: verify ownership → remove from storage → unregister.
  * Also verifies that registry metadata is preserved when storage removal fails.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockVerifyFileOwnership = vi.fn();

@@ -78,7 +78,8 @@ export default async function HomePage() {
         description="Türkiye'nin en güvenilir, şeffaf ve hızlı ikinci el otomobil pazarı. Aradığın araba burada."
       />
 
-      <main className="w-full flex-1">
+      <div className="w-full flex-1">
+        <h1 className="sr-only">OtoBurada - İkinci El Araba İlanları - Güvenli Araç Pazaryeri</h1>
         <HomeErrorHandler results={results} />
 
         <HomeHero cities={heroCities} searchSuggestions={searchSuggestions} />
@@ -201,7 +202,7 @@ export default async function HomePage() {
         </section>
 
         <HomeTrustAndSearch brands={brands} cities={cities} />
-      </main>
+      </div>
     </div>
   );
 }

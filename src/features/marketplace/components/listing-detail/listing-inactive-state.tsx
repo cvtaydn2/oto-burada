@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function ListingInactiveState() {
   return (
-    <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+    <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
       <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
         <AlertCircle className="size-10 text-amber-600" />
       </div>
@@ -25,6 +25,6 @@ export function ListingInactiveState() {
       >
         Piyasadaki Diğer İlanlar
       </Link>
-    </main>
+    </div>
   );
 }

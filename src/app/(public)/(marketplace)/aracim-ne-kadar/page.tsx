@@ -18,7 +18,7 @@ export default async function AracimNeKadarPage() {
   const references = await getLiveMarketplaceReferenceData();
 
   return (
-    <main className="min-h-screen bg-muted/30 pb-20">
+    <div className="min-h-screen bg-muted/30 pb-20">
       {/* Hero Header */}
       <section className="relative overflow-hidden bg-slate-900 pt-20 pb-24 text-white">
         {/* Background Patterns */}
@@ -96,6 +96,6 @@ export default async function AracimNeKadarPage() {
           </aside>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

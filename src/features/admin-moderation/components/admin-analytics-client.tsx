@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Car, Download, MousePointer, Users, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -92,7 +92,7 @@ export function AdminAnalyticsClient({
   };
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
+    <div className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -246,6 +246,6 @@ export function AdminAnalyticsClient({
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Database, Filter } from "lucide-react";
+﻿import { Database, Filter } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default async function AdminReferencePage({
   const brands = await getBrands(q);
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-muted/30 min-h-full">
+    <div className="space-y-8 p-6 lg:p-8 bg-muted/30 min-h-full">
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -79,6 +79,6 @@ export default async function AdminReferencePage({
           <BrandsManager initialBrands={brands} />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

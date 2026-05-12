@@ -136,7 +136,7 @@ export function ListingsPageClient({
         </div>
       )}
 
-      <main className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-4 sm:px-4 sm:py-6">
+      <div className="mx-auto min-h-screen max-w-7xl bg-background px-3 py-4 sm:px-4 sm:py-6">
         <div className="mb-5 space-y-3 sm:mb-6 sm:space-y-4">
           <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -293,7 +293,7 @@ export function ListingsPageClient({
             )}
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }

@@ -6,7 +6,7 @@
  * - updateDatabaseListing restores old images when new image insert fails
  * - createDatabaseListing queues storage cleanup when image insert fails
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockQueueFileCleanup = vi.fn();

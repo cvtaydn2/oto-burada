@@ -50,7 +50,7 @@ export async function SiteFooter() {
             </div>
           </div>
 
-          <div>
+          <nav aria-label="Hızlı Erişim">
             <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
               Hızlı Erişim
             </h3>
@@ -61,9 +61,9 @@ export async function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          <div>
+          <nav aria-label="Popüler Markalar">
             <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
               Popüler Markalar
             </h3>
@@ -79,7 +79,7 @@ export async function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">

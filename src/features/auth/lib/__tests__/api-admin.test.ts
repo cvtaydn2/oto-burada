@@ -6,7 +6,7 @@
  * - isSupabaseAdminUser returns false when admin env is unavailable
  * - Banned admin users are blocked
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockHasSupabaseEnv = vi.fn(() => true);

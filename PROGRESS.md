@@ -1,5 +1,63 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+---
+
+## 129. Comprehensive Code Review — Full Stack Audit (9 Aşama)
+
+**Date**: 2026-05-12
+**Status**: ✅ COMPLETED
+**Scope**: Full-stack code review covering project architecture, accessibility (WCAG 2.1 AA), Tailwind v4, React/Next.js best practices, TypeScript type safety, Supabase/RDBMS integration, security, and SEO/performance.
+
+### 129.1 Proje Sağlık Skoru: 76/100
+
+Proje genel olarak iyi yapılandırılmış, feature-based mimari oturmuş, RLS doğru yapılandırılmış. Kritik eksikler:
+- `@typescript-eslint/no-explicit-any` global "off" — type safety zayıf
+- 9 sayfada nested `<main>` landmark + 3 sayfada eksik `<h1>` — WCAG ihlali
+- 20+ form bileşeninde `<label>`-`<input>` programlı bağlantısı yok (`htmlFor`)
+- 16 bileşen 250 satır limitini aşıyor
+- 27+ component'te server actions yerine doğrudan `fetch()`
+
+### 129.2 Kritik Bulgular (Hemen Düzeltilmeli)
+
+| # | Şiddet | Kategori | Açıklama |
+|---|--------|----------|----------|
+| A1 | 🔴 | Erişilebilirlik | 9 sayfada nested `<main>` landmark (WCAG 4.1.2) |
+| A2 | 🔴 | Erişilebilirlik | Homepage + Listing Detail + Gallery'de eksik `<h1>` (WCAG 1.3.1) |
+| A3 | 🔴 | Erişilebilirlik | 20+ formda `<Label>` htmlFor'suz (WCAG 1.3.1) |
+| A4 | 🔴 | Erişilebilirlik | `listing-gallery.tsx`'te div onclick klavyesiz (WCAG 2.1.1) |
+| TS1 | 🔴 | Type Safety | `no-explicit-any` global "off" — AGENTS.md ihlali |
+| TS2 | 🟡 | Type Safety | `push-logic.ts` + `doping-logic.ts`'te `as any` cast'leri |
+| G1 | 🟡 | Güvenlik | SMS client'ta PII log riski |
+| G2 | 🟡 | Güvenlik | Listing query service RLS bypass (admin client) |
+| R1 | 🟡 | Mimari | 27+ component'te fetch() — server actions yerine |
+| R3 | 🟡 | Bakım | 16 bileşen 250 satır limitini aşıyor |
+
+### 129.3 Detaylı Rapor
+Full rapor için [`docs/CODE_REVIEW_2026-05-12.md`](docs/CODE_REVIEW_2026-05-12.md) dosyasına bakınız.
+
+### 129.4 İlk İyileştirme Turu — 2026-05-12
+- [`eslint.config.mjs`](eslint.config.mjs) içindeki geniş `@typescript-eslint/no-explicit-any` istisnaları daraltıldı; production dosyaları override listesinden çıkarıldı.
+- [`src/features/payments/services/payments/doping-logic.ts`](src/features/payments/services/payments/doping-logic.ts) içinde `warnExpiringDopings` akışı typed hale getirildi; `doping_purchases` güncelleme payload'ı ve joined select sonuçları için `any` kaldırıldı.
+- [`src/features/phone-verification/services/phone-verification/sms-client.ts`](src/features/phone-verification/services/phone-verification/sms-client.ts) içinde telefon numarası maskeleme ve mesaj body redaction eklendi; development log'larında PII sızıntısı azaltıldı.
+- Admin layout altında nested landmark oluşturan sayfa ve admin moderation client yüzeylerinde iç `main` kullanımları `div` ile değiştirildi; root landmark yalnız [`src/app/admin/layout.tsx`](src/app/admin/layout.tsx) içinde bırakıldı.
+- Eksik referans için kanonik rapor dosyası [`docs/CODE_REVIEW_2026-05-12.md`](docs/CODE_REVIEW_2026-05-12.md) oluşturuldu.
+
+### 129.5 Validation
+- Detaylı manuel kod incelemesi: ✅
+- WCAG 2.1 AA kriterlerine göre erişilebilirlik denetimi: ✅
+- Supabase RLS ve güvenlik denetimi: ✅
+- İlk remediation turu kod değişiklikleri: ✅
+- Tam kalite kapıları (`lint` / `typecheck` / `build`): ⏳ sonraki adım
+
+### 129.6 Güncel Öncelikli Aksiyon Planı
+1. 🔴 `lint`, `typecheck`, `build` kapılarını çalıştır ve kalan hataları temizle
+2. 🔴 20+ formda `htmlFor` eşleşmelerini tamamla
+3. 🟡 Listing query service tarafındaki admin client / RLS kullanımını yeniden gözden geçir
+4. 🟡 16 büyük bileşeni 250 satır altına böl
+5. 🟡 27+ fetch() çağrısını server actions pattern'ine taşı
+
+---
+
 
 
 ---

@@ -110,17 +110,29 @@ export function ListingGallery({
                     key={image.id || image.url}
                     className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10]"
                   >
-                    <SafeImage
-                      src={supabaseImageUrl(image.url, 1200, 85)}
-                      alt={`${title} - ${index + 1}`}
-                      fill
-                      priority={index === 0}
-                      sizes="(min-width: 1280px) 65vw, 100vw"
-                      placeholder={image.placeholderBlur ? "blur" : "empty"}
-                      blurDataURL={image.placeholderBlur ?? undefined}
-                      className="object-cover cursor-pointer"
+                    <button
+                      type="button"
                       onClick={() => setIsLightboxOpen(true)}
-                    />
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setIsLightboxOpen(true);
+                        }
+                      }}
+                      className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10] cursor-pointer focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+                      aria-label={`${title} - ${index + 1} görselini tam ekran aç`}
+                    >
+                      <SafeImage
+                        src={supabaseImageUrl(image.url, 1200, 85)}
+                        alt=""
+                        fill
+                        priority={index === 0}
+                        sizes="(min-width: 1280px) 65vw, 100vw"
+                        placeholder={image.placeholderBlur ? "blur" : "empty"}
+                        blurDataURL={image.placeholderBlur ?? undefined}
+                        className="object-cover pointer-events-none"
+                      />
+                    </button>
                     {/* 360° badge on panoramic images */}
                     {image.type === "360" && (
                       <div className="absolute top-3 left-3 bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">

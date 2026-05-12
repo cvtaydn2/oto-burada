@@ -37,7 +37,7 @@ export default async function AdminTicketsPage({
   const resolvedCount = counts.resolved + counts.closed;
 
   return (
-    <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+    <div className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
       <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2">
@@ -127,7 +127,7 @@ export default async function AdminTicketsPage({
           initialQuery={q ?? ""}
         />
       </section>
-    </main>
+    </div>
   );
 }
 

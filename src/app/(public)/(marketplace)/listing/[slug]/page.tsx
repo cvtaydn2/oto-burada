@@ -152,7 +152,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         items={pageBreadcrumbs.map((b) => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))}
       />
 
-      <main className="min-h-screen bg-muted/30">
+      <div className="min-h-screen bg-muted/30">
+        <h1 className="sr-only">{listing.title}</h1>
         <div className="mx-auto max-w-[1400px] px-3 py-3 pb-32 sm:px-4 sm:py-5 lg:px-6 lg:pb-12">
           {/* ── Breadcrumb ── */}
           <ListingBreadcrumb items={pageBreadcrumbs} />
@@ -366,7 +367,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             )}
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Mobile sticky CTA */}
       <MobileStickyActions

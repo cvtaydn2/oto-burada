@@ -121,7 +121,7 @@ export function PlaygroundClientPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-md shadow-xl flex flex-col gap-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -360,7 +360,7 @@ export function PlaygroundClientPage() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

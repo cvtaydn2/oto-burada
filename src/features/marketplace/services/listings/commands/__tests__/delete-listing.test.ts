@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Unit tests for Delete Listing Command
  * Tests BUG-09: Meaningful Error Returns

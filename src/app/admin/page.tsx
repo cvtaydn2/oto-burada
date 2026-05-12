@@ -1,4 +1,4 @@
-import { Activity, Database, Monitor, ShieldCheck } from "lucide-react";
+﻿import { Activity, Database, Monitor, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -82,7 +82,7 @@ export default async function AdminOverviewPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50/50 pb-20 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="min-h-screen bg-slate-50/50 pb-20 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 space-y-12">
         {/* Admin Header */}
         <section className="bg-background border border-border rounded-2xl p-6 lg:p-8 shadow-sm">
@@ -168,6 +168,6 @@ export default async function AdminOverviewPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

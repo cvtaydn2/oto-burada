@@ -4,7 +4,7 @@
  * Verifies that only genuine { deleted: true } results are counted as successes,
  * and that truthy error objects (e.g. { error: "CONFLICT" }) are not counted.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/security", () => ({

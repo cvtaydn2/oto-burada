@@ -1,5 +1,26 @@
 import { logger } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/server";
+import type { Database } from "@/types/supabase";
+
+interface ExpiringDopingWarningRow {
+  id: string;
+  user_id: string;
+  expires_at: string | null;
+  doping_packages: { name: string | null } | { name: string | null }[] | null;
+  listings: { title: string | null } | { title: string | null }[] | null;
+}
+
+type DopingPurchaseUpdate = Database["public"]["Tables"]["doping_purchases"]["Update"];
+
+function getJoinedFieldValue<T extends Record<string, unknown>, K extends keyof T>(
+  value: T | T[] | null,
+  key: K,
+  fallback: string
+) {
+  const row = Array.isArray(value) ? value[0] : value;
+  const fieldValue = row?.[key];
+  return typeof fieldValue === "string" && fieldValue.trim().length > 0 ? fieldValue : fallback;
+}
 
 /**
  * Applies a doping package to a listing using the activate_doping RPC.
@@ -103,7 +124,8 @@ export async function warnExpiringDopings() {
   const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
 
   try {
-    const { data: expiringDopings, error } = await (admin.from("doping_purchases") as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+    const { data: expiringDopings, error } = await admin
+      .from("doping_purchases")
       .select(
         `
         id,
@@ -116,7 +138,8 @@ export async function warnExpiringDopings() {
       .eq("status", "active")
       .eq("expiry_warning_sent", false)
       .lte("expires_at", next24h)
-      .gt("expires_at", now.toISOString());
+      .gt("expires_at", now.toISOString())
+      .returns<ExpiringDopingWarningRow[]>();
 
     if (error) {
       logger.payments.error("Failed to fetch expiring dopings for warnings", error);
@@ -127,10 +150,9 @@ export async function warnExpiringDopings() {
       return { success: true, count: 0 };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const notifications = expiringDopings.map((item: any) => {
-      const packageName = item.doping_packages?.name || "Doping";
-      const listingTitle = item.listings?.title || "ilanın";
+    const notifications = expiringDopings.map((item) => {
+      const packageName = getJoinedFieldValue(item.doping_packages, "name", "Doping");
+      const listingTitle = getJoinedFieldValue(item.listings, "title", "ilanın");
 
       return {
         userId: item.user_id,
@@ -143,11 +165,9 @@ export async function warnExpiringDopings() {
 
     await createDatabaseNotificationsBulk(notifications);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const purchaseIds = expiringDopings.map((item: any) => item.id);
-    await (admin.from("doping_purchases") as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .update({ expiry_warning_sent: true })
-      .in("id", purchaseIds);
+    const purchaseIds = expiringDopings.map((item) => item.id);
+    const warningSentPatch: DopingPurchaseUpdate = { expiry_warning_sent: true };
+    await admin.from("doping_purchases").update(warningSentPatch).in("id", purchaseIds);
 
     logger.payments.info(`Successfully sent expiry warnings for ${purchaseIds.length} dopings`);
     return { success: true, count: purchaseIds.length };

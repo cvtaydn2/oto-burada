@@ -4,7 +4,7 @@
  * Verifies that bulk-archive uses archiveDatabaseListing (which applies OCC)
  * rather than a raw bulk update, and that conflicts are reported accurately.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/security", () => ({

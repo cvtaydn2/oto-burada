@@ -1,4 +1,4 @@
-import { CreditCard, ShoppingBag, TrendingUp, Users } from "lucide-react";
+﻿import { CreditCard, ShoppingBag, TrendingUp, Users } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +39,7 @@ export default async function AdminPlansPage() {
   ]);
 
   return (
-    <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+    <div className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
       <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2">
@@ -281,7 +281,7 @@ export default async function AdminPlansPage() {
           </>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

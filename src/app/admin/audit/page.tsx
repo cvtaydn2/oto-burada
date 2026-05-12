@@ -93,7 +93,7 @@ export default async function AdminAuditPage({
   }
 
   return (
-    <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+    <div className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
       <section className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-3">
@@ -424,6 +424,6 @@ export default async function AdminAuditPage({
           </div>
         ) : null}
       </section>
-    </main>
+    </div>
   );
 }

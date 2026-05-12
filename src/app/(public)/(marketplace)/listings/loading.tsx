@@ -2,7 +2,7 @@ import { ListingsGridSkeleton } from "@/features/marketplace/components/listings
 
 export default function Loading() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sidebar Skeleton */}
         <aside className="hidden lg:block w-72 xl:w-80 shrink-0 space-y-6">
@@ -31,6 +31,6 @@ export default function Loading() {
           <ListingsGridSkeleton count={9} />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

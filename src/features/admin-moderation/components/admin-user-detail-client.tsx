@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Activity, Clock, History } from "lucide-react";
 import Link from "next/link";
@@ -84,7 +84,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
   };
 
   return (
-    <main className="space-y-8 p-6 lg:p-10 bg-slate-50/50 min-h-screen">
+    <div className="space-y-8 p-6 lg:p-10 bg-slate-50/50 min-h-screen">
       <AdminUserHeader
         userId={userId}
         fullName={profile.fullName}
@@ -269,6 +269,6 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
           </Tabs>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

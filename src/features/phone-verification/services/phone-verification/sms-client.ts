@@ -15,16 +15,28 @@ export interface SMSClient {
   send(msg: SMSMessage): Promise<SMSSendResult>;
 }
 
+function maskPhoneNumber(phoneNumber: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+
+  if (digits.length <= 4) {
+    return "***";
+  }
+
+  return `${"*".repeat(Math.max(0, digits.length - 4))}${digits.slice(-4)}`;
+}
+
 /**
  * Simulation / Mock Client used when no API keys exist or explicit test mode is active.
  * Strictly complies with "Zero-Cost / Free-Tier Only" mandates.
  */
 class ConsoleSMSClient implements SMSClient {
   async send(msg: SMSMessage): Promise<SMSSendResult> {
-    console.log("--- [SIMULATED SMS OUTBOX] ---");
-    console.log(`To: ${msg.to}`);
-    console.log(`Body: ${msg.body}`);
-    console.log("------------------------------");
+    if (process.env.NODE_ENV !== "production") {
+      console.log("--- [SIMULATED SMS OUTBOX] ---");
+      console.log(`To: ${maskPhoneNumber(msg.to)}`);
+      console.log(`Body: [redacted:${msg.body.length} chars]`);
+      console.log("------------------------------");
+    }
     return {
       success: true,
       messageId: `sim-${Date.now()}`,

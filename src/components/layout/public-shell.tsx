@@ -18,7 +18,7 @@ export async function PublicShell({ children }: PropsWithChildren) {
       </a>
       <SiteHeader searchSuggestions={references.searchSuggestions} />
       <div className="flex flex-1 flex-col pt-[68px]">
-        <main id="main-content" className="flex-1 pb-28 lg:pb-0" role="main">
+        <main id="main-content" className="flex-1 pb-28 lg:pb-0">
           {children}
         </main>
         <SiteFooter />

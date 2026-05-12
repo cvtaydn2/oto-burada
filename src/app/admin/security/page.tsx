@@ -1,4 +1,4 @@
-import { AlertTriangle, Ban, Shield, ShieldAlert, TrendingUp } from "lucide-react";
+﻿import { AlertTriangle, Ban, Shield, ShieldAlert, TrendingUp } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -134,7 +134,7 @@ export default async function SecurityPage() {
     logger.security.error("[SecurityPage] Failed to fetch abuse data", error);
 
     return (
-      <main className="min-h-full bg-muted/30 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-full bg-muted/30 p-4 sm:p-6 lg:p-8">
         <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-6 text-destructive shadow-sm sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-2">
@@ -160,7 +160,7 @@ export default async function SecurityPage() {
             </Button>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -169,7 +169,7 @@ export default async function SecurityPage() {
   const blockedAttempts = logs.filter((log) => log.reason !== "success").length;
 
   return (
-    <main className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+    <div className="min-h-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
       <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2">
@@ -385,6 +385,6 @@ export default async function SecurityPage() {
           </CardContent>
         </Card>
       </section>
-    </main>
+    </div>
   );
 }

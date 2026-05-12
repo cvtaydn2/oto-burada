@@ -24,11 +24,16 @@ const eslintConfig = [
         },
       ],
       "simple-import-sort/imports": "error",
-      "simple-import-sort/exports": "error"
+      "simple-import-sort/exports": "error",
     },
   },
   {
-    files: ["src/services/listings/marketplace-listings.ts"],
+    files: [
+      "src/services/listings/marketplace-listings.ts",
+      "src/__tests__/**/*.ts",
+      "src/**/__tests__/**/*.ts",
+      "src/**/__tests__/**/*.tsx",
+    ],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
     },

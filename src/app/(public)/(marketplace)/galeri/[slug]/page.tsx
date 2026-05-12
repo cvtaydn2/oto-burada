@@ -80,7 +80,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     <div className="min-h-screen bg-muted/40">
       <GalleryHeader profile={profile} />
 
-      <main className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-6">
+      <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-md bg-primary text-white">
@@ -121,7 +121,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
             </p>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

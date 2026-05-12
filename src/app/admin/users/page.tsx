@@ -65,7 +65,7 @@ export default async function AdminUserManagementPage({
   ];
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
+    <div className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -142,6 +142,6 @@ export default async function AdminUserManagementPage({
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

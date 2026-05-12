@@ -21,15 +21,12 @@ export async function triggerPushNotificationForUser(
   const admin = createSupabaseAdminClient();
 
   try {
-    // 1. Retrieve all registered push subscriptions for target user
     const { data, error } = await admin
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .from("push_subscriptions" as any)
+      .from("push_subscriptions")
       .select("id, endpoint, auth_token, p256dh")
       .eq("user_id", userId);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const subscriptions = data as any[];
+    const subscriptions = data ?? [];
 
     if (error) {
       logger.notifications.error(
@@ -85,11 +82,7 @@ export async function triggerPushNotificationForUser(
       logger.notifications.info(
         `Pruning ${staleSubscriptionIds.length} invalid/expired push subscription endpoints.`
       );
-      await admin
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from("push_subscriptions" as any)
-        .delete()
-        .in("id", staleSubscriptionIds);
+      await admin.from("push_subscriptions").delete().in("id", staleSubscriptionIds);
     }
 
     return {
@@ -172,8 +165,7 @@ export async function enqueuePushNotificationsBulk(
       },
     }));
 
-    // Perform single-trip bulk insert using standard types for reliability
-    const { error } = await admin.from("fulfillment_jobs").insert(jobInserts as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const { error } = await admin.from("fulfillment_jobs").insert(jobInserts);
 
     if (error) {
       logger.notifications.error(`Failed to bulk enqueue push fulfillment jobs: ${error.message}`);

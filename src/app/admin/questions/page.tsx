@@ -1,4 +1,4 @@
-import { Search, ShieldAlert } from "lucide-react";
+﻿import { Search, ShieldAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -48,7 +48,7 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
   const allQuestions = await getAllQuestions(limit, offset);
 
   return (
-    <main className="min-h-full max-w-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
+    <div className="min-h-full max-w-full space-y-6 bg-muted/30 p-4 sm:p-6 lg:space-y-8 lg:p-8">
       <section className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-3">
@@ -204,6 +204,6 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
           </TabsContent>
         </Tabs>
       </section>
-    </main>
+    </div>
   );
 }
