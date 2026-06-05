@@ -146,7 +146,7 @@ export async function moderateListingsWithSideEffects({
   rejectReason,
 }: ModerateListingsInput) {
   const uniqueIds = [...new Set(listingIds)];
-  const CONCURRENCY = 5;
+  const CONCURRENCY = 10; // Increased from 5 to improve bulk moderation performance
   const moderatedListings: Listing[] = [];
   const skippedListingIds: string[] = [];
 

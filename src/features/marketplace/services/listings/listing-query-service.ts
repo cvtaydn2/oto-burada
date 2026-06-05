@@ -61,8 +61,13 @@ async function getFilteredListingsInternal(
   client: SupabaseClient<Database>,
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  const page = filters.page ?? 1;
-  const limit = filters.limit ?? 24;
+  // Validate pagination parameters to prevent NaN/Infinity issues
+  const rawPage = filters.page ?? 1;
+  const rawLimit = filters.limit ?? 24;
+
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const limit = Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 100 ? rawLimit : 24;
+
   const resolvedFilters = await resolveCityFilter(filters);
 
   const selectClause = preferLegacyMarketplaceSchema()
