@@ -100,7 +100,7 @@
     "postcss": "^8.5.15",
     "protobufjs": "^8.5.0",
     "react": "19.2.7",
-    "react-day-picker": "^9.14.0",
+    "react-day-picker": "^10.0.1",
     "react-dom": "19.2.7",
     "react-hook-form": "^7.77.0",
     "react-resizable-panels": "^4.11.2",
